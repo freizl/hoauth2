@@ -10,6 +10,7 @@ module Network.OAuth2.HTTP.HttpClient
        , AccessToken (..)
        , authorizationUrl
        , postAccessToken
+       , request
        , signRequest
        )
        where
@@ -53,9 +54,9 @@ instance FromJSON AccessToken where
 authorizationUrl :: OAuth2 -> BS.ByteString
 authorizationUrl oa = oauthOAuthorizeEndpoint oa `BS.append` queryStr
   where queryStr = renderSimpleQuery True query
-        query = foldr step [] [ ("client_id", Just $ oauthClientId oa)
-                              , ("response_type", Just "code")
-                              , ("redirect_uri", oauthCallback oa)]
+        query = transformParam [ ("client_id", Just $ oauthClientId oa)
+                               , ("response_type", Just "code")
+                               , ("redirect_uri", oauthCallback oa)]
 
 request  :: Control.Monad.Trans.Resource.ResourceIO m =>
             Request m -> m (Response BSL.ByteString)
@@ -63,8 +64,6 @@ request req = (withManager . httpLbs) (req { checkStatus = \_ _ -> Nothing })
 
 postAccessToken' :: OAuth2 -> BS.ByteString -> Maybe BS.ByteString -> IO BSL.ByteString
 postAccessToken' oa code grant_type = do
-    print url
-    print query
     rsp <- request req
     if (HT.statusCode . statusCode) rsp == 200
         then return $ responseBody rsp
@@ -72,17 +71,18 @@ postAccessToken' oa code grant_type = do
   where
     req = urlEncodedBody query . fromJust $ parseUrl url
     url = BS.unpack $ oauthAccessTokenEndpoint oa
-    query = foldr step [] [ ("client_id", Just $ oauthClientId oa)
+    query = transformParam [ ("client_id", Just $ oauthClientId oa)
                           , ("client_secret", Just $ oauthClientSecret oa)
                           , ("code", Just code)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", grant_type) ]
 
-
-
-step :: (a, Maybe b) -> [(a, b)] -> [(a, b)]
-step (a, Just b) xs = (a, b):xs
-step _ xs = xs
+-- | lift value in the Maybe and abonda Nothing
+transformParam :: [(a, Maybe b)] -> [(a, b)]
+transformParam = foldr step' []
+                 where step' :: (a, Maybe b) -> [(a, b)] -> [(a, b)]
+                       step' (a, Just b) xs = (a, b):xs
+                       step' _ xs = xs
 
 -- | Request (POST method) access token URL in order to get @AccessToken@.
 postAccessToken :: OAuth2 
@@ -90,11 +90,11 @@ postAccessToken :: OAuth2
                 -> IO (Maybe AccessToken)
 postAccessToken oa code = decode <$> postAccessToken' oa code (Just "authorization_code")
 
--- | 
+-- | insert access token into the request
 signRequest :: OAuth2 -> Request m -> Request m
-signRequest oa req = req { queryString = (renderSimpleQuery False newQuery) }
+signRequest oa req = req { queryString = renderSimpleQuery False newQuery }
   where
     newQuery = case oauthAccessToken oa of
-                    Just at -> insert ("oauth_token", at) oldQuery
+                    Just at -> insert ("access_token", at) oldQuery   -- ^ TODO: allow access_token to be configuable
                     _ -> insert ("client_id", oauthClientId oa) . insert ("client_secret", oauthClientSecret oa) $ oldQuery
     oldQuery = parseSimpleQuery (queryString req)

@@ -21,6 +21,16 @@ module Main where
 import Network.OAuth2.HTTP.HttpClient
 import qualified Data.ByteString.Char8 as BS
 import WeiboKey
+import Data.Maybe (fromJust)
+
+import Control.Monad.Trans
+import Control.Monad.Trans.Resource
+import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Network.HTTP.Types as HT
+import Network.HTTP.Conduit
+import Control.Exception
+import Control.Applicative ((<$>))
+import Control.Monad (mzero)
 
 weibooauth :: OAuth2
 weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/authorize"
@@ -28,10 +38,28 @@ weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/
                       , oauthAccessToken = Nothing
                       }
 
+urlToRequest = fromJust . parseUrl
+
+accountUidReq = urlToRequest "https://api.weibo.com/2/account/get_uid.json"
+
+-- | send a request and get a response body if successfully otherwise error
+sendRequest :: Request IO -> IO BSL.ByteString
+sendRequest req = do
+    rsp <- request req
+    if (HT.statusCode . statusCode) rsp == 200
+        then return $ responseBody rsp
+        else return $ BSL.pack $ "Error when requesting: " ++ BSL.unpack (responseBody rsp)
+  
+-- | fetch UID    
 main :: IO ()
 main = do 
           print $ authorizationUrl weibooauth
           putStr "visit the url and paste code here: "
           code <- getLine
-          token <- postAccessToken weibooauth (BS.pack code) 
-          print token
+          token <- postAccessToken weibooauth (BS.pack code)
+          case token of 
+            Just (AccessToken token') -> do
+                                         req <- return $ signRequest (weibooauth { oauthAccessToken = Just token'} ) accountUidReq
+                                         print (queryString req)
+                                         sendRequest req >>= print
+            _ -> print "no token found"

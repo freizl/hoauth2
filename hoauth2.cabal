@@ -23,9 +23,12 @@ Build-type:          Simple
 
 -- Extra files to be distributed with the package, such as examples or
 -- a README.
--- Extra-source-files:  
+Extra-source-files:  
+  README.md
+  test/test-google.hs
+  test/test-weibo.hs
 
-Cabal-version:       >=1.2
+Cabal-version:       >=1.6
 
 Source-Repository head
   Type:     git
