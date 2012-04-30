@@ -16,7 +16,7 @@ build: conf
 
 rebuild: clean build
 
-install : build
+install : build doc
 	cabal install
 
 doc : build

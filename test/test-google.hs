@@ -6,9 +6,11 @@ google web oauth: https://developers.google.com/accounts/docs/OAuth2WebServer
 
 module Main where
 
-import Network.OAuth2.HTTP.HttpClient
 import qualified Data.ByteString.Char8 as BS
 import Network.HTTP.Types (renderSimpleQuery, parseSimpleQuery)
+
+import Network.OAuth2.HTTP.HttpClient
+import Network.OAuth2.OAuth2
 import GoogleKey
 
 gauth :: OAuth2
@@ -22,7 +24,7 @@ main = do
           print $ (authorizationUrl gauth) `BS.append` "&" `BS.append` googleScopeStr
           putStr "visit the url and paste code here: "
           code <- getLine
-          token <- postAccessToken gauth (BS.pack code) 
+          token <- requestAccessToken gauth (BS.pack code) 
           print token
 
 -- | this is special for google.
