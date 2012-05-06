@@ -1,4 +1,6 @@
 
+test-weibo-snap=dist/build/test-weibo-snap/test-weibo-snap
+
 HC=ghc
 
 DIST=dist
@@ -18,6 +20,9 @@ rebuild: clean build
 
 install : build doc
 	cabal install
+
+preview:
+	$(test-weibo-snap) -b 127.0.0.1 -p 9988
 
 doc : build
 	cabal haddock

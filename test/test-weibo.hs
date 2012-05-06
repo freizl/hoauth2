@@ -43,7 +43,7 @@ accountUidReq = urlToRequest "https://api.weibo.com/2/account/get_uid.json"
 sendRequest :: Request IO -> IO BSL.ByteString
 sendRequest req = do
     rsp <- doRequest req
-    if (HT.statusCode . statusCode) rsp == 200
+    if (HT.statusCode . responseStatus) rsp == 200
         then return $ responseBody rsp
         else return $ BSL.pack $ "Error when requesting: " ++ BSL.unpack (responseBody rsp)
   

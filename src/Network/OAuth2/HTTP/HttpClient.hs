@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {-
   A simple OAuth2 http client.
@@ -11,7 +12,9 @@ module Network.OAuth2.HTTP.HttpClient
        , signRequest
        ) where
 
-import Control.Monad.Trans.Resource
+--import Control.Monad.Trans.Resource
+import Control.Monad.Trans.Control (MonadBaseControl)
+import Data.Conduit (MonadResource  )
 import Data.Aeson
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
@@ -40,7 +43,7 @@ requestAccessToken' oa code = doRequest req >>= retOrError
   where
     req = urlEncodedBody body $ toReq' uri
     (uri, body) = accessTokenUrl oa code
-    retOrError rsp = if (HT.statusCode . statusCode) rsp == 200
+    retOrError rsp = if (HT.statusCode . responseStatus) rsp == 200
                         then return $ responseBody rsp
                         else throwIO . OAuthException $ "Gaining access_token failed: " ++ BSL.unpack (responseBody rsp)
 
@@ -61,5 +64,7 @@ toReq' :: BS.ByteString -> Request a
 toReq' = fromJust . parseUrl . BS.unpack
 
 -- | Performance a http @Request@
-doRequest :: ResourceIO m => Request m -> m (Response BSL.ByteString)
-doRequest = withManager . httpLbs
+--doRequest :: (MonadBaseControl IO m, MonadResource m) => Request m -> m (Response BSL.ByteString)
+doRequest request = withManager $ \manager -> do
+                    httpLbs request manager >>= return
+          

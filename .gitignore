@@ -2,3 +2,4 @@ dist
 *Key.hs
 *.o
 *.hi
+log

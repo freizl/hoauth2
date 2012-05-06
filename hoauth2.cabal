@@ -1,6 +1,6 @@
 Name:                hoauth2
 -- (http://www.haskell.org/haskellwiki/Package_versioning_policy)
-Version:             0.2.0
+Version:             0.2.2
 
 Synopsis:            hoauth2
 Description:         
@@ -20,7 +20,7 @@ Maintainer:          freizl@gmail.com
 Copyright:           Haisheng,Wu
 Category:            Network
 Build-type:          Simple
-stability:           experimental
+stability:           alpha
 tested-with:         GHC == 7.0.3
 
 
@@ -46,17 +46,42 @@ Library
 
   Build-Depends:
     base          >= 4      && < 5,
-    http-conduit  >= 1.2.5  && < 1.3.0,
-    conduit       >= 0.2    && < 0.3.0,
-    aeson         >= 0.4    && < 0.5,
+    http-conduit  >= 1.4    && < 1.5,
+    conduit       >= 0.4.1    && < 0.5,
+    aeson         >= 0.6    && < 0.7,
     mtl           >= 1      && < 2.2,
     bytestring    >= 0.9    && < 0.10,
-    http-types    >= 0.6.8  && < 0.7
+    http-types    >= 0.6.8  && < 0.7,
+    monad-control >= 0.3    && < 0.4
+
+Executable          test-weibo-snap
+  Main-Is:          snap.hs
+  Hs-Source-Dirs:   test
+  
+  Build-Depends:
+    base          >= 4      && < 5,
+    http-conduit  >= 1.4    && < 1.5,
+    conduit       >= 0.4    && < 0.5,
+    aeson         >= 0.6    && < 0.7,
+    mtl           >= 1      && < 2.2,
+    bytestring    >= 0.9    && < 0.10,
+    http-types    >= 0.6.8  && < 0.7,
+
+    snap-core     >= 0.8    && < 0.9,
+    snap-server   >= 0.8    && < 0.9,
+    snap          >= 0.8    && < 0.9,
+    data-lens-template >= 2.1  && < 2.3,
+    text          >= 0.11   && < 0.13,
+    containers    >= 0.4    && < 0.5,
+    xmlhtml       >= 0.1.7  && < 0.2,
+    heist         >= 0.8    && < 0.9
 
       
-  -- Modules not exported by this package.
-  -- Other-modules:       
-  
-  -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
-  -- Build-tools:         
+  if impl(ghc >= 6.12.0)
+      ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
+                   -fno-warn-orphans -fno-warn-unused-do-bind
+                   -Werror
+  else
+      ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
+                   -fno-warn-orphans        
   
