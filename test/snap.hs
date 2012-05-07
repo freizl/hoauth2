@@ -17,9 +17,7 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Maybe (fromMaybe, fromJust)
 import qualified Data.Text as T
-import Network.OAuth2.HTTP.HttpClient
-import Network.OAuth2.OAuth2
-import Network.HTTP.Conduit (responseBody)
+import           Network.HTTP.Conduit (responseBody)
 
 
 #ifdef DEVELOPMENT
@@ -35,8 +33,8 @@ import           Snap
 import           Snap.Util.FileServe
 import           Snap.Snaplet.Heist
 
-
 import Network.OAuth2.OAuth2
+import Network.OAuth2.HTTP.HttpClient
 
 import WeiboKey
 import WeiboApi
@@ -65,8 +63,7 @@ weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/
 
 -- | Login via Weibo. Redirect user for authorization.
 weibo :: Handler App App ()
-weibo = do
-  redirect $ authorizationUrl weibooauth
+weibo = redirect $ authorizationUrl weibooauth
 
 -- | Callback for oauth provider.
 --
@@ -82,7 +79,7 @@ oauthCallbackHandler = do
                    res <- liftIO $ requestUid accountUidUri token'
                    liftIO $ print $ BS.unpack $ apiUrlGet2 accountShowUri (token', fromJust res)
                    res2 <- liftIO $ doSimpleGetRequest . BS.unpack $ apiUrlGet2 accountShowUri (token', fromJust res)
-                   writeLBS $ "user: " `LBS.append` (responseBody res2)
+                   writeLBS $ "user: " `LBS.append` responseBody res2
     _ -> writeBS "Error getting access token"
 
 

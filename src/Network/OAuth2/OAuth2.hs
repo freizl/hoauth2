@@ -79,7 +79,7 @@ transform' = foldr step' []
 
 -- | Prepare the authorization URL. Redirect to this URL asking for user interactive authentication.
 authorizationUrl :: OAuth2 -> URI
-authorizationUrl oa = (oauthOAuthorizeEndpoint oa) `appendQueryParam` queryStr
+authorizationUrl oa = oauthOAuthorizeEndpoint oa `appendQueryParam` queryStr
   where queryStr = transform' [ ("client_id", Just $ oauthClientId oa)
                               , ("response_type", Just "code")
                               , ("redirect_uri", oauthCallback oa)]
@@ -117,7 +117,7 @@ apiUrlGet2 :: URI          -- ^ Base URI
           -> (AccessToken, WeiboUserId)  -- ^ Authorized Access Token and UID
           -> URI          -- ^ Combined Result
 apiUrlGet2 uri (token, uid) = uri `BS.append` (renderSimpleQuery True $ 
-                                               (accessTokenToParam token) ++ (uidToParam uid))
+                                               (accessTokenToParam token ++ uidToParam uid))
 
 --------------------------------------------------
 -- UTIL

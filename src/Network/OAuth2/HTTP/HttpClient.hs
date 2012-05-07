@@ -52,7 +52,7 @@ requestUid uri token = decode <$> requestUid' uri token
 requestUid' :: URI 
            -> AccessToken
            -> IO BSL.ByteString
-requestUid' uri token = (doSimpleGetRequest $ BS.unpack $ apiUrlGet uri token) >>= retOrError
+requestUid' uri token = doSimpleGetRequest (BS.unpack $ apiUrlGet uri token) >>= retOrError
   where
     retOrError rsp = if (HT.statusCode . responseStatus) rsp == 200
                         --then (print $ responseBody rsp) >> (return $ responseBody rsp)
@@ -72,7 +72,7 @@ doSimpleGetRequest url = liftIO $ withManager $ \man -> do
 
 doGetRequest :: MonadIO m => String -> [(BS.ByteString, BS.ByteString)] -> m (Response BSL.ByteString)
 doGetRequest url pm = liftIO $ withManager $ \man -> do
-    req' <- liftIO $ parseUrl $ url ++ (BS.unpack $ renderSimpleQuery True pm)
+    req' <- liftIO $ parseUrl $ url ++ BS.unpack (renderSimpleQuery True pm)
     httpLbs req' man
 
 doPostRequst :: MonadIO m => String -> [(BS.ByteString, BS.ByteString)] -> m (Response BSL.ByteString)

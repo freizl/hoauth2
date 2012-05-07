@@ -21,7 +21,7 @@ gauth = googleKeys { oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oa
 
 main :: IO ()
 main = do 
-          print $ (authorizationUrl gauth) `BS.append` "&" `BS.append` googleScopeStr
+          print $ authorizationUrl gauth `BS.append` "&" `BS.append` googleScopeStr
           putStr "visit the url and paste code here: "
           code <- getLine
           token <- requestAccessToken gauth (BS.pack code) 
