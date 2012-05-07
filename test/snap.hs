@@ -13,7 +13,7 @@ module Main where
 ------------------------------------------------------------------------------
 import           Control.Exception (SomeException, try)
 import           Data.ByteString (ByteString)
---import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8 as BS
 
 --import           Text.Templating.Heist
 --import           Text.XmlHtml hiding (render)
@@ -36,6 +36,11 @@ import           Snap
 import           Snap.Util.FileServe
 import           Snap.Snaplet.Heist
 
+
+import Network.OAuth2.OAuth2
+
+import WeiboKey
+
 ------------------------------------------------------------------------------
 
 data App = App
@@ -51,20 +56,24 @@ type AppHandler = Handler App App
 
 
 ------------------------------------------------------------------------------
-  
-oauthCallback :: Handler App App ()
-oauthCallback = do
-  --adir   <- decodedParam "dir"
-  writeBS "oauthCallback"  
-  --where
-    --mdSplices :: ByteString -> Splice AppHandler
-    --mdSplices p = do return $ [TextNode $ T.decodeUtf8 (BS.concat [p,".md"]) ]
-  
+weibooauth :: OAuth2
+weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/authorize"
+                      , oauthAccessTokenEndpoint = "https://api.weibo.com/oauth2/access_token" 
+                      , oauthAccessToken = Nothing
+                      }
+
+weibo :: Handler App App ()
+weibo = do
+  redirect $ authorizationUrl weibooauth
+
+oauthCallbackHandler :: Handler App App ()
+oauthCallbackHandler = do
+  code   <- decodedParam "code"
+  writeBS $ "get code: " `BS.append` code
+
 
 decodedParam :: MonadSnap m => ByteString -> m ByteString
 decodedParam p = fromMaybe "" <$> getParam p
-
-
 
 
 ------------------------------------------------------------------------------
@@ -73,8 +82,9 @@ decodedParam p = fromMaybe "" <$> getParam p
 routes :: [(ByteString, Handler App App ())]
 routes  = [ ("", with heist heistServe) -- ^ FIXME: maybe no heist
           , ("", serveDirectory "static")
-          , ("/", writeBS "It works!")
-          , ("/weiboCallback", oauthCallback )
+          , ("/", writeBS "It works!<a href='#'>test</a>")
+          , ("/weibo", weibo)
+          , ("/oauthCallback", oauthCallbackHandler )
           ]
 
 -- | The application initializer.

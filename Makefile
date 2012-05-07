@@ -23,6 +23,7 @@ install : build doc
 
 preview:
 	$(test-weibo-snap) -b 127.0.0.1 -p 9988
-
+test-demo:
+	cd test && runghc snap.hs -b 127.0.0.1 -p 9988
 doc : build
 	cabal haddock
