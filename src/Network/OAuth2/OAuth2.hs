@@ -6,23 +6,23 @@
   This is sopposed to be independent with http client.
 -}
 
-module Network.OAuth2.OAuth2
-       ( OAuth2 (..)
-       , AccessToken (..)
-       , OAuthException (..)
-       , authorizationUrl
-       , accessTokenUrl
-       ) where
+module Network.OAuth2.OAuth2 where
 
 import Data.Aeson
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString as BS
 import Data.Typeable (Typeable)
 import Network.HTTP.Types (renderSimpleQuery)
 import Control.Exception
 import Control.Applicative ((<$>))
 import Control.Monad (mzero)
 
+import qualified Network.OAuth2.Utils as Utils
+
 -- | Query Parameter Representation
+--
+--   TODO: add a base endpoint URI.
+--         UID ??
+-- 
 data OAuth2 = OAuth2 { oauthClientId :: BS.ByteString
                      , oauthClientSecret :: BS.ByteString
                      , oauthOAuthorizeEndpoint :: BS.ByteString
@@ -42,6 +42,13 @@ data AccessToken = AccessToken { accessToken :: BS.ByteString } deriving (Show)
 
 instance FromJSON AccessToken where
     parseJSON (Object o) = AccessToken <$> o .: "access_token"
+    parseJSON _ = mzero
+
+-- | UID
+data WeiboUserId = WeiboUserId { weiboUserId :: Int } deriving (Show)
+
+instance FromJSON WeiboUserId where
+    parseJSON (Object o) = WeiboUserId <$> o .: "uid"
     parseJSON _ = mzero
 
 --------------------------------------------------
@@ -79,7 +86,6 @@ authorizationUrl oa = (oauthOAuthorizeEndpoint oa) `appendQueryParam` queryStr
 
 
 -- | Prepare access token URL and the request body query.
-
 accessTokenUrl :: OAuth2 
                -> BS.ByteString    -- ^ access code gained via authorization URL
                -> (URI, PostBody)  -- ^ access token request URL plus the request body.
@@ -98,3 +104,26 @@ accessTokenUrl' oa code gt = (uri, body)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", gt) ]
 
+--------------------------------------------------
+-- API
+
+-- | GET HTTP methon style API, appending access token
+apiUrlGet :: URI          -- ^ Base URI
+          -> AccessToken  -- ^ Authorized Access Token
+          -> URI          -- ^ Combined Result
+apiUrlGet uri token = uri `BS.append` renderSimpleQuery True (accessTokenToParam token)
+
+apiUrlGet2 :: URI          -- ^ Base URI
+          -> (AccessToken, WeiboUserId)  -- ^ Authorized Access Token and UID
+          -> URI          -- ^ Combined Result
+apiUrlGet2 uri (token, uid) = uri `BS.append` (renderSimpleQuery True $ 
+                                               (accessTokenToParam token) ++ (uidToParam uid))
+
+--------------------------------------------------
+-- UTIL
+
+accessTokenToParam :: AccessToken -> [(BS.ByteString, BS.ByteString)]
+accessTokenToParam (AccessToken token) = [("access_token", token)]
+
+uidToParam :: WeiboUserId -> [(BS.ByteString, BS.ByteString)]
+uidToParam (WeiboUserId uid) = [("uid", Utils.intToByteString uid)]

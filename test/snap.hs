@@ -14,14 +14,13 @@ module Main where
 import           Control.Exception (SomeException, try)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS
-
---import           Text.Templating.Heist
---import           Text.XmlHtml hiding (render)
---import qualified Text.XmlHtml as X
---import           Control.Applicative
-import           Data.Maybe (fromMaybe)
+import qualified Data.ByteString.Lazy as LBS
+import           Data.Maybe (fromMaybe, fromJust)
 import qualified Data.Text as T
---import qualified Data.Text.Encoding as T
+import Network.OAuth2.HTTP.HttpClient
+import Network.OAuth2.OAuth2
+import Network.HTTP.Conduit (responseBody)
+
 
 #ifdef DEVELOPMENT
 import           Snap.Loader.Devel
@@ -40,6 +39,7 @@ import           Snap.Snaplet.Heist
 import Network.OAuth2.OAuth2
 
 import WeiboKey
+import WeiboApi
 
 ------------------------------------------------------------------------------
 
@@ -56,20 +56,34 @@ type AppHandler = Handler App App
 
 
 ------------------------------------------------------------------------------
+
 weibooauth :: OAuth2
 weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/authorize"
                       , oauthAccessTokenEndpoint = "https://api.weibo.com/oauth2/access_token" 
                       , oauthAccessToken = Nothing
                       }
 
+-- | Login via Weibo. Redirect user for authorization.
 weibo :: Handler App App ()
 weibo = do
   redirect $ authorizationUrl weibooauth
 
+-- | Callback for oauth provider.
+--
+-- This function is very annoying....
+-- 
 oauthCallbackHandler :: Handler App App ()
 oauthCallbackHandler = do
   code   <- decodedParam "code"
-  writeBS $ "get code: " `BS.append` code
+  token <- liftIO $ requestAccessToken weibooauth code
+  case token of 
+    Just token' -> do
+                   -- getting UID. FIXME: res could be error
+                   res <- liftIO $ requestUid accountUidUri token'
+                   liftIO $ print $ BS.unpack $ apiUrlGet2 accountShowUri (token', fromJust res)
+                   res2 <- liftIO $ doSimpleGetRequest . BS.unpack $ apiUrlGet2 accountShowUri (token', fromJust res)
+                   writeLBS $ "user: " `LBS.append` (responseBody res2)
+    _ -> writeBS "Error getting access token"
 
 
 decodedParam :: MonadSnap m => ByteString -> m ByteString
@@ -80,9 +94,8 @@ decodedParam p = fromMaybe "" <$> getParam p
 
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
-routes  = [ ("", with heist heistServe) -- ^ FIXME: maybe no heist
-          , ("", serveDirectory "static")
-          , ("/", writeBS "It works!<a href='#'>test</a>")
+routes  = [ ("", with heist heistServe) -- ^ FIXME: maybe no need heist
+          , ("/", writeBS "It works!<a href='/weibo'>test</a>")
           , ("/weibo", weibo)
           , ("/oauthCallback", oauthCallbackHandler )
           ]

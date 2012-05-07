@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {-
 
@@ -13,7 +14,8 @@ This is very trivial testing of the httpclient api.
 5. this test case will gain access token using the `code` and print it out.
 
 TODO:
-  1. a simple local server in order to make the test automatically.
+  1. [X] a simple local server in order to make the test automatically.
+     See snap.hs
 -}
 
 module Main where
@@ -23,6 +25,8 @@ import Data.Maybe (fromJust)
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Network.HTTP.Types as HT
 import Network.HTTP.Conduit
+import Control.Monad.Trans.Control (MonadBaseControl)
+import Data.Conduit (MonadResource)
 
 import Network.OAuth2.HTTP.HttpClient
 import Network.OAuth2.OAuth2
@@ -34,29 +38,12 @@ weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/
                       , oauthAccessTokenEndpoint = "https://api.weibo.com/oauth2/access_token" 
                       , oauthAccessToken = Nothing
                       }
-
-urlToRequest = fromJust . parseUrl
-
-accountUidReq = urlToRequest "https://api.weibo.com/2/account/get_uid.json"
-
--- | send a request and get a response body if successfully otherwise error
-sendRequest :: Request IO -> IO BSL.ByteString
-sendRequest req = do
-    rsp <- doRequest req
-    if (HT.statusCode . responseStatus) rsp == 200
-        then return $ responseBody rsp
-        else return $ BSL.pack $ "Error when requesting: " ++ BSL.unpack (responseBody rsp)
-  
--- | fetch UID    
+ 
 main :: IO ()
 main = do 
           print $ authorizationUrl weibooauth
           putStr "visit the url and paste code here: "
           code <- getLine
           token <- requestAccessToken weibooauth (BS.pack code)
-          case token of 
-            Just (AccessToken token') -> do
-                                         req <- return $ signRequest (weibooauth { oauthAccessToken = Just token'} ) accountUidReq
-                                         print (queryString req)
-                                         sendRequest req >>= print
-            _ -> print "no token found"
+          print token
+

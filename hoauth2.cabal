@@ -37,12 +37,17 @@ Source-Repository head
   Type:     git
   Location: https://github.com/freizl/hoauth2
 
+Flag test
+  Description: Build test files
+  Default: False
+
 Library
   Ghc-Options:    -Wall  
   hs-source-dirs: src
   Exposed-modules:   
     Network.OAuth2.HTTP.HttpClient
     Network.OAuth2.OAuth2
+    Network.OAuth2.Utils
 
   Build-Depends:
     base          >= 4      && < 5,
@@ -52,29 +57,22 @@ Library
     mtl           >= 1      && < 2.2,
     bytestring    >= 0.9    && < 0.10,
     http-types    >= 0.6.8  && < 0.7,
-    monad-control >= 0.3    && < 0.4
+    monad-control >= 0.3    && < 0.4,
+    transformers  >= 0.2    && < 0.3,
+    bytestring-show         >= 0.3.5    && < 0.4
 
-Executable          test-weibo-snap
-  Main-Is:          snap.hs
-  Hs-Source-Dirs:   test
-  
-  Build-Depends:
-    base          >= 4      && < 5,
-    http-conduit  >= 1.4    && < 1.5,
-    conduit       >= 0.4    && < 0.5,
-    aeson         >= 0.6    && < 0.7,
-    mtl           >= 1      && < 2.2,
-    bytestring    >= 0.9    && < 0.10,
-    http-types    >= 0.6.8  && < 0.7,
+  if flag(test)
+    Build-Depends:
+      snap-core     >= 0.8    && < 0.9,
+      snap-server   >= 0.8    && < 0.9,
+      snap          >= 0.8    && < 0.9,
+      data-lens-template >= 2.1  && < 2.3,
+      text          >= 0.11   && < 0.13,
+      containers    >= 0.4    && < 0.5,
+      xmlhtml       >= 0.1.7  && < 0.2,
+      heist         >= 0.8    && < 0.9
 
-    snap-core     >= 0.8    && < 0.9,
-    snap-server   >= 0.8    && < 0.9,
-    snap          >= 0.8    && < 0.9,
-    data-lens-template >= 2.1  && < 2.3,
-    text          >= 0.11   && < 0.13,
-    containers    >= 0.4    && < 0.5,
-    xmlhtml       >= 0.1.7  && < 0.2,
-    heist         >= 0.8    && < 0.9
+
 
       
   if impl(ghc >= 6.12.0)

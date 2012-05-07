@@ -18,7 +18,7 @@ build: conf
 
 rebuild: clean build
 
-install : build doc
+install : build
 	cabal install
 
 preview:
