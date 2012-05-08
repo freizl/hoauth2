@@ -47,6 +47,8 @@ requestAccessToken' oa code = doPostRequst (BS.unpack uri) body >>= retOrError
 -- od Request Utils
 
 -- TODO: Some duplication here.
+-- TODO: Control.Exception.try
+--        result <- liftIO $ Control.Exception.try $ runResourceT $ httpLbs request man
 -- 
 doSimpleGetRequest :: MonadIO m => String -> m (Response BSL.ByteString)
 doSimpleGetRequest url = liftIO $ withManager $ \man -> do
