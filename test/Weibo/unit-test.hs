@@ -8,7 +8,7 @@ import Data.Aeson (decode)
 import Test.HUnit
 
 import Network.OAuth2.OAuth2
-import Network.OAuth2.Utils
+import Utils
 
 -- FIXME: unit test
 

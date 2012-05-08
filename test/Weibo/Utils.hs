@@ -1,5 +1,5 @@
 
-module Network.OAuth2.Utils where
+module Utils where
 
 import qualified Text.Show.ByteString as TSB
 import qualified Data.ByteString as BS

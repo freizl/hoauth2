@@ -47,7 +47,6 @@ Library
   Exposed-modules:   
     Network.OAuth2.HTTP.HttpClient
     Network.OAuth2.OAuth2
-    Network.OAuth2.Utils
 
   Build-Depends:
     base          >= 4      && < 5,

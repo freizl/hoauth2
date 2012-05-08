@@ -36,8 +36,8 @@ import           Snap.Snaplet.Heist
 import Network.OAuth2.OAuth2
 import Network.OAuth2.HTTP.HttpClient
 
-import WeiboKey
-import WeiboApi
+import Key
+import Api
 
 ------------------------------------------------------------------------------
 

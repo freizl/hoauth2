@@ -42,23 +42,6 @@ requestAccessToken' oa code = doPostRequst (BS.unpack uri) body >>= retOrError
                         then return $ responseBody rsp
                         else throwIO . OAuthException $ "Gaining access_token failed: " ++ BSL.unpack (responseBody rsp)
 
--- | Fetch UID
--- 
-requestUid :: URI              -- ^ Fetch UID API URI
-           -> AccessToken
-           -> IO (Maybe WeiboUserId)
-requestUid uri token = decode <$> requestUid' uri token
-
-requestUid' :: URI 
-           -> AccessToken
-           -> IO BSL.ByteString
-requestUid' uri token = doSimpleGetRequest (BS.unpack $ apiUrlGet uri token) >>= retOrError
-  where
-    retOrError rsp = if (HT.statusCode . responseStatus) rsp == 200
-                        --then (print $ responseBody rsp) >> (return $ responseBody rsp)
-                        then return $ responseBody rsp
-                        else throwIO . OAuthException $ "Gaining uid failed: " ++ BSL.unpack (responseBody rsp)
-
 
 --------------------------------------------------
 -- od Request Utils
