@@ -8,18 +8,18 @@
 
 module Network.OAuth2.OAuth2 where
 
+import Control.Applicative ((<$>))
+import Control.Exception
+import Control.Monad (mzero)
 import Data.Aeson
-import qualified Data.ByteString as BS
+import Data.Maybe (fromJust)
 import Data.Typeable (Typeable)
 import Network.HTTP.Types (renderSimpleQuery)
-import Control.Exception
-import Control.Applicative ((<$>))
-import Control.Monad (mzero)
+import qualified Data.ByteString as BS
 
 -- | Query Parameter Representation
 --
 --   TODO: add a base endpoint URI.
---         UID ??
 -- 
 data OAuth2 = OAuth2 { oauthClientId :: BS.ByteString
                      , oauthClientSecret :: BS.ByteString
@@ -95,19 +95,20 @@ accessTokenUrl' oa code gt = (uri, body)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", gt) ]
 
---------------------------------------------------
--- API
-
--- | GET HTTP methon style API, appending access token
-apiUrlGet :: URI          -- ^ Base URI
-          -> AccessToken  -- ^ Authorized Access Token
-          -> URI          -- ^ Combined Result
-apiUrlGet uri token = uri `BS.append` renderSimpleQuery True (accessTokenToParam token)
-
 
 --------------------------------------------------
 -- UTIL
 
-accessTokenToParam :: AccessToken -> [(BS.ByteString, BS.ByteString)]
-accessTokenToParam (AccessToken token) = [("access_token", token)]
+-- | For GET method API.
+appendAccessToken :: URI   -- ^ Base URI
+          -> OAuth2        -- ^ OAuth has Authorized Access Token
+          -> URI           -- ^ Combined Result 
+appendAccessToken uri oauth = uri `BS.append` renderSimpleQuery True (accessTokenToParam $ token oauth)
+                      where 
+                        -- Expect Access Token exists
+                        token :: OAuth2 -> BS.ByteString
+                        token = fromJust . oauthAccessToken
+
+accessTokenToParam :: BS.ByteString -> [(BS.ByteString, BS.ByteString)]
+accessTokenToParam token = [("access_token", token)]
 
