@@ -28,8 +28,8 @@ tested-with:         GHC == 7.0.3
 -- a README.
 Extra-source-files:  
   README.md
-  test/test-google.hs
-  test/test-weibo.hs
+  test/Google/test.hs
+  test/Weibo/test.hs
 
 Cabal-version:       >=1.6
 
@@ -37,9 +37,6 @@ Source-Repository head
   Type:     git
   Location: https://github.com/freizl/hoauth2
 
-Flag test
-  Description: Build test files
-  Default: False
 
 Library
   Ghc-Options:    -Wall  
@@ -60,24 +57,10 @@ Library
     transformers  >= 0.2    && < 0.3,
     bytestring-show         >= 0.3.5    && < 0.4
 
-  if flag(test)
-    Build-Depends:
-      snap-core     >= 0.8    && < 0.9,
-      snap-server   >= 0.8    && < 0.9,
-      snap          >= 0.8    && < 0.9,
-      data-lens-template >= 2.1  && < 2.3,
-      text          >= 0.11   && < 0.13,
-      containers    >= 0.4    && < 0.5,
-      xmlhtml       >= 0.1.7  && < 0.2,
-      heist         >= 0.8    && < 0.9
-
-
-
       
   if impl(ghc >= 6.12.0)
       ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
                    -fno-warn-orphans -fno-warn-unused-do-bind
-                   -Werror
   else
       ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
                    -fno-warn-orphans        
