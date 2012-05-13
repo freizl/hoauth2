@@ -14,6 +14,7 @@ This is very trivial testing of the httpclient api.
 5. this test case will gain access token using the `code` and print it out.
 
 check for integration testing at: 
+https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 -}
 
