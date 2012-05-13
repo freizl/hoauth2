@@ -13,9 +13,8 @@ This is very trivial testing of the httpclient api.
 4. copy the `code` in the callback url and parse into console
 5. this test case will gain access token using the `code` and print it out.
 
-TODO:
-  1. [X] a simple local server in order to make the test automatically.
-     See snap.hs
+check for integration testing at: 
+
 -}
 
 module Main where
@@ -31,7 +30,7 @@ import Data.Conduit (MonadResource)
 import Network.OAuth2.HTTP.HttpClient
 import Network.OAuth2.OAuth2
 
-import WeiboKey
+import Weibo.Key
 
 weibooauth :: OAuth2
 weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/authorize"

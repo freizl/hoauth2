@@ -11,7 +11,7 @@ import Network.HTTP.Types (renderSimpleQuery, parseSimpleQuery)
 
 import Network.OAuth2.HTTP.HttpClient
 import Network.OAuth2.OAuth2
-import GoogleKey
+import Google.Key
 
 gauth :: OAuth2
 gauth = googleKeys { oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oauth2/auth"
@@ -27,5 +27,6 @@ main = do
           token <- requestAccessToken gauth (BS.pack code) 
           print token
 
+
 -- | this is special for google.
-googleScopeStr = renderSimpleQuery False [("scope", "https://www.googleapis.com/auth/userinfo.email")]
+--googleScopeStr = renderSimpleQuery False [("scope", "https://www.googleapis.com/auth/userinfo.email")]
