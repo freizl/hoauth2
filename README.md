@@ -1,13 +1,10 @@
 
-## Travis CI
-
 [![Build Status](https://secure.travis-ci.org/freizl/hoauth2.png?branch=master)](http://travis-ci.org/freizl/hoauth2)
 
-## hoauth2
+## Introduction
 
-haskell oauth 2
+A lightweight oauth2 haskell binding. See examples in `test/` folder.
 
-## TODO
+In additions, [snaplet-oauth] use this lib as well.
 
-- To be a snaplet ?
-- Chinese decode of response
+[snaplet-oauth]: https://github.com/HaskellCNOrg/snaplet-oauth
