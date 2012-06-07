@@ -98,6 +98,16 @@ accessTokenUrl' oa code gt = (uri, body)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", gt) ]
 
+-- | Refresh access token
+refreshAccessTokenUrl :: OAuth2
+                         -> BS.ByteString    -- ^ refresh token gained via authorization URL
+                         -> (URI, PostBody)  -- ^ refresh token request URL plus the request body.
+refreshAccessTokenUrl oa rtoken = (uri, body)
+  where uri = oauthAccessTokenEndpoint oa
+        body = transform' [ ("client_id", Just $ oauthClientId oa)
+                          , ("client_secret", Just $ oauthClientSecret oa)
+                          , ("grant_type", Just "refresh_token")
+                          , ("refresh_token", Just rtoken) ]
 
 --------------------------------------------------
 -- UTIL
