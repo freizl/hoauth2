@@ -30,18 +30,22 @@ import Network.OAuth2.OAuth2
 requestAccessToken :: OAuth2 
                 -> BS.ByteString          -- ^ Authentication code gained after authorization
                 -> IO (Maybe AccessToken)
-requestAccessToken oa code = decode <$> requestAccessToken' oa code
+requestAccessToken oa code = decode <$> requestAccessToken' oa code accessTokenUrl
 
 
-requestAccessToken' :: OAuth2 -> BS.ByteString -> IO BSL.ByteString
-requestAccessToken' oa code = doPostRequst (BS.unpack uri) body >>= retOrError
+requestAccessToken' :: t -> t1 -> (t -> t1 -> (BS.ByteString, [(BS.ByteString, BS.ByteString)])) -> IO BSL.ByteString
+requestAccessToken' oa code f = doPostRequst (BS.unpack uri) body >>= retOrError
   where
-    (uri, body) = accessTokenUrl oa code
+    (uri, body) = f oa code
     retOrError rsp = if (HT.statusCode . responseStatus) rsp == 200
                         --then (print $ responseBody rsp ) >> (return $ responseBody rsp)
                         then return $ responseBody rsp
                         else throwIO . OAuthException $ "Gaining access_token failed: " ++ BSL.unpack (responseBody rsp)
 
+refreshAccessToken :: OAuth2 
+                      -> BS.ByteString    -- ^ refresh token gained after authorization
+                      -> IO (Maybe AccessToken)
+refreshAccessToken oa rtoken = decode <$> requestAccessToken' oa rtoken refreshAccessTokenUrl
 
 --------------------------------------------------
 -- od Request Utils

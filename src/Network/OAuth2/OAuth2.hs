@@ -8,7 +8,7 @@
 
 module Network.OAuth2.OAuth2 where
 
-import Control.Applicative ((<$>))
+import Control.Applicative ((<$>), (<*>))
 import Control.Exception
 import Control.Monad (mzero)
 import Data.Aeson
@@ -36,10 +36,13 @@ data OAuthException = OAuthException String
 instance Exception OAuthException
 
 -- | The gained Access Token. Use @Data.Aeson.decode@ to decode string to @AccessToken@.
-data AccessToken = AccessToken { accessToken :: BS.ByteString } deriving (Show)
+data AccessToken = AccessToken { accessToken :: BS.ByteString
+                               , refreshToken :: Maybe BS.ByteString } deriving (Show)
 
 instance FromJSON AccessToken where
-    parseJSON (Object o) = AccessToken <$> o .: "access_token"
+    parseJSON (Object o) = AccessToken
+                           <$> o .: "access_token"
+                           <*> o .:? "refresh_token"
     parseJSON _ = mzero
 
 --------------------------------------------------
@@ -95,6 +98,16 @@ accessTokenUrl' oa code gt = (uri, body)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", gt) ]
 
+-- | Refresh access token
+refreshAccessTokenUrl :: OAuth2
+                         -> BS.ByteString    -- ^ refresh token gained via authorization URL
+                         -> (URI, PostBody)  -- ^ refresh token request URL plus the request body.
+refreshAccessTokenUrl oa rtoken = (uri, body)
+  where uri = oauthAccessTokenEndpoint oa
+        body = transform' [ ("client_id", Just $ oauthClientId oa)
+                          , ("client_secret", Just $ oauthClientSecret oa)
+                          , ("grant_type", Just "refresh_token")
+                          , ("refresh_token", Just rtoken) ]
 
 --------------------------------------------------
 -- UTIL
