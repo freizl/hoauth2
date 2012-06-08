@@ -30,22 +30,28 @@ import Network.OAuth2.OAuth2
 requestAccessToken :: OAuth2 
                 -> BS.ByteString          -- ^ Authentication code gained after authorization
                 -> IO (Maybe AccessToken)
-requestAccessToken oa code = decode <$> requestAccessToken' oa code accessTokenUrl
+requestAccessToken oa code = decode <$> postRequest (accessTokenUrl oa code)
 
-
-requestAccessToken' :: t -> t1 -> (t -> t1 -> (BS.ByteString, [(BS.ByteString, BS.ByteString)])) -> IO BSL.ByteString
-requestAccessToken' oa code f = doPostRequst (BS.unpack uri) body >>= retOrError
-  where
-    (uri, body) = f oa code
-    retOrError rsp = if (HT.statusCode . responseStatus) rsp == 200
-                        --then (print $ responseBody rsp ) >> (return $ responseBody rsp)
-                        then return $ responseBody rsp
-                        else throwIO . OAuthException $ "Gaining access_token failed: " ++ BSL.unpack (responseBody rsp)
 
 refreshAccessToken :: OAuth2 
                       -> BS.ByteString    -- ^ refresh token gained after authorization
                       -> IO (Maybe AccessToken)
-refreshAccessToken oa rtoken = decode <$> requestAccessToken' oa rtoken refreshAccessTokenUrl
+refreshAccessToken oa rtoken = decode <$> postRequest (refreshAccessTokenUrl oa rtoken)
+
+
+--------------------------------------------------
+
+-- | Conduct post request in IO monad.
+-- 
+
+postRequest :: (URI, PostBody)    -- ^ The URI and request body for fetching token.
+             -> IO BSL.ByteString  -- ^ request response
+postRequest (uri, body) = doPostRequst (BS.unpack uri) body >>= retOrError
+  where
+    retOrError rsp = if (HT.statusCode . responseStatus) rsp == 200
+                        then return $ responseBody rsp
+                        else throwIO . OAuthException $ "Gaining token failed: " ++ BSL.unpack (responseBody rsp)
+
 
 --------------------------------------------------
 -- od Request Utils

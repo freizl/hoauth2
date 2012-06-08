@@ -1,8 +1,4 @@
 
-test-weibo-snap=dist/build/test-weibo-snap/test-weibo-snap
-
-HC=ghc
-
 DIST=dist
 
 default: build
@@ -15,17 +11,12 @@ conf:
 
 build: conf
 	cabal build
+	hlint src
 
 rebuild: clean build
 
-install : build
-	cabal install
+install: build
+	cabal install	
 
-preview:
-	$(test-weibo-snap) -b 127.0.0.1 -p 9988
-
-test-weibo:
-	cd test/Weibo && runghc snap.hs -b 127.0.0.1 -p 9988
-	
-doc : build
+doc: build
 	cabal haddock

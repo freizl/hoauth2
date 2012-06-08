@@ -19,7 +19,8 @@ import qualified Data.ByteString as BS
 
 -- | Query Parameter Representation
 --
---   TODO: add a base endpoint URI.
+--   TODO: 1. add a base endpoint URI.
+--         2. May to be State Transform
 -- 
 data OAuth2 = OAuth2 { oauthClientId :: BS.ByteString
                      , oauthClientSecret :: BS.ByteString
@@ -36,6 +37,8 @@ data OAuthException = OAuthException String
 instance Exception OAuthException
 
 -- | The gained Access Token. Use @Data.Aeson.decode@ to decode string to @AccessToken@.
+--   The @refresheToken@ is special at some case, e.g. https://developers.google.com/accounts/docs/OAuth2
+-- 
 data AccessToken = AccessToken { accessToken :: BS.ByteString
                                , refreshToken :: Maybe BS.ByteString } deriving (Show)
 
@@ -79,7 +82,8 @@ authorizationUrl oa = oauthOAuthorizeEndpoint oa `appendQueryParam` queryStr
                               , ("redirect_uri", oauthCallback oa)]
 
 
--- | Prepare access token URL and the request body query.
+-- | URL and the request body query for obtain access token
+-- 
 accessTokenUrl :: OAuth2 
                -> BS.ByteString    -- ^ access code gained via authorization URL
                -> (URI, PostBody)  -- ^ access token request URL plus the request body.
@@ -98,7 +102,9 @@ accessTokenUrl' oa code gt = (uri, body)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", gt) ]
 
--- | Refresh access token
+-- | Using a Refresh Token.
+--   obtain a new access token by sending a refresh token to the Authorization server.
+-- 
 refreshAccessTokenUrl :: OAuth2
                          -> BS.ByteString    -- ^ refresh token gained via authorization URL
                          -> (URI, PostBody)  -- ^ refresh token request URL plus the request body.
