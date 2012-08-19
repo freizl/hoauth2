@@ -24,3 +24,6 @@ install: build
 
 doc: build
 	$(CBD) haddock
+
+dist: build
+	$(CBD) sdist
