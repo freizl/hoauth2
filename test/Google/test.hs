@@ -13,7 +13,7 @@ module Main where
 import qualified Data.ByteString.Char8 as BS
 import Data.Maybe (fromJust)
 import Network.HTTP.Types (renderSimpleQuery, parseSimpleQuery)
-import System
+import System.Environment
 
 import Network.OAuth2.HTTP.HttpClient
 import Network.OAuth2.OAuth2

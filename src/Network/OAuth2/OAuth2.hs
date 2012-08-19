@@ -74,7 +74,9 @@ transform' = foldr step' []
 --------------------------------------------------
 -- oauth request urls
 
--- | Prepare the authorization URL. Redirect to this URL asking for user interactive authentication.
+-- | Prepare the authorization URL. 
+--   Redirect to this URL asking for user interactive authentication.
+--
 authorizationUrl :: OAuth2 -> URI
 authorizationUrl oa = oauthOAuthorizeEndpoint oa `appendQueryParam` queryStr
   where queryStr = transform' [ ("client_id", Just $ oauthClientId oa)
@@ -82,7 +84,7 @@ authorizationUrl oa = oauthOAuthorizeEndpoint oa `appendQueryParam` queryStr
                               , ("redirect_uri", oauthCallback oa)]
 
 
--- | URL and the request body query for obtain access token
+-- | Prepare URL and the request body query for fetching access token.
 -- 
 accessTokenUrl :: OAuth2 
                -> BS.ByteString    -- ^ access code gained via authorization URL

@@ -1,22 +1,26 @@
 
 DIST=dist
+CBD=cabal-dev
 
 default: build
 
+init:
+	cabal update
+	$(CBD) install
 clean:
 	rm -rf $(DIST)
 
 conf:
-	cabal configure
+	$(CBD) configure
 
 build: conf
-	cabal build
+	$(CBD) build
 	hlint src
 
 rebuild: clean build
 
 install: build
-	cabal install	
+	$(CBD) install	
 
 doc: build
-	cabal haddock
+	$(CBD) haddock

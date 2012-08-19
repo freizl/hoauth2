@@ -42,7 +42,7 @@ weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/
 main :: IO ()
 main = do 
           print $ authorizationUrl weibooauth
-          putStr "visit the url and paste code here: "
+          putStrLn "visit the url and paste code here: "
           code <- getLine
           token <- requestAccessToken weibooauth (BS.pack code)
           print token
