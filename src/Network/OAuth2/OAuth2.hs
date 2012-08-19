@@ -1,10 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-{-
-  A simple OAuth2 Haskell binding. 
-  This is sopposed to be independent with http client.
--}
+-- | A simple OAuth2 Haskell binding. 
+--   (This is supposed to be independent with http client.)
 
 module Network.OAuth2.OAuth2 where
 
@@ -34,6 +32,8 @@ data OAuth2 = OAuth2 { oauthClientId :: BS.ByteString
 data OAuthException = OAuthException String
                       deriving (Show, Eq, Typeable)
 
+-- | OAuthException is kind of Exception.
+-- 
 instance Exception OAuthException
 
 -- | The gained Access Token. Use @Data.Aeson.decode@ to decode string to @AccessToken@.
@@ -42,6 +42,8 @@ instance Exception OAuthException
 data AccessToken = AccessToken { accessToken :: BS.ByteString
                                , refreshToken :: Maybe BS.ByteString } deriving (Show)
 
+-- | Parse JSON data into {AccessToken}
+-- 
 instance FromJSON AccessToken where
     parseJSON (Object o) = AccessToken
                            <$> o .: "access_token"
@@ -130,6 +132,8 @@ appendAccessToken uri oauth = uri `BS.append` renderSimpleQuery True (accessToke
                         token :: OAuth2 -> BS.ByteString
                         token = fromJust . oauthAccessToken
 
-accessTokenToParam :: BS.ByteString -> [(BS.ByteString, BS.ByteString)]
+-- | Create QueryParams with given access token value.
+-- 
+accessTokenToParam :: BS.ByteString -> QueryParams
 accessTokenToParam token = [("access_token", token)]
 

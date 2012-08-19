@@ -2,9 +2,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-{-
-  A simple OAuth2 http client.
--}
+-- | A simple http client for request OAuth2 tokens and several utils.
 
 module Network.OAuth2.HTTP.HttpClient where
 
@@ -27,15 +25,17 @@ import Network.OAuth2.OAuth2
 -- 
 --   FIXME: what if @requestAccessToken'@ return error?
 --
-requestAccessToken :: OAuth2 
-                -> BS.ByteString          -- ^ Authentication code gained after authorization
-                -> IO (Maybe AccessToken)
+requestAccessToken :: OAuth2                 -- ^ OAuth Data
+                   -> BS.ByteString          -- ^ Authentication code gained after authorization
+                   -> IO (Maybe AccessToken) -- ^ Access Token
 requestAccessToken oa code = decode <$> postRequest (accessTokenUrl oa code)
 
 
+-- | Request the "Refresh Token".
+-- 
 refreshAccessToken :: OAuth2 
-                      -> BS.ByteString    -- ^ refresh token gained after authorization
-                      -> IO (Maybe AccessToken)
+                   -> BS.ByteString    -- ^ refresh token gained after authorization
+                   -> IO (Maybe AccessToken)
 refreshAccessToken oa rtoken = decode <$> postRequest (refreshAccessTokenUrl oa rtoken)
 
 
@@ -43,7 +43,6 @@ refreshAccessToken oa rtoken = decode <$> postRequest (refreshAccessTokenUrl oa 
 
 -- | Conduct post request in IO monad.
 -- 
-
 postRequest :: (URI, PostBody)    -- ^ The URI and request body for fetching token.
              -> IO BSL.ByteString  -- ^ request response
 postRequest (uri, body) = doPostRequst (BS.unpack uri) body >>= retOrError
@@ -55,23 +54,36 @@ postRequest (uri, body) = doPostRequst (BS.unpack uri) body >>= retOrError
 
 --------------------------------------------------
 -- od Request Utils
-
 -- TODO: Some duplication here.
 -- TODO: Control.Exception.try
 --        result <- liftIO $ Control.Exception.try $ runResourceT $ httpLbs request man
 -- 
-doSimpleGetRequest :: MonadIO m => String -> m (Response BSL.ByteString)
+    
+-- | Conduct GET request with given URL.
+-- 
+doSimpleGetRequest :: MonadIO m 
+                      => String                       -- ^ URL 
+                      -> m (Response BSL.ByteString)  -- ^ Response
 doSimpleGetRequest url = liftIO $ withManager $ \man -> do
     req' <- liftIO $ parseUrl url
     httpLbs req' man
 
-doGetRequest :: MonadIO m => String -> [(BS.ByteString, BS.ByteString)] -> m (Response BSL.ByteString)
+-- | Conduct GET request with given URL by append extra parameters provided.
+-- 
+doGetRequest :: MonadIO m 
+                => String                            -- ^ URL
+                -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
+                -> m (Response BSL.ByteString)       -- ^ Response
 doGetRequest url pm = liftIO $ withManager $ \man -> do
     req' <- liftIO $ parseUrl $ url ++ BS.unpack (renderSimpleQuery True pm)
     httpLbs req' man
 
-doPostRequst :: MonadIO m => String -> [(BS.ByteString, BS.ByteString)] -> m (Response BSL.ByteString)
+-- | Conduct POST request with given URL with post body data.
+-- 
+doPostRequst :: MonadIO m 
+                => String                            -- ^ URL
+                -> [(BS.ByteString, BS.ByteString)]  -- ^ Data to Post Body 
+                -> m (Response BSL.ByteString)       -- ^ Response
 doPostRequst url body = liftIO $ withManager $ \man -> do
     req' <- liftIO $ parseUrl url
     httpLbs (urlEncodedBody body req') man
-
