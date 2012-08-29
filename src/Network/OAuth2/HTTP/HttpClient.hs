@@ -56,7 +56,8 @@ postRequest (uri, body) = doPostRequst (bsToS uri) body
   where
     retOrError rsp =  if (HT.statusCode . responseStatus) rsp == 200
                       then putStrLn "get response" >> return (responseBody rsp)
-                      else throwIO . OAuthException $ "Gaining token failed: " ++ BSL.unpack (responseBody rsp)
+                      else BSL.putStrLn  "Error rsp" >> return "ERROR"
+--                      else throwIO . OAuthException $ "Gaining token failed: " ++ BSL.unpack (responseBody rsp)
 
 
 --------------------------------------------------
@@ -87,16 +88,20 @@ doGetRequest url pm = liftIO $ withManager $ \man -> do
 
 -- | Conduct POST request with given URL with post body data.
 -- 
-doPostRequst :: MonadIO m 
-                => String                            -- ^ URL
+doPostRequst ::  String                            -- ^ URL
                 -> [(BS.ByteString, BS.ByteString)]  -- ^ Data to Post Body 
-                -> m (Response BSL.ByteString)       -- ^ Response
+                -> IO (Response BSL.ByteString)       -- ^ Response
 doPostRequst url body = liftIO $ withManager $ \man -> do
-    req' <- liftIO $ parseUrl url
-    liftIO $ putStrLn "doPostRequest start 222"
+    req' <- parseUrl url
+    liftIO $ putStrLn "Debug: doPostRequest start 1"
+    liftIO $ putStrLn "amazon"
+    req3 <- parseUrl "https://www.amazon.com/gp/feature.html?ie=UTF8&docId=1000796931&ref_=cd_lm_rd_fp"
+--    req2 <- return (urlEncodedBody body req')
     liftIO $ print body
---    httpLbs (urlEncodedBody body req') man
-    httpLbs req' man
+    liftIO $ print $ secure req3
+    liftIO $ putStrLn "Debug: doPostRequest start 2"    
+    httpLbs req3 man
+--    httpLbs req' man
 
 --------------------------------------------------
 
