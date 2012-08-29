@@ -47,6 +47,7 @@ Library
   Build-Depends:
     aeson             >= 0.6    && < 0.7,
     base              >= 4      && < 5,
+    text              >= 0.11   && < 0.12,
     bytestring        >= 0.9    && < 0.10,
     bytestring-show   >= 0.3.5  && < 0.4,
     conduit           >= 0.5    && < 0.6,
@@ -54,7 +55,8 @@ Library
     http-types        >= 0.7    && < 0.8,
     monad-control     >= 0.3    && < 0.4,
     mtl               >= 1      && < 2.2,
-    transformers      >= 0.2    && < 0.4
+    transformers      >= 0.2    && < 0.4,
+    random
       
   if impl(ghc >= 6.12.0)
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
