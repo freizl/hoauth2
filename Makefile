@@ -27,3 +27,6 @@ doc: build
 
 dist: build
 	$(CBD) sdist
+
+test-weibo:
+	cd test && sh run.sh Weibo/test.hs
