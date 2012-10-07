@@ -129,6 +129,7 @@ appendAccessToken :: URI   -- ^ Base URI
 appendAccessToken uri oauth = uri `BS.append` renderSimpleQuery True (accessTokenToParam $ token oauth)
                       where 
                         -- Expect Access Token exists
+                        -- FIXME: append empty when Nothing
                         token :: OAuth2 -> BS.ByteString
                         token = fromJust . oauthAccessToken
 

@@ -6,6 +6,8 @@ This is basically very manual test. Check following link for details.
 
 google web oauth: https://developers.google.com/accounts/docs/OAuth2WebServer
 
+Google OAuth 2.0 playround: https://developers.google.com/oauthplayground/
+
 -}
 
 module Main where

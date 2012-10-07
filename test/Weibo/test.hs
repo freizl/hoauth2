@@ -20,9 +20,11 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 module Main where
 
-import qualified Data.ByteString.Char8 as BS
-import Data.Maybe (fromJust)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import Data.Maybe (fromJust)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Network.HTTP.Types as HT
 import Network.HTTP.Conduit
 import Control.Monad.Trans.Control (MonadBaseControl)
@@ -44,6 +46,8 @@ main = do
           print $ authorizationUrl weibooauth
           putStrLn "visit the url and paste code here: "
           code <- getLine
-          token <- requestAccessToken weibooauth (BS.pack code)
+          token <- requestAccessToken weibooauth (sToBS code)
           print token
 
+sToBS :: String -> BS.ByteString
+sToBS = T.encodeUtf8 . T.pack
