@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A lightweight oauth2 haskell binding. See examples in `test/` folder.
+A lightweight oauth2 haskell binding. See examples in `example/` folder.
 
 In additions, [snaplet-oauth] use this lib as well.
 

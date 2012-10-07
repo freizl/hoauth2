@@ -34,38 +34,33 @@ main = do
 
 offlineCase :: IO ()
 offlineCase = do 
-          print $ authorizationUrl gauth `BS.append` "&" `BS.append` extraParams
+          print $ authorizationUrl googleKeys `BS.append` "&" `BS.append` extraParams
           putStrLn "visit the url and paste code here: "
           code <- getLine
-          (Just (AccessToken accessToken refreshToken)) <- requestAccessToken gauth (BS.pack code) 
+          (Just (AccessToken accessToken refreshToken)) <- requestAccessToken googleKeys (BS.pack code) 
           print (accessToken, refreshToken)
           validateToken accessToken >>= print
           -- 
           -- obtain a new access token with refresh token, which turns out only in response at first time.
           -- Revoke Access https://www.google.com/settings/security
-          -- 
-          refreshAccessToken gauth (fromJust refreshToken) >>= print
+          --
+          case refreshToken of
+            Nothing -> print "Failed to fetch refresh token"
+            Just tk -> refreshAccessToken googleKeys tk >>= print
     where extraParams = renderSimpleQuery False $ ("access_type", "offline"):googleScopeEmail
 
 
 normalCase :: IO ()
 normalCase = do 
-          print $ authorizationUrl gauth `BS.append` "&" `BS.append` extraParams
+          print $ authorizationUrl googleKeys `BS.append` "&" `BS.append` extraParams
           putStrLn "visit the url and paste code here: "
           code <- getLine
-          (Just (AccessToken accessToken Nothing)) <- requestAccessToken gauth (BS.pack code) 
+          (Just (AccessToken accessToken Nothing)) <- requestAccessToken googleKeys (BS.pack code) 
           print accessToken
           res <- validateToken accessToken
           print res
     where extraParams = renderSimpleQuery False googleScopeEmail
 
---------------------------------------------------
-
-gauth :: OAuth2
-gauth = googleKeys { oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oauth2/auth"
-                   , oauthAccessTokenEndpoint = "https://accounts.google.com/o/oauth2/token" 
-                   , oauthAccessToken = Nothing
-                   }
 
 --------------------------------------------------
 -- Google API
@@ -77,5 +72,5 @@ googleScopeEmail = [("scope", "https://www.googleapis.com/auth/userinfo.email")]
 googleScopeUserInfo = [("scope", "https://www.googleapis.com/auth/userinfo.profile")]
 
 -- Token Validation
-validateToken accessToken = postRequest ("https://www.googleapis.com/oauth2/v1/tokeninfo", 
-                                         (accessTokenToParam accessToken))
+validateToken accessToken = doSimplePostRequest ("https://www.googleapis.com/oauth2/v1/tokeninfo", 
+                                                 (accessTokenToParam accessToken))
