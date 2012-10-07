@@ -28,8 +28,8 @@ tested-with:         GHC <= 7.4.1
 -- a README.
 Extra-source-files:  
   README.md
-  test/Google/test.hs
-  test/Weibo/test.hs
+  example/Google/test.hs
+  example/Weibo/test.hs
 
 Cabal-version:       >=1.8
 
