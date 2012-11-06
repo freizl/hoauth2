@@ -64,7 +64,8 @@ doSimpleGetRequest :: String                           -- ^ URL
                       -> IO (Response BSL.ByteString)  -- ^ Response as ByteString
 doSimpleGetRequest url = liftIO $ withManager $ \man -> do
     req' <- liftIO $ parseUrl url
-    httpLbs req' man
+    let req'' = req' { requestHeaders = [("Content-Type", "application/json")] }
+    httpLbs req'' man
 
 -- | Conduct GET request and return response as JSON.
 --
@@ -90,7 +91,8 @@ doGetRequest :: String                               -- ^ URL
                 -> IO (Response BSL.ByteString)      -- ^ Response
 doGetRequest url pm = liftIO $ withManager $ \man -> do
     req' <- parseUrl $ url ++ bsToS (renderSimpleQuery True pm)
-    httpLbs req' man
+    let req'' = req' { requestHeaders = [("Content-Type", "application/json")] }
+    httpLbs req'' man
 
 
 -- | Conduct POST request with given URL with post body data.
@@ -100,7 +102,8 @@ doPostRequst ::  String                              -- ^ URL
                 -> IO (Response BSL.ByteString)      -- ^ Response
 doPostRequst url body = liftIO $ withManager $ \man -> do
     req' <- parseUrl url
-    httpLbs (urlEncodedBody body req') man
+    let req'' = req' { requestHeaders = [("Content-Type", "application/json")] }
+    httpLbs (urlEncodedBody body req'') man
 
 
 --------------------------------------------------
