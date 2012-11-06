@@ -30,3 +30,6 @@ dist: build
 
 test-weibo:
 	cd example && sh run.sh Weibo/test.hs
+
+test-github:
+	cd example && sh run.sh Github/test.hs
