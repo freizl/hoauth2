@@ -32,7 +32,6 @@ requestAccessToken :: OAuth2                 -- ^ OAuth Data
                    -> BS.ByteString          -- ^ Authentication code gained after authorization
                    -> IO (Maybe AccessToken) -- ^ Access Token
 requestAccessToken oa code = doJSONPostRequest (accessTokenUrl oa code)
-  -- decode <$> doSimplePostRequest (accessTokenUrl oa code)
 
 
 -- | Request the "Refresh Token".
@@ -117,7 +116,7 @@ doPostRequstWithReq url body f = do
 --------------------------------------------------
 
 handleResponse :: Response BSL.ByteString -> IO BSL.ByteString
-handleResponse rsp =  if (HT.statusCode . responseStatus) rsp == 200
+handleResponse rsp = if (HT.statusCode . responseStatus) rsp == 200
                      then return (responseBody rsp)
                      else throwIO . OAuthException $
                           "Gaining token failed: " ++ BSL.unpack (responseBody rsp)
