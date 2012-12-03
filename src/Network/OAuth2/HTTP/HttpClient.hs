@@ -6,18 +6,17 @@
 
 module Network.OAuth2.HTTP.HttpClient where
 
-import           Control.Applicative        ((<$>))
 import           Control.Exception
-import           Control.Monad              (liftM)
-import           Control.Monad.Trans        (liftIO)
+import           Control.Monad                (liftM)
+import           Control.Monad.Trans.Resource (ResourceT)
 import           Data.Aeson
-import qualified Data.ByteString            as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
-import qualified Data.Text                  as T
-import qualified Data.Text.Encoding         as T
+import qualified Data.ByteString              as BS
+import qualified Data.ByteString.Lazy.Char8   as BSL
+import qualified Data.Text                    as T
+import qualified Data.Text.Encoding           as T
 import           Network.HTTP.Conduit
-import           Network.HTTP.Types         (renderSimpleQuery)
-import qualified Network.HTTP.Types         as HT
+import           Network.HTTP.Types           (renderSimpleQuery)
+import qualified Network.HTTP.Types           as HT
 
 import           Network.OAuth2.OAuth2
 
@@ -32,7 +31,8 @@ import           Network.OAuth2.OAuth2
 requestAccessToken :: OAuth2                 -- ^ OAuth Data
                    -> BS.ByteString          -- ^ Authentication code gained after authorization
                    -> IO (Maybe AccessToken) -- ^ Access Token
-requestAccessToken oa code = decode <$> doSimplePostRequest (accessTokenUrl oa code)
+requestAccessToken oa code = doJSONPostRequest (accessTokenUrl oa code)
+  -- decode <$> doSimplePostRequest (accessTokenUrl oa code)
 
 
 -- | Request the "Refresh Token".
@@ -40,7 +40,7 @@ requestAccessToken oa code = decode <$> doSimplePostRequest (accessTokenUrl oa c
 refreshAccessToken :: OAuth2
                    -> BS.ByteString          -- ^ refresh token gained after authorization
                    -> IO (Maybe AccessToken)
-refreshAccessToken oa rtoken = decode <$> doSimplePostRequest (refreshAccessTokenUrl oa rtoken)
+refreshAccessToken oa rtoken = doJSONPostRequest (refreshAccessTokenUrl oa rtoken)
 
 
 --------------------------------------------------
@@ -81,19 +81,35 @@ doJSONGetRequest url = doGetRequest (bsToS url) []
 doGetRequest :: String                               -- ^ URL
                 -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
                 -> IO (Response BSL.ByteString)      -- ^ Response
-doGetRequest url pm = liftIO $ withManager $ \man -> do
-    req' <- liftM updateRequestHeaders (parseUrl $ url ++ bsToS (renderSimpleQuery True pm))
-    httpLbs req' man
+doGetRequest url pm = doGetRequestWithReq url pm id
+
+-- | TODO: can not be `Request m -> Request m`, why??
+--
+doGetRequestWithReq :: String                               -- ^ URL
+                       -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
+                       -> (Request (ResourceT IO) -> Request (ResourceT IO))          -- ^ update Request
+                       -> IO (Response BSL.ByteString)      -- ^ Response
+doGetRequestWithReq url pm f = do
+    req <- parseUrl $ url ++ bsToS (renderSimpleQuery True pm)
+    let req' = (updateRequestHeaders .f) req
+    withManager $ httpLbs req'
 
 
 -- | Conduct POST request with given URL with post body data.
 --
-doPostRequst ::  String                              -- ^ URL
+doPostRequst ::  String                               -- ^ URL
                  -> [(BS.ByteString, BS.ByteString)]  -- ^ Data to Post Body
                  -> IO (Response BSL.ByteString)      -- ^ Response
-doPostRequst url body = liftIO $ withManager $ \man -> do
-    req' <- liftM updateRequestHeaders (parseUrl url)
-    httpLbs (urlEncodedBody body req') man
+doPostRequst url body = doPostRequstWithReq url body id
+
+doPostRequstWithReq ::  String                               -- ^ URL
+                        -> [(BS.ByteString, BS.ByteString)]  -- ^ Data to Post Body
+                        -> (Request (ResourceT IO) -> Request (ResourceT IO))
+                        -> IO (Response BSL.ByteString)      -- ^ Response
+doPostRequstWithReq url body f = do
+    req <- parseUrl url
+    let req' = (updateRequestHeaders . f) req
+    withManager $ httpLbs (urlEncodedBody body req')
 
 
 --------------------------------------------------
@@ -111,7 +127,3 @@ updateRequestHeaders req = req { requestHeaders = [ (HT.hAccept, "application/js
 
 bsToS ::  BS.ByteString -> String
 bsToS = T.unpack . T.decodeUtf8
-
-
--- TODO: Control.Exception.try
---        result <- liftIO $ Control.Exception.try $ runResourceT $ httpLbs request man
