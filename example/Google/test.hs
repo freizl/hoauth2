@@ -59,6 +59,8 @@ normalCase = do
           print accessToken
           res <- validateToken accessToken
           print res
+          res2 <- userinfo accessToken
+          print res2
     where extraParams = renderSimpleQuery False googleScopeEmail
 
 
@@ -74,3 +76,10 @@ googleScopeUserInfo = [("scope", "https://www.googleapis.com/auth/userinfo.profi
 -- Token Validation
 validateToken accessToken = doSimplePostRequest ("https://www.googleapis.com/oauth2/v1/tokeninfo", 
                                                  (accessTokenToParam accessToken))
+
+-- | fetch user email.
+--   for more information, please check the playround site.
+--
+userinfo accessToken = doSimpleGetRequest (appendQueryParam
+                                           "https://www.googleapis.com/oauth2/v2/userinfo"
+	                                   (accessTokenToParam accessToken))
