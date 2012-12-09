@@ -1,9 +1,9 @@
 Name:                hoauth2
 -- (http://www.haskell.org/haskellwiki/Package_versioning_policy)
-Version:             0.2.5
+Version:             0.2.6
 
 Synopsis:            hoauth2
-Description:         
+Description:
   Haskell OAuth2 authentication.
   .
   Tested following services
@@ -21,12 +21,12 @@ Copyright:           Haisheng,Wu
 Category:            Network
 Build-type:          Simple
 stability:           alpha
-tested-with:         GHC <= 7.4.1
+tested-with:         GHC <= 7.6.1
 
 
 -- Extra files to be distributed with the package, such as examples or
 -- a README.
-Extra-source-files:  
+Extra-source-files:
   README.md
   example/Google/test.hs
   example/Weibo/test.hs
@@ -40,28 +40,28 @@ Source-Repository head
 
 Library
   hs-source-dirs: src
-  Exposed-modules:   
+  Exposed-modules:
     Network.OAuth2.HTTP.HttpClient
     Network.OAuth2.OAuth2
 
   Build-Depends:
-    aeson             >= 0.6    && < 0.7,
-    base              >= 4      && < 5,
-    text              >= 0.11   && < 0.12,
-    bytestring        >= 0.9    && < 0.10,
-    bytestring-show   >= 0.3.5  && < 0.4,
-    conduit           >= 0.5    && < 0.6,
-    http-conduit      >= 1.8.3    && < 1.8.4,
-    http-types        >= 0.7    && < 0.8,
-    monad-control     >= 0.3    && < 0.4,
-    mtl               >= 1      && < 2.2,
-    transformers      >= 0.2    && < 0.4,
-    resourcet         >= 0.4.0.2 && < 0.4.1,
+    aeson             >= 0.6     && < 0.7,
+    base              >= 4       && < 5,
+    text              >= 0.11    && < 0.12,
+    bytestring        >= 0.9     && < 0.11,
+    bytestring-show   >= 0.3.5   && < 0.4,
+    conduit           >= 0.5     && < 0.6,
+    http-conduit      >= 1.8.3   && < 1.8.6,
+    http-types        >= 0.7     && < 0.8,
+    monad-control     >= 0.3     && < 0.4,
+    mtl               >= 1       && < 2.2,
+    transformers      >= 0.2     && < 0.4,
+    resourcet         >= 0.4.0.2 && < 0.4.5,
     random
-      
+
   if impl(ghc >= 6.12.0)
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
                    -fno-warn-orphans -fno-warn-unused-do-bind
   else
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-                   -fno-warn-orphans        
+                   -fno-warn-orphans
