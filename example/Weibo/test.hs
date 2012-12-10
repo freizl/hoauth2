@@ -34,16 +34,10 @@ import Network.OAuth2.HTTP.HttpClient
 import Network.OAuth2.OAuth2
 
 import Weibo.Key
-
-weibooauth :: OAuth2
-weibooauth = weiboKey { oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/authorize"
-                      , oauthAccessTokenEndpoint = "https://api.weibo.com/oauth2/access_token" 
-                      , oauthAccessToken = Nothing
-                      }
  
 main :: IO ()
 main = do 
-          print $ authorizationUrl weibooauth
+          print $ authorizationUrl weiboKeys
           putStrLn "visit the url and paste code here: "
           code <- getLine
           token <- requestAccessToken weibooauth (sToBS code)

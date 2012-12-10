@@ -20,19 +20,13 @@ import Network.OAuth2.OAuth2
 
 import Github.Key
 
-githuboauth :: OAuth2
-githuboauth = githubKey { oauthOAuthorizeEndpoint = "https://github.com/login/oauth/authorize"
-                        , oauthAccessTokenEndpoint = "https://github.com/login/oauth/access_token"
-                        , oauthAccessToken = Nothing
-                        }
- 
 main :: IO ()
 main = do
     let state = "testGithubApi"
-    print $ (authorizationUrl githuboauth) `appendQueryParam` [("state", state)]
+    print $ (authorizationUrl githubKeys) `appendQueryParam` [("state", state)]
     putStrLn "visit the url and paste code here: "
     code <- getLine
-    let (url, body) = accessTokenUrl githuboauth (sToBS code)
+    let (url, body) = accessTokenUrl githubKeys (sToBS code)
     token <- doJSONPostRequest (url, body ++ [("state", state)])
     print (token :: Maybe AccessToken)
 
