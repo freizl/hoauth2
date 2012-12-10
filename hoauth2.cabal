@@ -3,7 +3,7 @@ Name:                hoauth2
 Version:             0.2.6
 
 Synopsis:            hoauth2
-Description:         
+Description:
   Haskell OAuth2 authentication.
   .
   Tested following services
@@ -21,12 +21,12 @@ Copyright:           Haisheng,Wu
 Category:            Network
 Build-type:          Simple
 stability:           alpha
-tested-with:         GHC <= 7.4.1
+tested-with:         GHC <= 7.6.1
 
 
 -- Extra files to be distributed with the package, such as examples or
 -- a README.
-Extra-source-files:  
+Extra-source-files:
   README.md
   example/Google/test.hs
   example/Weibo/test.hs
@@ -40,7 +40,7 @@ Source-Repository head
 
 Library
   hs-source-dirs: src
-  Exposed-modules:   
+  Exposed-modules:
     Network.OAuth2.HTTP.HttpClient
     Network.OAuth2.OAuth2
 
@@ -58,10 +58,10 @@ Library
     transformers      >= 0.2    && < 0.4,
     resourcet         >= 0.4.0.2 && < 0.4.1,
     random
-      
+
   if impl(ghc >= 6.12.0)
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
                    -fno-warn-orphans -fno-warn-unused-do-bind
   else
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-                   -fno-warn-orphans        
+                   -fno-warn-orphans
