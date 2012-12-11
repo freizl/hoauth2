@@ -27,6 +27,7 @@ data OAuth2 = OAuth2 { oauthClientId            :: BS.ByteString
                      , oauthAccessTokenEndpoint :: BS.ByteString
                      , oauthCallback            :: Maybe BS.ByteString
                      , oauthAccessToken         :: Maybe BS.ByteString
+                       -- ^ TODO: why not Maybe AccessToken???
                      } deriving (Show, Eq)
 
 -- | Simple Exception representation.
@@ -121,14 +122,13 @@ refreshAccessTokenUrl oa rtoken = (uri, body)
 -- UTILs
 --------------------------------------------------
 
--- | Append query parameters '?'.
+-- | Append query parameters with '?'
 appendQueryParam :: URI -> QueryParams -> URI
 appendQueryParam uri q = uri `BS.append` renderSimpleQuery True q
 
--- | Append query parameters '&'.
+-- | Append query parameters with '&'.
 appendQueryParam' :: URI -> QueryParams -> URI
 appendQueryParam' uri q = uri `BS.append` "&" `BS.append` renderSimpleQuery False q
- 
 
 -- | For GET method API.
 appendAccessToken :: URI   -- ^ Base URI

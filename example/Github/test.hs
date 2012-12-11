@@ -9,16 +9,21 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Maybe (fromJust)
 import qualified Data.Text as T
+import  Data.Text (Text)
 import qualified Data.Text.Encoding as T
 import qualified Network.HTTP.Types as HT
 import Network.HTTP.Conduit
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Conduit (MonadResource)
+import           Control.Applicative
+import           Control.Monad                     (mzero)
+import           Data.Aeson
 
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth.OAuth2
 
 import Github.Key
+
 
 main :: IO ()
 main = do
@@ -29,6 +34,26 @@ main = do
     let (url, body) = accessTokenUrl githubKeys (sToBS code)
     token <- doJSONPostRequest (url, body ++ [("state", state)])
     print (token :: Maybe AccessToken)
+    case token of
+      Just (AccessToken t _) -> userInfo (githubKeys {oauthAccessToken = Just t}) >>= print
+      _      -> print "no access token found yet"
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack
+
+-- | Test API: user
+-- 
+userInfo :: OAuth2 -> IO (Maybe GithubUser)
+userInfo oauth = doJSONGetRequest (appendAccessToken
+                                     "https://api.github.com/user"
+                                     oauth)
+
+data GithubUser = GithubUser { gid    :: Integer
+                             , gname  :: Text
+                             } deriving (Show, Eq)
+
+instance FromJSON GithubUser where
+    parseJSON (Object o) = GithubUser
+                           <$> o .: "id"
+                           <*> o .: "name"
+    parseJSON _ = mzero

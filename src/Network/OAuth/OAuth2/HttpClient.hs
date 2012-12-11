@@ -63,8 +63,8 @@ doJSONPostRequest (uri, body) = doPostRequst (bsToS uri) body
 -- | Conduct GET request.
 --
 doSimpleGetRequest :: URI                           -- ^ URL
-                      -> IO (Response BSL.ByteString)  -- ^ Response as ByteString
-doSimpleGetRequest url = doGetRequest (bsToS url) []
+                      -> IO BSL.ByteString  -- ^ Response as ByteString
+doSimpleGetRequest url = doGetRequest (bsToS url) [] >>= handleResponse
 
 -- | Conduct GET request and return response as JSON.
 --
