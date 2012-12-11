@@ -1,2 +1,2 @@
-runghc -package-conf=../cabal-dev/packages-7.4.1.conf $*
+runghc -package-db=../cabal-dev/packages-7.6.1.conf $*
 

@@ -41,8 +41,8 @@ Source-Repository head
 Library
   hs-source-dirs: src
   Exposed-modules:
-    Network.OAuth2.HTTP.HttpClient
-    Network.OAuth2.OAuth2
+    Network.OAuth.OAuth2.HttpClient
+    Network.OAuth.OAuth2
 
   Build-Depends:
     aeson             >= 0.6    && < 0.7,

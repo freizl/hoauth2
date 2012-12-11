@@ -4,7 +4,7 @@
 
 -- | A simple http client for request OAuth2 tokens and several utils.
 
-module Network.OAuth2.HTTP.HttpClient where
+module Network.OAuth.OAuth2.HttpClient where
 
 import           Control.Exception
 import           Control.Monad                (liftM)
@@ -18,7 +18,7 @@ import           Network.HTTP.Conduit
 import           Network.HTTP.Types           (renderSimpleQuery)
 import qualified Network.HTTP.Types           as HT
 
-import           Network.OAuth2.OAuth2
+import           Network.OAuth.OAuth2
 
 --------------------------------------------------
 -- Fetch AccessToken; RefreshAccessToken

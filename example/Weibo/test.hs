@@ -30,8 +30,8 @@ import Network.HTTP.Conduit
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Conduit (MonadResource)
 
-import Network.OAuth2.HTTP.HttpClient
-import Network.OAuth2.OAuth2
+import Network.OAuth.OAuth2.HttpClient
+import Network.OAuth.OAuth2
 
 import Weibo.Key
  
@@ -40,7 +40,7 @@ main = do
           print $ authorizationUrl weiboKeys
           putStrLn "visit the url and paste code here: "
           code <- getLine
-          token <- requestAccessToken weibooauth (sToBS code)
+          token <- requestAccessToken weiboKeys (sToBS code)
           print token
 
 sToBS :: String -> BS.ByteString

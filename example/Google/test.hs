@@ -17,8 +17,8 @@ import Data.Maybe (fromJust)
 import Network.HTTP.Types (renderSimpleQuery, parseSimpleQuery)
 import System.Environment
 
-import Network.OAuth2.HTTP.HttpClient
-import Network.OAuth2.OAuth2
+import Network.OAuth.OAuth2.HttpClient
+import Network.OAuth.OAuth2
 import Google.Key
 
 

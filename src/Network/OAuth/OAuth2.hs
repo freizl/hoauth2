@@ -4,7 +4,7 @@
 -- | A simple OAuth2 Haskell binding.
 --   (This is supposed to be independent with http client.)
 
-module Network.OAuth2.OAuth2 where
+module Network.OAuth.OAuth2 where
 
 import           Control.Applicative ((<$>), (<*>))
 import           Control.Exception
