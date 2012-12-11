@@ -27,6 +27,7 @@ data OAuth2 = OAuth2 { oauthClientId            :: BS.ByteString
                      , oauthAccessTokenEndpoint :: BS.ByteString
                      , oauthCallback            :: Maybe BS.ByteString
                      , oauthAccessToken         :: Maybe BS.ByteString
+                       -- ^ TODO: why not Maybe AccessToken???
                      } deriving (Show, Eq)
 
 -- | Simple Exception representation.

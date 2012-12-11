@@ -35,6 +35,15 @@ main = do
     let (url, body) = accessTokenUrl githuboauth (sToBS code)
     token <- doJSONPostRequest (url, body ++ [("state", state)])
     print (token :: Maybe AccessToken)
+    case token of
+      Just (AccessToken t _) -> userInfo (githuboauth {oauthAccessToken = Just t}) >>= print
+      _      -> print "no access token found yet"
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack
+
+-- Token Validation
+userInfo :: OAuth2 -> IO BSL.ByteString
+userInfo oauth = doSimpleGetRequest (appendAccessToken
+                                     "https://api.github.com/user"
+                                     oauth)
