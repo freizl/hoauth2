@@ -9,11 +9,15 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Maybe (fromJust)
 import qualified Data.Text as T
+import  Data.Text (Text)
 import qualified Data.Text.Encoding as T
 import qualified Network.HTTP.Types as HT
 import Network.HTTP.Conduit
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Conduit (MonadResource)
+import           Control.Applicative
+import           Control.Monad                     (mzero)
+import           Data.Aeson
 
 import Network.OAuth2.HTTP.HttpClient
 import Network.OAuth2.OAuth2
@@ -26,6 +30,16 @@ githuboauth = githubKey { oauthOAuthorizeEndpoint = "https://github.com/login/oa
                         , oauthAccessToken = Nothing
                         }
  
+data GithubUser = GithubUser { gid    :: Integer
+                             , gname  :: Text
+                             } deriving (Show, Eq)
+
+instance FromJSON GithubUser where
+    parseJSON (Object o) = GithubUser
+                           <$> o .: "id"
+                           <*> o .: "name"
+    parseJSON _ = mzero
+
 main :: IO ()
 main = do
     let state = "testGithubApi"
@@ -43,7 +57,7 @@ sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack
 
 -- Token Validation
-userInfo :: OAuth2 -> IO BSL.ByteString
-userInfo oauth = doSimpleGetRequest (appendAccessToken
+userInfo :: OAuth2 -> IO (Maybe GithubUser)
+userInfo oauth = doJSONGetRequest (appendAccessToken
                                      "https://api.github.com/user"
                                      oauth)
