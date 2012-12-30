@@ -5,3 +5,4 @@ dist
 *.hi
 log
 cabal-dev*
+*.swp

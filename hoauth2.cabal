@@ -1,6 +1,6 @@
 Name:                hoauth2
 -- (http://www.haskell.org/haskellwiki/Package_versioning_policy)
-Version:             0.2.6
+Version:             0.2.6.1
 
 Synopsis:            hoauth2
 Description:
@@ -30,6 +30,10 @@ Extra-source-files:
   README.md
   example/Google/test.hs
   example/Weibo/test.hs
+  example/Github/test.hs
+  example/Keys.hs.sample
+  example/run-7.4.sh
+  example/run.sh
 
 Cabal-version:       >=1.8
 
