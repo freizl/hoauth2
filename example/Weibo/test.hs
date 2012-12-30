@@ -13,7 +13,7 @@ This is very trivial testing of the httpclient api.
 4. copy the `code` in the callback url and parse into console
 5. this test case will gain access token using the `code` and print it out.
 
-check for integration testing at: 
+check for integration testing at:
 https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 -}
@@ -33,14 +33,14 @@ import Data.Conduit (MonadResource)
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth.OAuth2
 
-import Weibo.Key
- 
+import Keys
+
 main :: IO ()
-main = do 
-          print $ authorizationUrl weiboKeys
+main = do
+          print $ authorizationUrl weiboKey
           putStrLn "visit the url and paste code here: "
           code <- getLine
-          token <- requestAccessToken weiboKeys (sToBS code)
+          token <- requestAccessToken weiboKey (sToBS code)
           print token
 
 sToBS :: String -> BS.ByteString

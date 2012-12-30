@@ -22,27 +22,27 @@ import           Data.Aeson
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth.OAuth2
 
-import Github.Key
+import Keys
 
 
 main :: IO ()
 main = do
     let state = "testGithubApi"
-    print $ (authorizationUrl githubKeys) `appendQueryParam` [("state", state)]
+    print $ (authorizationUrl githubKey) `appendQueryParam` [("state", state)]
     putStrLn "visit the url and paste code here: "
     code <- getLine
-    let (url, body) = accessTokenUrl githubKeys (sToBS code)
+    let (url, body) = accessTokenUrl githubKey (sToBS code)
     token <- doJSONPostRequest (url, body ++ [("state", state)])
     print (token :: Maybe AccessToken)
     case token of
-      Just (AccessToken t _) -> userInfo (githubKeys {oauthAccessToken = Just t}) >>= print
+      Just (AccessToken t _) -> userInfo (githubKey {oauthAccessToken = Just t}) >>= print
       _      -> print "no access token found yet"
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack
 
 -- | Test API: user
--- 
+--
 userInfo :: OAuth2 -> IO (Maybe GithubUser)
 userInfo oauth = doJSONGetRequest (appendAccessToken
                                      "https://api.github.com/user"

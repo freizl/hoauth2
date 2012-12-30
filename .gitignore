@@ -1,4 +1,5 @@
 dist
+*Keys.hs
 *Key.hs
 *.o
 *.hi

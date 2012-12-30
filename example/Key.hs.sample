@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Weibo.Key where
+module Keys where
 
-import Network.OAuth2.OAuth2
+import Network.OAuth.OAuth2
 
 weiboKey :: OAuth2
 weiboKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
@@ -12,3 +12,9 @@ weiboKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                    , oauthAccessTokenEndpoint = ""
                    , oauthAccessToken = Nothing
                    }
+
+googleKey :: OAuth2
+googleKey = undefined
+
+githubKey :: OAuth2
+githubKey = undefined

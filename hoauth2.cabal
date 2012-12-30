@@ -56,7 +56,7 @@ Library
     monad-control     >= 0.3    && < 0.4,
     mtl               >= 1      && < 2.2,
     transformers      >= 0.2    && < 0.4,
-    resourcet         >= 0.4.0.2 && < 0.4.1,
+    resourcet         >= 0.4.0.2 && < 0.4.5,
     random
 
   if impl(ghc >= 6.12.0)
