@@ -30,6 +30,8 @@ import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Network.HTTP.Conduit (Response)
 import System.Environment
+import Prelude hiding (id)
+import qualified Prelude as P (id)
 
 --------------------------------------------------
 
@@ -41,9 +43,9 @@ data Token = Token { issued_to   :: Text
                    , access_type :: Text
                    } deriving (Show)
 
-$(deriveJSON id ''Token)
+$(deriveJSON P.id ''Token)
 
-data User = User { uid         :: Text
+data User = User { id         :: Text
                  , name        :: Text
                  , given_name  :: Text
                  , family_name :: Text
@@ -53,7 +55,8 @@ data User = User { uid         :: Text
                  , birthday    :: Text
                  , locale      :: Text
                  } deriving (Show)
-$(deriveJSON id ''User)
+
+$(deriveJSON P.id ''User)
 
 --------------------------------------------------
 
@@ -66,31 +69,31 @@ main = do
 
 offlineCase :: IO ()
 offlineCase = do
-          print $ authorizationUrl googleKey `appendQueryParam'` googleScopeEmail `appendQueryParam'` googleAccessOffline
-          putStrLn "visit the url and paste code here: "
-          code <- getLine
-          (Just (AccessToken accessToken refreshToken)) <- requestAccessToken googleKey (BS.pack code)
-          print (accessToken, refreshToken)
-          validateToken accessToken >>= print
-          --
-          -- obtain a new access token with refresh token, which turns out only in response at first time.
-          -- Revoke Access https://www.google.com/settings/security
-          --
-          case refreshToken of
-            Nothing -> print "Failed to fetch refresh token"
-            Just tk -> refreshAccessToken googleKey tk >>= print
+    print $ authorizationUrl googleKey `appendQueryParam'` googleScopeEmail `appendQueryParam'` googleAccessOffline
+    putStrLn "visit the url and paste code here: "
+    code <- getLine
+    (Just (AccessToken accessToken refreshToken)) <- requestAccessToken googleKey (BS.pack code)
+    print (accessToken, refreshToken)
+    validateToken accessToken >>= print
+    --
+    -- obtain a new access token with refresh token, which turns out only in response at first time.
+    -- Revoke Access https://www.google.com/settings/security
+    --
+    case refreshToken of
+        Nothing -> print "Failed to fetch refresh token"
+        Just tk -> refreshAccessToken googleKey tk >>= print
 
 normalCase :: IO ()
 normalCase = do
-          print $ authorizationUrl googleKey `appendQueryParam'` googleScopeUserInfo
-          putStrLn "visit the url and paste code here: "
-          code <- getLine
-          (Just (AccessToken accessToken Nothing)) <- requestAccessToken googleKey (BS.pack code)
-          putStr "AccessToken: " >> print accessToken
-          validateToken accessToken >>= print
-          (validateToken' accessToken :: IO (Maybe Token)) >>= print
-          userinfo accessToken >>= print
-          (userinfo' accessToken :: IO (Maybe User)) >>= print
+    print $ authorizationUrl googleKey `appendQueryParam'` googleScopeUserInfo
+    putStrLn "visit the url and paste code here: "
+    code <- getLine
+    (Just (AccessToken accessToken Nothing)) <- requestAccessToken googleKey (BS.pack code)
+    putStr "AccessToken: " >> print accessToken
+    validateToken accessToken >>= print
+    (validateToken' accessToken :: IO (Maybe Token)) >>= print
+    userinfo accessToken >>= print
+    (userinfo' accessToken :: IO (Maybe User)) >>= print
 
 --------------------------------------------------
 -- Google API
@@ -122,3 +125,4 @@ userinfo accessToken = doSimpleGetRequest (appendQueryParam "https://www.googlea
 
 userinfo' :: FromJSON a => BS.ByteString -> IO (Maybe a)
 userinfo' accessToken = doJSONGetRequest ("https://www.googleapis.com/oauth2/v2/userinfo" `appendQueryParam` (accessTokenToParam accessToken))
+
