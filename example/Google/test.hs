@@ -122,7 +122,7 @@ googleAccessOffline :: QueryParams
 googleAccessOffline = [("access_type", "offline")
                       ,("approval_prompt", "force")]
 
--- Token Validation
+-- | Token Validation
 validateToken :: BS.ByteString -> IO BL.ByteString
 validateToken accessToken = doSimpleGetRequest ("https://www.googleapis.com/oauth2/v1/tokeninfo" `appendQueryParam` (accessTokenToParam accessToken))
 
