@@ -122,7 +122,7 @@ handleResponse rsp = if (HT.statusCode . responseStatus) rsp == 200
                           "Gaining token failed: " ++ BSL.unpack (responseBody rsp)
 
 updateRequestHeaders :: Request m -> Request m
-updateRequestHeaders req = req { requestHeaders = [ (HT.hAccept, "application/json") ] }
+updateRequestHeaders req = req { requestHeaders = [ (HT.hUserAgent, "hoauth2"), (HT.hAccept, "application/json") ] }
 
 bsToS ::  BS.ByteString -> String
 bsToS = T.unpack . T.decodeUtf8
