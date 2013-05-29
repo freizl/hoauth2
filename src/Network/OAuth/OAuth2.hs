@@ -1,22 +1,24 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
 
+{-# OPTIONS_HADDOCK -ignore-exports #-}
+
 -- | A simple OAuth2 Haskell binding.
 --   (This is supposed to be independent with http client.)
 
 module Network.OAuth.OAuth2 where
 
 import           Control.Applicative ((<$>), (<*>))
-import           Control.Exception
 import           Control.Monad       (mzero)
 import           Data.Aeson
 import qualified Data.ByteString     as BS
+import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe          (fromMaybe)
 import           Data.Typeable       (Typeable)
 import           Network.HTTP.Types  (renderSimpleQuery)
 
 --------------------------------------------------
--- Data Types
+-- * Data Types
 --------------------------------------------------
 
 -- | Query Parameter Representation
@@ -30,13 +32,6 @@ data OAuth2 = OAuth2 { oauthClientId            :: BS.ByteString
                        -- ^ TODO: why not Maybe AccessToken???
                      } deriving (Show, Eq)
 
--- | Simple Exception representation.
-data OAuthException = OAuthException String
-                      deriving (Show, Eq, Typeable)
-
--- | OAuthException is kind of Exception.
---
-instance Exception OAuthException
 
 -- | The gained Access Token. Use @Data.Aeson.decode@ to decode string to @AccessToken@.
 --   The @refresheToken@ is special at some case.
@@ -54,8 +49,10 @@ instance FromJSON AccessToken where
                            <*> o .:? "refresh_token"
     parseJSON _ = mzero
 
+type OAuth2Result a = Either BSL.ByteString a
+
 --------------------------------------------------
--- Types Synonym
+-- * Types Synonym
 --------------------------------------------------
 
 -- | type synonym of query parameters
@@ -72,7 +69,7 @@ type AccessCode = BS.ByteString
 
 
 --------------------------------------------------
--- URLs
+-- * URLs
 --------------------------------------------------
 
 -- | Prepare the authorization URL.
@@ -119,7 +116,7 @@ refreshAccessTokenUrl oa rtoken = (uri, body)
                           , ("refresh_token", Just rtoken) ]
 
 --------------------------------------------------
--- UTILs
+-- * UTILs
 --------------------------------------------------
 
 -- | Append query parameters with '?'
