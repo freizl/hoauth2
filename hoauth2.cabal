@@ -21,7 +21,7 @@ Copyright:           Haisheng,Wu
 Category:            Network
 Build-type:          Simple
 stability:           alpha
-tested-with:         GHC <= 7.6.1
+tested-with:         GHC <= 7.6.3
 
 
 -- Extra files to be distributed with the package, such as examples or
