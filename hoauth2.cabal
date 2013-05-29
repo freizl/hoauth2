@@ -46,6 +46,7 @@ Library
   hs-source-dirs: src
   Exposed-modules:
     Network.OAuth.OAuth2.HttpClient
+    Network.OAuth.OAuth2.Internal
     Network.OAuth.OAuth2
 
   Build-Depends:
