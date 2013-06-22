@@ -13,7 +13,7 @@ import           Control.Monad        (mzero)
 import           Data.Aeson
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
-import           Data.Maybe           (fromMaybe)
+import           Data.Maybe
 import           Network.HTTP.Types   (renderSimpleQuery)
 
 --------------------------------------------------
@@ -28,8 +28,6 @@ data OAuth2 = OAuth2 {
     , oauthOAuthorizeEndpoint  :: BS.ByteString
     , oauthAccessTokenEndpoint :: BS.ByteString
     , oauthCallback            :: Maybe BS.ByteString
-    , oauthAccessToken         :: Maybe BS.ByteString
-    -- ^ TODO: why not Maybe AccessToken???
     } deriving (Show, Eq)
 
 
@@ -50,12 +48,13 @@ instance FromJSON AccessToken where
                            <*> o .:? "refresh_token"
     parseJSON _ = mzero
 
--- |Is either 'Left' containing an error or 'Right' containg a result
-type OAuth2Result a = Either BSL.ByteString a
-
 --------------------------------------------------
 -- * Types Synonym
 --------------------------------------------------
+
+-- | Is either 'Left' containing an error or 'Right' containg a result
+--
+type OAuth2Result a = Either BSL.ByteString a
 
 -- | type synonym of query parameters
 type QueryParams = [(BS.ByteString, BS.ByteString)]
@@ -65,9 +64,6 @@ type PostBody = [(BS.ByteString, BS.ByteString)]
 
 -- | type synonym of a URI
 type URI = BS.ByteString
-
--- | Access Code that is required for fetching Access Token
-type AccessCode = BS.ByteString
 
 
 --------------------------------------------------
@@ -87,15 +83,14 @@ authorizationUrl oa = oauthOAuthorizeEndpoint oa `appendQueryParam` queryStr
 -- | Prepare URL and the request body query for fetching access token.
 --
 accessTokenUrl :: OAuth2
-                  -> AccessCode       -- ^ access code gained via authorization URL
-                  -> (URI, PostBody)  -- ^ access token request URL plus the request body.
+                  -> BS.ByteString       -- ^ access code gained via authorization URL
+                  -> (URI, PostBody)     -- ^ access token request URL plus the request body.
 accessTokenUrl oa code = accessTokenUrl' oa code (Just "authorization_code")
 
-
 accessTokenUrl' ::  OAuth2
-                    -> AccessCode            -- ^ access code gained via authorization URL
-                    -> Maybe BS.ByteString   -- ^ Grant Type
-                    -> (URI, PostBody)       -- ^ access token request URL plus the request body.
+                    -> BS.ByteString          -- ^ access code gained via authorization URL
+                    -> Maybe BS.ByteString    -- ^ Grant Type
+                    -> (URI, PostBody)        -- ^ access token request URL plus the request body.
 accessTokenUrl' oa code gt = (uri, body)
   where uri  = oauthAccessTokenEndpoint oa
         body = transform' [ ("client_id", Just $ oauthClientId oa)
@@ -130,13 +125,11 @@ appendQueryParam' :: URI -> QueryParams -> URI
 appendQueryParam' uri q = uri `BS.append` "&" `BS.append` renderSimpleQuery False q
 
 -- | For GET method API.
-appendAccessToken :: URI   -- ^ Base URI
-          -> OAuth2        -- ^ OAuth has Authorized Access Token
-          -> URI           -- ^ Combined Result
-appendAccessToken uri oauth = appendQueryParam uri
-                              (token $ oauthAccessToken oauth)
-                              where token :: Maybe BS.ByteString -> QueryParams
-                                    token = accessTokenToParam . fromMaybe ""
+appendAccessToken :: URI               -- ^ Base URI
+                     -> AccessToken    -- ^ Authorized Access Token
+                     -> URI            -- ^ Combined Result
+appendAccessToken uri (AccessToken at _) =
+  appendQueryParam uri (accessTokenToParam at)
 
 -- | Create QueryParams with given access token value.
 --
@@ -146,13 +139,5 @@ accessTokenToParam token = [("access_token", token)]
 
 -- | lift value in the Maybe and abonda Nothing
 transform' :: [(a, Maybe b)] -> [(a, b)]
-transform' = foldr step' []
-             where step' :: (a, Maybe b) -> [(a, b)] -> [(a, b)]
-                   step' (a, Just b) xs = (a, b):xs
-                   step' _ xs = xs
-
-
-                        -- Expect Access Token exists
-                        -- FIXME: append empty when Nothing
-  --uri `BS.append` renderSimpleQuery True (accessTokenToParam $ token oauth)
+transform' = map (\(a, Just b) -> (a, b)) . filter (isJust . snd)
 

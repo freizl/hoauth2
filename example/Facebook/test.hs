@@ -1,23 +1,26 @@
-{-# LANGUAGE OverloadedStrings, FlexibleContexts, TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 {- Facebook example -}
 
 module Main where
 
-import Network.OAuth.OAuth2.HttpClient
-import Network.OAuth.OAuth2
-import Keys (facebookKey)
+import           Keys                            (facebookKey)
+import           Network.OAuth.OAuth2
+import           Network.OAuth.OAuth2.HttpClient
 
-import Control.Applicative ((<$>), (<*>))
-import Control.Monad (mzero)
-import Data.Aeson (FromJSON, Value(Object), parseJSON, (.:), (.:?))
-import Data.Aeson.TH (deriveJSON)
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.Text (Text)
-import Prelude hiding (id)
-import qualified Prelude as P (id)
-import System.Environment (getArgs)
+import           Control.Applicative             ((<$>), (<*>))
+import           Control.Monad                   (mzero)
+import           Data.Aeson                      (FromJSON, Value (Object),
+                                                  parseJSON, (.:), (.:?))
+import           Data.Aeson.TH                   (deriveJSON)
+import qualified Data.ByteString.Char8           as BS
+import qualified Data.ByteString.Lazy.Char8      as BL
+import           Data.Text                       (Text)
+import           Prelude                         hiding (id)
+import qualified Prelude                         as P (id)
+import           System.Environment              (getArgs)
 
 --------------------------------------------------
 

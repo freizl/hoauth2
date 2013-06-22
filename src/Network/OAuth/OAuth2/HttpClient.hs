@@ -25,19 +25,89 @@ import           Network.OAuth.OAuth2.Internal
 
 -- | Request (via POST method) "Access Token".
 --
---   FIXME: what if @requestAccessToken@ return error?
 --
-requestAccessToken :: OAuth2              -- ^ OAuth Data
-                   -> BS.ByteString       -- ^ Authentication code gained after authorization
-                   -> IO (OAuth2Result AccessToken) -- ^ Access Token
-requestAccessToken oa code = doJSONPostRequest (accessTokenUrl oa code)
+fetchAccessToken :: OAuth2                           -- ^ OAuth Data
+                   -> BS.ByteString                  -- ^ Authentication code gained after authorization
+                   -> IO (OAuth2Result AccessToken)  -- ^ Access Token
+fetchAccessToken oa code = doJSONPostRequest uri body
+                           where (uri, body) = accessTokenUrl oa code
 
 
 -- | Request the "Refresh Token".
-refreshAccessToken :: OAuth2          -- ^ OAuth context
-                   -> BS.ByteString   -- ^ refresh token gained after authorization
-                   -> IO (OAuth2Result AccessToken)
-refreshAccessToken oa rtoken = doJSONPostRequest (refreshAccessTokenUrl oa rtoken)
+fetchRefreshToken :: OAuth2                          -- ^ OAuth context
+                     -> BS.ByteString                -- ^ refresh token gained after authorization
+                     -> IO (OAuth2Result AccessToken)
+fetchRefreshToken oa rtoken = doJSONPostRequest uri body
+                              where (uri, body) = refreshAccessTokenUrl oa rtoken
+
+--------------------------------------------------
+-- * Simple POST requests
+--------------------------------------------------
+
+-- | Conduct post request and return response as JSON.
+doJSONPostRequest :: FromJSON a
+                  => URI                                 -- ^ The URL
+                  -> PostBody                            -- ^ request body
+                  -> IO (OAuth2Result a)                 -- ^ Response as ByteString
+doJSONPostRequest uri body = liftM parseResponseJSON (doSimplePostRequest uri body)
+
+-- | Conduct post request.
+doSimplePostRequest :: URI                                  -- ^ URL
+                       -> PostBody                          -- ^ Request body.
+                       -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
+doSimplePostRequest uri body =
+    liftM handleResponse $ doPostRequestWithReq (BS.unpack uri) body id
+
+-- | Conduct POST request with given URL with post body data.
+-- doPostRequest ::  String                                 -- ^ URL
+--               -> [(BS.ByteString, BS.ByteString)]        -- ^ Data to Post Body
+--               -> IO (Response BSL.ByteString)            -- ^ Response
+-- doPostRequest url body = doPostRequestWithReq url body id
+
+
+doPostRequestWithReq :: String                               -- ^ URL
+                    -> [(BS.ByteString, BS.ByteString)]      -- ^ Data to Post Body
+                    -> (Request (ResourceT IO) -> Request (ResourceT IO))
+                    -> IO (Response BSL.ByteString)          -- ^ Response
+doPostRequestWithReq url body f = do
+    req <- parseUrl url
+    let req' = (f . updateRequestHeaders) req
+    withManager $ httpLbs (urlEncodedBody body req')
+
+--------------------------------------------------
+-- * Simple GET requests
+--------------------------------------------------
+
+-- | Conduct GET request and return response as JSON.
+doJSONGetRequest :: FromJSON a
+                 => URI                          -- ^ Full URL
+                 -> IO (OAuth2Result a)          -- ^ Response as JSON
+doJSONGetRequest = liftM parseResponseJSON . doSimpleGetRequest
+
+-- fmap (parseResponseJSON . handleResponse) $ doGetRequest (BS.unpack url) []
+
+-- | Conduct GET request.
+doSimpleGetRequest :: URI                               -- ^ URL
+                   -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
+doSimpleGetRequest url = liftM handleResponse (doGetRequestWithReq (BS.unpack url) [] id)
+
+
+-- | Conduct GET request with given URL by append extra parameters provided.
+-- doGetRequest :: String                               -- ^ URL
+--              -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
+--              -> IO (Response BSL.ByteString)      -- ^ Response
+-- doGetRequest url pm = doGetRequestWithReq url pm id
+
+-- | TODO: can not be `Request m -> Request m`, why??
+--
+doGetRequestWithReq :: String                                              -- ^ URL
+                    -> [(BS.ByteString, BS.ByteString)]                    -- ^ Extra Parameters
+                    -> (Request (ResourceT IO) -> Request (ResourceT IO))  -- ^ update Request
+                    -> IO (Response BSL.ByteString)                        -- ^ Response
+doGetRequestWithReq url pm f = do
+    req <- parseUrl $ url ++ BS.unpack (renderSimpleQuery True pm)
+    let req' = (f . updateRequestHeaders) req
+    withManager $ httpLbs req'
 
 --------------------------------------------------
 -- * Utilities
@@ -49,81 +119,19 @@ handleResponse rsp =
         then Right $ responseBody rsp
         else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
 
--- |Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
-parseResponse :: FromJSON a
+-- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
+parseResponseJSON :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
-parseResponse =
-    either Left -- Return Left if error
-           (maybe (Left "Could not decode JSON") Right . decode) -- Decode JSON
+parseResponseJSON (Left b) = Left b
+parseResponseJSON (Right b) = case decode b of
+                            Nothing -> Left ("Could not decode JSON" `BSL.append` b)
+                            Just x -> Right x
 
 updateRequestHeaders :: Request m -> Request m
-updateRequestHeaders req = req { requestHeaders = [ (HT.hUserAgent, "hoauth2"), (HT.hAccept, "application/json") ] }
-
---------------------------------------------------
--- * Simple HTTP requests
---------------------------------------------------
-
--- | Conduct post request.
-doSimplePostRequest :: (URI, PostBody)                   -- ^ The URI and request body for fetching token.
-                    -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimplePostRequest (uri, body) =
-    fmap handleResponse $ doPostRequest (BS.unpack uri) body
-
--- | Conduct post request and return response as JSON.
-doJSONPostRequest :: FromJSON a
-                  => (URI, PostBody)  -- ^ The URI and request body for fetching token.
-                  -> IO (OAuth2Result a)     -- ^ Response as ByteString
-doJSONPostRequest (uri, body) = do
-    rsp <- fmap handleResponse $ doPostRequest (BS.unpack uri) body
-    case rsp of
-      Left err -> return $ Left err
-      Right a -> case decode a of
-                    Nothing -> return $ Left "JSON: Decoding error"
-                    Just r  -> return $ Right r
-
--- | Conduct POST request with given URL with post body data.
-doPostRequest ::  String                               -- ^ URL
-              -> [(BS.ByteString, BS.ByteString)]  -- ^ Data to Post Body
-              -> IO (Response BSL.ByteString)      -- ^ Response
-doPostRequest url body = doPostRequestWithReq url body id
-
-
-doPostRequestWithReq ::  String                               -- ^ URL
-                    -> [(BS.ByteString, BS.ByteString)]  -- ^ Data to Post Body
-                    -> (Request (ResourceT IO)
-                    -> Request (ResourceT IO))
-                    -> IO (Response BSL.ByteString)      -- ^ Response
-doPostRequestWithReq url body f = do
-    req <- parseUrl url
-    let req' = (updateRequestHeaders . f) req
-    withManager $ httpLbs (urlEncodedBody body req')
-
--- | Conduct GET request with given URL by append extra parameters provided.
-doGetRequest :: String                               -- ^ URL
-             -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
-             -> IO (Response BSL.ByteString)      -- ^ Response
-doGetRequest url pm = doGetRequestWithReq url pm id
-
--- | TODO: can not be `Request m -> Request m`, why??
-doGetRequestWithReq :: String                               -- ^ URL
-                    -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
-                    -> (Request (ResourceT IO) -> Request (ResourceT IO))          -- ^ update Request
-                    -> IO (Response BSL.ByteString)      -- ^ Response
-doGetRequestWithReq url pm f = do
-    req <- parseUrl $ url ++ BS.unpack (renderSimpleQuery True pm)
-    let req' = (updateRequestHeaders .f) req
-    withManager $ httpLbs req'
-
--- | Conduct GET request and return response as JSON.
-doJSONGetRequest :: FromJSON a
-                 => URI         -- ^ Full URL
-                 -> IO (OAuth2Result a) -- ^ Response as JSON
-doJSONGetRequest url =
-    fmap (parseResponse . handleResponse) $ doGetRequest (BS.unpack url) []
-
--- | Conduct GET request.
-doSimpleGetRequest :: URI                               -- ^ URL
-                   -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimpleGetRequest url = liftM handleResponse (doGetRequest (BS.unpack url) [])
-
+updateRequestHeaders req =
+  let extras = [ (HT.hUserAgent, "hoauth2")
+               , (HT.hAccept, "application/json") ]
+      headers = extras ++ requestHeaders req
+  in
+  req { requestHeaders = headers }

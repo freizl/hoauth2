@@ -2,39 +2,39 @@
 
 module Keys where
 
-import Network.OAuth.OAuth2
+import           Network.OAuth.OAuth2
 
 weiboKey :: OAuth2
 weiboKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                    , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
                    , oauthCallback = Just "http://127.0.0.1:9988/oauthCallback"
-                   , oauthOAuthorizeEndpoint = ""
-                   , oauthAccessTokenEndpoint = ""
-                   , oauthAccessToken = Nothing
+                   , oauthOAuthorizeEndpoint = "https://api.weibo.com/oauth2/authorize"
+                   , oauthAccessTokenEndpoint = "https://api.weibo.com/oauth2/access_token"
                    }
 
+-- | http://developer.github.com/v3/oauth/
 githubKeys :: OAuth2
 githubKeys = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                     , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
                     , oauthCallback = Just "http://127.0.0.1:9988/oauthCallback"
-                    , oauthOAuthorizeEndpoint = "http://developer.github.com/v3/oauth/"
-                    , oauthAccessTokenEndpoint = "http://developer.github.com/v3/oauth/"
-                    , oauthAccessToken = Nothing
+                    , oauthOAuthorizeEndpoint = "https://github.com/login/oauth/authorize"
+                    , oauthAccessTokenEndpoint = "https://github.com/login/oauth/access_token"
                     }
 
+-- | oauthCallback = Just "https://developers.google.com/oauthplayground"
 googleKey :: OAuth2
 googleKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx.apps.googleusercontent.com"
-                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
-                   , oauthCallback = Just "https://developers.google.com/oauthplayground"
-                   , oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oauth2/auth"
-                   , oauthAccessTokenEndpoint = "https://accounts.google.com/o/oauth2/token"
-                   , oauthAccessToken = Nothing}
+                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthCallback = Just "http://127.0.0.1:9988/googleCallback"
+                   , oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oauth2/auth"
+                   , oauthAccessTokenEndpoint = "https://accounts.google.com/o/oauth2/token"
+                   }
 
 facebookKey :: OAuth2
 facebookKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
-                      , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
-                      , oauthCallback = Just "https://developers.facebook.com/tools/debug"
-                      , oauthOAuthorizeEndpoint = "https://www.facebook.com/dialog/oauth"
-                      , oauthAccessTokenEndpoint = "https://graph.facebook.com/oauth/access_token"
-                      , oauthAccessToken = Nothing}
+                     , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                     , oauthCallback = Just "https://developers.facebook.com/tools/debug"
+                     , oauthOAuthorizeEndpoint = "https://www.facebook.com/dialog/oauth"
+                     , oauthAccessTokenEndpoint = "https://graph.facebook.com/oauth/access_token"
+                     }
 

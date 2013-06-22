@@ -1,5 +1,5 @@
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 {-
 
@@ -20,27 +20,27 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 module Main where
 
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Maybe (fromJust)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
-import qualified Network.HTTP.Types as HT
-import Network.HTTP.Conduit
-import Control.Monad.Trans.Control (MonadBaseControl)
-import Data.Conduit (MonadResource)
+import           Control.Monad.Trans.Control     (MonadBaseControl)
+import qualified Data.ByteString                 as BS
+import qualified Data.ByteString.Lazy.Char8      as BSL
+import           Data.Conduit                    (MonadResource)
+import           Data.Maybe                      (fromJust)
+import qualified Data.Text                       as T
+import qualified Data.Text.Encoding              as T
+import           Network.HTTP.Conduit
+import qualified Network.HTTP.Types              as HT
 
-import Network.OAuth.OAuth2.HttpClient
-import Network.OAuth.OAuth2
+import           Network.OAuth.OAuth2
+import           Network.OAuth.OAuth2.HttpClient
 
-import Keys
+import           Keys
 
 main :: IO ()
 main = do
           print $ authorizationUrl weiboKey
           putStrLn "visit the url and paste code here: "
           code <- getLine
-          token <- requestAccessToken weiboKey (sToBS code)
+          token <- fetchAccessToken weiboKey (sToBS code)
           print token
 
 sToBS :: String -> BS.ByteString

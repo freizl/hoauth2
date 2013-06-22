@@ -25,7 +25,10 @@ install: build
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
 	$(STYLE) -i src/Network/OAuth/*.hs
-	hlint src/ --report=$(DIST)/hlint.html
+	$(STYLE) -i example/*.hs
+	$(STYLE) -i example/*.hs.sample
+	$(STYLE) -i example/**/*.hs
+	hlint src/ example --report=$(DIST)/hlint.html
 
 doc: build
 	$(CBD) haddock
@@ -33,8 +36,15 @@ doc: build
 dist: build
 	$(CBD) sdist
 
+####################
+### Tests
+####################
+
 test-weibo:
 	cd example && sh run.sh Weibo/test.hs
 
 test-github:
 	cd example && sh run.sh Github/test.hs
+
+test-google:
+	cd example && sh run.sh Google/test.hs

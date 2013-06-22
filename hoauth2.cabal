@@ -1,6 +1,6 @@
 Name:                hoauth2
 -- (http://www.haskell.org/haskellwiki/Package_versioning_policy)
-Version:             0.3.2
+Version:             0.3.5
 
 Synopsis:            hoauth2
 Description:
@@ -11,6 +11,8 @@ Description:
   * google web oauth: <https://developers.google.com/accounts/docs/OAuth2WebServer>
   .
   * weibo oauth2: <http://open.weibo.com/wiki/Oauth2>
+  .
+  * github oauth: <http://developer.github.com/v3/oauth/>
 
 Homepage:            https://github.com/freizl/hoauth2
 License:             BSD3
