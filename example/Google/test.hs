@@ -25,6 +25,7 @@ import           Data.Aeson.TH                   (deriveJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Internal   as BL
 import           Data.Text                       (Text)
+import           Network.HTTP.Types              (renderSimpleQuery)
 import           Prelude                         hiding (id)
 import qualified Prelude                         as P (id)
 import           System.Environment              (getArgs)
@@ -79,40 +80,38 @@ main = do
 
 offlineCase :: IO ()
 offlineCase = do
-    print $ authorizationUrl googleKey `appendQueryParam'` googleScopeEmail `appendQueryParam'` googleAccessOffline
+    print $ authorizationUrl googleKey `appendQueryParam` (googleScopeEmail ++ googleAccessOffline)
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
-    (Right (AccessToken accessToken refreshToken)) <- fetchAccessToken googleKey code
-    f accessToken refreshToken
-    --validateToken accessToken >>= print
-    --(validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
+    (Right token) <- fetchAccessToken googleKey code
+    f token
     --
     -- obtain a new access token with refresh token, which turns out only in response at first time.
     -- Revoke Access https://www.google.com/settings/security
     --
-    case refreshToken of
+    case refreshToken token of
         Nothing -> print "Failed to fetch refresh token"
         Just tk -> do
-            (Right (AccessToken accessToken refreshToken)) <- fetchAccessToken googleKey tk
-            f accessToken refreshToken
+            (Right token) <- fetchAccessToken googleKey tk
+            f token
             --validateToken accessToken >>= print
             --(validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
-    where f accessToken refreshToken = do
-            print (accessToken, refreshToken)
-            validateToken accessToken >>= print
-            (validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
+    where f token = do
+            print token
+            validateToken token >>= print
+            (validateToken' token :: IO (OAuth2Result Token)) >>= print
 
 normalCase :: IO ()
 normalCase = do
-    print $ authorizationUrl googleKey `appendQueryParam'` googleScopeUserInfo
+    print $ authorizationUrl googleKey `appendQueryParam` googleScopeUserInfo
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
-    (Right (AccessToken accessToken Nothing)) <- fetchAccessToken googleKey code
-    putStr "AccessToken: " >> print accessToken
-    validateToken accessToken >>= print
-    (validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
-    userinfo accessToken >>= print
-    (userinfo' accessToken :: IO (OAuth2Result User)) >>= print
+    (Right token) <- fetchAccessToken googleKey code
+    putStr "AccessToken: " >> print token
+    validateToken token >>= print
+    (validateToken' token :: IO (OAuth2Result Token)) >>= print
+    userinfo token >>= print
+    (userinfo' token :: IO (OAuth2Result User)) >>= print
 
 --------------------------------------------------
 -- Google API
@@ -131,18 +130,18 @@ googleAccessOffline = [("access_type", "offline")
                       ,("approval_prompt", "force")]
 
 -- | Token Validation
-validateToken :: BS.ByteString -> IO (OAuth2Result BL.ByteString)
-validateToken accessToken = doSimpleGetRequest ("https://www.googleapis.com/oauth2/v1/tokeninfo" `appendQueryParam` accessTokenToParam accessToken)
+validateToken :: AccessToken -> IO (OAuth2Result BL.ByteString)
+validateToken token = authGetJSON token "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
-validateToken' :: FromJSON a => BS.ByteString -> IO (OAuth2Result a)
-validateToken' accessToken = doJSONGetRequest ("https://www.googleapis.com/oauth2/v1/tokeninfo" `appendQueryParam` accessTokenToParam accessToken)
+validateToken' :: FromJSON a => AccessToken -> IO (OAuth2Result a)
+validateToken' token = authGetJSON token "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
 -- | fetch user email.
 --   for more information, please check the playround site.
 --
-userinfo :: BS.ByteString -> IO (OAuth2Result BL.ByteString)
-userinfo accessToken = doSimpleGetRequest ("https://www.googleapis.com/oauth2/v2/userinfo" `appendQueryParam` accessTokenToParam accessToken)
+userinfo :: AccessToken -> IO (OAuth2Result BL.ByteString)
+userinfo token = authGetJSON token "https://www.googleapis.com/oauth2/v2/userinfo"
 
-userinfo' :: FromJSON a => BS.ByteString -> IO (OAuth2Result a)
-userinfo' accessToken = doJSONGetRequest ("https://www.googleapis.com/oauth2/v2/userinfo" `appendQueryParam` accessTokenToParam accessToken)
+userinfo' :: FromJSON a => AccessToken -> IO (OAuth2Result a)
+userinfo' token = authGetJSON token "https://www.googleapis.com/oauth2/v2/userinfo"
 

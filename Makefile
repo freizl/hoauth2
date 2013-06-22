@@ -48,3 +48,6 @@ test-github:
 
 test-google:
 	cd example && sh run.sh Google/test.hs
+
+test-fb:
+	cd example && sh run.sh Facebook/test.hs

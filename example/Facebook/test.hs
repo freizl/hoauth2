@@ -35,13 +35,13 @@ $(deriveJSON P.id ''User)
 
 main :: IO ()
 main = do
-    print $ authorizationUrl facebookKey `appendQueryParam'` facebookScope
+    print $ authorizationUrl facebookKey `appendQueryParam` facebookScope
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
     let (url, body) = accessTokenUrl facebookKey code
-    token <- doSimplePostRequest (url, body ++ [("state", "test")])
-    userinfo (BL.unpack token) >>= print
-    userinfo' (BL.unpack token) >>= print
+    (Right token) <- doJSONPostRequest url (body ++ [("state", "test")])
+    userinfo token >>= print
+    userinfo' token >>= print
 
 --------------------------------------------------
 -- FaceBook API
@@ -51,9 +51,9 @@ facebookScope :: QueryParams
 facebookScope = [("scope", "user_about_me,email")]
 
 -- | Fetch user id and email.
-userinfo :: String -> IO BL.ByteString
-userinfo accessToken = doSimpleGetRequest (BS.pack ("https://graph.facebook.com/me?fields=id,name,email&" ++ accessToken))
+userinfo :: AccessToken -> IO (OAuth2Result BL.ByteString)
+userinfo token = authGetJSON token "https://graph.facebook.com/me?fields=id,name,email&"
 
-userinfo' :: FromJSON User => String -> IO (Maybe User)
-userinfo' accessToken = doJSONGetRequest (BS.pack ("https://graph.facebook.com/me?fields=id,name,email&" ++ accessToken))
+userinfo' :: FromJSON User => AccessToken -> IO (OAuth2Result User)
+userinfo' token = authGetJSON token "https://graph.facebook.com/me?fields=id,name,email"
 

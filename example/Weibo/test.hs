@@ -42,6 +42,11 @@ main = do
           code <- getLine
           token <- fetchAccessToken weiboKey (sToBS code)
           print token
+          case token of
+            Right r -> do
+                       uid <- authGetBS r "https://api.weibo.com/2/account/get_uid.json"
+                       print uid
+            Left l -> BSL.putStrLn l
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack

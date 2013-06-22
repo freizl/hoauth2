@@ -11,10 +11,8 @@ import           Control.Monad.Trans.Resource  (ResourceT)
 import           Data.Aeson
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BSL
---import qualified Data.Text                    as T
---import qualified Data.Text.Encoding           as T
+import           Data.Maybe
 import           Network.HTTP.Conduit
-import           Network.HTTP.Types            (renderSimpleQuery)
 import qualified Network.HTTP.Types            as HT
 
 import           Network.OAuth.OAuth2.Internal
@@ -40,9 +38,6 @@ fetchRefreshToken :: OAuth2                          -- ^ OAuth context
 fetchRefreshToken oa rtoken = doJSONPostRequest uri body
                               where (uri, body) = refreshAccessTokenUrl oa rtoken
 
---------------------------------------------------
--- * Simple POST requests
---------------------------------------------------
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: FromJSON a
@@ -55,46 +50,69 @@ doJSONPostRequest uri body = liftM parseResponseJSON (doSimplePostRequest uri bo
 doSimplePostRequest :: URI                                  -- ^ URL
                        -> PostBody                          -- ^ Request body.
                        -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimplePostRequest uri body =
-    liftM handleResponse $ doPostRequestWithReq (BS.unpack uri) body id
-
--- | lower level api to do post request
-doPostRequestWithReq :: String                               -- ^ URL
-                    -> [(BS.ByteString, BS.ByteString)]      -- ^ Data to Post Body
-                    -> (Request (ResourceT IO) -> Request (ResourceT IO))
-                    -> IO (Response BSL.ByteString)          -- ^ Response
-doPostRequestWithReq url body f = do
-    req <- parseUrl url
-    let req' = (f . updateRequestHeaders) req
-    withManager $ httpLbs (urlEncodedBody body req')
+doSimplePostRequest url body = liftM handleResponse go
+                               where go = do
+                                          req <- parseUrl $ BS.unpack url
+                                          let req' = updateRequestHeaders Nothing req
+                                          withManager $ httpLbs (urlEncodedBody body req')
 
 --------------------------------------------------
--- * Simple GET requests
+-- * AUTH requests
 --------------------------------------------------
 
 -- | Conduct GET request and return response as JSON.
-doJSONGetRequest :: FromJSON a
-                 => URI                          -- ^ Full URL
+authGetJSON :: FromJSON a
+                 => AccessToken
+                 -> URI                          -- ^ Full URL
                  -> IO (OAuth2Result a)          -- ^ Response as JSON
-doJSONGetRequest = liftM parseResponseJSON . doSimpleGetRequest
+authGetJSON t uri = liftM parseResponseJSON $ authGetBS t uri
 
 -- | Conduct GET request.
-doSimpleGetRequest :: URI                               -- ^ URL
-                   -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimpleGetRequest url = liftM handleResponse (doGetRequestWithReq (BS.unpack url) [] id)
+authGetBS :: AccessToken
+             -> URI                               -- ^ URL
+             -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
+authGetBS token url = liftM handleResponse go
+                      where go = do
+                                 req <- parseUrl $ BS.unpack $ url `appendAccessToken` token
+                                 authenticatedRequest token HT.GET req
+
+-- | Conduct POST request and return response as JSON.
+authPostJSON :: FromJSON a
+                 => AccessToken
+                 -> URI                          -- ^ Full URL
+                 -> PostBody
+                 -> IO (OAuth2Result a)          -- ^ Response as JSON
+authPostJSON t uri pb = liftM parseResponseJSON $ authPostBS t uri pb
+
+-- | Conduct POST request.
+authPostBS :: AccessToken
+             -> URI                               -- ^ URL
+             -> PostBody
+             -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
+authPostBS token url pb = liftM handleResponse go
+                          where body = pb ++ accessTokenToParam token
+                                go = do
+                                     req <- parseUrl $ BS.unpack url
+                                     authenticatedRequest token HT.POST $  urlEncodedBody body req
 
 
--- | lower level api to do get request
--- TODO: can not be `Request m -> Request m`, why??
+-- |Sends a HTTP request including the Authorization header with the specified
+--  access token.
 --
-doGetRequestWithReq :: String                                              -- ^ URL
-                    -> [(BS.ByteString, BS.ByteString)]                    -- ^ Extra Parameters
-                    -> (Request (ResourceT IO) -> Request (ResourceT IO))  -- ^ update Request
-                    -> IO (Response BSL.ByteString)                        -- ^ Response
-doGetRequestWithReq url pm f = do
-    req <- parseUrl $ url ++ BS.unpack (renderSimpleQuery True pm)
-    let req' = (f . updateRequestHeaders) req
-    withManager $ httpLbs req'
+authenticatedRequest :: AccessToken             -- ^ Authentication token to use
+                     -> HT.StdMethod                     -- ^ Method to use
+                     -> Request (ResourceT IO)        -- ^ Request to perform
+                     -> IO (Response BSL.ByteString)
+authenticatedRequest token m r = withManager
+                                 $ httpLbs
+                                 $ updateRequestHeaders (Just token)
+                                 $ setMethod m r
+-- { checkStatus = \_ _ _ -> Nothing }
+
+-- | Sets the HTTP method to use
+--
+setMethod :: HT.StdMethod -> Request m -> Request m
+setMethod m req = req { method = HT.renderStdMethod m }
 
 --------------------------------------------------
 -- * Utilities
@@ -115,10 +133,11 @@ parseResponseJSON (Right b) = case decode b of
                             Nothing -> Left ("Could not decode JSON" `BSL.append` b)
                             Just x -> Right x
 
-updateRequestHeaders :: Request m -> Request m
-updateRequestHeaders req =
+updateRequestHeaders :: Maybe AccessToken -> Request m -> Request m
+updateRequestHeaders t req =
   let extras = [ (HT.hUserAgent, "hoauth2")
                , (HT.hAccept, "application/json") ]
-      headers = extras ++ requestHeaders req
+      bearer = [(HT.hAuthorization, accessToken $ fromJust t) | isJust t]
+      headers = bearer ++ extras ++ requestHeaders req
   in
   req { requestHeaders = headers }

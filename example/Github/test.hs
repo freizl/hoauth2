@@ -42,7 +42,7 @@ main = do
 -- | Test API: user
 --
 userInfo :: AccessToken -> IO (OAuth2Result GithubUser)
-userInfo token = doJSONGetRequest (appendAccessToken "https://api.github.com/user" token)
+userInfo token = authGetJSON token "https://api.github.com/user"
 
 data GithubUser = GithubUser { gid   :: Integer
                              , gname :: Text

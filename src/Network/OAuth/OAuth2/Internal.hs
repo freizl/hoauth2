@@ -118,23 +118,27 @@ refreshAccessTokenUrl oa rtoken = (uri, body)
 
 -- | Append query parameters with '?'
 appendQueryParam :: URI -> QueryParams -> URI
-appendQueryParam uri q = uri `BS.append` renderSimpleQuery True q
+appendQueryParam uri q = if "?" `BS.isInfixOf` uri
+                         then uri `BS.append` "&" `BS.append` renderSimpleQuery False q
+                         else uri `BS.append` renderSimpleQuery True q
 
 -- | Append query parameters with '&'.
-appendQueryParam' :: URI -> QueryParams -> URI
-appendQueryParam' uri q = uri `BS.append` "&" `BS.append` renderSimpleQuery False q
+-- appendQueryParam' :: URI -> QueryParams -> URI
+-- appendQueryParam' uri q = uri `BS.append` "&" `BS.append` renderSimpleQuery False q
+
 
 -- | For GET method API.
 appendAccessToken :: URI               -- ^ Base URI
                      -> AccessToken    -- ^ Authorized Access Token
                      -> URI            -- ^ Combined Result
-appendAccessToken uri (AccessToken at _) =
-  appendQueryParam uri (accessTokenToParam at)
+appendAccessToken uri t = appendQueryParam uri (accessTokenToParam t)
 
 -- | Create QueryParams with given access token value.
 --
-accessTokenToParam :: BS.ByteString -> QueryParams
-accessTokenToParam token = [("access_token", token)]
+--accessTokenToParam :: BS.ByteString -> QueryParams
+--accessTokenToParam token = [("access_token", token)]
+accessTokenToParam :: AccessToken -> QueryParams
+accessTokenToParam (AccessToken token _) = [("access_token", token)]
 
 
 -- | lift value in the Maybe and abonda Nothing
