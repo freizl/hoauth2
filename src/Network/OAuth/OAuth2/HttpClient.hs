@@ -58,13 +58,7 @@ doSimplePostRequest :: URI                                  -- ^ URL
 doSimplePostRequest uri body =
     liftM handleResponse $ doPostRequestWithReq (BS.unpack uri) body id
 
--- | Conduct POST request with given URL with post body data.
--- doPostRequest ::  String                                 -- ^ URL
---               -> [(BS.ByteString, BS.ByteString)]        -- ^ Data to Post Body
---               -> IO (Response BSL.ByteString)            -- ^ Response
--- doPostRequest url body = doPostRequestWithReq url body id
-
-
+-- | lower level api to do post request
 doPostRequestWithReq :: String                               -- ^ URL
                     -> [(BS.ByteString, BS.ByteString)]      -- ^ Data to Post Body
                     -> (Request (ResourceT IO) -> Request (ResourceT IO))
@@ -84,21 +78,14 @@ doJSONGetRequest :: FromJSON a
                  -> IO (OAuth2Result a)          -- ^ Response as JSON
 doJSONGetRequest = liftM parseResponseJSON . doSimpleGetRequest
 
--- fmap (parseResponseJSON . handleResponse) $ doGetRequest (BS.unpack url) []
-
 -- | Conduct GET request.
 doSimpleGetRequest :: URI                               -- ^ URL
                    -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
 doSimpleGetRequest url = liftM handleResponse (doGetRequestWithReq (BS.unpack url) [] id)
 
 
--- | Conduct GET request with given URL by append extra parameters provided.
--- doGetRequest :: String                               -- ^ URL
---              -> [(BS.ByteString, BS.ByteString)]  -- ^ Extra Parameters
---              -> IO (Response BSL.ByteString)      -- ^ Response
--- doGetRequest url pm = doGetRequestWithReq url pm id
-
--- | TODO: can not be `Request m -> Request m`, why??
+-- | lower level api to do get request
+-- TODO: can not be `Request m -> Request m`, why??
 --
 doGetRequestWithReq :: String                                              -- ^ URL
                     -> [(BS.ByteString, BS.ByteString)]                    -- ^ Extra Parameters
