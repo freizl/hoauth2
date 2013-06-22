@@ -8,14 +8,13 @@
 
 module Network.OAuth.OAuth2.Internal where
 
-import           Control.Applicative ((<$>), (<*>))
-import           Control.Monad       (mzero)
+import           Control.Applicative  ((<$>), (<*>))
+import           Control.Monad        (mzero)
 import           Data.Aeson
-import qualified Data.ByteString     as BS
+import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
-import           Data.Maybe          (fromMaybe)
-import           Data.Typeable       (Typeable)
-import           Network.HTTP.Types  (renderSimpleQuery)
+import           Data.Maybe           (fromMaybe)
+import           Network.HTTP.Types   (renderSimpleQuery)
 
 --------------------------------------------------
 -- * Data Types

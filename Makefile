@@ -1,6 +1,7 @@
 
 DIST=dist
 CBD=cabal-dev
+STYLE=stylish-haskell
 
 default: build
 
@@ -15,12 +16,16 @@ conf:
 
 build: conf
 	$(CBD) build
-	hlint src
 
 rebuild: clean build
 
 install: build
 	$(CBD) install	
+
+hlint:
+	$(STYLE) -i src/Network/OAuth/**/*.hs
+	$(STYLE) -i src/Network/OAuth/*.hs
+	hlint src/ --report=$(DIST)/hlint.html
 
 doc: build
 	$(CBD) haddock

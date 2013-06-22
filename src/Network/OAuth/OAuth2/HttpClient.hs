@@ -6,16 +6,16 @@
 
 module Network.OAuth.OAuth2.HttpClient where
 
-import           Control.Monad                (liftM)
-import           Control.Monad.Trans.Resource (ResourceT)
+import           Control.Monad                 (liftM)
+import           Control.Monad.Trans.Resource  (ResourceT)
 import           Data.Aeson
-import qualified Data.ByteString.Char8        as BS
-import qualified Data.ByteString.Lazy.Char8   as BSL
-import qualified Data.Text                    as T
-import qualified Data.Text.Encoding           as T
+import qualified Data.ByteString.Char8         as BS
+import qualified Data.ByteString.Lazy.Char8    as BSL
+--import qualified Data.Text                    as T
+--import qualified Data.Text.Encoding           as T
 import           Network.HTTP.Conduit
-import           Network.HTTP.Types           (renderSimpleQuery)
-import qualified Network.HTTP.Types           as HT
+import           Network.HTTP.Types            (renderSimpleQuery)
+import qualified Network.HTTP.Types            as HT
 
 import           Network.OAuth.OAuth2.Internal
 
@@ -45,7 +45,7 @@ refreshAccessToken oa rtoken = doJSONPostRequest (refreshAccessTokenUrl oa rtoke
 
 handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
-    if (HT.statusCode $ responseStatus rsp) == 200
+    if HT.statusCode (responseStatus rsp) == 200
         then Right $ responseBody rsp
         else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
 
@@ -53,10 +53,9 @@ handleResponse rsp =
 parseResponse :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
-parseResponse rsp =
-    either (Left) -- Return Left if error
-           (maybe (Left "Could not decode JSON") (Right) . decode) -- Decode JSON
-           rsp
+parseResponse =
+    either Left -- Return Left if error
+           (maybe (Left "Could not decode JSON") Right . decode) -- Decode JSON
 
 updateRequestHeaders :: Request m -> Request m
 updateRequestHeaders req = req { requestHeaders = [ (HT.hUserAgent, "hoauth2"), (HT.hAccept, "application/json") ] }
@@ -126,5 +125,5 @@ doJSONGetRequest url =
 -- | Conduct GET request.
 doSimpleGetRequest :: URI                               -- ^ URL
                    -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimpleGetRequest url = doGetRequest (BS.unpack url) [] >>= return . handleResponse
+doSimpleGetRequest url = liftM handleResponse (doGetRequest (BS.unpack url) [])
 
