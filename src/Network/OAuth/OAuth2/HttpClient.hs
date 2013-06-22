@@ -118,6 +118,8 @@ setMethod m req = req { method = HT.renderStdMethod m }
 -- * Utilities
 --------------------------------------------------
 
+-- | Parses a @Response@ to to @OAuth2Result@
+--
 handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
     if HT.statusCode (responseStatus rsp) == 200
@@ -125,6 +127,7 @@ handleResponse rsp =
         else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
+-- 
 parseResponseJSON :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
@@ -133,11 +136,16 @@ parseResponseJSON (Right b) = case decode b of
                             Nothing -> Left ("Could not decode JSON" `BSL.append` b)
                             Just x -> Right x
 
+-- | set several header values.
+--   + userAgennt : hoauth2
+--   + accept     : application/json
+--   + authorization : Bearer xxxxx  if AccessToken provided.
+-- 
 updateRequestHeaders :: Maybe AccessToken -> Request m -> Request m
 updateRequestHeaders t req =
   let extras = [ (HT.hUserAgent, "hoauth2")
                , (HT.hAccept, "application/json") ]
-      bearer = [(HT.hAuthorization, accessToken $ fromJust t) | isJust t]
+      bearer = [(HT.hAuthorization, "Bearer " `BS.append` accessToken $ fromJust t) | isJust t]
       headers = bearer ++ extras ++ requestHeaders req
   in
   req { requestHeaders = headers }

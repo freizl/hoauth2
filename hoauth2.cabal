@@ -33,8 +33,9 @@ Extra-source-files:
   example/Google/test.hs
   example/Weibo/test.hs
   example/Github/test.hs
+  example/Facebook/test.hs
   example/Keys.hs.sample
-  example/run-7.4.sh
+  example/run-7.6.sh
   example/run.sh
 
 Cabal-version:       >=1.8
