@@ -80,7 +80,7 @@ main = do
 
 offlineCase :: IO ()
 offlineCase = do
-    print $ authorizationUrl googleKey `appendQueryParam` (googleScopeEmail ++ googleAccessOffline)
+    BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` (googleScopeEmail ++ googleAccessOffline)
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
     (Right token) <- fetchAccessToken googleKey code
@@ -90,9 +90,9 @@ offlineCase = do
     -- Revoke Access https://www.google.com/settings/security
     --
     case refreshToken token of
-        Nothing -> print "Failed to fetch refresh token"
+        Nothing -> putStrLn "Failed to fetch refresh token"
         Just tk -> do
-            (Right token) <- fetchAccessToken googleKey tk
+            (Right token) <- fetchRefreshToken googleKey tk
             f token
             --validateToken accessToken >>= print
             --(validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
@@ -103,7 +103,7 @@ offlineCase = do
 
 normalCase :: IO ()
 normalCase = do
-    print $ authorizationUrl googleKey `appendQueryParam` googleScopeUserInfo
+    BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` googleScopeUserInfo
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
     (Right token) <- fetchAccessToken googleKey code
