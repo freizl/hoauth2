@@ -37,22 +37,11 @@ data Token = Token { issued_to      :: Text
                    , user_id        :: Maybe Text
                    , scope          :: Text
                    , expires_in     :: Integer
-                   , email          :: Maybe Text
-                   , verified_email :: Maybe Bool
+                   -- , email          :: Maybe Text
+                   -- , verified_email :: Maybe Bool
                    , access_type    :: Text
                    } deriving (Show)
 
--- ance FromJSON Token where
--- parseJSON (Object o) = Token
---                        <$> o .:  "issued_to"
---                        <*> o .:  "audience"
---                        <*> o .:? "user_id"
---                        <*> o .:  "scope"
---                        <*> o .:  "expires_in"
---                        <*> o .:? "email"
---                        <*> o .:? "verified_email"
---                        <*> o .:  "access_type"
--- parseJSON _ = mzero
 
 $(deriveJSON P.id ''Token)
 
@@ -108,9 +97,13 @@ normalCase = do
     code <- fmap BS.pack getLine
     (Right token) <- fetchAccessToken googleKey code
     putStr "AccessToken: " >> print token
+    -- get response in ByteString
     validateToken token >>= print
+    -- get response in JSON
     (validateToken' token :: IO (OAuth2Result Token)) >>= print
+    -- get response in ByteString
     userinfo token >>= print
+    -- get response in JSON
     (userinfo' token :: IO (OAuth2Result User)) >>= print
 
 --------------------------------------------------
@@ -131,7 +124,7 @@ googleAccessOffline = [("access_type", "offline")
 
 -- | Token Validation
 validateToken :: AccessToken -> IO (OAuth2Result BL.ByteString)
-validateToken token = authGetJSON token "https://www.googleapis.com/oauth2/v1/tokeninfo"
+validateToken token = authGetBS token "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
 validateToken' :: FromJSON a => AccessToken -> IO (OAuth2Result a)
 validateToken' token = authGetJSON token "https://www.googleapis.com/oauth2/v1/tokeninfo"
@@ -140,7 +133,7 @@ validateToken' token = authGetJSON token "https://www.googleapis.com/oauth2/v1/t
 --   for more information, please check the playround site.
 --
 userinfo :: AccessToken -> IO (OAuth2Result BL.ByteString)
-userinfo token = authGetJSON token "https://www.googleapis.com/oauth2/v2/userinfo"
+userinfo token = authGetBS token "https://www.googleapis.com/oauth2/v2/userinfo"
 
 userinfo' :: FromJSON a => AccessToken -> IO (OAuth2Result a)
 userinfo' token = authGetJSON token "https://www.googleapis.com/oauth2/v2/userinfo"
