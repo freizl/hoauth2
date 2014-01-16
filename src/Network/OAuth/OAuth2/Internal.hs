@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
 
 {-# OPTIONS_HADDOCK -ignore-exports #-}
@@ -14,6 +13,7 @@ import           Data.Aeson
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
+import           Data.Text.Encoding
 import           Network.HTTP.Types   (renderSimpleQuery)
 
 --------------------------------------------------
@@ -43,9 +43,9 @@ data AccessToken = AccessToken {
 -- | Parse JSON data into {AccessToken}
 --
 instance FromJSON AccessToken where
-    parseJSON (Object o) = AccessToken
-                           <$> o .: "access_token"
-                           <*> o .:? "refresh_token"
+    parseJSON (Object o) = AccessToken <$> at <*> rt where
+        at = fmap encodeUtf8 $ o .: "access_token"
+        rt = fmap (fmap encodeUtf8) $ o .:? "refresh_token"
     parseJSON _ = mzero
 
 --------------------------------------------------
