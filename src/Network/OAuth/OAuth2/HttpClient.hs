@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts   #-}
 {-# LANGUAGE OverloadedStrings  #-}
 
@@ -7,7 +6,6 @@
 module Network.OAuth.OAuth2.HttpClient where
 
 import           Control.Monad                 (liftM)
-import           Control.Monad.Trans.Resource  (ResourceT)
 import           Data.Aeson
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BSL
@@ -101,7 +99,7 @@ authPostBS token url pb = liftM handleResponse go
 --
 authenticatedRequest :: AccessToken             -- ^ Authentication token to use
                      -> HT.StdMethod                     -- ^ Method to use
-                     -> Request (ResourceT IO)        -- ^ Request to perform
+                     -> Request        -- ^ Request to perform
                      -> IO (Response BSL.ByteString)
 authenticatedRequest token m r = withManager
                                  $ httpLbs
@@ -111,7 +109,7 @@ authenticatedRequest token m r = withManager
 
 -- | Sets the HTTP method to use
 --
-setMethod :: HT.StdMethod -> Request m -> Request m
+setMethod :: HT.StdMethod -> Request -> Request
 setMethod m req = req { method = HT.renderStdMethod m }
 
 --------------------------------------------------
@@ -141,11 +139,11 @@ parseResponseJSON (Right b) = case decode b of
 --   + accept     : application/json
 --   + authorization : Bearer xxxxx  if AccessToken provided.
 -- 
-updateRequestHeaders :: Maybe AccessToken -> Request m -> Request m
+updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
   let extras = [ (HT.hUserAgent, "hoauth2")
                , (HT.hAccept, "application/json") ]
-      bearer = [(HT.hAuthorization, "Bearer " `BS.append` (accessToken $ fromJust t)) | isJust t]
+      bearer = [(HT.hAuthorization, "Bearer " `BS.append` accessToken (fromJust t)) | isJust t]
       headers = bearer ++ extras ++ requestHeaders req
   in
   req { requestHeaders = headers }
