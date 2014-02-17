@@ -21,7 +21,7 @@ import           Control.Applicative             ((<$>), (<*>))
 import           Control.Monad                   (mzero)
 import           Data.Aeson                      (FromJSON, Value (Object),
                                                   parseJSON, (.:), (.:?))
-import           Data.Aeson.TH                   (deriveJSON)
+import           Data.Aeson.TH                   (deriveJSON, defaultOptions)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Internal   as BL
 import           Data.Text                       (Text)
@@ -43,7 +43,7 @@ data Token = Token { issued_to      :: Text
                    } deriving (Show)
 
 
-$(deriveJSON P.id ''Token)
+$(deriveJSON defaultOptions ''Token)
 
 data User = User { id          :: Text
                  , name        :: Text
@@ -56,7 +56,7 @@ data User = User { id          :: Text
                  , locale      :: Text
                  } deriving (Show)
 
-$(deriveJSON P.id ''User)
+$(deriveJSON defaultOptions ''User)
 
 --------------------------------------------------
 

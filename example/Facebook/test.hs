@@ -14,7 +14,7 @@ import           Control.Applicative             ((<$>), (<*>))
 import           Control.Monad                   (mzero)
 import           Data.Aeson                      (FromJSON, Value (Object),
                                                   parseJSON, (.:), (.:?))
-import           Data.Aeson.TH                   (deriveJSON)
+import           Data.Aeson.TH                   (deriveJSON, defaultOptions)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Char8      as BL
 import           Data.Text                       (Text)
@@ -29,7 +29,7 @@ data User = User { id    :: Text
                  , email :: Text
                  } deriving (Show)
 
-$(deriveJSON P.id ''User)
+$(deriveJSON defaultOptions ''User)
 
 --------------------------------------------------
 
@@ -52,7 +52,7 @@ facebookScope = [("scope", "user_about_me,email")]
 
 -- | Fetch user id and email.
 userinfo :: AccessToken -> IO (OAuth2Result BL.ByteString)
-userinfo token = authGetJSON token "https://graph.facebook.com/me?fields=id,name,email&"
+userinfo token = authGetBS token "https://graph.facebook.com/me?fields=id,name,email&"
 
 userinfo' :: FromJSON User => AccessToken -> IO (OAuth2Result User)
 userinfo' token = authGetJSON token "https://graph.facebook.com/me?fields=id,name,email"

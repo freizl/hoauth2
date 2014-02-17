@@ -5,4 +5,5 @@ dist
 *.hi
 log
 cabal-dev*
-*.swp
+.cabal-sandbox
+cabal.sandbox.config

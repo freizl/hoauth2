@@ -1,2 +1,2 @@
-runghc -package-conf=../cabal-dev/packages-7.4.1.conf $*
+runghc -package-conf=../.cabal-sandbox/x86_64-linux-ghc-7.4.1-packages.conf.d $*
 

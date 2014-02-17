@@ -1,13 +1,14 @@
 
 DIST=dist
-CBD=cabal-dev
+CBD=cabal
 STYLE=stylish-haskell
 
 default: build
 
 init:
-	cabal update
-	$(CBD) install
+	$(CBD) sandbox init
+	$(CBD) install --job=2 --only-dependencies --enable-tests
+
 clean:
 	rm -rf $(DIST)
 

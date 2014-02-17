@@ -13,10 +13,10 @@ weiboKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                    }
 
 -- | http://developer.github.com/v3/oauth/
-githubKeys :: OAuth2
-githubKeys = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
+githubKey :: OAuth2
+githubKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                     , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
-                    , oauthCallback = Just "http://127.0.0.1:9988/oauthCallback"
+                    , oauthCallback = Just "http://127.0.0.1:9988/githubCallback"
                     , oauthOAuthorizeEndpoint = "https://github.com/login/oauth/authorize"
                     , oauthAccessTokenEndpoint = "https://github.com/login/oauth/access_token"
                     }
