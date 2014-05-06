@@ -62,6 +62,9 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 -- | type synonym of post body content
 type PostBody = [(BS.ByteString, BS.ByteString)]
 
+-- | type synonym of basic auth credentials
+type Credentials = (BS.ByteString, BS.ByteString)
+
 -- | type synonym of a URI
 type URI = BS.ByteString
 
@@ -85,7 +88,19 @@ authorizationUrl oa = oauthOAuthorizeEndpoint oa `appendQueryParam` queryStr
 accessTokenUrl :: OAuth2
                   -> BS.ByteString       -- ^ access code gained via authorization URL
                   -> (URI, PostBody)     -- ^ access token request URL plus the request body.
-accessTokenUrl oa code = accessTokenUrl' oa code (Just "authorization_code")
+accessTokenUrl oa code = case accessTokenUrl' oa code (Just "authorization_code") of
+      (uri, body) -> (uri, body ++ credentials)
+      where credentials = [ ("client_id", oauthClientId oa)
+                          , ("client_secret", oauthClientSecret oa) ]
+
+-- | Prepare URL, request body and basic auth credentials for fetching access token.
+--
+accessTokenUrlBasicAuth :: OAuth2
+                        -> BS.ByteString                -- ^ access code gained via authorization URL
+                        -> (URI, PostBody, Credentials) -- ^ access token request URL, request body and basic auth credentials
+accessTokenUrlBasicAuth oa code = case accessTokenUrl' oa code (Just "authorization_code") of
+      (uri, body) -> (uri, body, credentials)
+      where credentials = (oauthClientId oa, oauthClientSecret oa)
 
 accessTokenUrl' ::  OAuth2
                     -> BS.ByteString          -- ^ access code gained via authorization URL
@@ -93,9 +108,7 @@ accessTokenUrl' ::  OAuth2
                     -> (URI, PostBody)        -- ^ access token request URL plus the request body.
 accessTokenUrl' oa code gt = (uri, body)
   where uri  = oauthAccessTokenEndpoint oa
-        body = transform' [ ("client_id", Just $ oauthClientId oa)
-                          , ("client_secret", Just $ oauthClientSecret oa)
-                          , ("code", Just code)
+        body = transform' [ ("code", Just code)
                           , ("redirect_uri", oauthCallback oa)
                           , ("grant_type", gt) ]
 
