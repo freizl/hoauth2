@@ -118,11 +118,27 @@ accessTokenUrl' oa code gt = (uri, body)
 refreshAccessTokenUrl :: OAuth2
                          -> BS.ByteString    -- ^ refresh token gained via authorization URL
                          -> (URI, PostBody)  -- ^ refresh token request URL plus the request body.
-refreshAccessTokenUrl oa rtoken = (uri, body)
+refreshAccessTokenUrl oa rtoken = (uri, body ++ credentials)
+  where (uri, body) = refreshAccessTokenUrl' oa rtoken
+        credentials = [ ("client_id", oauthClientId oa)
+                      , ("client_secret", oauthClientSecret oa) ]
+
+-- | Using a Refresh Token.
+--   obtain a new access token by sending a refresh token to the Authorization server.
+--
+refreshAccessTokenUrlBasicAuth :: OAuth2
+                         -> BS.ByteString                 -- ^ refresh token gained via authorization URL
+                         -> (URI, PostBody, Credentials)  -- ^ refresh token request URL plus the request body.
+refreshAccessTokenUrlBasicAuth oa rtoken = (uri, body, credentials)
+  where (uri, body) = refreshAccessTokenUrl' oa rtoken
+        credentials = (oauthClientId oa, oauthClientSecret oa)
+
+refreshAccessTokenUrl' :: OAuth2
+                         -> BS.ByteString    -- ^ refresh token gained via authorization URL
+                         -> (URI, PostBody)  -- ^ refresh token request URL plus the request body.
+refreshAccessTokenUrl' oa rtoken = (uri, body)
   where uri = oauthAccessTokenEndpoint oa
-        body = transform' [ ("client_id", Just $ oauthClientId oa)
-                          , ("client_secret", Just $ oauthClientSecret oa)
-                          , ("grant_type", Just "refresh_token")
+        body = transform' [ ("grant_type", Just "refresh_token")
                           , ("refresh_token", Just rtoken) ]
 
 --------------------------------------------------

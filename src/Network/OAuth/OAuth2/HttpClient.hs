@@ -45,6 +45,13 @@ fetchRefreshToken :: OAuth2                          -- ^ OAuth context
 fetchRefreshToken oa rtoken = doJSONPostRequest uri body
                               where (uri, body) = refreshAccessTokenUrl oa rtoken
 
+-- | Request the "Refresh Token" sending clientId and secret as basic auth header.
+fetchRefreshTokenBasicAuth :: OAuth2                       -- ^ OAuth context
+                          -> BS.ByteString                -- ^ refresh token gained after authorization
+                          -> IO (OAuth2Result AccessToken)
+fetchRefreshTokenBasicAuth oa rtoken = doJSONPostRequest' uri body $ Just credentials
+                              where (uri, body, credentials) = refreshAccessTokenUrlBasicAuth oa rtoken
+
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: FromJSON a
                   => URI                                 -- ^ The URL
