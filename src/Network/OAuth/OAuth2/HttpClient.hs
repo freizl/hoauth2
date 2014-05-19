@@ -28,6 +28,15 @@ fetchAccessToken :: OAuth2                           -- ^ OAuth Data
 fetchAccessToken oa code = doJSONPostRequest uri body
                            where (uri, body) = accessTokenUrl oa code
 
+-- | Request (via POST method) "Access Token" sending clientId and secret as basic auth header.
+--
+--
+fetchAccessTokenBasicAuth :: OAuth2                         -- ^ OAuth Data
+                          -> BS.ByteString                  -- ^ Authentication code gained after authorization
+                          -> IO (OAuth2Result AccessToken)  -- ^ Access Token
+fetchAccessTokenBasicAuth oa code = doJSONPostRequest' uri body $ Just credentials
+                           where (uri, body, credentials) = accessTokenUrlBasicAuth oa code
+
 
 -- | Request the "Refresh Token".
 fetchRefreshToken :: OAuth2                          -- ^ OAuth context
@@ -36,23 +45,41 @@ fetchRefreshToken :: OAuth2                          -- ^ OAuth context
 fetchRefreshToken oa rtoken = doJSONPostRequest uri body
                               where (uri, body) = refreshAccessTokenUrl oa rtoken
 
+-- | Request the "Refresh Token" sending clientId and secret as basic auth header.
+fetchRefreshTokenBasicAuth :: OAuth2                       -- ^ OAuth context
+                          -> BS.ByteString                -- ^ refresh token gained after authorization
+                          -> IO (OAuth2Result AccessToken)
+fetchRefreshTokenBasicAuth oa rtoken = doJSONPostRequest' uri body $ Just credentials
+                              where (uri, body, credentials) = refreshAccessTokenUrlBasicAuth oa rtoken
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: FromJSON a
                   => URI                                 -- ^ The URL
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
-doJSONPostRequest uri body = liftM parseResponseJSON (doSimplePostRequest uri body)
+doJSONPostRequest uri body = doJSONPostRequest' uri body Nothing
+
+-- | Conduct post request and return response as JSON.
+doJSONPostRequest' :: FromJSON a
+                   => URI                                 -- ^ The URL
+                   -> PostBody                            -- ^ request body
+                   -> Maybe Credentials                   -- ^ optional clientId and clientSecret for basic auth header
+                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
+doJSONPostRequest' uri body credentials = liftM parseResponseJSON (doSimplePostRequest uri body credentials)
 
 -- | Conduct post request.
 doSimplePostRequest :: URI                                  -- ^ URL
                        -> PostBody                          -- ^ Request body.
+                       -> Maybe Credentials
                        -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimplePostRequest url body = liftM handleResponse go
+doSimplePostRequest url body credentials = liftM handleResponse go
                                where go = do
                                           req <- parseUrl $ BS.unpack url
                                           let req' = updateRequestHeaders Nothing req
-                                          withManager $ httpLbs (urlEncodedBody body req')
+                                          let req'' = case credentials of
+                                                  Nothing -> req'
+                                                  Just (user, pass) -> applyBasicAuth user pass req'
+                                          withManager $ httpLbs (urlEncodedBody body req'')
 
 --------------------------------------------------
 -- * AUTH requests
