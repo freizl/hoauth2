@@ -25,7 +25,7 @@ import           Network.OAuth.OAuth2.Internal
 fetchAccessToken :: OAuth2                           -- ^ OAuth Data
                    -> BS.ByteString                  -- ^ Authentication code gained after authorization
                    -> IO (OAuth2Result AccessToken)  -- ^ Access Token
-fetchAccessToken oa code = doJSONPostRequest uri body
+fetchAccessToken oa code = doJSONPostRequest oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
 
@@ -33,26 +33,29 @@ fetchAccessToken oa code = doJSONPostRequest uri body
 fetchRefreshToken :: OAuth2                          -- ^ OAuth context
                      -> BS.ByteString                -- ^ refresh token gained after authorization
                      -> IO (OAuth2Result AccessToken)
-fetchRefreshToken oa rtoken = doJSONPostRequest uri body
+fetchRefreshToken oa rtoken = doJSONPostRequest oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa rtoken
 
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: FromJSON a
-                  => URI                                 -- ^ The URL
+                  => OAuth2
+                  -> URI                                 -- ^ The URL
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
-doJSONPostRequest uri body = liftM parseResponseJSON (doSimplePostRequest uri body)
+doJSONPostRequest oa uri body = liftM parseResponseJSON (doSimplePostRequest oa uri body)
 
 -- | Conduct post request.
-doSimplePostRequest :: URI                                  -- ^ URL
+doSimplePostRequest :: OAuth2
+                       -> URI                                  -- ^ URL
                        -> PostBody                          -- ^ Request body.
                        -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimplePostRequest url body = liftM handleResponse go
-                               where go = do
-                                          req <- parseUrl $ BS.unpack url
-                                          let req' = updateRequestHeaders Nothing req
-                                          withManager $ httpLbs (urlEncodedBody body req')
+doSimplePostRequest oa url body = liftM handleResponse go
+                                  where go = do
+                                             req <- parseUrl $ BS.unpack url
+                                             let addBasicAuth = applyBasicAuth (oauthClientId oa) (oauthClientSecret oa)
+                                                 req' = (addBasicAuth . updateRequestHeaders Nothing) req
+                                             withManager $ httpLbs (urlEncodedBody body req')
 
 --------------------------------------------------
 -- * AUTH requests

@@ -32,7 +32,7 @@ main = do
     putStrLn "visit the url and paste code here: "
     code <- getLine
     let (url, body) = accessTokenUrl githubKey (sToBS code)
-    token <- doJSONPostRequest url (body ++ [("state", state)])
+    token <- doJSONPostRequest githubKey url (body ++ [("state", state)])
     print (token :: OAuth2Result AccessToken)
     case token of
       Right at  -> userInfo at >>= print
