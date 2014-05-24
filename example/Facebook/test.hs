@@ -39,7 +39,7 @@ main = do
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
     let (url, body) = accessTokenUrl facebookKey code
-    (Right token) <- doJSONPostRequest url (body ++ [("state", "test")])
+    (Right token) <- doJSONPostRequest facebookKey url (body ++ [("state", "test")])
     userinfo token >>= print
     userinfo' token >>= print
 
