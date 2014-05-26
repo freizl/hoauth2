@@ -1,4 +1,3 @@
-
 DIST=dist
 CBD=cabal
 STYLE=stylish-haskell
@@ -21,7 +20,7 @@ build: conf
 rebuild: clean build
 
 install: build
-	$(CBD) install	
+	$(CBD) install
 
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
@@ -52,3 +51,6 @@ test-google:
 
 test-fb:
 	cd example && sh run.sh Facebook/test.hs
+
+test-douban:
+	cd example && sh run.sh Douban/test.hs

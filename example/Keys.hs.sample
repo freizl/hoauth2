@@ -38,3 +38,11 @@ facebookKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                      , oauthAccessTokenEndpoint = "https://graph.facebook.com/oauth/access_token"
                      }
 
+doubanKey :: OAuth2
+doubanKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
+                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthCallback = Just "http://localhost:9999/oauthCallback"
+                   , oauthOAuthorizeEndpoint = "https://www.douban.com/service/auth2/auth"
+                   , oauthAccessTokenEndpoint = "https://www.douban.com/service/auth2/token"
+                   }
+
