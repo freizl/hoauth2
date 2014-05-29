@@ -128,7 +128,7 @@ handleResponse rsp =
         else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
--- 
+--
 parseResponseJSON :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
@@ -141,7 +141,7 @@ parseResponseJSON (Right b) = case decode b of
 --   + userAgennt : hoauth2
 --   + accept     : application/json
 --   + authorization : Bearer xxxxx  if AccessToken provided.
--- 
+--
 updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
   let extras = [ (HT.hUserAgent, "hoauth2")

@@ -144,4 +144,3 @@ accessTokenToParam (AccessToken token _) = [("access_token", token)]
 -- | lift value in the Maybe and abonda Nothing
 transform' :: [(a, Maybe b)] -> [(a, b)]
 transform' = map (\(a, Just b) -> (a, b)) . filter (isJust . snd)
-
