@@ -15,6 +15,7 @@ conf:
 	$(CBD) configure
 
 build: conf
+	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
 	$(CBD) build
 
 rebuild: clean build

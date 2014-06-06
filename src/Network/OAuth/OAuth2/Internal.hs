@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK -ignore-exports #-}
 

@@ -21,7 +21,7 @@ import           Control.Applicative             ((<$>), (<*>))
 import           Control.Monad                   (mzero)
 import           Data.Aeson                      (FromJSON, Value (Object),
                                                   parseJSON, (.:), (.:?))
-import           Data.Aeson.TH                   (deriveJSON, defaultOptions)
+import           Data.Aeson.TH                   (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Internal   as BL
 import           Data.Text                       (Text)
@@ -32,14 +32,14 @@ import           System.Environment              (getArgs)
 
 --------------------------------------------------
 
-data Token = Token { issued_to      :: Text
-                   , audience       :: Text
-                   , user_id        :: Maybe Text
-                   , scope          :: Text
-                   , expires_in     :: Integer
+data Token = Token { issued_to   :: Text
+                   , audience    :: Text
+                   , user_id     :: Maybe Text
+                   , scope       :: Text
+                   , expires_in  :: Integer
                    -- , email          :: Maybe Text
                    -- , verified_email :: Maybe Bool
-                   , access_type    :: Text
+                   , access_type :: Text
                    } deriving (Show)
 
 

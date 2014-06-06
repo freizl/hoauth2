@@ -14,7 +14,7 @@ import           Control.Applicative             ((<$>), (<*>))
 import           Control.Monad                   (mzero)
 import           Data.Aeson                      (FromJSON, Value (Object),
                                                   parseJSON, (.:), (.:?))
-import           Data.Aeson.TH                   (deriveJSON, defaultOptions)
+import           Data.Aeson.TH                   (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Char8      as BL
 import           Data.Text                       (Text)
