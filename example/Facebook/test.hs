@@ -6,17 +6,17 @@
 
 module Main where
 
-import           Keys                            (facebookKey)
+import           Keys                       (facebookKey)
 import           Network.OAuth.OAuth2
 
+import           Data.Aeson                 (FromJSON)
+import           Data.Aeson.TH              (defaultOptions, deriveJSON)
+import qualified Data.ByteString.Char8      as BS
+import qualified Data.ByteString.Lazy.Char8 as BL
+import           Data.Text                  (Text)
 import           Network.HTTP.Conduit
-import           Data.Aeson                      (FromJSON)
-import           Data.Aeson.TH                   (defaultOptions, deriveJSON)
-import qualified Data.ByteString.Char8           as BS
-import qualified Data.ByteString.Lazy.Char8      as BL
-import           Data.Text                       (Text)
-import           Prelude                         hiding (id)
-import qualified Prelude                         as P (id)
+import           Prelude                    hiding (id)
+import qualified Prelude                    as P (id)
 
 --------------------------------------------------
 

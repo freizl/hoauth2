@@ -20,10 +20,10 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 module Main where
 
-import qualified Data.ByteString                 as BS
-import qualified Data.ByteString.Lazy.Char8      as BSL
-import qualified Data.Text                       as T
-import qualified Data.Text.Encoding              as T
+import qualified Data.ByteString            as BS
+import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Data.Text                  as T
+import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 

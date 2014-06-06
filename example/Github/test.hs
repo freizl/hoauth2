@@ -6,13 +6,13 @@
 module Main where
 
 import           Control.Applicative
-import           Control.Monad                   (mzero)
-import           Network.HTTP.Conduit
+import           Control.Monad        (mzero)
 import           Data.Aeson
-import qualified Data.ByteString                 as BS
-import           Data.Text                       (Text)
-import qualified Data.Text                       as T
-import qualified Data.Text.Encoding              as T
+import qualified Data.ByteString      as BS
+import           Data.Text            (Text)
+import qualified Data.Text            as T
+import qualified Data.Text.Encoding   as T
+import           Network.HTTP.Conduit
 
 import           Network.OAuth.OAuth2
 

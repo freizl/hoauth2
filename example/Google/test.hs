@@ -13,18 +13,18 @@ Google OAuth 2.0 playround: https://developers.google.com/oauthplayground/
 
 module Main where
 
-import           Keys                            (googleKey)
+import           Keys                          (googleKey)
 import           Network.OAuth.OAuth2
 
+import           Data.Aeson                    (FromJSON)
+import           Data.Aeson.TH                 (defaultOptions, deriveJSON)
+import qualified Data.ByteString.Char8         as BS
+import qualified Data.ByteString.Lazy.Internal as BL
+import           Data.Text                     (Text)
 import           Network.HTTP.Conduit
-import           Data.Aeson                      (FromJSON)
-import           Data.Aeson.TH                   (defaultOptions, deriveJSON)
-import qualified Data.ByteString.Char8           as BS
-import qualified Data.ByteString.Lazy.Internal   as BL
-import           Data.Text                       (Text)
-import           Prelude                         hiding (id)
-import qualified Prelude                         as P (id)
-import           System.Environment              (getArgs)
+import           Prelude                       hiding (id)
+import qualified Prelude                       as P (id)
+import           System.Environment            (getArgs)
 
 --------------------------------------------------
 
