@@ -15,17 +15,13 @@ module Main where
 
 import           Keys                            (googleKey)
 import           Network.OAuth.OAuth2
-import           Network.OAuth.OAuth2.HttpClient
 
-import           Control.Applicative             ((<$>), (<*>))
-import           Control.Monad                   (mzero)
-import           Data.Aeson                      (FromJSON, Value (Object),
-                                                  parseJSON, (.:), (.:?))
+import           Network.HTTP.Conduit
+import           Data.Aeson                      (FromJSON)
 import           Data.Aeson.TH                   (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Internal   as BL
 import           Data.Text                       (Text)
-import           Network.HTTP.Types              (renderSimpleQuery)
 import           Prelude                         hiding (id)
 import qualified Prelude                         as P (id)
 import           System.Environment              (getArgs)
@@ -63,16 +59,18 @@ $(deriveJSON defaultOptions ''User)
 main :: IO ()
 main = do
     xs <- getArgs
+    mgr <- newManager conduitManagerSettings
     case xs of
-        ["offline"] -> offlineCase
-        _ -> normalCase
+        ["offline"] -> offlineCase mgr
+        _ -> normalCase mgr
+    closeManager mgr
 
-offlineCase :: IO ()
-offlineCase = do
+offlineCase :: Manager -> IO ()
+offlineCase mgr = do
     BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` (googleScopeEmail ++ googleAccessOffline)
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
-    (Right token) <- fetchAccessToken googleKey code
+    (Right token) <- fetchAccessToken mgr googleKey code
     f token
     --
     -- obtain a new access token with refresh token, which turns out only in response at first time.
@@ -81,30 +79,30 @@ offlineCase = do
     case refreshToken token of
         Nothing -> putStrLn "Failed to fetch refresh token"
         Just tk -> do
-            (Right token) <- fetchRefreshToken googleKey tk
-            f token
+            (Right token') <- fetchRefreshToken mgr googleKey tk
+            f token'
             --validateToken accessToken >>= print
             --(validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
     where f token = do
             print token
-            validateToken token >>= print
-            (validateToken' token :: IO (OAuth2Result Token)) >>= print
+            validateToken mgr token >>= print
+            (validateToken' mgr token :: IO (OAuth2Result Token)) >>= print
 
-normalCase :: IO ()
-normalCase = do
+normalCase :: Manager -> IO ()
+normalCase mgr = do
     BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` googleScopeUserInfo
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
-    (Right token) <- fetchAccessToken googleKey code
+    (Right token) <- fetchAccessToken mgr googleKey code
     putStr "AccessToken: " >> print token
     -- get response in ByteString
-    validateToken token >>= print
+    validateToken mgr token >>= print
     -- get response in JSON
-    (validateToken' token :: IO (OAuth2Result Token)) >>= print
+    (validateToken' mgr token :: IO (OAuth2Result Token)) >>= print
     -- get response in ByteString
-    userinfo token >>= print
+    userinfo mgr token >>= print
     -- get response in JSON
-    (userinfo' token :: IO (OAuth2Result User)) >>= print
+    (userinfo' mgr token :: IO (OAuth2Result User)) >>= print
 
 --------------------------------------------------
 -- Google API
@@ -123,18 +121,27 @@ googleAccessOffline = [("access_type", "offline")
                       ,("approval_prompt", "force")]
 
 -- | Token Validation
-validateToken :: AccessToken -> IO (OAuth2Result BL.ByteString)
-validateToken token = authGetBS token "https://www.googleapis.com/oauth2/v1/tokeninfo"
+validateToken :: Manager
+                 -> AccessToken
+                 -> IO (OAuth2Result BL.ByteString)
+validateToken mgr token = authGetBS mgr token "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
-validateToken' :: FromJSON a => AccessToken -> IO (OAuth2Result a)
-validateToken' token = authGetJSON token "https://www.googleapis.com/oauth2/v1/tokeninfo"
+validateToken' :: FromJSON a
+                  => Manager
+                  -> AccessToken
+                  -> IO (OAuth2Result a)
+validateToken' mgr token = authGetJSON mgr token "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
 -- | fetch user email.
 --   for more information, please check the playround site.
 --
-userinfo :: AccessToken -> IO (OAuth2Result BL.ByteString)
-userinfo token = authGetBS token "https://www.googleapis.com/oauth2/v2/userinfo"
+userinfo :: Manager
+            -> AccessToken
+            -> IO (OAuth2Result BL.ByteString)
+userinfo mgr token = authGetBS mgr token "https://www.googleapis.com/oauth2/v2/userinfo"
 
-userinfo' :: FromJSON a => AccessToken -> IO (OAuth2Result a)
-userinfo' token = authGetJSON token "https://www.googleapis.com/oauth2/v2/userinfo"
-
+userinfo' :: FromJSON a
+             => Manager
+             -> AccessToken
+             -> IO (OAuth2Result a)
+userinfo' mgr token = authGetJSON mgr token "https://www.googleapis.com/oauth2/v2/userinfo"

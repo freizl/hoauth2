@@ -8,19 +8,15 @@ module Main where
 
 import           Keys                            (facebookKey)
 import           Network.OAuth.OAuth2
-import           Network.OAuth.OAuth2.HttpClient
 
-import           Control.Applicative             ((<$>), (<*>))
-import           Control.Monad                   (mzero)
-import           Data.Aeson                      (FromJSON, Value (Object),
-                                                  parseJSON, (.:), (.:?))
+import           Network.HTTP.Conduit
+import           Data.Aeson                      (FromJSON)
 import           Data.Aeson.TH                   (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Char8      as BL
 import           Data.Text                       (Text)
 import           Prelude                         hiding (id)
 import qualified Prelude                         as P (id)
-import           System.Environment              (getArgs)
 
 --------------------------------------------------
 
@@ -38,10 +34,12 @@ main = do
     print $ authorizationUrl facebookKey `appendQueryParam` facebookScope
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
+    mgr <- newManager conduitManagerSettings
     let (url, body) = accessTokenUrl facebookKey code
-    (Right token) <- doJSONPostRequest facebookKey url (body ++ [("state", "test")])
-    userinfo token >>= print
-    userinfo' token >>= print
+    (Right token) <- doJSONPostRequest mgr facebookKey url (body ++ [("state", "test")])
+    userinfo mgr token >>= print
+    userinfo' mgr token >>= print
+    closeManager mgr
 
 --------------------------------------------------
 -- FaceBook API
@@ -51,9 +49,8 @@ facebookScope :: QueryParams
 facebookScope = [("scope", "user_about_me,email")]
 
 -- | Fetch user id and email.
-userinfo :: AccessToken -> IO (OAuth2Result BL.ByteString)
-userinfo token = authGetBS token "https://graph.facebook.com/me?fields=id,name,email&"
+userinfo :: Manager -> AccessToken -> IO (OAuth2Result BL.ByteString)
+userinfo mgr token = authGetBS mgr token "https://graph.facebook.com/me?fields=id,name,email&"
 
-userinfo' :: FromJSON User => AccessToken -> IO (OAuth2Result User)
-userinfo' token = authGetJSON token "https://graph.facebook.com/me?fields=id,name,email"
-
+userinfo' :: FromJSON User => Manager -> AccessToken -> IO (OAuth2Result User)
+userinfo' mgr token = authGetJSON mgr token "https://graph.facebook.com/me?fields=id,name,email"
