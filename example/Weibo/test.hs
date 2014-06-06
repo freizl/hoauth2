@@ -20,18 +20,12 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 module Main where
 
-import           Control.Monad.Trans.Control     (MonadBaseControl)
 import qualified Data.ByteString                 as BS
 import qualified Data.ByteString.Lazy.Char8      as BSL
-import           Data.Conduit                    (MonadResource)
-import           Data.Maybe                      (fromJust)
 import qualified Data.Text                       as T
 import qualified Data.Text.Encoding              as T
 import           Network.HTTP.Conduit
-import qualified Network.HTTP.Types              as HT
-
 import           Network.OAuth.OAuth2
-import           Network.OAuth.OAuth2.HttpClient
 
 import           Keys
 

@@ -26,6 +26,8 @@ rebuild: clean build
 install: build
 	$(CBD) install
 
+ci: build test
+
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
 	$(STYLE) -i src/Network/OAuth/*.hs
@@ -40,24 +42,21 @@ doc: build
 dist: build
 	$(CBD) sdist
 
-ci: build test
-
-
 ####################
 ### Tests
 ####################
 
 test-weibo:
-	cd example && sh run.sh Weibo/test.hs
+	./dist/build/test-weibo/test-weibo
 
 test-github:
-	cd example && sh run.sh Github/test.hs
+	./dist/build/test-github/test-github
 
 test-google:
-	cd example && sh run.sh Google/test.hs
+	./dist/build/test-google/test-google
 
 test-fb:
-	cd example && sh run.sh Facebook/test.hs
+	./dist/build/test-fb/test-fb
 
 test-douban:
-	cd example && sh run.sh Douban/test.hs
+	./dist/build/test-douban/test-douban
