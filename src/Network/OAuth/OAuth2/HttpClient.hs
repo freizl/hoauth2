@@ -22,39 +22,39 @@ import           Network.OAuth.OAuth2.Internal
 -- | Request (via POST method) "Access Token".
 --
 --
-fetchAccessToken :: OAuth2                           -- ^ OAuth Data
-                   -> Manager                        -- ^ HTTP connection manager.
+fetchAccessToken :: Manager                          -- ^ HTTP connection manager
+                   -> OAuth2                         -- ^ OAuth Data
                    -> BS.ByteString                  -- ^ Authentication code gained after authorization
                    -> IO (OAuth2Result AccessToken)  -- ^ Access Token
-fetchAccessToken oa manager code = doJSONPostRequest oa manager uri body
+fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
 
 -- | Request the "Refresh Token".
-fetchRefreshToken :: OAuth2                          -- ^ OAuth context
-                     -> Manager                      -- ^ HTTP connection manager.
+fetchRefreshToken :: Manager                         -- ^ HTTP connection manager.
+                     -> OAuth2                       -- ^ OAuth context
                      -> BS.ByteString                -- ^ refresh token gained after authorization
                      -> IO (OAuth2Result AccessToken)
-fetchRefreshToken oa manager rtoken = doJSONPostRequest oa manager uri body
+fetchRefreshToken manager oa rtoken = doJSONPostRequest manager oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa rtoken
 
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: FromJSON a
-                  => OAuth2
-                  -> Manager                             -- ^ HTTP connection manager.
+                  => Manager                             -- ^ HTTP connection manager.
+                  -> OAuth2                              -- ^ OAuth options
                   -> URI                                 -- ^ The URL
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
-doJSONPostRequest oa manager uri body = liftM parseResponseJSON (doSimplePostRequest oa manager uri body)
+doJSONPostRequest manager oa uri body = liftM parseResponseJSON (doSimplePostRequest manager oa uri body)
 
 -- | Conduct post request.
-doSimplePostRequest :: OAuth2
-                       -> Manager                           -- ^ HTTP connection manager.
+doSimplePostRequest :: Manager                              -- ^ HTTP connection manager.
+                       -> OAuth2                            -- ^ OAuth options
                        -> URI                               -- ^ URL
                        -> PostBody                          -- ^ Request body.
                        -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimplePostRequest oa manager url body = liftM handleResponse go
+doSimplePostRequest manager oa url body = liftM handleResponse go
                                   where go = do
                                              req <- parseUrl $ BS.unpack url
                                              let addBasicAuth = applyBasicAuth (oauthClientId oa) (oauthClientSecret oa)

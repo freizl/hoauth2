@@ -41,7 +41,7 @@ main = do
        putStrLn "visit the url and paste code here: "
        code <- getLine
        mgr <- newManager conduitManagerSettings
-       token <- fetchAccessToken weiboKey mgr (sToBS code)
+       token <- fetchAccessToken mgr weiboKey (sToBS code)
        print token
        case token of
          Right r -> do
