@@ -37,16 +37,18 @@ import           Keys
 
 main :: IO ()
 main = do
-          print $ authorizationUrl weiboKey
-          putStrLn "visit the url and paste code here: "
-          code <- getLine
-          token <- fetchAccessToken weiboKey (sToBS code)
-          print token
-          case token of
-            Right r -> do
-                       uid <- authGetBS r "https://api.weibo.com/2/account/get_uid.json"
-                       print uid
-            Left l -> BSL.putStrLn l
+       print $ authorizationUrl weiboKey
+       putStrLn "visit the url and paste code here: "
+       code <- getLine
+       mgr <- newManager conduitManagerSettings
+       token <- fetchAccessToken weiboKey mgr (sToBS code)
+       print token
+       case token of
+         Right r -> do
+                    uid <- authGetBS mgr r "https://api.weibo.com/2/account/get_uid.json"
+                    print uid
+         Left l -> BSL.putStrLn l
+       closeManager mgr
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack
