@@ -7,3 +7,4 @@ log
 cabal-dev*
 .cabal-sandbox
 cabal.sandbox.config
+*.bak

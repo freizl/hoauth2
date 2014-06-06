@@ -12,11 +12,14 @@ clean:
 	rm -rf $(DIST)
 
 conf:
-	$(CBD) configure
+	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
+	$(CBD) configure --enable-tests
 
 build: conf
-	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
 	$(CBD) build
+
+test:
+	$(CBD) test
 
 rebuild: clean build
 
@@ -36,6 +39,9 @@ doc: build
 
 dist: build
 	$(CBD) sdist
+
+ci: build test
+
 
 ####################
 ### Tests
