@@ -44,6 +44,9 @@ Source-Repository head
   Type:     git
   Location: git://github.com/freizl/hoauth2.git
 
+Flag test
+     Description: Build the executables
+     Default: False
 
 Library
   hs-source-dirs: src
@@ -73,6 +76,11 @@ Library
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
 
 Executable test-weibo
+  if flag(test)
+    Buildable: True
+  else
+    Buildable: False
+
   main-is:             Weibo/test.hs
   hs-source-dirs:      example
   default-language:    Haskell2010
@@ -92,6 +100,11 @@ Executable test-weibo
 
 
 Executable test-google
+  if flag(test)
+    Buildable: True
+  else
+    Buildable: False
+
   main-is:             Google/test.hs
   hs-source-dirs:      example
   default-language:    Haskell2010
@@ -112,6 +125,11 @@ Executable test-google
 
 
 Executable test-github
+  if flag(test)
+    Buildable: True
+  else
+    Buildable: False
+
   main-is:             Github/test.hs
   hs-source-dirs:      example
   default-language:    Haskell2010
@@ -131,6 +149,11 @@ Executable test-github
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
 
 Executable test-douban
+  if flag(test)
+    Buildable: True
+  else
+    Buildable: False
+
   main-is:             Douban/test.hs
   hs-source-dirs:      example
   default-language:    Haskell2010
@@ -150,6 +173,11 @@ Executable test-douban
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
 
 Executable test-fb
+  if flag(test)
+    Buildable: True
+  else
+    Buildable: False
+
   main-is:             Facebook/test.hs
   hs-source-dirs:      example
   default-language:    Haskell2010
