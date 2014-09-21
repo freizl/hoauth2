@@ -129,7 +129,7 @@ setMethod m req = req { method = HT.renderStdMethod m }
 --
 handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
-    if HT.statusCode (responseStatus rsp) == 200
+    if HT.statusIsSuccessful (responseStatus rsp)
         then Right $ responseBody rsp
         else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
 
