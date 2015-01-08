@@ -14,6 +14,7 @@ import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
 import           Data.Text.Encoding
+import           Data.Text.Read
 import           Network.HTTP.Types   (renderSimpleQuery)
 
 --------------------------------------------------
@@ -38,14 +39,18 @@ data OAuth2 = OAuth2 {
 data AccessToken = AccessToken {
       accessToken  :: BS.ByteString
     , refreshToken :: Maybe BS.ByteString
+    , expiresIn    :: Maybe Int
+    , tokenType    :: Maybe BS.ByteString
     } deriving (Show)
 
 -- | Parse JSON data into {AccessToken}
 --
 instance FromJSON AccessToken where
-    parseJSON (Object o) = AccessToken <$> at <*> rt where
+    parseJSON (Object o) = AccessToken <$> at <*> rt <*> ei <*> tt where
         at = fmap encodeUtf8 $ o .: "access_token"
         rt = fmap (fmap encodeUtf8) $ o .:? "refresh_token"
+        ei = o .:? "expires_in"
+        tt = fmap (fmap encodeUtf8) $ o .:? "token_type"
     parseJSON _ = mzero
 
 --------------------------------------------------
@@ -138,7 +143,7 @@ appendAccessToken uri t = appendQueryParam uri (accessTokenToParam t)
 --accessTokenToParam :: BS.ByteString -> QueryParams
 --accessTokenToParam token = [("access_token", token)]
 accessTokenToParam :: AccessToken -> QueryParams
-accessTokenToParam (AccessToken token _) = [("access_token", token)]
+accessTokenToParam (AccessToken token _ _ _) = [("access_token", token)]
 
 
 -- | lift value in the Maybe and abonda Nothing
