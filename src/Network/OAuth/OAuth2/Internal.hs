@@ -14,7 +14,6 @@ import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
 import           Data.Text.Encoding
-import           Data.Text.Read
 import           Network.HTTP.Types   (renderSimpleQuery)
 
 --------------------------------------------------

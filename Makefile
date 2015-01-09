@@ -13,7 +13,7 @@ clean:
 
 conf:
 	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
-	$(CBD) configure --enable-tests
+	$(CBD) configure --enable-tests -ftest
 
 build: conf
 	$(CBD) build
