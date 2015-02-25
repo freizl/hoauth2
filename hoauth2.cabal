@@ -18,8 +18,8 @@ Homepage:            https://github.com/freizl/hoauth2
 License:             BSD3
 License-file:        LICENSE
 Author:              Haisheng Wu
-Maintainer:          freizl@gmail.com
-Copyright:           Haisheng,Wu
+Maintainer:          Haisheng Wu <freizl@gmail.com>
+Copyright:           Haisheng Wu
 Category:            Network
 Build-type:          Simple
 stability:           alpha
