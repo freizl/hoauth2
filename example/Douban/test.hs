@@ -5,6 +5,8 @@
 
 douban oauth2: http://developers.douban.com/wiki/?title=oauth2
 
+/v2/movie/nowplaying
+
 -}
 
 module Main where

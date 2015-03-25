@@ -80,7 +80,7 @@ authGetBS :: Manager                              -- ^ HTTP connection manager.
              -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
 authGetBS manager token url = liftM handleResponse go
                       where go = do
-                                 req <- parseUrl $ BS.unpack $ url `appendAccessToken` token
+                                 req <- parseUrl $ BS.unpack $ url
                                  authenticatedRequest manager token HT.GET req
 
 -- | Conduct POST request and return response as JSON.
@@ -102,7 +102,7 @@ authPostBS manager token url pb = liftM handleResponse go
                           where body = pb ++ accessTokenToParam token
                                 go = do
                                      req <- parseUrl $ BS.unpack url
-                                     authenticatedRequest manager token HT.POST $  urlEncodedBody body req
+                                     authenticatedRequest manager token HT.POST $ urlEncodedBody body req
 
 
 -- |Sends a HTTP request including the Authorization header with the specified
@@ -111,7 +111,7 @@ authPostBS manager token url pb = liftM handleResponse go
 authenticatedRequest :: Manager                          -- ^ HTTP connection manager.
                      -> AccessToken                      -- ^ Authentication token to use
                      -> HT.StdMethod                     -- ^ Method to use
-                     -> Request        -- ^ Request to perform
+                     -> Request                          -- ^ Request to perform
                      -> IO (Response BSL.ByteString)
 authenticatedRequest manager token m r =
     httpLbs (updateRequestHeaders (Just token) $ setMethod m r) manager

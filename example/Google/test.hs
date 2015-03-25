@@ -24,7 +24,9 @@ import           Data.Text                     (Text)
 import           Network.HTTP.Conduit
 import           Prelude                       hiding (id)
 import qualified Prelude                       as P (id)
+import           Control.Monad                 (liftM)
 import           System.Environment            (getArgs)
+import qualified Network.HTTP.Types            as HT
 
 --------------------------------------------------
 
@@ -124,13 +126,17 @@ googleAccessOffline = [("access_type", "offline")
 validateToken :: Manager
                  -> AccessToken
                  -> IO (OAuth2Result BL.ByteString)
-validateToken mgr token = authGetBS mgr token "https://www.googleapis.com/oauth2/v1/tokeninfo"
+validateToken mgr token = do
+   req <- parseUrl $ BS.unpack $ url `appendAccessToken` token
+   resp <- authenticatedRequest mgr token HT.GET req
+   return $ handleResponse resp
+   where url = "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
 validateToken' :: FromJSON a
                   => Manager
                   -> AccessToken
                   -> IO (OAuth2Result a)
-validateToken' mgr token = authGetJSON mgr token "https://www.googleapis.com/oauth2/v1/tokeninfo"
+validateToken' mgr token = liftM parseResponseJSON $ validateToken mgr token
 
 -- | fetch user email.
 --   for more information, please check the playround site.
