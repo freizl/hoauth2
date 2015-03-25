@@ -36,9 +36,13 @@ main = do
     code <- fmap BS.pack getLine
     mgr <- newManager conduitManagerSettings
     let (url, body) = accessTokenUrl facebookKey code
-    (Right token) <- doJSONPostRequest mgr facebookKey url (body ++ [("state", "test")])
-    userinfo mgr token >>= print
-    userinfo' mgr token >>= print
+    resp <- doJSONPostRequest mgr facebookKey url (body ++ [("state", "test")])
+    print (resp :: OAuth2Result AccessToken)
+    case resp of
+      Right token -> print token
+        --userinfo mgr token >>= print
+        --userinfo' mgr token >>= print
+      Left l -> print l
     closeManager mgr
 
 --------------------------------------------------
@@ -50,7 +54,7 @@ facebookScope = [("scope", "user_about_me,email")]
 
 -- | Fetch user id and email.
 userinfo :: Manager -> AccessToken -> IO (OAuth2Result BL.ByteString)
-userinfo mgr token = authGetBS mgr token "https://graph.facebook.com/me?fields=id,name,email&"
+userinfo mgr token = authGetBS mgr token "https://graph.facebook.com/me?fields=id,name,email"
 
 userinfo' :: FromJSON User => Manager -> AccessToken -> IO (OAuth2Result User)
 userinfo' mgr token = authGetJSON mgr token "https://graph.facebook.com/me?fields=id,name,email"
