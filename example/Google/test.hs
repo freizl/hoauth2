@@ -16,6 +16,7 @@ module Main where
 import           Keys                          (googleKey)
 import           Network.OAuth.OAuth2
 
+import           Control.Monad                 (liftM)
 import           Data.Aeson                    (FromJSON)
 import           Data.Aeson.TH                 (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Char8         as BS
@@ -24,9 +25,7 @@ import           Data.Text                     (Text)
 import           Network.HTTP.Conduit
 import           Prelude                       hiding (id)
 import qualified Prelude                       as P (id)
-import           Control.Monad                 (liftM)
 import           System.Environment            (getArgs)
-import qualified Network.HTTP.Types            as HT
 
 --------------------------------------------------
 
@@ -126,10 +125,8 @@ googleAccessOffline = [("access_type", "offline")
 validateToken :: Manager
                  -> AccessToken
                  -> IO (OAuth2Result BL.ByteString)
-validateToken mgr token = do
-   req <- parseUrl $ BS.unpack $ url `appendAccessToken` token
-   resp <- authenticatedRequest mgr token HT.GET req
-   return $ handleResponse resp
+validateToken mgr token =
+   authGetBS' mgr token url
    where url = "https://www.googleapis.com/oauth2/v1/tokeninfo"
 
 validateToken' :: FromJSON a

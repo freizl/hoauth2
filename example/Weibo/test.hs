@@ -39,7 +39,7 @@ main = do
        print token
        case token of
          Right r -> do
-                    uid <- authGetBS mgr r "https://api.weibo.com/2/account/get_uid.json"
+                    uid <- authGetBS' mgr r "https://api.weibo.com/2/account/get_uid.json"
                     print uid
          Left l -> BSL.putStrLn l
        closeManager mgr

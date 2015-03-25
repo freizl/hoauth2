@@ -66,6 +66,7 @@ doSimplePostRequest manager oa url body = liftM handleResponse go
 --------------------------------------------------
 
 -- | Conduct GET request and return response as JSON.
+--
 authGetJSON :: FromJSON a
                  => Manager                      -- ^ HTTP connection manager.
                  -> AccessToken
@@ -74,14 +75,27 @@ authGetJSON :: FromJSON a
 authGetJSON manager t uri = liftM parseResponseJSON $ authGetBS manager t uri
 
 -- | Conduct GET request.
+--
 authGetBS :: Manager                              -- ^ HTTP connection manager.
              -> AccessToken
              -> URI                               -- ^ URL
              -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-authGetBS manager token url = liftM handleResponse go
-                      where go = do
-                                 req <- parseUrl $ BS.unpack $ url
-                                 authenticatedRequest manager token HT.GET req
+authGetBS manager token url = do
+  req <- parseUrl $ BS.unpack url
+  authRequest req upReq manager
+  where upReq = updateRequestHeaders (Just token) . setMethod HT.GET
+
+-- | same to 'authGetBS' but set access token to query parameter rather than header
+--
+authGetBS' :: Manager                              -- ^ HTTP connection manager.
+             -> AccessToken
+             -> URI                               -- ^ URL
+             -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
+authGetBS' manager token url = do
+  req <- parseUrl $ BS.unpack $ url `appendAccessToken` token
+  authRequest req upReq manager
+  where upReq = updateRequestHeaders Nothing . setMethod HT.GET
+
 
 -- | Conduct POST request and return response as JSON.
 authPostJSON :: FromJSON a
@@ -98,28 +112,27 @@ authPostBS :: Manager                             -- ^ HTTP connection manager.
              -> URI                               -- ^ URL
              -> PostBody
              -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-authPostBS manager token url pb = liftM handleResponse go
-                          where body = pb ++ accessTokenToParam token
-                                go = do
-                                     req <- parseUrl $ BS.unpack url
-                                     authenticatedRequest manager token HT.POST $ urlEncodedBody body req
-
+authPostBS manager token url pb = do
+  req <- parseUrl $ BS.unpack url
+  authRequest req upReq manager
+  where upBody = urlEncodedBody (pb ++ accessTokenToParam token)
+        upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
+        upReq = upHeaders . upBody
 
 -- |Sends a HTTP request including the Authorization header with the specified
 --  access token.
 --
-authenticatedRequest :: Manager                          -- ^ HTTP connection manager.
-                     -> AccessToken                      -- ^ Authentication token to use
-                     -> HT.StdMethod                     -- ^ Method to use
-                     -> Request                          -- ^ Request to perform
-                     -> IO (Response BSL.ByteString)
-authenticatedRequest manager token m r =
-    httpLbs (updateRequestHeaders (Just token) $ setMethod m r) manager
+authRequest :: Request                          -- ^ Request to perform
+               -> (Request -> Request)          -- ^ Modify request before sending
+               -> Manager                          -- ^ HTTP connection manager.
+               -> IO (OAuth2Result BSL.ByteString)
+authRequest req upReq manager = liftM handleResponse (authRequest' req upReq manager)
 
--- | Sets the HTTP method to use
---
-setMethod :: HT.StdMethod -> Request -> Request
-setMethod m req = req { method = HT.renderStdMethod m }
+authRequest' :: Request                          -- ^ Request to perform
+               -> (Request -> Request)          -- ^ Modify request before sending
+               -> Manager                          -- ^ HTTP connection manager.
+               -> IO (Response BSL.ByteString)
+authRequest' req upReq = httpLbs (upReq req)
 
 --------------------------------------------------
 -- * Utilities
@@ -156,3 +169,8 @@ updateRequestHeaders t req =
       headers = bearer ++ extras ++ requestHeaders req
   in
   req { requestHeaders = headers }
+
+-- | Sets the HTTP method to use
+--
+setMethod :: HT.StdMethod -> Request -> Request
+setMethod m req = req { method = HT.renderStdMethod m }
