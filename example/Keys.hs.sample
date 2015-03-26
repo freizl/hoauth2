@@ -27,15 +27,15 @@ googleKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx.apps.googleusercontent.com
                    , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
                    , oauthCallback = Just "http://127.0.0.1:9988/googleCallback"
                    , oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oauth2/auth"
-                   , oauthAccessTokenEndpoint = "https://accounts.google.com/o/oauth2/token"
+                   , oauthAccessTokenEndpoint = "https://www.googleapis.com/oauth2/v3/token"
                    }
 
 facebookKey :: OAuth2
 facebookKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                      , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
-                     , oauthCallback = Just "https://developers.facebook.com/tools/debug"
+                     , oauthCallback = Just "http://test.com/cb"
                      , oauthOAuthorizeEndpoint = "https://www.facebook.com/dialog/oauth"
-                     , oauthAccessTokenEndpoint = "https://graph.facebook.com/oauth/access_token"
+                     , oauthAccessTokenEndpoint = "https://graph.facebook.com/v2.3/oauth/access_token"
                      }
 
 doubanKey :: OAuth2

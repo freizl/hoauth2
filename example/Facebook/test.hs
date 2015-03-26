@@ -37,11 +37,11 @@ main = do
     mgr <- newManager conduitManagerSettings
     let (url, body) = accessTokenUrl facebookKey code
     resp <- doJSONPostRequest mgr facebookKey url (body ++ [("state", "test")])
-    print (resp :: OAuth2Result AccessToken)
-    case resp of
-      Right token -> print token
-        --userinfo mgr token >>= print
-        --userinfo' mgr token >>= print
+    case (resp :: OAuth2Result AccessToken) of
+      Right token -> do
+                     print token
+                     --userinfo mgr token >>= print
+                     userinfo' mgr token >>= print
       Left l -> print l
     closeManager mgr
 
