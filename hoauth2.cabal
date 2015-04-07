@@ -1,6 +1,6 @@
 Name:                hoauth2
--- (http://www.haskell.org/haskellwiki/Package_versioning_policy)
-Version:             0.4.6
+-- https://wiki.haskell.org/Package_versioning_policy
+Version:             0.4.7
 
 Synopsis:            hoauth2
 Description:
