@@ -46,3 +46,10 @@ doubanKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                    , oauthAccessTokenEndpoint = "https://www.douban.com/service/auth2/token"
                    }
 
+fitbitKey :: OAuth2
+fitbitKey = OAuth2 { oauthClientId = "xxxxxx"
+                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthCallback = Just "http://localhost:9988/oauth2/callback"
+                   , oauthOAuthorizeEndpoint = "https://www.fitbit.com/oauth2/authorize"
+                   , oauthAccessTokenEndpoint = "https://api.fitbit.com/oauth2/token"
+                   }
