@@ -58,7 +58,7 @@ Library
 
   Build-Depends:
     base              >= 4      && < 5,
-    aeson             >= 0.7    && < 0.9,
+    aeson             >= 0.7    && < 0.10,
     text              >= 0.11   && < 1.3,
     bytestring        >= 0.9    && < 0.11,
     http-conduit      >= 2.0    && < 2.2,
@@ -107,7 +107,7 @@ Executable test-google
                        http-conduit      >= 2.0    && < 2.2,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 0.7    && < 0.9,
+                       aeson             >= 0.7    && < 0.10,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -131,7 +131,7 @@ Executable test-github
                        http-conduit      >= 2.0    && < 2.2,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 0.7    && < 0.9,
+                       aeson             >= 0.7    && < 0.10,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -154,7 +154,7 @@ Executable test-douban
                        http-conduit      >= 2.0    && < 2.2,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 0.7    && < 0.9,
+                       aeson             >= 0.7    && < 0.10,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -177,7 +177,7 @@ Executable test-fb
                        http-conduit      >= 2.0    && < 2.2,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 0.7    && < 0.9,
+                       aeson             >= 0.7    && < 0.10,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
