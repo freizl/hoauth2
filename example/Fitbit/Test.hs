@@ -1,21 +1,19 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module Fitbit.Test where
 
 import           Control.Applicative
 import           Control.Monad            (mzero)
 import           Data.Aeson
 import           Data.Char                (chr)
 import           Data.Text                (Text)
-import qualified Data.Text                as T
 import qualified Data.ByteString          as B
 import qualified Data.ByteString.Lazy     as BL
 import qualified Data.Map                 as M
-import           Network.HTTP.Conduit     hiding (queryString,Request)
-import           Network.Wai
-import           Network.HTTP.Types       (status200,Query)
-import           Network.Wai.Handler.Warp (run)
+import           Network.HTTP.Conduit     hiding (Request,queryString,port)
+import           Network.Wai              (Request,queryString)
+import           Network.HTTP.Types       (Query)
 
 import           Network.OAuth.OAuth2
 import           Keys                     (fitbitKey)
@@ -45,25 +43,11 @@ instance ToJSON FitbitUser where
 
 ------------------------------------------------------------------------------
 
-main :: IO ()
-main = do
-    print $ authorizationUrl fitbitKey `appendQueryParam` [("state", state), ("scope", "profile")]
-    putStrLn "visit the url to continue"
-    run 9988 application
-
 state :: B.ByteString
 state = "testFitbitApi"
 
-application :: Application
-application request respond = do
-    response <- handleRequest requestPath request
-    respond $ responseLBS status200 [("Content-Type", "text/plain")] response
-  where
-    requestPath = T.intercalate "/" $ pathInfo request
-
-handleRequest :: Text -> Request -> IO BL.ByteString
-handleRequest "favicon.ico" _ = return ""
-handleRequest _ request = do
+handleFitbitRequest :: Request -> IO BL.ByteString
+handleFitbitRequest request = do
     mgr <- newManager conduitManagerSettings
     token <- getApiToken mgr $ getApiCode request
     print token
