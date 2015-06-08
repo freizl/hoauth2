@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Fitbit.Test where
+module Instagram.Test where
 
 import           Control.Applicative
 import           Control.Monad            (mzero)
@@ -13,39 +13,39 @@ import           Network.HTTP.Conduit     hiding (Request,queryString,port)
 import           Network.Wai              (Request)
 
 import           Network.OAuth.OAuth2
-import           Keys                     (fitbitKey)
+import           Keys                     (instagramKey)
 import           Common
 
 ------------------------------------------------------------------------------
 
-data FitbitUser = FitbitUser
+data InstagramUser = InstagramUser
     { userId   :: Text
     , userName :: Text
-    , userAge  :: Int
+    , userFullName  :: Text
     } deriving (Show, Eq)
 
-instance FromJSON FitbitUser where
+instance FromJSON InstagramUser where
     parseJSON (Object o) =
-        FitbitUser
-        <$> ((o .: "user") >>= (.: "encodedId"))
-        <*> ((o .: "user") >>= (.: "fullName"))
-        <*> ((o .: "user") >>= (.: "age"))
+        InstagramUser
+        <$> ((o .: "data") >>= (.: "id"))
+        <*> ((o .: "data") >>= (.: "username"))
+        <*> ((o .: "data") >>= (.: "full_name"))
     parseJSON _ = mzero
 
-instance ToJSON FitbitUser where
-    toJSON (FitbitUser fid name age) =
-        object [ "id"       .= fid
-               , "name"     .= name
-               , "age"      .= age
+instance ToJSON InstagramUser where
+    toJSON (InstagramUser iid username fullName) =
+        object [ "id"        .= iid
+               , "username"  .= username
+               , "full_name" .= fullName
                ]
 
 ------------------------------------------------------------------------------
 
 state :: B.ByteString
-state = "testFitbitApi"
+state = "testInstagramApi"
 
-handleFitbitRequest :: Request -> IO BL.ByteString
-handleFitbitRequest request = do
+handleInstagramRequest :: Request -> IO BL.ByteString
+handleInstagramRequest request = do
     mgr <- newManager conduitManagerSettings
     token <- getApiToken mgr $ getApiCode request
     print token
@@ -54,18 +54,18 @@ handleFitbitRequest request = do
     closeManager mgr
     return $ encode user
 
+getApiUser :: Manager -> AccessToken -> IO (InstagramUser)
+getApiUser mgr token = do
+    result <- authGetJSON mgr token $ B.concat ["https://api.instagram.com/v1/users/self?access_token=", accessToken token]
+    case result of
+        Right user -> return user
+        Left e -> error $ lazyBSToString e
+
 getApiToken :: Manager -> B.ByteString -> IO (AccessToken)
 getApiToken mgr code = do
-    result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
+    result <- doJSONPostRequest mgr instagramKey url $ body ++ [("state", state)]
     case result of
         Right token -> return token
         Left e -> error $ lazyBSToString e
   where
-    (url, body) = accessTokenUrl fitbitKey code
-
-getApiUser :: Manager -> AccessToken -> IO (FitbitUser)
-getApiUser mgr token = do
-    result <- authGetJSON mgr token "https://api.fitbit.com/1/user/-/profile.json"
-    case result of
-        Right user -> return user
-        Left e -> error $ lazyBSToString e
+    (url, body) = accessTokenUrl instagramKey code

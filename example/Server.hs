@@ -12,8 +12,9 @@ import           Network.HTTP.Types       (status200)
 import           Network.Wai.Handler.Warp (run)
 
 import           Network.OAuth.OAuth2
-import           Keys                     (fitbitKey)
+import           Keys                     (fitbitKey,instagramKey)
 import           Fitbit.Test              (handleFitbitRequest)
+import           Instagram.Test           (handleInstagramRequest)
 
 ------------------------------------------------------------------------------
 
@@ -27,6 +28,9 @@ main = do
 fitbitAuthorizationUrl :: B.ByteString
 fitbitAuthorizationUrl = authorizationUrl fitbitKey `appendQueryParam` [("state", state), ("scope", "profile")]
 
+instagramAuthorizationUrl :: B.ByteString
+instagramAuthorizationUrl = authorizationUrl instagramKey `appendQueryParam` [("state", state)]
+
 state :: B.ByteString
 state = "testHoauth2"
 
@@ -39,7 +43,10 @@ application request respond = do
 
 handleRequest :: [Text] -> Request -> IO BL.ByteString
 handleRequest ([]) _ = return $ BL.concat
-    ["<a href='", BL.fromStrict fitbitAuthorizationUrl, "'>Test Fitbit API</a>"]
+    [ "<a href='", BL.fromStrict fitbitAuthorizationUrl, "'>Test Fitbit API</a><br/>"
+    , "<a href='", BL.fromStrict instagramAuthorizationUrl, "'>Test Instagram API</a><br/>"
+    ]
 handleRequest ("fitbit":_) request = handleFitbitRequest request
+handleRequest ("instagram":_) request = handleInstagramRequest request
 handleRequest ("favicon.ico":[]) _ = return ""
 handleRequest requestPath _ = error $ "wrong url" ++ show requestPath

@@ -53,3 +53,11 @@ fitbitKey = OAuth2 { oauthClientId = "xxxxxx"
                    , oauthOAuthorizeEndpoint = "https://www.fitbit.com/oauth2/authorize"
                    , oauthAccessTokenEndpoint = "https://api.fitbit.com/oauth2/token"
                    }
+
+instagramKey :: OAuth2
+instagramKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      , oauthCallback = Just "http://localhost:9988/instagram/oauth2/callback"
+                      , oauthOAuthorizeEndpoint = "https://api.instagram.com/oauth/authorize"
+                      , oauthAccessTokenEndpoint = "https://api.instagram.com/oauth/access_token"
+                      }
