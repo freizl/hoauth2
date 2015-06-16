@@ -10,9 +10,15 @@ Description:
   .
   * google web oauth: <https://developers.google.com/accounts/docs/OAuth2WebServer>
   .
+  * github oauth: <http://developer.github.com/v3/oauth/>
+  .
+  * facebook
+  .
+  * fitbit
+  .
   * weibo oauth2: <http://open.weibo.com/wiki/Oauth2>
   .
-  * github oauth: <http://developer.github.com/v3/oauth/>
+  * douban <http://developers.douban.com/wiki/?title=oauth2>
 
 Homepage:            https://github.com/freizl/hoauth2
 License:             BSD3

@@ -60,3 +60,6 @@ test-fb:
 
 test-douban:
 	./dist/build/test-douban/test-douban
+
+test-fitbit:
+	./dist/build/test-fitbit/test-fitbit
