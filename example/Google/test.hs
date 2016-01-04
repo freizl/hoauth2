@@ -24,7 +24,6 @@ import qualified Data.ByteString.Lazy.Internal as BL
 import           Data.Text                     (Text)
 import           Network.HTTP.Conduit
 import           Prelude                       hiding (id)
-import qualified Prelude                       as P (id)
 import           System.Environment            (getArgs)
 
 --------------------------------------------------
@@ -34,8 +33,6 @@ data Token = Token { issued_to   :: Text
                    , user_id     :: Maybe Text
                    , scope       :: Text
                    , expires_in  :: Integer
-                   -- , email          :: Maybe Text
-                   -- , verified_email :: Maybe Bool
                    , access_type :: Text
                    } deriving (Show)
 
@@ -49,7 +46,6 @@ data User = User { id          :: Text
                  , link        :: Text
                  , picture     :: Text
                  , gender      :: Text
-                 , birthday    :: Text
                  , locale      :: Text
                  } deriving (Show)
 
@@ -60,11 +56,10 @@ $(deriveJSON defaultOptions ''User)
 main :: IO ()
 main = do
     xs <- getArgs
-    mgr <- newManager conduitManagerSettings
+    mgr <- newManager tlsManagerSettings
     case xs of
         ["offline"] -> offlineCase mgr
         _ -> normalCase mgr
-    closeManager mgr
 
 offlineCase :: Manager -> IO ()
 offlineCase mgr = do

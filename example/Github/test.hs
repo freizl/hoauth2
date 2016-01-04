@@ -25,14 +25,13 @@ main = do
     print $ authorizationUrl githubKey `appendQueryParam` [("state", state)]
     putStrLn "visit the url and paste code here: "
     code <- getLine
-    mgr <- newManager conduitManagerSettings
+    mgr <- newManager tlsManagerSettings
     let (url, body) = accessTokenUrl githubKey (sToBS code)
     token <- doJSONPostRequest mgr githubKey url (body ++ [("state", state)])
     print (token :: OAuth2Result AccessToken)
     case token of
       Right at  -> userInfo mgr at >>= print
       Left _    -> putStrLn "no access token found yet"
-    closeManager mgr
 
 
 -- | Test API: user

@@ -34,7 +34,7 @@ main = do
        print $ authorizationUrl weiboKey
        putStrLn "visit the url and paste code here: "
        code <- getLine
-       mgr <- newManager conduitManagerSettings
+       mgr <- newManager tlsManagerSettings
        token <- fetchAccessToken mgr weiboKey (sToBS code)
        print token
        case token of
@@ -42,7 +42,6 @@ main = do
                     uid <- authGetBS' mgr r "https://api.weibo.com/2/account/get_uid.json"
                     print uid
          Left l -> BSL.putStrLn l
-       closeManager mgr
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack

@@ -64,12 +64,11 @@ application request respond = do
 handleRequest :: Text -> Request -> IO BL.ByteString
 handleRequest "favicon.ico" _ = return ""
 handleRequest _ request = do
-    mgr <- newManager conduitManagerSettings
+    mgr <- newManager tlsManagerSettings
     token <- getApiToken mgr $ getApiCode request
     print token
     user <- getApiUser mgr token
     print user
-    closeManager mgr
     return $ encode user
 
 getApiCode :: Request -> B.ByteString

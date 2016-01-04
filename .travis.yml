@@ -1,4 +1,7 @@
 language: haskell
 
+ghc:
+  - 7.8
+
 script:
   - make ci

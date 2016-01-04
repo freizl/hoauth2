@@ -26,15 +26,15 @@ main = do
   print $ authorizationUrl doubanKey
   putStrLn "visit the url and paste code here: "
   code <- getLine
-  mgr <- newManager conduitManagerSettings
+  mgr <- newManager tlsManagerSettings
   token <- fetchAccessToken mgr doubanKey (sToBS code)
   print token
   case token of
     Right r -> do
-               uid <- authGetBS mgr r "https://api.douban.com/v2/user/~me"
-               print uid
+      -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
+      uid <- authGetBS mgr r "https://api.douban.com/v2/user/~me"
+      print uid
     Left l -> BSL.putStrLn l
-  closeManager mgr
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack

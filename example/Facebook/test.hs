@@ -16,7 +16,6 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Text                  (Text)
 import           Network.HTTP.Conduit
 import           Prelude                    hiding (id)
-import qualified Prelude                    as P (id)
 
 --------------------------------------------------
 
@@ -34,7 +33,7 @@ main = do
     print $ authorizationUrl facebookKey `appendQueryParam` facebookScope
     putStrLn "visit the url and paste code here: "
     code <- fmap BS.pack getLine
-    mgr <- newManager conduitManagerSettings
+    mgr <- newManager tlsManagerSettings
     let (url, body) = accessTokenUrl facebookKey code
     resp <- doJSONPostRequest mgr facebookKey url (body ++ [("state", "test")])
     case (resp :: OAuth2Result AccessToken) of
@@ -43,7 +42,6 @@ main = do
                      --userinfo mgr token >>= print
                      userinfo' mgr token >>= print
       Left l -> print l
-    closeManager mgr
 
 --------------------------------------------------
 -- FaceBook API
