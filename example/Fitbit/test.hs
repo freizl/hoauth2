@@ -6,19 +6,19 @@ module Main where
 import           Control.Applicative
 import           Control.Monad            (mzero)
 import           Data.Aeson
-import           Data.Char                (chr)
-import           Data.Text                (Text)
-import qualified Data.Text                as T
 import qualified Data.ByteString          as B
 import qualified Data.ByteString.Lazy     as BL
+import           Data.Char                (chr)
 import qualified Data.Map                 as M
-import           Network.HTTP.Conduit     hiding (queryString,Request)
+import           Data.Text                (Text)
+import qualified Data.Text                as T
+import           Network.HTTP.Conduit     hiding (Request, queryString)
+import           Network.HTTP.Types       (Query, status200)
 import           Network.Wai
-import           Network.HTTP.Types       (status200,Query)
 import           Network.Wai.Handler.Warp (run)
 
-import           Network.OAuth.OAuth2
 import           Keys                     (fitbitKey)
+import           Network.OAuth.OAuth2
 
 ------------------------------------------------------------------------------
 
