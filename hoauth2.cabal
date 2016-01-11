@@ -1,24 +1,22 @@
 Name:                hoauth2
--- https://wiki.haskell.org/Package_versioning_policy
-Version:             0.5.0
+-- http://wiki.haskell.org/Package_versioning_policy
+Version:             0.5.0.1
 
-Synopsis:            hoauth2
+Synopsis:            Haskell OAuth2 authentication client
 Description:
-  Haskell OAuth2 authentication.
+  Haskell OAuth2 authentication client. Tested with the following services:
   .
-  Tested following services
+  * Google web: <https://developers.google.com/accounts/docs/OAuth2WebServer>
   .
-  * google web oauth: <https://developers.google.com/accounts/docs/OAuth2WebServer>
+  * Github: <http://developer.github.com/v3/oauth/>
   .
-  * github oauth: <http://developer.github.com/v3/oauth/>
+  * Facebook: <http://developers.facebook.com/docs/facebook-login/>
   .
-  * facebook
+  * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
   .
-  * fitbit
+  * Weibo: <http://open.weibo.com/wiki/Oauth2>
   .
-  * weibo oauth2: <http://open.weibo.com/wiki/Oauth2>
-  .
-  * douban <http://developers.douban.com/wiki/?title=oauth2>
+  * Douban: <http://developers.douban.com/wiki/?title=oauth2>
 
 Homepage:            https://github.com/freizl/hoauth2
 License:             BSD3
@@ -31,18 +29,15 @@ Build-type:          Simple
 stability:           alpha
 tested-with:         GHC <= 7.10.2
 
-
--- Extra files to be distributed with the package, such as examples or
--- a README.
 Extra-source-files:
   README.md
   example/Google/test.hs
   example/Weibo/test.hs
   example/Github/test.hs
   example/Facebook/test.hs
+  example/Fitbit/test.hs
+  example/Douban/test.hs
   example/Keys.hs.sample
-  example/run-7.6.sh
-  example/run.sh
 
 Cabal-version:       >=1.10
 
@@ -169,7 +164,7 @@ Executable test-douban
   else
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
 
-Executable test-fb
+Executable test-facebook
   if flag(test)
     Buildable: True
   else

@@ -3,7 +3,25 @@
 
 -- | A simple http client to request OAuth2 tokens and several utils.
 
-module Network.OAuth.OAuth2.HttpClient where
+module Network.OAuth.OAuth2.HttpClient (
+-- * Token management
+  fetchAccessToken,
+  fetchRefreshToken,
+  doJSONPostRequest,
+  doSimplePostRequest,
+-- * AUTH requests
+  authGetJSON,
+  authGetBS,
+  authGetBS',
+  authPostJSON,
+  authPostBS,
+  authRequest,
+-- * Utilities
+  handleResponse,
+  parseResponseJSON,
+  updateRequestHeaders,
+  setMethod
+) where
 
 import           Control.Monad                 (liftM)
 import           Data.Aeson
@@ -16,12 +34,10 @@ import qualified Network.HTTP.Types            as HT
 import           Network.OAuth.OAuth2.Internal
 
 --------------------------------------------------
--- * Retrieve access token
+-- * Token management
 --------------------------------------------------
 
 -- | Request (via POST method) "Access Token".
---
---
 fetchAccessToken :: Manager                          -- ^ HTTP connection manager
                    -> OAuth2                         -- ^ OAuth Data
                    -> BS.ByteString                  -- ^ Authentication code gained after authorization
@@ -66,7 +82,6 @@ doSimplePostRequest manager oa url body = liftM handleResponse go
 --------------------------------------------------
 
 -- | Conduct GET request and return response as JSON.
---
 authGetJSON :: FromJSON a
                  => Manager                      -- ^ HTTP connection manager.
                  -> AccessToken
@@ -75,7 +90,6 @@ authGetJSON :: FromJSON a
 authGetJSON manager t uri = liftM parseResponseJSON $ authGetBS manager t uri
 
 -- | Conduct GET request.
---
 authGetBS :: Manager                              -- ^ HTTP connection manager.
              -> AccessToken
              -> URI                               -- ^ URL
@@ -86,7 +100,6 @@ authGetBS manager token url = do
   where upReq = updateRequestHeaders (Just token) . setMethod HT.GET
 
 -- | same to 'authGetBS' but set access token to query parameter rather than header
---
 authGetBS' :: Manager                              -- ^ HTTP connection manager.
              -> AccessToken
              -> URI                               -- ^ URL
@@ -95,7 +108,6 @@ authGetBS' manager token url = do
   req <- parseUrl $ BS.unpack $ url `appendAccessToken` token
   authRequest req upReq manager
   where upReq = updateRequestHeaders Nothing . setMethod HT.GET
-
 
 -- | Conduct POST request and return response as JSON.
 authPostJSON :: FromJSON a
@@ -119,27 +131,20 @@ authPostBS manager token url pb = do
         upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
         upReq = upHeaders . upBody
 
--- |Sends a HTTP request including the Authorization header with the specified
+-- |Send an HTTP request including the Authorization header with the specified
 --  access token.
 --
 authRequest :: Request                          -- ^ Request to perform
                -> (Request -> Request)          -- ^ Modify request before sending
                -> Manager                          -- ^ HTTP connection manager.
                -> IO (OAuth2Result BSL.ByteString)
-authRequest req upReq manager = liftM handleResponse (authRequest' req upReq manager)
-
-authRequest' :: Request                          -- ^ Request to perform
-               -> (Request -> Request)          -- ^ Modify request before sending
-               -> Manager                          -- ^ HTTP connection manager.
-               -> IO (Response BSL.ByteString)
-authRequest' req upReq = httpLbs (upReq req)
+authRequest req upReq manager = liftM handleResponse (httpLbs (upReq req)  manager)
 
 --------------------------------------------------
 -- * Utilities
 --------------------------------------------------
 
 -- | Parses a @Response@ to to @OAuth2Result@
---
 handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
     if HT.statusIsSuccessful (responseStatus rsp)
@@ -147,7 +152,6 @@ handleResponse rsp =
         else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
---
 parseResponseJSON :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
@@ -156,11 +160,10 @@ parseResponseJSON (Right b) = case decode b of
                             Nothing -> Left ("Could not decode JSON" `BSL.append` b)
                             Just x -> Right x
 
--- | set several header values.
---   + userAgennt : hoauth2
---   + accept     : application/json
---   + authorization : Bearer xxxxx  if AccessToken provided.
---
+-- | Set several header values:
+--   + userAgennt    : `hoauth2`
+--   + accept        : `application/json`
+--   + authorization : 'Bearer' `xxxxx` if 'AccessToken' provided.
 updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
   let extras = [ (HT.hUserAgent, "hoauth2")
@@ -170,7 +173,6 @@ updateRequestHeaders t req =
   in
   req { requestHeaders = headers }
 
--- | Sets the HTTP method to use
---
+-- | Set the HTTP method to use.
 setMethod :: HT.StdMethod -> Request -> Request
 setMethod m req = req { method = HT.renderStdMethod m }
