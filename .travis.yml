@@ -1,8 +1,8 @@
 language: haskell
 
 ghc:
-  - 7.8
-  - 7.10
+  - '7.8'
+  - '7.10'
 
 script:
   - make ci
