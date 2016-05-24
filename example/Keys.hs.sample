@@ -33,7 +33,7 @@ googleKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx.apps.googleusercontent.com
 facebookKey :: OAuth2
 facebookKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
                      , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
-                     , oauthCallback = Just "http://test.com/cb"
+                     , oauthCallback = Just "http://t.haskellcn.org/cb"
                      , oauthOAuthorizeEndpoint = "https://www.facebook.com/dialog/oauth"
                      , oauthAccessTokenEndpoint = "https://graph.facebook.com/v2.3/oauth/access_token"
                      }
@@ -53,3 +53,11 @@ fitbitKey = OAuth2 { oauthClientId = "xxxxxx"
                    , oauthOAuthorizeEndpoint = "https://www.fitbit.com/oauth2/authorize"
                    , oauthAccessTokenEndpoint = "https://api.fitbit.com/oauth2/token"
                    }
+
+stackexchangeKey :: OAuth2
+stackexchangeKey = OAuth2 { oauthClientId = "xx"
+                          , oauthClientSecret = "xxxxxxxxxxxxxxx"
+                          , oauthCallback = Just "http://c.haskellcn.org/cb"
+                          , oauthOAuthorizeEndpoint = "https://stackexchange.com/oauth"
+                          , oauthAccessTokenEndpoint = "https://stackexchange.com/oauth/access_token"
+                          }
