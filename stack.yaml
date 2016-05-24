@@ -1,7 +1,7 @@
 # For more information, see: https://github.com/commercialhaskell/stack/blob/master/doc/yaml_configuration.md
 
 # Specifies the GHC version and set of packages available (e.g., lts-3.5, nightly-2015-09-21, ghc-7.10.2)
-resolver: lts-4.1
+resolver: lts-5.18
 
 # Local packages, usually specified by relative directory name
 packages:
@@ -13,7 +13,7 @@ extra-deps: []
 # Override default flag values for local packages and extra-deps
 flags:
   hoauth2:
-    test: false
+    test: true
 
 # Control whether we use the GHC we find on the path
 # system-ghc: true

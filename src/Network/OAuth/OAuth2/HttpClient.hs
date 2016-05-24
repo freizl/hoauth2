@@ -149,7 +149,7 @@ handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
     if HT.statusIsSuccessful (responseStatus rsp)
         then Right $ responseBody rsp
-        else Left $ BSL.append "Gaining token failed: " (responseBody rsp)
+        else Left $ BSL.append "hoauth2.HttpClient.parseResponseJSON/Gaining token failed: " (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
 parseResponseJSON :: FromJSON a
@@ -157,7 +157,7 @@ parseResponseJSON :: FromJSON a
               -> OAuth2Result a
 parseResponseJSON (Left b) = Left b
 parseResponseJSON (Right b) = case decode b of
-                            Nothing -> Left ("Could not decode JSON" `BSL.append` b)
+                            Nothing -> Left ("hoauth2.HttpClient.parseResponseJSON/Could not decode JSON: " `BSL.append` b)
                             Just x -> Right x
 
 -- | Set several header values:
