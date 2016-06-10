@@ -8,6 +8,7 @@ module Network.OAuth.OAuth2.HttpClient (
   fetchAccessToken,
   fetchRefreshToken,
   doJSONPostRequest,
+  doFlexiblePostRequest,
   doSimplePostRequest,
 -- * AUTH requests
   authGetJSON,
@@ -19,6 +20,7 @@ module Network.OAuth.OAuth2.HttpClient (
 -- * Utilities
   handleResponse,
   parseResponseJSON,
+  parseResponseFlexible,
   updateRequestHeaders,
   setMethod
 ) where
@@ -30,7 +32,9 @@ import qualified Data.ByteString.Lazy.Char8    as BSL
 import           Data.Maybe
 import           Network.HTTP.Conduit          hiding (withManager)
 import qualified Network.HTTP.Types            as HT
-
+import qualified Data.Text.Encoding as T
+import Network.HTTP.Types.URI (parseQuery)
+import qualified Data.HashMap.Strict as HM (fromList)
 import           Network.OAuth.OAuth2.Internal
 
 --------------------------------------------------
@@ -42,7 +46,7 @@ fetchAccessToken :: Manager                          -- ^ HTTP connection manage
                    -> OAuth2                         -- ^ OAuth Data
                    -> BS.ByteString                  -- ^ Authentication code gained after authorization
                    -> IO (OAuth2Result AccessToken)  -- ^ Access Token
-fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
+fetchAccessToken manager oa code = doFlexiblePostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
 
@@ -51,7 +55,7 @@ fetchRefreshToken :: Manager                         -- ^ HTTP connection manage
                      -> OAuth2                       -- ^ OAuth context
                      -> BS.ByteString                -- ^ refresh token gained after authorization
                      -> IO (OAuth2Result AccessToken)
-fetchRefreshToken manager oa rtoken = doJSONPostRequest manager oa uri body
+fetchRefreshToken manager oa rtoken = doFlexiblePostRequest manager oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa rtoken
 
 
@@ -63,6 +67,15 @@ doJSONPostRequest :: FromJSON a
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
 doJSONPostRequest manager oa uri body = liftM parseResponseJSON (doSimplePostRequest manager oa uri body)
+
+-- | Conduct post request and return response as JSON or Query String.
+doFlexiblePostRequest :: FromJSON a
+                         => Manager                             -- ^ HTTP connection manager.
+                         -> OAuth2                              -- ^ OAuth options
+                         -> URI                                 -- ^ The URL
+                         -> PostBody                            -- ^ request body
+                         -> IO (OAuth2Result a)                 -- ^ Response as ByteString
+doFlexiblePostRequest manager oa uri body = liftM parseResponseFlexible (doSimplePostRequest manager oa uri body)
 
 -- | Conduct post request.
 doSimplePostRequest :: Manager                              -- ^ HTTP connection manager.
@@ -159,6 +172,29 @@ parseResponseJSON (Left b) = Left b
 parseResponseJSON (Right b) = case decode b of
                             Nothing -> Left ("hoauth2.HttpClient.parseResponseJSON/Could not decode JSON: " `BSL.append` b)
                             Just x -> Right x
+
+-- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String
+parseResponseUrl :: FromJSON a
+              => OAuth2Result BSL.ByteString
+              -> OAuth2Result a
+parseResponseUrl (Left b) = Left b
+parseResponseUrl (Right b) = case parseQuery $ BSL.toStrict b of
+                              [] -> Left errorMessage
+                              a -> case fromJSON $ queryToValue a of
+                                    Error _ -> Left errorMessage
+                                    Success x -> Right x
+  where
+    queryToValue = Object . HM.fromList . map paramToPair
+    paramToPair (k, mv) = (T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
+    errorMessage = ("hoauth2.HttpClient.parseResponseJSON/Could not decode JSON or URL: " `BSL.append` b)
+
+-- | Try 'parseResponseJSON' and 'parseResponseUrl'
+parseResponseFlexible :: FromJSON a
+                         => OAuth2Result BSL.ByteString
+                         -> OAuth2Result a
+parseResponseFlexible r = case parseResponseJSON r of
+                           Left _ -> parseResponseUrl r
+                           x -> x
 
 -- | Set several header values:
 --   + userAgennt    : `hoauth2`

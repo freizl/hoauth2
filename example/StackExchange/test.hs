@@ -6,12 +6,8 @@
 
 module Main where
 
-import           Control.Applicative
-import           Control.Monad        (mzero)
-import           Data.Aeson
 import           Data.Aeson.TH                 (defaultOptions, deriveJSON)
-import qualified Data.ByteString      as BS
-import qualified Data.ByteString.Lazy.Char8    as BSL
+import qualified Data.ByteString.Char8      as BS
 import           Data.Text            (Text)
 import qualified Data.Text            as T
 import qualified Data.Text.Encoding   as T
@@ -50,28 +46,13 @@ main :: IO ()
 main = do
     print $ authorizationUrl stackexchangeKey
     putStrLn "visit the url and paste code here: "
-    code <- getLine
+    code <- fmap BS.pack getLine
     mgr <- newManager tlsManagerSettings
-    let (url, body) = accessTokenUrl stackexchangeKey (sToBS code)
-    token <- doSimplePostRequest mgr stackexchangeKey url (body)
-    print (token :: OAuth2Result BSL.ByteString)
+    token <- fetchAccessToken mgr stackexchangeKey code
+    print token
     case token of
-      Right at  -> siteInfo mgr (getAccessToken at) >>= print
+      Right at  -> siteInfo mgr at >>= print
       Left _    -> putStrLn "no access token found yet"
-
-
-
--- stackexchange access token api does not respond json but an string
--- https://api.stackexchange.com/docs/authentication
-getAccessToken :: BSL.ByteString -> AccessToken
-getAccessToken str = let xs = BSL.split '&' str
-                         ys = BSL.split '=' (xs !! 0)
-                     in
-                       AccessToken { accessToken = BSL.toStrict (ys !! 1)
-                                   , refreshToken = Nothing
-                                   , expiresIn = Nothing
-                                   , tokenType = Nothing
-                                   }
 
 -- | Test API: info
 siteInfo :: Manager -> AccessToken -> IO (OAuth2Result SiteInfo)
