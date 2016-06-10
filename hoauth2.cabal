@@ -1,6 +1,6 @@
 Name:                hoauth2
 -- http://wiki.haskell.org/Package_versioning_policy
-Version:             0.5.3.1
+Version:             0.5.4.0
 
 Synopsis:            Haskell OAuth2 authentication client
 Description:
@@ -236,4 +236,3 @@ Executable test-stackexchange
                    -fno-warn-unused-do-bind
   else
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-
