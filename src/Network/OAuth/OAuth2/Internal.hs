@@ -39,15 +39,17 @@ data AccessToken = AccessToken {
     , refreshToken :: Maybe BS.ByteString
     , expiresIn    :: Maybe Int
     , tokenType    :: Maybe BS.ByteString
+    , idToken      :: Maybe BS.ByteString
     } deriving (Show)
 
 -- | Parse JSON data into 'AccessToken'
 instance FromJSON AccessToken where
-    parseJSON (Object o) = AccessToken <$> at <*> rt <*> ei <*> tt where
+    parseJSON (Object o) = AccessToken <$> at <*> rt <*> ei <*> tt <*> id_ where
         at = fmap encodeUtf8 $ o .: "access_token"
         rt = fmap (fmap encodeUtf8) $ o .:? "refresh_token"
         ei = o .:? "expires_in"
         tt = fmap (fmap encodeUtf8) $ o .:? "token_type"
+        id_ = fmap (fmap encodeUtf8) $ o .:? "id_token"
     parseJSON _ = mzero
 
 --------------------------------------------------
@@ -130,7 +132,7 @@ appendAccessToken uri t = appendQueryParam uri (accessTokenToParam t)
 
 -- | Create 'QueryParams' with given access token value.
 accessTokenToParam :: AccessToken -> QueryParams
-accessTokenToParam (AccessToken token _ _ _) = [("access_token", token)]
+accessTokenToParam at = [("access_token", accessToken at)]
 
 
 -- | Lift value in the 'Maybe' and abandon 'Nothing'.
