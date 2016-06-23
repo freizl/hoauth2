@@ -174,11 +174,11 @@ parseResponseJSON (Right b) = case decode b of
                             Just x -> Right x
 
 -- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String
-parseResponseUrl :: FromJSON a
+parseResponseString :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
-parseResponseUrl (Left b) = Left b
-parseResponseUrl (Right b) = case parseQuery $ BSL.toStrict b of
+parseResponseString (Left b) = Left b
+parseResponseString (Right b) = case parseQuery $ BSL.toStrict b of
                               [] -> Left errorMessage
                               a -> case fromJSON $ queryToValue a of
                                     Error _ -> Left errorMessage
@@ -188,12 +188,12 @@ parseResponseUrl (Right b) = case parseQuery $ BSL.toStrict b of
     paramToPair (k, mv) = (T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
     errorMessage = ("hoauth2.HttpClient.parseResponseJSON/Could not decode JSON or URL: " `BSL.append` b)
 
--- | Try 'parseResponseJSON' and 'parseResponseUrl'
+-- | Try 'parseResponseJSON' and 'parseResponseString'
 parseResponseFlexible :: FromJSON a
                          => OAuth2Result BSL.ByteString
                          -> OAuth2Result a
 parseResponseFlexible r = case parseResponseJSON r of
-                           Left _ -> parseResponseUrl r
+                           Left _ -> parseResponseString r
                            x -> x
 
 -- | Set several header values:
