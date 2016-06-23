@@ -29,12 +29,12 @@ import           Control.Monad                 (liftM)
 import           Data.Aeson
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BSL
+import qualified Data.HashMap.Strict           as HM (fromList)
 import           Data.Maybe
+import qualified Data.Text.Encoding            as T
 import           Network.HTTP.Conduit          hiding (withManager)
 import qualified Network.HTTP.Types            as HT
-import qualified Data.Text.Encoding as T
-import Network.HTTP.Types.URI (parseQuery)
-import qualified Data.HashMap.Strict as HM (fromList)
+import           Network.HTTP.Types.URI        (parseQuery)
 import           Network.OAuth.OAuth2.Internal
 
 --------------------------------------------------
