@@ -1,6 +1,6 @@
 Name:                hoauth2
 -- http://wiki.haskell.org/Package_versioning_policy
-Version:             0.5.4.0
+Version:             0.5.5.0
 
 Synopsis:            Haskell OAuth2 authentication client
 Description:
