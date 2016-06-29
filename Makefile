@@ -26,7 +26,7 @@ rebuild: clean build
 install: build
 	$(CBD) install
 
-ci: build test
+ci: init build test
 
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
