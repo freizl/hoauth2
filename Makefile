@@ -55,8 +55,8 @@ test-github:
 test-google:
 	./dist/build/test-google/test-google
 
-test-fb:
-	./dist/build/test-fb/test-fb
+test-facebook:
+	./dist/build/test-facebook/test-facebook
 
 test-douban:
 	./dist/build/test-douban/test-douban
