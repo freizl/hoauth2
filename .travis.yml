@@ -1,8 +1,29 @@
+# http://docs.haskellstack.org/en/stable/travis_ci.html
+
 language: haskell
 
-ghc:
-  - '7.10.3'
-  - '8.0.1'
+branches:
+  only:
+    - master
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.stack/
+
+before_install:
+  - mkdir -p ~/.local/bin
+  - export PATH=~/.local/bin:$PATH
+  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+  - chmod a+x ~/.local/bin/stack
+
+install:
+  - stack +RTS -N2 -RTS setup
+  - stack +RTS -N2 -RTS build --only-snapshot
 
 script:
-  - make ci
+  - git --version
+  - stack --version
+  - stack build --test --haddock --no-haddock-deps
+
