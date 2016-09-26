@@ -25,5 +25,4 @@ install:
 script:
   - git --version
   - stack --version
-  - stack build --test --haddock --no-haddock-deps
-
+  - make ci-stack

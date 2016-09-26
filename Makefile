@@ -11,8 +11,10 @@ init:
 clean:
 	rm -rf $(DIST)
 
-conf:
+create-keys:
 	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
+
+conf: create-keys
 	$(CBD) configure --enable-tests -ftest
 
 build: conf
@@ -27,6 +29,9 @@ install: build
 	$(CBD) install
 
 ci: init build test
+
+ci-stack: create-keys
+	stack build --test
 
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
