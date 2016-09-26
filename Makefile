@@ -49,8 +49,8 @@ dist: build
 test-weibo:
 	./dist/build/test-weibo/test-weibo
 
-test-github:
-	./dist/build/test-github/test-github
+test-douban:
+	./dist/build/test-douban/test-douban
 
 test-google:
 	./dist/build/test-google/test-google
@@ -58,8 +58,11 @@ test-google:
 test-facebook:
 	./dist/build/test-facebook/test-facebook
 
-test-douban:
-	./dist/build/test-douban/test-douban
+test-github:
+	./dist/build/test-github/test-github
 
 test-fitbit:
 	./dist/build/test-fitbit/test-fitbit
+
+test-stackexchange:
+	./dist/build/test-stackexchange/test-stackexchange
