@@ -16,6 +16,7 @@ module Network.OAuth.OAuth2.HttpClient (
   authGetBS',
   authPostJSON,
   authPostBS,
+  authPostBS',
   authRequest,
 -- * Utilities
   handleResponse,
@@ -144,6 +145,19 @@ authPostBS manager token url pb = do
         upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
         upReq = upHeaders . upBody
 
+-- | Conduct POST request with access token in the request body rather header
+authPostBS' :: Manager                             -- ^ HTTP connection manager.
+             -> AccessToken
+             -> URI                               -- ^ URL
+             -> PostBody
+             -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
+authPostBS' manager token url pb = do
+  req <- parseUrl $ BS.unpack url
+  authRequest req upReq manager
+  where upBody = urlEncodedBody (pb ++ accessTokenToParam token)
+        upHeaders = updateRequestHeaders Nothing . setMethod HT.POST
+        upReq = upHeaders . upBody
+
 -- |Send an HTTP request including the Authorization header with the specified
 --  access token.
 --
@@ -162,7 +176,7 @@ handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
     if HT.statusIsSuccessful (responseStatus rsp)
         then Right $ responseBody rsp
-        else Left $ BSL.append "hoauth2.HttpClient.parseResponseJSON/Gaining token failed: " (responseBody rsp)
+        else Left $ BSL.append "hoauth2.HttpClient.handleResponse/Gaining token failed: " (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
 parseResponseJSON :: FromJSON a
@@ -186,7 +200,7 @@ parseResponseString (Right b) = case parseQuery $ BSL.toStrict b of
   where
     queryToValue = Object . HM.fromList . map paramToPair
     paramToPair (k, mv) = (T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
-    errorMessage = ("hoauth2.HttpClient.parseResponseJSON/Could not decode JSON or URL: " `BSL.append` b)
+    errorMessage = "hoauth2.HttpClient.parseResponseJSON/Could not decode JSON or URL: " `BSL.append` b
 
 -- | Try 'parseResponseJSON' and 'parseResponseString'
 parseResponseFlexible :: FromJSON a
