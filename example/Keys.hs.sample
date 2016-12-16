@@ -61,3 +61,10 @@ stackexchangeKey = OAuth2 { oauthClientId = "xx"
                           , oauthOAuthorizeEndpoint = "https://stackexchange.com/oauth"
                           , oauthAccessTokenEndpoint = "https://stackexchange.com/oauth/access_token"
                           }
+dropboxKey :: OAuth2
+dropboxKey = OAuth2 { oauthClientId = "xxx"
+                    , oauthClientSecret = "xxx"
+                    , oauthCallback = Just "http://localhost:9988/oauth2/callback"
+                    , oauthOAuthorizeEndpoint = "https://www.dropbox.com/1/oauth2/authorize"
+                    , oauthAccessTokenEndpoint = "https://api.dropboxapi.com/oauth2/token"
+                    }

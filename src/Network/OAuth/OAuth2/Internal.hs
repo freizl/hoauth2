@@ -96,11 +96,10 @@ accessTokenUrl' ::  OAuth2
                     -> (URI, PostBody)        -- ^ access token request URL plus the request body.
 accessTokenUrl' oa code gt = (uri, body)
   where uri  = oauthAccessTokenEndpoint oa
-        body = transform' [ ("client_id", Just $ oauthClientId oa)
-                          , ("client_secret", Just $ oauthClientSecret oa)
-                          , ("code", Just code)
+        body = transform' [ ("code", Just code)
                           , ("redirect_uri", oauthCallback oa)
-                          , ("grant_type", gt) ]
+                          , ("grant_type", gt)
+                          ]
 
 -- | Using a Refresh Token.  Obtain a new access token by
 -- sending a refresh token to the Authorization server.
@@ -109,10 +108,9 @@ refreshAccessTokenUrl :: OAuth2
                          -> (URI, PostBody)  -- ^ refresh token request URL plus the request body.
 refreshAccessTokenUrl oa rtoken = (uri, body)
   where uri = oauthAccessTokenEndpoint oa
-        body = transform' [ ("client_id", Just $ oauthClientId oa)
-                          , ("client_secret", Just $ oauthClientSecret oa)
-                          , ("grant_type", Just "refresh_token")
-                          , ("refresh_token", Just rtoken) ]
+        body = transform' [ ("grant_type", Just "refresh_token")
+                          , ("refresh_token", Just rtoken)
+                          ]
 
 --------------------------------------------------
 -- * UTILs

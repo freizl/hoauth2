@@ -9,3 +9,4 @@ cabal-dev*
 cabal.sandbox.config
 *.bak
 .stack-work
+TAGS

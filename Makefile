@@ -1,12 +1,8 @@
 DIST=dist
-CBD=cabal
+CBD=stack
 STYLE=stylish-haskell
 
 default: build
-
-init:
-	$(CBD) sandbox init
-	$(CBD) install --job=2 --only-dependencies --enable-tests
 
 clean:
 	rm -rf $(DIST)
@@ -14,10 +10,7 @@ clean:
 create-keys:
 	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
 
-conf: create-keys
-	$(CBD) configure --enable-tests -ftest
-
-build: conf
+build:
 	$(CBD) build
 
 test:
@@ -25,10 +18,6 @@ test:
 
 rebuild: clean build
 
-install: build
-	$(CBD) install
-
-ci: init build test
 
 ci-stack: create-keys
 	stack build --test
@@ -52,22 +41,25 @@ dist: build
 ####################
 
 test-weibo:
-	./dist/build/test-weibo/test-weibo
+	$(CBD) exec test-weibo
 
 test-douban:
-	./dist/build/test-douban/test-douban
+	$(CBD) exec test-douban
 
 test-google:
-	./dist/build/test-google/test-google
+	$(CBD) exec test-google
 
 test-facebook:
-	./dist/build/test-facebook/test-facebook
+	$(CBD) exec test-facebook
 
 test-github:
-	./dist/build/test-github/test-github
+	$(CBD) exec test-github
 
 test-fitbit:
-	./dist/build/test-fitbit/test-fitbit
+	$(CBD) exec test-fitbit
 
 test-stackexchange:
-	./dist/build/test-stackexchange/test-stackexchange
+	$(CBD) exec test-stackexchange
+
+test-dropbox:
+	$(CBD) exec test-dropbox
