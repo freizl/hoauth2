@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-
 
@@ -16,6 +17,7 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
+import           URI.ByteString.QQ
 
 import           Network.OAuth.OAuth2
 
@@ -27,12 +29,12 @@ main = do
   putStrLn "visit the url and paste code here: "
   code <- getLine
   mgr <- newManager tlsManagerSettings
-  token <- fetchAccessToken mgr doubanKey (sToBS code)
+  token <- fetchAccessToken mgr doubanKey (ExchangeToken (T.pack code))
   print token
   case token of
     Right r -> do
       -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
-      uid <- authGetBS mgr r "https://api.douban.com/v2/user/~me"
+      uid <- authGetBS mgr r [uri|https://api.douban.com/v2/user/~me|]
       print uid
     Left l -> BSL.putStrLn l
 

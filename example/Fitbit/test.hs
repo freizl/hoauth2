@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module Main where
 
-import           Control.Applicative
 import           Control.Monad            (mzero)
 import           Data.Aeson
 import qualified Data.ByteString          as B
@@ -12,10 +12,12 @@ import           Data.Char                (chr)
 import qualified Data.Map                 as M
 import           Data.Text                (Text)
 import qualified Data.Text                as T
+import qualified Data.Text.Encoding       as T
 import           Network.HTTP.Conduit     hiding (Request, queryString)
 import           Network.HTTP.Types       (Query, status200)
 import           Network.Wai
 import           Network.Wai.Handler.Warp (run)
+import           URI.ByteString.QQ
 
 import           Keys                     (fitbitKey)
 import           Network.OAuth.OAuth2
@@ -47,7 +49,7 @@ instance ToJSON FitbitUser where
 
 main :: IO ()
 main = do
-    print $ authorizationUrl fitbitKey `appendQueryParam` [("state", state), ("scope", "profile")]
+    print $ appendQueryParams [("state", state), ("scope", "profile")] $ authorizationUrl fitbitKey
     putStrLn "visit the url to continue"
     run 9988 application
 
@@ -71,15 +73,15 @@ handleRequest _ request = do
     print user
     return $ encode user
 
-getApiCode :: Request -> B.ByteString
+getApiCode :: Request -> ExchangeToken
 getApiCode request =
     case M.lookup "code" queryMap of
-        Just code -> code
+        Just code -> ExchangeToken $ T.decodeUtf8 $ code
         Nothing -> error "request doesn't include code"
   where
     queryMap = convertQueryToMap $ queryString request
 
-getApiToken :: Manager -> B.ByteString -> IO (AccessToken)
+getApiToken :: Manager -> ExchangeToken -> IO (AccessToken)
 getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
@@ -90,7 +92,7 @@ getApiToken mgr code = do
 
 getApiUser :: Manager -> AccessToken -> IO (FitbitUser)
 getApiUser mgr token = do
-    result <- authGetJSON mgr token "https://api.fitbit.com/1/user/-/profile.json"
+    result <- authGetJSON mgr token [uri|https://api.fitbit.com/1/user/-/profile.json|]
     case result of
         Right user -> return user
         Left e -> error $ lazyBSToString e

@@ -4,13 +4,10 @@
 
 module Main where
 
-import           Control.Monad                 (liftM)
-import           Data.Aeson.TH         (defaultOptions, deriveJSON)
 import qualified Network.HTTP.Types            as HT
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8    as BSL
 import qualified Data.Text             as T
-import qualified Data.Text.Encoding    as T
 import           Network.HTTP.Conduit
 
 import           Network.OAuth.OAuth2
@@ -22,9 +19,9 @@ main :: IO ()
 main = do
     print $ authorizationUrl dropboxKey
     putStrLn "visit the url and paste code here: "
-    code <- fmap BS.pack getLine
+    code <- getLine
     mgr <- newManager tlsManagerSettings
-    token <- fetchAccessToken mgr dropboxKey code
+    token <- fetchAccessToken mgr dropboxKey (ExchangeToken (T.pack code))
     print token
     case token of
       Right at  -> getSpaceUsage mgr at >>= print

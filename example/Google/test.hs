@@ -21,7 +21,9 @@ import           Data.Aeson                    (FromJSON)
 import           Data.Aeson.TH                 (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Internal as BL
+import qualified Data.Text                     as T
 import           Data.Text                     (Text)
+import qualified Data.Text.Encoding            as T
 import           Network.HTTP.Conduit
 import           Prelude                       hiding (id)
 import           System.Environment            (getArgs)
@@ -63,10 +65,10 @@ main = do
 
 offlineCase :: Manager -> IO ()
 offlineCase mgr = do
-    BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` (googleScopeEmail ++ googleAccessOffline)
+    putStrLn $ show $ appendQueryParams (googleScopeEmail ++ googleAccessOffline) $ authorizationUrl googleKey
     putStrLn "visit the url and paste code here: "
-    code <- fmap BS.pack getLine
-    (Right token) <- fetchAccessToken mgr googleKey code
+    code <- getLine
+    (Right token) <- fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack $ code
     f token
     --
     -- obtain a new access token with refresh token, which turns out only in response at first time.
