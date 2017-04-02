@@ -9,6 +9,7 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8    as BSL
 import qualified Data.Text             as T
 import           Network.HTTP.Conduit
+import           URI.ByteString
 
 import           Network.OAuth.OAuth2
 
@@ -17,7 +18,7 @@ import           Keys
 
 main :: IO ()
 main = do
-    print $ authorizationUrl dropboxKey
+    BS.putStrLn $ serializeURIRef' $ authorizationUrl dropboxKey
     putStrLn "visit the url and paste code here: "
     code <- getLine
     mgr <- newManager tlsManagerSettings

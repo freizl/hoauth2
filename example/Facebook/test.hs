@@ -17,6 +17,7 @@ import           Data.Text                  (Text, pack)
 import           Network.HTTP.Conduit
 import           Prelude                    hiding (id)
 import           URI.ByteString.QQ
+import           URI.ByteString
 
 --------------------------------------------------
 
@@ -31,7 +32,7 @@ $(deriveJSON defaultOptions ''User)
 
 main :: IO ()
 main = do
-    print $ appendQueryParams  facebookScope $ authorizationUrl facebookKey
+    print $ serializeURIRef' $ appendQueryParams  facebookScope $ authorizationUrl facebookKey
     putStrLn "visit the url and paste code here: "
     code <- getLine
     mgr <- newManager tlsManagerSettings

@@ -18,6 +18,7 @@ import           Network.HTTP.Types       (Query, status200)
 import           Network.Wai
 import           Network.Wai.Handler.Warp (run)
 import           URI.ByteString.QQ
+import           URI.ByteString           (serializeURIRef')
 
 import           Keys                     (fitbitKey)
 import           Network.OAuth.OAuth2
@@ -49,7 +50,7 @@ instance ToJSON FitbitUser where
 
 main :: IO ()
 main = do
-    print $ appendQueryParams [("state", state), ("scope", "profile")] $ authorizationUrl fitbitKey
+    print $ serializeURIRef' $ appendQueryParams [("state", state), ("scope", "profile")] $ authorizationUrl fitbitKey
     putStrLn "visit the url to continue"
     run 9988 application
 

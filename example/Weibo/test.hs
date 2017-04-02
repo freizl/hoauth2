@@ -28,12 +28,13 @@ import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import           URI.ByteString.QQ
+import           URI.ByteString
 
 import           Keys
 
 main :: IO ()
 main = do
-       print $ authorizationUrl weiboKey
+       print $ serializeURIRef' $ authorizationUrl weiboKey
        putStrLn "visit the url and paste code here: "
        code <- getLine
        mgr <- newManager tlsManagerSettings
