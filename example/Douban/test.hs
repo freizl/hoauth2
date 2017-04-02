@@ -34,7 +34,7 @@ main = do
   case token of
     Right r -> do
       -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
-      uid <- authGetBS mgr r [uri|https://api.douban.com/v2/user/~me|]
+      uid <- authGetBS mgr (accessToken r) [uri|https://api.douban.com/v2/user/~me|]
       print uid
     Left l -> BSL.putStrLn l
 

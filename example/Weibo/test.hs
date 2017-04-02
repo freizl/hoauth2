@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 {-
 
@@ -26,6 +27,7 @@ import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
+import           URI.ByteString.QQ
 
 import           Keys
 
@@ -35,11 +37,11 @@ main = do
        putStrLn "visit the url and paste code here: "
        code <- getLine
        mgr <- newManager tlsManagerSettings
-       token <- fetchAccessToken mgr weiboKey (sToBS code)
+       token <- fetchAccessToken mgr weiboKey (ExchangeToken $ T.pack code)
        print token
        case token of
          Right r -> do
-                    uid <- authGetBS' mgr r "https://api.weibo.com/2/account/get_uid.json"
+                    uid <- authGetBS' mgr (accessToken r) [uri|https://api.weibo.com/2/account/get_uid.json|]
                     print uid
          Left l -> BSL.putStrLn l
 

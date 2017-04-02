@@ -13,6 +13,7 @@ import           Data.Text            (Text)
 import qualified Data.Text            as T
 import qualified Data.Text.Encoding   as T
 import           Network.HTTP.Conduit
+import           URI.ByteString
 import           URI.ByteString.QQ
 
 import           Network.OAuth.OAuth2
@@ -23,15 +24,15 @@ import           Keys
 main :: IO ()
 main = do
     let state = "testGithubApi"
-    print $ appendQueryParams [("state", state)] $ authorizationUrl githubKey
+    print $ serializeURIRef' $ appendQueryParams [("state", state)] $ authorizationUrl githubKey
     putStrLn "visit the url and paste code here: "
     code <- getLine
     mgr <- newManager tlsManagerSettings
     let (url, body) = accessTokenUrl githubKey $ ExchangeToken $ T.pack $ code
     token <- doJSONPostRequest mgr githubKey url (body ++ [("state", state)])
-    print (token :: OAuth2Result AccessToken)
+    print (token :: OAuth2Result OAuth2Token)
     case token of
-      Right at  -> userInfo mgr at >>= print
+      Right at  -> userInfo mgr (accessToken at) >>= print
       Left _    -> putStrLn "no access token found yet"
 
 

@@ -137,17 +137,17 @@ uriToRequest uri = do
     "https" -> return True
     s -> throwM $ InvalidUrlException (show uri) ("Invalid scheme: " ++ show s)
   let
-    maybeModify sa ra = over ra . maybe id const . preview sa
     query = fmap (\(a, b) -> (a, Just b)) (view (queryL . queryPairsL) uri)
     hostL = (authorityL . _Just . authorityHostL . hostBSL)
     portL = (authorityL . _Just . authorityPortL . _Just . portNumberL)
+    defaultPort = (if ssl then 443 else 80) :: Int
 
     req = (setQueryString query) $ defaultRequest {
         secure = ssl,
         path = (view pathL uri)
       }
-    req2 = maybeModify hostL hostLens uri req
-    req3 = maybeModify portL portLens uri req2
+    req2 = (over hostLens . maybe id const . preview hostL) uri req
+    req3 = (over portLens . maybe (\_ -> defaultPort) const . preview portL) uri req2
   return $ req3
 
 requestToUri :: Request -> URI

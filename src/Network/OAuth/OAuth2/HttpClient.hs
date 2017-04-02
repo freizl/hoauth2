@@ -43,11 +43,11 @@ import           URI.ByteString
 -- * Token management
 --------------------------------------------------
 
--- | Request (via POST method) "Access Token".
+-- | Request (via POST method) "OAuth2 Token".
 fetchAccessToken :: Manager                          -- ^ HTTP connection manager
                    -> OAuth2                         -- ^ OAuth Data
-                   -> ExchangeToken                  -- ^ Authentication code gained after authorization
-                   -> IO (OAuth2Result AccessToken)  -- ^ Access Token
+                   -> ExchangeToken                  -- ^ OAuth 2 Tokens
+                   -> IO (OAuth2Result OAuth2Token)  -- ^ Access Token
 fetchAccessToken manager oa code = doFlexiblePostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 

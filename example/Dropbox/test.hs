@@ -24,7 +24,7 @@ main = do
     token <- fetchAccessToken mgr dropboxKey (ExchangeToken (T.pack code))
     print token
     case token of
-      Right at  -> getSpaceUsage mgr at >>= print
+      Right at  -> getSpaceUsage mgr (accessToken at) >>= print
       Left _    -> putStrLn "no access token found yet"
 
 getSpaceUsage :: Manager -> AccessToken -> IO (OAuth2Result BSL.ByteString)
