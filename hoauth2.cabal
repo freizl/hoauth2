@@ -46,8 +46,8 @@ Source-Repository head
   Location: git://github.com/freizl/hoauth2.git
 
 Flag test
-     Description: Build the executables
-     Default: False
+  Description: Build the executables
+  Default: False
 
 Library
   hs-source-dirs: src
@@ -59,12 +59,13 @@ Library
 
   Build-Depends:
     base                 >= 4     && < 5,
-    aeson                >= 1.1   && < 1.2,
     text                 >= 0.11  && < 1.3,
     bytestring           >= 0.9   && < 0.11,
-    http-conduit         >= 2.2   && < 2.3,
+    http-conduit         >= 2.1   && < 2.3,
     http-types           >= 0.9   && < 0.10,
-    unordered-containers >=0.2.5
+    aeson                >= 0.11  && < 1.2,
+    unordered-containers >= 0.2.5
+
 
   if impl(ghc >= 6.12.0)
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
@@ -83,9 +84,10 @@ Executable test-weibo
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
+                       aeson             >= 0.11   && < 1.1,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -106,10 +108,10 @@ Executable test-google
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -130,10 +132,10 @@ Executable test-github
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -153,10 +155,10 @@ Executable test-douban
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -176,10 +178,10 @@ Executable test-facebook
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -200,12 +202,12 @@ Executable test-fitbit
   build-depends:       base              >= 4.5    && < 5,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        http-types        >= 0.9    && < 0.10,
                        wai               >= 3.2    && < 3.3,
                        warp              >= 3.2    && < 3.3,
                        containers        >= 0.4    && < 0.6,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
 
@@ -226,10 +228,10 @@ Executable test-stackexchange
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -249,10 +251,10 @@ Executable test-dropbox
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        http-types        >= 0.9    && < 0.10,
-                       http-conduit      >= 2.2    && < 2.3,
+                       http-conduit      >= 2.1    && < 2.3,
                        text              >= 0.11   && < 1.3,
                        bytestring        >= 0.9    && < 0.11,
-                       aeson             >= 1.1    && < 1.2,
+                       aeson             >= 0.11   && < 1.2,
                        hoauth2
 
   if impl(ghc >= 6.12.0)
@@ -260,4 +262,3 @@ Executable test-dropbox
                    -fno-warn-unused-do-bind
   else
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-
