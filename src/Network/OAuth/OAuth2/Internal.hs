@@ -88,7 +88,7 @@ authorizationUrl oa = over (queryL . queryPairsL) (\l -> l ++ queryParts) (oauth
 
 -- | Prepare the URL and the request body query for fetching an access token.
 accessTokenUrl :: OAuth2
-                  -> ExchangeToken       -- ^ access code gained via authorization URL
+                  -> ExchangeToken    -- ^ access code gained via authorization URL
                   -> (URI, PostBody)  -- ^ access token request URL plus the request body.
 accessTokenUrl oa code = accessTokenUrl' oa code (Just "authorization_code")
 

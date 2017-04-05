@@ -65,7 +65,7 @@ fetchRefreshToken manager oa token = doFlexiblePostRequest manager oa uri body
 doJSONPostRequest :: FromJSON a
                   => Manager                             -- ^ HTTP connection manager.
                   -> OAuth2                              -- ^ OAuth options
-                  -> URI                     -- ^ The URL
+                  -> URI                                 -- ^ The URL
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
 doJSONPostRequest manager oa uri body = liftM parseResponseJSON (doSimplePostRequest manager oa uri body)
@@ -74,7 +74,7 @@ doJSONPostRequest manager oa uri body = liftM parseResponseJSON (doSimplePostReq
 doFlexiblePostRequest :: FromJSON a
                          => Manager                             -- ^ HTTP connection manager.
                          -> OAuth2                              -- ^ OAuth options
-                         -> URI                     -- ^ The URL
+                         -> URI                                 -- ^ The URL
                          -> PostBody                            -- ^ request body
                          -> IO (OAuth2Result a)                 -- ^ Response as ByteString
 doFlexiblePostRequest manager oa uri body = liftM parseResponseFlexible (doSimplePostRequest manager oa uri body)
@@ -82,7 +82,7 @@ doFlexiblePostRequest manager oa uri body = liftM parseResponseFlexible (doSimpl
 -- | Conduct post request.
 doSimplePostRequest :: Manager                              -- ^ HTTP connection manager.
                        -> OAuth2                            -- ^ OAuth options
-                       -> URI                   -- ^ URL
+                       -> URI                               -- ^ URL
                        -> PostBody                          -- ^ Request body.
                        -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
 doSimplePostRequest manager oa url body = liftM handleResponse go
@@ -100,14 +100,14 @@ doSimplePostRequest manager oa url body = liftM handleResponse go
 authGetJSON :: FromJSON a
                  => Manager                      -- ^ HTTP connection manager.
                  -> AccessToken
-                 -> URI              -- ^ Full URL
+                 -> URI                          -- ^ Full URL
                  -> IO (OAuth2Result a)          -- ^ Response as JSON
 authGetJSON manager t uri = liftM parseResponseJSON $ authGetBS manager t uri
 
 -- | Conduct GET request.
 authGetBS :: Manager                              -- ^ HTTP connection manager.
              -> AccessToken
-             -> URI                   -- ^ URL
+             -> URI                               -- ^ URL
              -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
 authGetBS manager token url = do
   req <- uriToRequest url
@@ -136,7 +136,7 @@ authPostJSON manager t uri pb = liftM parseResponseJSON $ authPostBS manager t u
 -- | Conduct POST request.
 authPostBS :: Manager                             -- ^ HTTP connection manager.
              -> AccessToken
-             -> URI                   -- ^ URL
+             -> URI                               -- ^ URL
              -> PostBody
              -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
 authPostBS manager token url pb = do
