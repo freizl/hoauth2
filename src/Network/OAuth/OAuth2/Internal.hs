@@ -10,6 +10,7 @@
 
 module Network.OAuth.OAuth2.Internal where
 
+import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
 import           Data.Aeson.Types
@@ -35,7 +36,7 @@ data OAuth2 = OAuth2 {
     , oauthClientSecret        :: Text
     , oauthOAuthorizeEndpoint  :: URI
     , oauthAccessTokenEndpoint :: URI
-    , oauthCallback            :: Maybe (URI)
+    , oauthCallback            :: Maybe URI
     } deriving (Show, Eq)
 
 newtype AccessToken = AccessToken { atoken :: Text } deriving (Show, FromJSON, ToJSON)
@@ -58,9 +59,9 @@ data OAuth2Token = OAuth2Token {
 
 -- | Parse JSON data into 'OAuth2Token'
 instance FromJSON OAuth2Token where
-    parseJSON = (genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' })
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 instance ToJSON OAuth2Token where
-    toEncoding = (genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' })
+    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 --------------------------------------------------
 -- * Types Synonym
@@ -81,10 +82,10 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 -- | Prepare the authorization URL.  Redirect to this URL
 -- asking for user interactive authentication.
 authorizationUrl :: OAuth2 -> URI
-authorizationUrl oa = over (queryL . queryPairsL) (\l -> l ++ queryParts) (oauthOAuthorizeEndpoint oa)
+authorizationUrl oa = over (queryL . queryPairsL) (++ queryParts) (oauthOAuthorizeEndpoint oa)
   where queryParts = catMaybes [ Just ("client_id", encodeUtf8 $ oauthClientId oa)
                                , Just ("response_type", "code")
-                               , fmap ("redirect_uri",) (fmap serializeURIRef' $ oauthCallback oa) ]
+                               , fmap (("redirect_uri",) . serializeURIRef') (oauthCallback oa) ]
 
 -- | Prepare the URL and the request body query for fetching an access token.
 accessTokenUrl :: OAuth2
@@ -101,7 +102,7 @@ accessTokenUrl' ::  OAuth2
 accessTokenUrl' oa code gt = (uri, body)
   where uri  = oauthAccessTokenEndpoint oa
         body = catMaybes [ Just ("code", encodeUtf8 $ extoken code)
-                         , fmap (("redirect_uri",) . serializeURIRef') $ oauthCallback oa
+                         , (("redirect_uri",) . serializeURIRef') <$> oauthCallback oa
                          , fmap (("grant_type",) . encodeUtf8) gt
                          ]
 
@@ -120,7 +121,7 @@ refreshAccessTokenUrl oa token = (uri, body)
 appendAccessToken :: URIRef a             -- ^ Base URI
                      -> AccessToken       -- ^ Authorized Access Token
                      -> URIRef a          -- ^ Combined Result
-appendAccessToken uri t = over (queryL . queryPairsL) (\query -> query ++ (accessTokenToParam t)) uri
+appendAccessToken uri t = over (queryL . queryPairsL) (\query -> query ++ accessTokenToParam t) uri
 
 -- | Create 'QueryParams' with given access token value.
 accessTokenToParam :: AccessToken -> [(BS.ByteString, BS.ByteString)]
@@ -132,23 +133,23 @@ appendQueryParams params =
 
 uriToRequest :: MonadThrow m => URI -> m Request
 uriToRequest uri = do
-  ssl <- case (view (uriSchemeL . schemeBSL) uri) of
+  ssl <- case view (uriSchemeL . schemeBSL) uri of
     "http" -> return False
     "https" -> return True
     s -> throwM $ InvalidUrlException (show uri) ("Invalid scheme: " ++ show s)
   let
-    query = fmap (\(a, b) -> (a, Just b)) (view (queryL . queryPairsL) uri)
-    hostL = (authorityL . _Just . authorityHostL . hostBSL)
-    portL = (authorityL . _Just . authorityPortL . _Just . portNumberL)
+    query = fmap (second Just) (view (queryL . queryPairsL) uri)
+    hostL = authorityL . _Just . authorityHostL . hostBSL
+    portL = authorityL . _Just . authorityPortL . _Just . portNumberL
     defaultPort = (if ssl then 443 else 80) :: Int
 
-    req = (setQueryString query) $ defaultRequest {
+    req = setQueryString query $ defaultRequest {
         secure = ssl,
-        path = (view pathL uri)
+        path = view pathL uri
       }
     req2 = (over hostLens . maybe id const . preview hostL) uri req
-    req3 = (over portLens . maybe (\_ -> defaultPort) const . preview portL) uri req2
-  return $ req3
+    req3 = (over portLens . maybe (const defaultPort) const . preview portL) uri req2
+  return req3
 
 requestToUri :: Request -> URI
 requestToUri req =

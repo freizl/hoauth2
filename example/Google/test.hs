@@ -70,7 +70,7 @@ offlineCase mgr = do
     BS.putStrLn $ serializeURIRef' $ appendQueryParams (googleScopeEmail ++ googleAccessOffline) $ authorizationUrl googleKey
     putStrLn "visit the url and paste code here: "
     code <- getLine
-    (Right token) <- fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack $ code
+    (Right token) <- fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack code
     f (accessToken token)
     --
     -- obtain a new access token with refresh token, which turns out only in response at first time.
@@ -132,7 +132,7 @@ validateToken' :: FromJSON a
                   => Manager
                   -> AccessToken
                   -> IO (OAuth2Result a)
-validateToken' mgr token = liftM parseResponseJSON $ validateToken mgr token
+validateToken' mgr token = parseResponseJSON <$> validateToken mgr token
 
 -- | fetch user email.
 --   for more information, please check the playround site.

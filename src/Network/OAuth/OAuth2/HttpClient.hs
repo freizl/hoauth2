@@ -26,7 +26,6 @@ module Network.OAuth.OAuth2.HttpClient (
   setMethod
 ) where
 
-import           Control.Monad                 (liftM)
 import           Data.Aeson
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BSL
@@ -68,7 +67,7 @@ doJSONPostRequest :: FromJSON a
                   -> URI                                 -- ^ The URL
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result a)                 -- ^ Response as ByteString
-doJSONPostRequest manager oa uri body = liftM parseResponseJSON (doSimplePostRequest manager oa uri body)
+doJSONPostRequest manager oa uri body = fmap parseResponseJSON (doSimplePostRequest manager oa uri body)
 
 -- | Conduct post request and return response as JSON or Query String.
 doFlexiblePostRequest :: FromJSON a
@@ -77,7 +76,7 @@ doFlexiblePostRequest :: FromJSON a
                          -> URI                                 -- ^ The URL
                          -> PostBody                            -- ^ request body
                          -> IO (OAuth2Result a)                 -- ^ Response as ByteString
-doFlexiblePostRequest manager oa uri body = liftM parseResponseFlexible (doSimplePostRequest manager oa uri body)
+doFlexiblePostRequest manager oa uri body = fmap parseResponseFlexible (doSimplePostRequest manager oa uri body)
 
 -- | Conduct post request.
 doSimplePostRequest :: Manager                              -- ^ HTTP connection manager.
@@ -85,7 +84,7 @@ doSimplePostRequest :: Manager                              -- ^ HTTP connection
                        -> URI                               -- ^ URL
                        -> PostBody                          -- ^ Request body.
                        -> IO (OAuth2Result BSL.ByteString)  -- ^ Response as ByteString
-doSimplePostRequest manager oa url body = liftM handleResponse go
+doSimplePostRequest manager oa url body = fmap handleResponse go
                                   where go = do
                                              req <- uriToRequest url
                                              let addBasicAuth = applyBasicAuth (T.encodeUtf8 $ oauthClientId oa) (T.encodeUtf8 $ oauthClientSecret oa)
@@ -102,7 +101,7 @@ authGetJSON :: FromJSON a
                  -> AccessToken
                  -> URI                          -- ^ Full URL
                  -> IO (OAuth2Result a)          -- ^ Response as JSON
-authGetJSON manager t uri = liftM parseResponseJSON $ authGetBS manager t uri
+authGetJSON manager t uri = parseResponseJSON <$> authGetBS manager t uri
 
 -- | Conduct GET request.
 authGetBS :: Manager                              -- ^ HTTP connection manager.
@@ -131,7 +130,7 @@ authPostJSON :: FromJSON a
                  -> URI                          -- ^ Full URL
                  -> PostBody
                  -> IO (OAuth2Result a)          -- ^ Response as JSON
-authPostJSON manager t uri pb = liftM parseResponseJSON $ authPostBS manager t uri pb
+authPostJSON manager t uri pb = parseResponseJSON <$> authPostBS manager t uri pb
 
 -- | Conduct POST request.
 authPostBS :: Manager                             -- ^ HTTP connection manager.
@@ -166,7 +165,7 @@ authRequest :: Request                          -- ^ Request to perform
                -> (Request -> Request)          -- ^ Modify request before sending
                -> Manager                       -- ^ HTTP connection manager.
                -> IO (OAuth2Result BSL.ByteString)
-authRequest req upReq manager = liftM handleResponse (httpLbs (upReq req) manager)
+authRequest req upReq manager = fmap handleResponse (httpLbs (upReq req) manager)
 
 --------------------------------------------------
 -- * Utilities

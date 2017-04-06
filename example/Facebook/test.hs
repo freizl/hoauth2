@@ -36,7 +36,7 @@ main = do
     putStrLn "visit the url and paste code here: "
     code <- getLine
     mgr <- newManager tlsManagerSettings
-    let (url, body) = accessTokenUrl facebookKey $ ExchangeToken $ pack $ code
+    let (url, body) = accessTokenUrl facebookKey $ ExchangeToken $ pack code
     resp <- doJSONPostRequest mgr facebookKey url (body ++ [("state", "test")])
     case (resp :: OAuth2Result AccessToken) of
       Right token -> do

@@ -77,12 +77,12 @@ handleRequest _ request = do
 getApiCode :: Request -> ExchangeToken
 getApiCode request =
     case M.lookup "code" queryMap of
-        Just code -> ExchangeToken $ T.decodeUtf8 $ code
+        Just code -> ExchangeToken $ T.decodeUtf8 code
         Nothing   -> error "request doesn't include code"
   where
     queryMap = convertQueryToMap $ queryString request
 
-getApiToken :: Manager -> ExchangeToken -> IO (OAuth2Token)
+getApiToken :: Manager -> ExchangeToken -> IO OAuth2Token
 getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
@@ -91,7 +91,7 @@ getApiToken mgr code = do
   where
     (url, body) = accessTokenUrl fitbitKey code
 
-getApiUser :: Manager -> AccessToken -> IO (FitbitUser)
+getApiUser :: Manager -> AccessToken -> IO FitbitUser
 getApiUser mgr token = do
     result <- authGetJSON mgr token [uri|https://api.fitbit.com/1/user/-/profile.json|]
     case result of

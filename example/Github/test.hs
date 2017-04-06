@@ -28,7 +28,7 @@ main = do
     putStrLn "visit the url and paste code here: "
     code <- getLine
     mgr <- newManager tlsManagerSettings
-    let (url, body) = accessTokenUrl githubKey $ ExchangeToken $ T.pack $ code
+    let (url, body) = accessTokenUrl githubKey $ ExchangeToken $ T.pack code
     token <- doJSONPostRequest mgr githubKey url (body ++ [("state", state)])
     print (token :: OAuth2Result OAuth2Token)
     case token of
