@@ -1,48 +1,58 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 -- | https://api.stackexchange.com/docs/authentication
 
 module Main where
 
-import           Data.Aeson.TH         (defaultOptions, deriveJSON)
+import           Data.Aeson
+import           Data.Aeson.Types
 import qualified Data.ByteString.Char8 as BS
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
+import           GHC.Generics
 import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
 
+import           Keys
 import           Network.OAuth.OAuth2
 
-import           Keys
+data SiteInfo = SiteInfo { items          :: [SiteItem]
+                         , hasMore        :: Bool
+                         , quotaMax       :: Integer
+                         , quotaRemaining :: Integer
+                         } deriving (Show, Eq, Generic)
 
-data SiteInfo = SiteInfo { items           :: [SiteItem]
-                         , has_more        :: Bool
-                         , quota_max       :: Integer
-                         , quota_remaining :: Integer
-                         } deriving (Show, Eq)
+data SiteItem = SiteItem { newActiveUsers       :: Integer
+                           , totalUsers         :: Integer
+                           , badgesPerMinute    :: Double
+                           , totalBadges        :: Integer
+                           , totalVotes         :: Integer
+                           , totalComments      :: Integer
+                           , answersPerMinute   :: Double
+                           , questionsPerMinute :: Double
+                           , totalAnswers       :: Integer
+                           , totalAccepted      :: Integer
+                           , totalUnanswered    :: Integer
+                           , totalQuestions     :: Integer
+                           , apiRevision        :: Text
+                         } deriving (Show, Eq, Generic)
 
-data SiteItem = SiteItem { new_active_users       :: Integer
-                           , total_users          :: Integer
-                           , badges_per_minute    :: Double
-                           , total_badges         :: Integer
-                           , total_votes          :: Integer
-                           , total_comments       :: Integer
-                           , answers_per_minute   :: Double
-                           , questions_per_minute :: Double
-                           , total_answers        :: Integer
-                           , total_accepted       :: Integer
-                           , total_unanswered     :: Integer
-                           , total_questions      :: Integer
-                           , api_revision         :: Text
-                         } deriving (Show, Eq)
+instance FromJSON SiteInfo where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
-$(deriveJSON defaultOptions ''SiteInfo)
-$(deriveJSON defaultOptions ''SiteItem)
+instance ToJSON SiteInfo where
+    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
+
+instance FromJSON SiteItem where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+
+instance ToJSON SiteItem where
+    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 
 main :: IO ()

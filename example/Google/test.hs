@@ -1,6 +1,6 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 {-
 
@@ -14,46 +14,54 @@ Google OAuth 2.0 playround: https://developers.google.com/oauthplayground/
 
 module Main where
 
-import           Keys                          (googleKey)
-import           Network.OAuth.OAuth2
-
-import           Control.Monad                 (liftM)
-import           Data.Aeson                    (FromJSON)
-import           Data.Aeson.TH                 (defaultOptions, deriveJSON)
+import           Data.Aeson
+import           Data.Aeson.Types
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Internal as BL
 import           Data.Text                     (Text)
 import qualified Data.Text                     as T
+import           GHC.Generics
 import           Network.HTTP.Conduit
 import           Prelude                       hiding (id)
 import           System.Environment            (getArgs)
 import           URI.ByteString
 import           URI.ByteString.QQ
 
+import           Keys                          (googleKey)
+import           Network.OAuth.OAuth2
+
 --------------------------------------------------
 
-data Token = Token { issued_to   :: Text
-                   , audience    :: Text
-                   , user_id     :: Maybe Text
-                   , scope       :: Text
-                   , expires_in  :: Integer
-                   , access_type :: Text
-                   } deriving (Show)
+data Token = Token { issuedTo   :: Text
+                   , audience   :: Text
+                   , userId     :: Maybe Text
+                   , scope      :: Text
+                   , expiresIn  :: Integer
+                   , accessType :: Text
+                   } deriving (Show, Generic)
 
 
-$(deriveJSON defaultOptions ''Token)
+data User = User { id         :: Text
+                 , name       :: Text
+                 , givenName  :: Text
+                 , familyName :: Text
+                 , link       :: Text
+                 , picture    :: Text
+                 , gender     :: Text
+                 , locale     :: Text
+                 } deriving (Show, Generic)
 
-data User = User { id          :: Text
-                 , name        :: Text
-                 , given_name  :: Text
-                 , family_name :: Text
-                 , link        :: Text
-                 , picture     :: Text
-                 , gender      :: Text
-                 , locale      :: Text
-                 } deriving (Show)
+instance FromJSON Token where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
-$(deriveJSON defaultOptions ''User)
+instance ToJSON Token where
+    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
+
+instance FromJSON User where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+
+instance ToJSON User where
+    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 --------------------------------------------------
 
