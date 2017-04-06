@@ -7,6 +7,7 @@
 
 module Main where
 
+import Data.Maybe
 import           Data.Aeson
 import           Data.Aeson.Types
 import qualified Data.ByteString.Char8 as BS
@@ -18,7 +19,7 @@ import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
 
-import           Keys
+import           Keys (stackexchangeKey)
 import           Network.OAuth.OAuth2
 
 data SiteInfo = SiteInfo { items          :: [SiteItem]
@@ -61,7 +62,14 @@ main = do
     putStrLn "visit the url and paste code here: "
     code <- fmap (ExchangeToken . T.pack) getLine
     mgr <- newManager tlsManagerSettings
-    token <- fetchAccessToken mgr stackexchangeKey code
+    let (url, body) = accessTokenUrl stackexchangeKey code
+    let extraBody = [ ("client_id", T.encodeUtf8 $ oauthClientId stackexchangeKey)
+                    , ("client_secret", T.encodeUtf8 $ oauthClientSecret stackexchangeKey)
+                    , ("state", "test")
+                    ]
+
+    token <- doSimplePostRequest mgr stackexchangeKey url (extraBody ++ body)
+    --token <- fetchAccessToken mgr stackexchangeKey code
     print token
     case token of
       Right at -> siteInfo mgr (accessToken at) >>= print
