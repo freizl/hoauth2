@@ -32,8 +32,8 @@ main = do
     token <- doJSONPostRequest mgr githubKey url (body ++ [("state", state)])
     print (token :: OAuth2Result OAuth2Token)
     case token of
-      Right at  -> userInfo mgr (accessToken at) >>= print
-      Left _    -> putStrLn "no access token found yet"
+      Right at -> userInfo mgr (accessToken at) >>= print
+      Left _   -> putStrLn "no access token found yet"
 
 
 -- | Test API: user

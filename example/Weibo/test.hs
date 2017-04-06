@@ -27,8 +27,8 @@ import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
-import           URI.ByteString.QQ
 import           URI.ByteString
+import           URI.ByteString.QQ
 
 import           Keys
 

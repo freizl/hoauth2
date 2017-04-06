@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 {- Facebook example -}
 
@@ -16,8 +16,8 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Text                  (Text, pack)
 import           Network.HTTP.Conduit
 import           Prelude                    hiding (id)
-import           URI.ByteString.QQ
 import           URI.ByteString
+import           URI.ByteString.QQ
 
 --------------------------------------------------
 

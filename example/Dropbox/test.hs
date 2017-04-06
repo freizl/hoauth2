@@ -4,11 +4,11 @@
 
 module Main where
 
-import qualified Network.HTTP.Types            as HT
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy.Char8    as BSL
-import qualified Data.Text             as T
+import qualified Data.ByteString.Char8      as BS
+import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Data.Text                  as T
 import           Network.HTTP.Conduit
+import qualified Network.HTTP.Types         as HT
 import           URI.ByteString
 
 import           Network.OAuth.OAuth2
@@ -25,8 +25,8 @@ main = do
     token <- fetchAccessToken mgr dropboxKey (ExchangeToken (T.pack code))
     print token
     case token of
-      Right at  -> getSpaceUsage mgr (accessToken at) >>= print
-      Left _    -> putStrLn "no access token found yet"
+      Right at -> getSpaceUsage mgr (accessToken at) >>= print
+      Left _   -> putStrLn "no access token found yet"
 
 getSpaceUsage :: Manager -> AccessToken -> IO (OAuth2Result BSL.ByteString)
 getSpaceUsage mgr token = do

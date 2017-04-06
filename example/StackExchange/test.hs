@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 -- | https://api.stackexchange.com/docs/authentication
 
@@ -13,8 +13,8 @@ import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
 import           Network.HTTP.Conduit
-import           URI.ByteString.QQ
 import           URI.ByteString
+import           URI.ByteString.QQ
 
 import           Network.OAuth.OAuth2
 
@@ -54,8 +54,8 @@ main = do
     token <- fetchAccessToken mgr stackexchangeKey code
     print token
     case token of
-      Right at  -> siteInfo mgr (accessToken at) >>= print
-      Left _    -> putStrLn "no access token found yet"
+      Right at -> siteInfo mgr (accessToken at) >>= print
+      Left _   -> putStrLn "no access token found yet"
 
 -- | Test API: info
 siteInfo :: Manager -> AccessToken -> IO (OAuth2Result SiteInfo)

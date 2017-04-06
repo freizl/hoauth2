@@ -17,8 +17,8 @@ import           Network.HTTP.Conduit     hiding (Request, queryString)
 import           Network.HTTP.Types       (Query, status200)
 import           Network.Wai
 import           Network.Wai.Handler.Warp (run)
-import           URI.ByteString.QQ
 import           URI.ByteString           (serializeURIRef')
+import           URI.ByteString.QQ
 
 import           Keys                     (fitbitKey)
 import           Network.OAuth.OAuth2
@@ -78,7 +78,7 @@ getApiCode :: Request -> ExchangeToken
 getApiCode request =
     case M.lookup "code" queryMap of
         Just code -> ExchangeToken $ T.decodeUtf8 $ code
-        Nothing -> error "request doesn't include code"
+        Nothing   -> error "request doesn't include code"
   where
     queryMap = convertQueryToMap $ queryString request
 
@@ -87,7 +87,7 @@ getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
         Right token -> return token
-        Left e -> error $ lazyBSToString e
+        Left e      -> error $ lazyBSToString e
   where
     (url, body) = accessTokenUrl fitbitKey code
 
@@ -96,13 +96,13 @@ getApiUser mgr token = do
     result <- authGetJSON mgr token [uri|https://api.fitbit.com/1/user/-/profile.json|]
     case result of
         Right user -> return user
-        Left e -> error $ lazyBSToString e
+        Left e     -> error $ lazyBSToString e
 
 convertQueryToMap :: Query -> M.Map B.ByteString B.ByteString
 convertQueryToMap query =
     M.fromList $ map normalize query
   where
-    normalize (k, Just v) = (k, v)
+    normalize (k, Just v)  = (k, v)
     normalize (k, Nothing) = (k, B.empty)
 
 lazyBSToString :: BL.ByteString -> String
