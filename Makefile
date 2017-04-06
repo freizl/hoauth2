@@ -1,26 +1,24 @@
 DIST=dist
 CBD=stack
 STYLE=stylish-haskell
+HLINT=hlint
 
 default: build
 
 clean:
-	rm -rf $(DIST)
+	stack clean
+	cabal clean
 
 create-keys:
 	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
 
 build:
-	$(CBD) build
+	$(CBD) build --test
 
-test:
-	$(CBD) test
+watch:
+	$(CBD) build --test --file-watch
 
 rebuild: clean build
-
-
-ci-stack: create-keys
-	stack build --test
 
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
@@ -28,13 +26,24 @@ hlint:
 	$(STYLE) -i example/*.hs
 	$(STYLE) -i example/*.hs.sample
 	$(STYLE) -i example/**/*.hs
-	hlint src/ example --report=$(DIST)/hlint.html
+	$(HLINT) src/ example --report=$(DIST)/hlint.html
 
 doc: build
 	$(CBD) haddock
 
 dist: build
 	$(CBD) sdist
+
+####################
+### CI
+####################
+
+ci-build: create-keys
+	$(CBD) +RTS -N2 -RTS build --no-terminal --skip-ghc-check --fast --test
+
+ci-lint:
+	$(CBD) install hlint
+	$(CBD) exec hlint -- src example
 
 ####################
 ### Tests

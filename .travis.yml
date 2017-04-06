@@ -8,6 +8,11 @@ branches:
 
 sudo: false
 
+env:
+  matrix:
+    - TEST_SUITE=lint
+    - TEST_SUITE=build
+
 cache:
   directories:
     - $HOME/.stack/
@@ -17,12 +22,11 @@ before_install:
   - export PATH=~/.local/bin:$PATH
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
   - chmod a+x ~/.local/bin/stack
-
-install:
-  - stack +RTS -N2 -RTS setup
-  - stack +RTS -N2 -RTS build --only-snapshot
-
-script:
   - git --version
   - stack --version
-  - make ci-stack
+
+install:
+  - stack +RTS -N2 -RTS setup --no-terminal --skip-ghc-check
+
+script:
+  - make ci-$TEST_SUITE
