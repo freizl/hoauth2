@@ -1,7 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TupleSections              #-}
 
 {-# OPTIONS_HADDOCK -ignore-exports #-}
 
@@ -10,20 +10,20 @@
 
 module Network.OAuth.OAuth2.Internal where
 
+import           Control.Monad.Catch
 import           Data.Aeson
 import           Data.Aeson.Types
-import qualified Data.ByteString        as BS
-import qualified Data.ByteString.Lazy   as BSL
+import qualified Data.ByteString      as BS
+import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
+import           Data.Text            (Text)
 import           Data.Text.Encoding
-import           Data.Text              (Text)
 import           GHC.Generics
-import           URI.ByteString
 import           Lens.Micro
 import           Lens.Micro.Extras
 import           Network.HTTP.Conduit as C
-import           Control.Monad.Catch
-import qualified Network.HTTP.Types           as H
+import qualified Network.HTTP.Types   as H
+import           URI.ByteString
 
 --------------------------------------------------
 -- * Data Types

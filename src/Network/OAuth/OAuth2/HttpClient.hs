@@ -196,7 +196,7 @@ parseResponseString (Left b) = Left b
 parseResponseString (Right b) = case parseQuery $ BSL.toStrict b of
                               [] -> Left errorMessage
                               a -> case fromJSON $ queryToValue a of
-                                    Error _ -> Left errorMessage
+                                    Error _   -> Left errorMessage
                                     Success x -> Right x
   where
     queryToValue = Object . HM.fromList . map paramToPair
@@ -209,7 +209,7 @@ parseResponseFlexible :: FromJSON a
                          -> OAuth2Result a
 parseResponseFlexible r = case parseResponseJSON r of
                            Left _ -> parseResponseString r
-                           x -> x
+                           x      -> x
 
 -- | Set several header values:
 --   + userAgennt    : `hoauth2`
