@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 {-
 
@@ -19,12 +20,15 @@ import           Network.OAuth.OAuth2
 import           Control.Monad                 (liftM)
 import           Data.Aeson                    (FromJSON)
 import           Data.Aeson.TH                 (defaultOptions, deriveJSON)
-import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Internal as BL
+import qualified Data.ByteString.Char8         as BS
+import qualified Data.Text                     as T
 import           Data.Text                     (Text)
 import           Network.HTTP.Conduit
 import           Prelude                       hiding (id)
 import           System.Environment            (getArgs)
+import           URI.ByteString.QQ
+import           URI.ByteString
 
 --------------------------------------------------
 
@@ -63,11 +67,11 @@ main = do
 
 offlineCase :: Manager -> IO ()
 offlineCase mgr = do
-    BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` (googleScopeEmail ++ googleAccessOffline)
+    BS.putStrLn $ serializeURIRef' $ appendQueryParams (googleScopeEmail ++ googleAccessOffline) $ authorizationUrl googleKey
     putStrLn "visit the url and paste code here: "
-    code <- fmap BS.pack getLine
-    (Right token) <- fetchAccessToken mgr googleKey code
-    f token
+    code <- getLine
+    (Right token) <- fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack $ code
+    f (accessToken token)
     --
     -- obtain a new access token with refresh token, which turns out only in response at first time.
     -- Revoke Access https://www.google.com/settings/security
@@ -86,19 +90,19 @@ offlineCase mgr = do
 
 normalCase :: Manager -> IO ()
 normalCase mgr = do
-    BS.putStrLn $ authorizationUrl googleKey `appendQueryParam` googleScopeUserInfo
+    BS.putStrLn $ serializeURIRef' $ appendQueryParams googleScopeUserInfo (authorizationUrl googleKey)
     putStrLn "visit the url and paste code here: "
-    code <- fmap BS.pack getLine
+    code <- fmap (ExchangeToken . T.pack) getLine
     (Right token) <- fetchAccessToken mgr googleKey code
     putStr "AccessToken: " >> print token
     -- get response in ByteString
-    validateToken mgr token >>= print
+    validateToken mgr (accessToken token) >>= print
     -- get response in JSON
-    (validateToken' mgr token :: IO (OAuth2Result Token)) >>= print
+    (validateToken' mgr (accessToken token):: IO (OAuth2Result Token)) >>= print
     -- get response in ByteString
-    userinfo mgr token >>= print
+    userinfo mgr (accessToken token) >>= print
     -- get response in JSON
-    (userinfo' mgr token :: IO (OAuth2Result User)) >>= print
+    (userinfo' mgr (accessToken token) :: IO (OAuth2Result User)) >>= print
 
 --------------------------------------------------
 -- Google API
@@ -122,7 +126,7 @@ validateToken :: Manager
                  -> IO (OAuth2Result BL.ByteString)
 validateToken mgr token =
    authGetBS' mgr token url
-   where url = "https://www.googleapis.com/oauth2/v1/tokeninfo"
+   where url = [uri|https://www.googleapis.com/oauth2/v1/tokeninfo|]
 
 validateToken' :: FromJSON a
                   => Manager
@@ -136,10 +140,10 @@ validateToken' mgr token = liftM parseResponseJSON $ validateToken mgr token
 userinfo :: Manager
             -> AccessToken
             -> IO (OAuth2Result BL.ByteString)
-userinfo mgr token = authGetBS mgr token "https://www.googleapis.com/oauth2/v2/userinfo"
+userinfo mgr token = authGetBS mgr token [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
 
 userinfo' :: FromJSON a
              => Manager
              -> AccessToken
              -> IO (OAuth2Result a)
-userinfo' mgr token = authGetJSON mgr token "https://www.googleapis.com/oauth2/v2/userinfo"
+userinfo' mgr token = authGetJSON mgr token [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
