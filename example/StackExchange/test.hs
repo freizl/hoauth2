@@ -14,6 +14,7 @@ import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
 import           Network.HTTP.Conduit
 import           URI.ByteString.QQ
+import           URI.ByteString
 
 import           Network.OAuth.OAuth2
 
@@ -46,7 +47,7 @@ $(deriveJSON defaultOptions ''SiteItem)
 
 main :: IO ()
 main = do
-    print $ authorizationUrl stackexchangeKey
+    BS.putStrLn $ serializeURIRef' $ authorizationUrl stackexchangeKey
     putStrLn "visit the url and paste code here: "
     code <- fmap (ExchangeToken . T.pack) getLine
     mgr <- newManager tlsManagerSettings

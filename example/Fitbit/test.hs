@@ -70,7 +70,7 @@ handleRequest _ request = do
     mgr <- newManager tlsManagerSettings
     token <- getApiToken mgr $ getApiCode request
     print token
-    user <- getApiUser mgr token
+    user <- getApiUser mgr (accessToken token)
     print user
     return $ encode user
 
@@ -82,7 +82,7 @@ getApiCode request =
   where
     queryMap = convertQueryToMap $ queryString request
 
-getApiToken :: Manager -> ExchangeToken -> IO (AccessToken)
+getApiToken :: Manager -> ExchangeToken -> IO (OAuth2Token)
 getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
