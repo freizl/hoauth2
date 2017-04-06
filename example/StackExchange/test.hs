@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE QuasiQuotes       #-}
 
--- | Github API: http://developer.github.com/v3/oauth/
+-- | https://api.stackexchange.com/docs/authentication
 
 module Main where
 
