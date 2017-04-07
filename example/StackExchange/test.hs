@@ -18,7 +18,7 @@ import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
 
-import           Keys (stackexchangeKey)
+import           Keys                  (stackexchangeKey)
 import           Network.OAuth.OAuth2
 
 data SiteInfo = SiteInfo { items          :: [SiteItem]

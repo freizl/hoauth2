@@ -16,27 +16,33 @@ import qualified Data.ByteString.Char8      as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
+import qualified Data.Text.Lazy.Encoding    as TL
+import qualified Data.Text.Lazy.IO          as TL
 import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
 
 import           Network.OAuth.OAuth2
 
-import           Keys
+import           Keys                       (doubanKey)
 
 main :: IO ()
 main = do
   BS.putStrLn $ serializeURIRef' $ authorizationUrl doubanKey
   putStrLn "visit the url and paste code here: "
-  code <- getLine
+  code <- fmap (ExchangeToken . T.pack) getLine
   mgr <- newManager tlsManagerSettings
-  token <- fetchAccessToken mgr doubanKey (ExchangeToken (T.pack code))
+  let (url, body) = accessTokenUrl doubanKey code
+  let extraBody = [ ("client_id", T.encodeUtf8 $ oauthClientId doubanKey)
+                  , ("client_secret", T.encodeUtf8 $ oauthClientSecret doubanKey)
+                  ]
+
+  token <- doFlexiblePostRequest mgr doubanKey url (extraBody ++ body)
   print token
   case token of
     Right r -> do
-      -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
       uid <- authGetBS mgr (accessToken r) [uri|https://api.douban.com/v2/user/~me|]
-      print uid
+      TL.putStrLn $ either TL.decodeUtf8 TL.decodeUtf8 uid
     Left l -> BSL.putStrLn l
 
 sToBS :: String -> BS.ByteString
