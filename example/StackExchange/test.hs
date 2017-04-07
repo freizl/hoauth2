@@ -18,7 +18,7 @@ import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
 
-import           Keys
+import           Keys                  (stackexchangeKey)
 import           Network.OAuth.OAuth2
 
 data SiteInfo = SiteInfo { items          :: [SiteItem]
@@ -61,7 +61,17 @@ main = do
     putStrLn "visit the url and paste code here: "
     code <- fmap (ExchangeToken . T.pack) getLine
     mgr <- newManager tlsManagerSettings
-    token <- fetchAccessToken mgr stackexchangeKey code
+    let (url, body) = accessTokenUrl stackexchangeKey code
+    let extraBody = [ ("state", "test")
+                    , ("client_id", T.encodeUtf8 $ oauthClientId stackexchangeKey)
+                    , ("client_secret", T.encodeUtf8 $ oauthClientSecret stackexchangeKey)
+                    ]
+
+    -- NOTE: stackexchange doesn't really comply with standard, its access token response looks like
+    -- `access_token=...&expires=1234`.
+    -- the `doFlexiblePostRequest` is able to convert it to OAuth2Token type
+    -- but the `expires` is lost given standard naming is `expires_in`
+    token <- doFlexiblePostRequest mgr stackexchangeKey url (extraBody ++ body)
     print token
     case token of
       Right at -> siteInfo mgr (accessToken at) >>= print
