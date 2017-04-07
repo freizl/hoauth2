@@ -37,7 +37,7 @@ main = do
                   , ("client_secret", T.encodeUtf8 $ oauthClientSecret doubanKey)
                   ]
 
-  token <- doFlexiblePostRequest mgr doubanKey url (extraBody ++ body)
+  token <- doJSONPostRequest mgr doubanKey url (extraBody ++ body)
   print token
   case token of
     Right r -> do
