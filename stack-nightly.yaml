@@ -1,0 +1,11 @@
+resolver: nightly-2017-04-06
+
+packages:
+- '.'
+
+extra-deps:
+  []
+
+flags:
+  hoauth2:
+    test: true

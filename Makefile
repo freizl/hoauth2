@@ -20,6 +20,9 @@ watch:
 
 rebuild: clean build
 
+nightly: clean
+	$(CBD) --stack-yaml stack-nightly.yaml build --test
+
 hlint:
 	$(STYLE) -i src/Network/OAuth/**/*.hs
 	$(STYLE) -i src/Network/OAuth/*.hs
