@@ -1,10 +1,10 @@
-resolver: nightly-2017-04-06
+resolver: nightly-2017-04-14
 
 packages:
 - '.'
 
 extra-deps:
-  []
+  - aeson-1.2.0.0
 
 flags:
   hoauth2:
