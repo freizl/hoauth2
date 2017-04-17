@@ -22,7 +22,6 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 module Main where
 
 import qualified Data.ByteString            as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
@@ -44,7 +43,7 @@ main = do
          Right r -> do
                     uid <- authGetBS' mgr (accessToken r) [uri|https://api.weibo.com/2/account/get_uid.json|]
                     print uid
-         Left l -> BSL.putStrLn l
+         Left l -> putStrLn $ show l
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack

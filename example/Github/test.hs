@@ -24,17 +24,23 @@ import           Keys
 main :: IO ()
 main = do
     let state = "testGithubApi"
+    mgr <- newManager tlsManagerSettings
+    putStrLn "Trying invalid token..."
+    failToken <- getToken state "invalidCode" mgr
+    print $ (failToken :: OAuth2Result OAuth2Token)
     print $ serializeURIRef' $ appendQueryParams [("state", state)] $ authorizationUrl githubKey
     putStrLn "visit the url and paste code here: "
     code <- getLine
-    mgr <- newManager tlsManagerSettings
-    let (url, body) = accessTokenUrl githubKey $ ExchangeToken $ T.pack code
-    token <- doJSONPostRequest mgr githubKey url (body ++ [("state", state)])
+    token <- getToken state code mgr
     print (token :: OAuth2Result OAuth2Token)
     case token of
       Right at -> userInfo mgr (accessToken at) >>= print
       Left _   -> putStrLn "no access token found yet"
 
+getToken :: FromJSON a => BS.ByteString -> String -> Manager -> IO (OAuth2Result a)
+getToken state code mgr = do
+    let (url, body) = accessTokenUrl githubKey $ ExchangeToken $ T.pack code
+    doJSONPostRequest mgr githubKey url (body ++ [("state", state)])
 
 -- | Test API: user
 --

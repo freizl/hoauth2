@@ -13,11 +13,9 @@ douban oauth2: http://developers.douban.com/wiki/?title=oauth2
 module Main where
 
 import qualified Data.ByteString.Char8      as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import qualified Data.Text.Lazy.Encoding    as TL
-import qualified Data.Text.Lazy.IO          as TL
 import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
@@ -41,9 +39,10 @@ main = do
   print token
   case token of
     Right r -> do
+      -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
       uid <- authGetBS mgr (accessToken r) [uri|https://api.douban.com/v2/user/~me|]
-      TL.putStrLn $ either TL.decodeUtf8 TL.decodeUtf8 uid
-    Left l -> BSL.putStrLn l
+      putStrLn $ either show (show . TL.decodeUtf8) uid
+    Left l -> putStrLn $ show l
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack

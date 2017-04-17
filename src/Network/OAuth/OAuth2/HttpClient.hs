@@ -176,23 +176,16 @@ handleResponse :: Response BSL.ByteString -> OAuth2Result BSL.ByteString
 handleResponse rsp =
     if HT.statusIsSuccessful (responseStatus rsp)
         then Right $ responseBody rsp
-        else Left $ BSL.append "hoauth2.HttpClient.handleResponse/Gaining token failed: " (responseBody rsp)
+        else Left $ parseOAuthError (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
 parseResponseJSON :: FromJSON a
               => OAuth2Result BSL.ByteString
               -> OAuth2Result a
 parseResponseJSON (Left b) = Left b
-parseResponseJSON (Right b) = case eitherDecode b of
-                            Left msg -> Left ("hoauth2.HttpClient.parseResponseJSON/Could not decode JSON: "
-                                              `BSL.append`
-                                              b
-                                               `BSL.append`
-                                             ", with error: "
-                                               `BSL.append`
-                                               BSL.pack msg
-                                             )
-                            Right x -> Right x
+parseResponseJSON (Right b) = case decode b of
+                            Nothing -> Left (parseOAuthError b)
+                            Just x -> Right x
 
 -- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String
 parseResponseString :: FromJSON a
@@ -207,7 +200,7 @@ parseResponseString (Right b) = case parseQuery $ BSL.toStrict b of
   where
     queryToValue = Object . HM.fromList . map paramToPair
     paramToPair (k, mv) = (T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
-    errorMessage = "hoauth2.HttpClient.parseResponseString/Could not decode URL: " `BSL.append` b
+    errorMessage = parseOAuthError b
 
 -- | Try 'parseResponseJSON' and 'parseResponseString'
 parseResponseFlexible :: FromJSON a

@@ -78,6 +78,7 @@ offlineCase mgr = do
     BS.putStrLn $ serializeURIRef' $ appendQueryParams (googleScopeEmail ++ googleAccessOffline) $ authorizationUrl googleKey
     putStrLn "visit the url and paste code here: "
     code <- getLine
+    fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack code
     (Right token) <- fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack code
     f (accessToken token)
     --
@@ -98,10 +99,15 @@ offlineCase mgr = do
 
 normalCase :: Manager -> IO ()
 normalCase mgr = do
+    -- try an invalid token
+    putStr "Trying invalid token..."
+    validateToken mgr (AccessToken "invalid") >>= print
     BS.putStrLn $ serializeURIRef' $ appendQueryParams googleScopeUserInfo (authorizationUrl googleKey)
     putStrLn "visit the url and paste code here: "
     code <- fmap (ExchangeToken . T.pack) getLine
-    (Right token) <- fetchAccessToken mgr googleKey code
+    maybeToken <- fetchAccessToken mgr googleKey code
+    print maybeToken
+    (Right token) <- return maybeToken
     putStr "AccessToken: " >> print token
     -- get response in ByteString
     validateToken mgr (accessToken token) >>= print

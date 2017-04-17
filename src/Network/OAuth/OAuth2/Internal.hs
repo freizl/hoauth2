@@ -10,21 +10,25 @@
 
 module Network.OAuth.OAuth2.Internal where
 
+import           Prelude              hiding (error)
 import           Control.Arrow        (second)
+import           Control.Applicative
 import           Control.Monad.Catch
 import           Data.Aeson
 import           Data.Aeson.Types
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
+import           Data.Monoid
 import           Data.Text            (Text)
 import           Data.Text.Encoding
 import           GHC.Generics
+import           URI.ByteString
+import           URI.ByteString.Aeson ()
 import           Lens.Micro
 import           Lens.Micro.Extras
 import           Network.HTTP.Conduit as C
 import qualified Network.HTTP.Types   as H
-import           URI.ByteString
 
 --------------------------------------------------
 -- * Data Types
@@ -63,12 +67,62 @@ instance FromJSON OAuth2Token where
 instance ToJSON OAuth2Token where
     toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
+-- | Possible OAuth error types
+-- | Not all of them can appear everywhere, but this is good enough for now.
+data OAuthErrorType =
+    InvalidRequest
+  | UnauthorizedClient
+  | AccessDenied
+  | UnsupportedResponseType
+  | InvalidScope
+  | ServerError
+  | TemporarilyUnavailable
+  | InvalidClient
+  | InvalidGrant
+  | UnsupportedGrantType
+  | InvalidToken
+  | BadVerificationCode
+  deriving (Show, Eq, Generic)
+
+instance FromJSON OAuthErrorType where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+instance ToJSON OAuthErrorType where
+  toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
+data OAuthError =
+  OAuthError
+    { error :: Either Text OAuthErrorType
+    , errorDescription :: Maybe Text
+    , errorUri :: Maybe (URIRef Absolute) }
+  | UnknownOAuthError { parseError :: String }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON OAuthError where
+  parseJSON (Object a) =
+    let
+      genericDecoder = do
+        err <- (a .: "error") >>= (\str -> Right <$> (parseJSON str) <|> Left <$> (parseJSON str))
+        desc <- a .:? "error_description"
+        uri <- a .:? "error_uri"
+        return $ OAuthError err desc uri
+    in
+      -- Specific OpenAM behavior on /oauth2/tokeninfo, equivalent to an InvalidToken semantically.
+    fmap (\err -> case (error err) of
+            Right InvalidRequest | (errorDescription err) == Just "Access Token not valid" -> err { error = Right InvalidToken }
+            _ -> err) genericDecoder
+  parseJSON _ = fail "Expected an object"
+
+parseOAuthError :: BSL.ByteString -> OAuthError
+parseOAuthError string =
+  either (\err -> UnknownOAuthError $ "Error: " <> err <> "\n Original Response:\n" <> (show $ decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
+
+
 --------------------------------------------------
 -- * Types Synonym
 --------------------------------------------------
 
 -- | Is either 'Left' containing an error or 'Right' containg a result
-type OAuth2Result a = Either BSL.ByteString a
+type OAuth2Result a = Either OAuthError a
 
 -- | type synonym of post body content
 type PostBody = [(BS.ByteString, BS.ByteString)]
