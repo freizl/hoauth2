@@ -29,6 +29,7 @@ import           Lens.Micro
 import           Lens.Micro.Extras
 import           Network.HTTP.Conduit as C
 import qualified Network.HTTP.Types   as H
+import           Data.Void
 
 --------------------------------------------------
 -- * Data Types
@@ -67,52 +68,30 @@ instance FromJSON OAuth2Token where
 instance ToJSON OAuth2Token where
     toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
--- | Possible OAuth error types
--- | Not all of them can appear everywhere, but this is good enough for now.
-data OAuthErrorType =
-    InvalidRequest
-  | UnauthorizedClient
-  | AccessDenied
-  | UnsupportedResponseType
-  | InvalidScope
-  | ServerError
-  | TemporarilyUnavailable
-  | InvalidClient
-  | InvalidGrant
-  | UnsupportedGrantType
-  | InvalidToken
-  | BadVerificationCode
-  deriving (Show, Eq, Generic)
+-- Resources Access Responses https://tools.ietf.org/html/rfc6749#section-7.2
+type ResourceAccessErrors = Void
 
-instance FromJSON OAuthErrorType where
-  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
-instance ToJSON OAuthErrorType where
-  toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
-
-data OAuthError =
+data OAuthError a =
   OAuthError
-    { error :: Either Text OAuthErrorType
+    { error :: Either Text a
     , errorDescription :: Maybe Text
     , errorUri :: Maybe (URIRef Absolute) }
   | UnknownOAuthError { parseError :: String }
   deriving (Show, Eq, Generic)
 
-instance FromJSON OAuthError where
+instance FromJSON err => FromJSON (OAuthError err) where
   parseJSON (Object a) =
-    let
-      genericDecoder = do
-        err <- (a .: "error") >>= (\str -> Right <$> (parseJSON str) <|> Left <$> (parseJSON str))
-        desc <- a .:? "error_description"
-        uri <- a .:? "error_uri"
-        return $ OAuthError err desc uri
-    in
-      -- Specific OpenAM behavior on /oauth2/tokeninfo, equivalent to an InvalidToken semantically.
-    fmap (\err -> case (error err) of
-            Right InvalidRequest | (errorDescription err) == Just "Access Token not valid" -> err { error = Right InvalidToken }
-            _ -> err) genericDecoder
+    do
+      err <- (a .: "error") >>= (\str -> Right <$> (parseJSON str) <|> Left <$> (parseJSON str))
+      desc <- a .:? "error_description"
+      uri <- a .:? "error_uri"
+      return $ OAuthError err desc uri
   parseJSON _ = fail "Expected an object"
 
-parseOAuthError :: BSL.ByteString -> OAuthError
+instance ToJSON err => ToJSON (OAuthError err) where
+  toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
+parseOAuthError :: FromJSON err => BSL.ByteString -> OAuthError err
 parseOAuthError string =
   either (\err -> UnknownOAuthError $ "Error: " <> err <> "\n Original Response:\n" <> (show $ decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
 
@@ -122,7 +101,7 @@ parseOAuthError string =
 --------------------------------------------------
 
 -- | Is either 'Left' containing an error or 'Right' containg a result
-type OAuth2Result a = Either OAuthError a
+type OAuth2Result err a = Either (OAuthError err) a
 
 -- | type synonym of post body content
 type PostBody = [(BS.ByteString, BS.ByteString)]
