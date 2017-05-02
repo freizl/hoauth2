@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric     #-}
 
 module Main where
 
@@ -11,9 +12,9 @@ import qualified Network.HTTP.Types         as HT
 import           URI.ByteString
 
 import           Network.OAuth.OAuth2
+import           Network.OAuth.OAuth2.AuthorizationRequest as AR
 
 import           Keys
-
 
 main :: IO ()
 main = do
@@ -27,7 +28,7 @@ main = do
       Right at -> getSpaceUsage mgr (accessToken at) >>= print
       Left _   -> putStrLn "no access token found yet"
 
-getSpaceUsage :: Manager -> AccessToken -> IO (OAuth2Result BSL.ByteString)
+getSpaceUsage :: Manager -> AccessToken -> IO (OAuth2Result AR.Errors BSL.ByteString)
 getSpaceUsage mgr token = do
   req <- parseRequest $ BS.unpack "https://api.dropboxapi.com/2/users/get_space_usage"
   authRequest req upReq mgr

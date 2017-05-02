@@ -30,6 +30,13 @@ import           URI.ByteString.QQ
 import           Keys                          (googleKey)
 import           Network.OAuth.OAuth2
 
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
 --------------------------------------------------
 
 data Token = Token { issuedTo   :: Text
@@ -95,7 +102,7 @@ offlineCase mgr = do
     where f token = do
             print token
             validateToken mgr token >>= print
-            (validateToken' mgr token :: IO (OAuth2Result Token)) >>= print
+            (validateToken' mgr token :: IO (OAuth2Result (OAuthError Errors) Token)) >>= print
 
 normalCase :: Manager -> IO ()
 normalCase mgr = do
@@ -112,11 +119,11 @@ normalCase mgr = do
     -- get response in ByteString
     validateToken mgr (accessToken token) >>= print
     -- get response in JSON
-    (validateToken' mgr (accessToken token):: IO (OAuth2Result Token)) >>= print
+    (validateToken' mgr (accessToken token):: IO (OAuth2Result (OAuthError Errors) Token)) >>= print
     -- get response in ByteString
     userinfo mgr (accessToken token) >>= print
     -- get response in JSON
-    (userinfo' mgr (accessToken token) :: IO (OAuth2Result User)) >>= print
+    (userinfo' mgr (accessToken token) :: IO (OAuth2Result (OAuthError Errors) User)) >>= print
 
 --------------------------------------------------
 -- Google API
@@ -137,7 +144,7 @@ googleAccessOffline = [("access_type", "offline")
 -- | Token Validation
 validateToken :: Manager
                  -> AccessToken
-                 -> IO (OAuth2Result BL.ByteString)
+                 -> IO (OAuth2Result (OAuthError Errors) BL.ByteString)
 validateToken mgr token =
    authGetBS' mgr token url
    where url = [uri|https://www.googleapis.com/oauth2/v1/tokeninfo|]
@@ -145,7 +152,7 @@ validateToken mgr token =
 validateToken' :: FromJSON a
                   => Manager
                   -> AccessToken
-                  -> IO (OAuth2Result a)
+                  -> IO (OAuth2Result (OAuthError Errors) a)
 validateToken' mgr token = parseResponseJSON <$> validateToken mgr token
 
 -- | fetch user email.
@@ -153,11 +160,11 @@ validateToken' mgr token = parseResponseJSON <$> validateToken mgr token
 --
 userinfo :: Manager
             -> AccessToken
-            -> IO (OAuth2Result BL.ByteString)
+            -> IO (OAuth2Result (OAuthError Errors) BL.ByteString)
 userinfo mgr token = authGetBS mgr token [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
 
 userinfo' :: FromJSON a
              => Manager
              -> AccessToken
-             -> IO (OAuth2Result a)
+             -> IO (OAuth2Result (OAuthError Errors) a)
 userinfo' mgr token = authGetJSON mgr token [uri|https://www.googleapis.com/oauth2/v2/userinfo|]

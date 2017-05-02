@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- | https://api.stackexchange.com/docs/authentication
 
@@ -54,6 +55,14 @@ instance FromJSON SiteItem where
 instance ToJSON SiteItem where
     toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
+
 
 main :: IO ()
 main = do
@@ -75,10 +84,10 @@ main = do
     print token
     case token of
       Right at -> siteInfo mgr (accessToken at) >>= print
-      Left _   -> putStrLn "no access token found yet"
+      Left (_ :: OAuthError Errors) -> putStrLn "no access token found yet"
 
 -- | Test API: info
-siteInfo :: Manager -> AccessToken -> IO (OAuth2Result SiteInfo)
+siteInfo :: Manager -> AccessToken -> IO (OAuth2Result (OAuthError Errors) SiteInfo)
 siteInfo mgr token = authGetJSON mgr token [uri|https://api.stackexchange.com/2.2/info?site=stackoverflow|]
 
 sToBS :: String -> BS.ByteString
