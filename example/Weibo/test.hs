@@ -56,7 +56,7 @@ main = do
        case token of
          Right r -> do
                     uid <- authGetBS' mgr (accessToken r) [uri|https://api.weibo.com/2/account/get_uid.json|]
-                    print (uid :: OAuth2Result (OAuthError Errors) BSL.ByteString)
+                    print (uid :: OAuth2Result (OAuth2Error Errors) BSL.ByteString)
          Left l -> putStrLn $ show l
 
 sToBS :: String -> BS.ByteString

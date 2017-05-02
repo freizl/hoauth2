@@ -177,7 +177,7 @@ handleResponse :: FromJSON err => Response BSL.ByteString -> OAuth2Result err BS
 handleResponse rsp =
     if HT.statusIsSuccessful (responseStatus rsp)
         then Right $ responseBody rsp
-        else Left $ parseOAuthError (responseBody rsp)
+        else Left $ parseOAuth2Error (responseBody rsp)
 
 -- | Parses a @OAuth2Result BSL.ByteString@ into @FromJSON a => a@
 parseResponseJSON :: FromJSON err => FromJSON a
@@ -185,7 +185,7 @@ parseResponseJSON :: FromJSON err => FromJSON a
               -> OAuth2Result err a
 parseResponseJSON (Left b) = Left b
 parseResponseJSON (Right b) = case decode b of
-                            Nothing -> Left (parseOAuthError b)
+                            Nothing -> Left (parseOAuth2Error b)
                             Just x -> Right x
 
 -- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String
@@ -201,7 +201,7 @@ parseResponseString (Right b) = case parseQuery $ BSL.toStrict b of
   where
     queryToValue = Object . HM.fromList . map paramToPair
     paramToPair (k, mv) = (T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
-    errorMessage = parseOAuthError b
+    errorMessage = parseOAuth2Error b
 
 -- | Try 'parseResponseJSON' and 'parseResponseString'
 parseResponseFlexible :: FromJSON err => FromJSON a

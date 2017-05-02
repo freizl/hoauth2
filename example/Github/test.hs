@@ -57,7 +57,7 @@ getToken state code mgr = do
 
 -- | Test API: user
 --
-userInfo :: Manager -> AccessToken -> IO (OAuth2Result (OAuthError Errors) GithubUser)
+userInfo :: Manager -> AccessToken -> IO (OAuth2Result (OAuth2Error Errors) GithubUser)
 userInfo mgr token = authGetJSON mgr token [uri|https://api.github.com/user|]
 
 data GithubUser = GithubUser { gid   :: Integer

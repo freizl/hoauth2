@@ -100,7 +100,7 @@ getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
         Right token -> return token
-        Left (e :: OAuthError Errors) -> Prelude.error $ show e
+        Left (e :: OAuth2Error Errors) -> Prelude.error $ show e
   where
     (url, body) = accessTokenUrl fitbitKey code
 
@@ -109,7 +109,7 @@ getApiUser mgr token = do
     result <- authGetJSON mgr token [uri|https://api.fitbit.com/1/user/-/profile.json|]
     case result of
         Right user -> return user
-        Left (e :: OAuthError Errors) -> Prelude.error $ show e
+        Left (e :: OAuth2Error Errors) -> Prelude.error $ show e
 
 convertQueryToMap :: Query -> M.Map B.ByteString B.ByteString
 convertQueryToMap query =

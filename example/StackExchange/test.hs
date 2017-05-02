@@ -84,10 +84,10 @@ main = do
     print token
     case token of
       Right at -> siteInfo mgr (accessToken at) >>= print
-      Left (_ :: OAuthError Errors) -> putStrLn "no access token found yet"
+      Left (_ :: OAuth2Error Errors) -> putStrLn "no access token found yet"
 
 -- | Test API: info
-siteInfo :: Manager -> AccessToken -> IO (OAuth2Result (OAuthError Errors) SiteInfo)
+siteInfo :: Manager -> AccessToken -> IO (OAuth2Result (OAuth2Error Errors) SiteInfo)
 siteInfo mgr token = authGetJSON mgr token [uri|https://api.stackexchange.com/2.2/info?site=stackoverflow|]
 
 sToBS :: String -> BS.ByteString

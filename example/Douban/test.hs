@@ -54,7 +54,7 @@ main = do
     Right r -> do
       -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
       uid <- authGetBS mgr (accessToken r) [uri|https://api.douban.com/v2/user/~me|]
-      putStrLn $ either (show :: (OAuthError Errors) -> String) (show . TL.decodeUtf8) uid
+      putStrLn $ either (show :: (OAuth2Error Errors) -> String) (show . TL.decodeUtf8) uid
     Left l -> putStrLn $ show l
 
 sToBS :: String -> BS.ByteString

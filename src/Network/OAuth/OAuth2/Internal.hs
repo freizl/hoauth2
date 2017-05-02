@@ -71,29 +71,29 @@ instance ToJSON OAuth2Token where
 -- Resources Access Responses https://tools.ietf.org/html/rfc6749#section-7.2
 type ResourceAccessErrors = Void
 
-data OAuthError a =
-  OAuthError
+data OAuth2Error a =
+  OAuth2Error
     { error :: Either Text a
     , errorDescription :: Maybe Text
     , errorUri :: Maybe (URIRef Absolute) }
-  | UnknownOAuthError { parseError :: String }
+  | UnknownOAuth2Error { parseError :: String }
   deriving (Show, Eq, Generic)
 
-instance FromJSON err => FromJSON (OAuthError err) where
+instance FromJSON err => FromJSON (OAuth2Error err) where
   parseJSON (Object a) =
     do
       err <- (a .: "error") >>= (\str -> Right <$> (parseJSON str) <|> Left <$> (parseJSON str))
       desc <- a .:? "error_description"
       uri <- a .:? "error_uri"
-      return $ OAuthError err desc uri
+      return $ OAuth2Error err desc uri
   parseJSON _ = fail "Expected an object"
 
-instance ToJSON err => ToJSON (OAuthError err) where
+instance ToJSON err => ToJSON (OAuth2Error err) where
   toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
-parseOAuthError :: FromJSON err => BSL.ByteString -> OAuthError err
-parseOAuthError string =
-  either (\err -> UnknownOAuthError $ "Error: " <> err <> "\n Original Response:\n" <> (show $ decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
+parseOAuth2Error :: FromJSON err => BSL.ByteString -> OAuth2Error err
+parseOAuth2Error string =
+  either (\err -> UnknownOAuth2Error $ "Error: " <> err <> "\n Original Response:\n" <> (show $ decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
 
 
 --------------------------------------------------
@@ -101,7 +101,7 @@ parseOAuthError string =
 --------------------------------------------------
 
 -- | Is either 'Left' containing an error or 'Right' containg a result
-type OAuth2Result err a = Either (OAuthError err) a
+type OAuth2Result err a = Either (OAuth2Error err) a
 
 -- | type synonym of post body content
 type PostBody = [(BS.ByteString, BS.ByteString)]
