@@ -11,7 +11,6 @@ module Main where
 import           Keys                       (facebookKey)
 import           Network.OAuth.OAuth2
 
-import           Data.Aeson                 (FromJSON)
 import           Data.Aeson.TH              (defaultOptions, deriveJSON)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Text                  (Text)

@@ -40,7 +40,7 @@ main = do
     mgr <- newManager tlsManagerSettings
     putStrLn "Trying invalid token..."
     failToken <- getToken state "invalidCode" mgr
-    print $ (failToken :: OAuth2Result AR.Errors OAuth2Token)
+    print (failToken :: OAuth2Result AR.Errors OAuth2Token)
     print $ serializeURIRef' $ appendQueryParams [("state", state)] $ authorizationUrl githubKey
     putStrLn "visit the url and paste code here: "
     code <- getLine

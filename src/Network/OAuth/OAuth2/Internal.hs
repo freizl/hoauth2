@@ -82,7 +82,7 @@ data OAuth2Error a =
 instance FromJSON err => FromJSON (OAuth2Error err) where
   parseJSON (Object a) =
     do
-      err <- (a .: "error") >>= (\str -> Right <$> (parseJSON str) <|> Left <$> (parseJSON str))
+      err <- (a .: "error") >>= (\str -> Right <$> parseJSON str <|> Left <$> parseJSON str)
       desc <- a .:? "error_description"
       uri <- a .:? "error_uri"
       return $ OAuth2Error err desc uri
@@ -93,7 +93,7 @@ instance ToJSON err => ToJSON (OAuth2Error err) where
 
 parseOAuth2Error :: FromJSON err => BSL.ByteString -> OAuth2Error err
 parseOAuth2Error string =
-  either (\err -> UnknownOAuth2Error $ "Error: " <> err <> "\n Original Response:\n" <> (show $ decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
+  either (\err -> UnknownOAuth2Error $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
 
 
 --------------------------------------------------
