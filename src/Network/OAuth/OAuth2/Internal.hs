@@ -20,7 +20,7 @@ import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
 import           Data.Monoid
-import           Data.Text            (Text)
+import           Data.Text            (Text, pack)
 import           Data.Text.Encoding
 import           GHC.Generics
 import           URI.ByteString
@@ -76,7 +76,6 @@ data OAuth2Error a =
     { error :: Either Text a
     , errorDescription :: Maybe Text
     , errorUri :: Maybe (URIRef Absolute) }
-  | UnknownOAuth2Error { parseError :: String }
   deriving (Show, Eq, Generic)
 
 instance FromJSON err => FromJSON (OAuth2Error err) where
@@ -93,7 +92,7 @@ instance ToJSON err => ToJSON (OAuth2Error err) where
 
 parseOAuth2Error :: FromJSON err => BSL.ByteString -> OAuth2Error err
 parseOAuth2Error string =
-  either (\err -> UnknownOAuth2Error $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict string)) id (eitherDecode string)
+  either (\err -> OAuth2Error (Left "Decode error") (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict string)) Nothing) id (eitherDecode string)
 
 
 --------------------------------------------------
