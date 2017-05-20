@@ -11,7 +11,7 @@ instance FromJSON Errors where
 instance ToJSON Errors where
   toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
--- Authorization Code Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.1.2.1
+-- | Authorization Code Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 -- Implicit Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.2.2.1
 data Errors =
     InvalidRequest

@@ -11,7 +11,7 @@ instance FromJSON Errors where
 instance ToJSON Errors where
   toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
--- Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
+-- | Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
 data Errors =
     InvalidRequest
   | InvalidClient
