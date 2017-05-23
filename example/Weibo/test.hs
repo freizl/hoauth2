@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE DeriveGeneric     #-}
 
 {-
 
@@ -22,7 +23,7 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 module Main where
 
 import qualified Data.ByteString            as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Data.ByteString.Lazy       as BSL
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
@@ -31,6 +32,18 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 
 import           Keys
+
+import           GHC.Generics
+import           Data.Aeson
+import           Data.Aeson.Types
+
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
 
 main :: IO ()
 main = do
@@ -43,8 +56,8 @@ main = do
        case token of
          Right r -> do
                     uid <- authGetBS' mgr (accessToken r) [uri|https://api.weibo.com/2/account/get_uid.json|]
-                    print uid
-         Left l -> BSL.putStrLn l
+                    print (uid :: OAuth2Result (OAuth2Error Errors) BSL.ByteString)
+         Left l -> print l
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack

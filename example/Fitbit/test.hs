@@ -1,11 +1,12 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Main where
 
 import           Control.Monad            (mzero)
-import           Data.Aeson
 import qualified Data.ByteString          as B
 import qualified Data.ByteString.Lazy     as BL
 import           Data.Char                (chr)
@@ -22,6 +23,18 @@ import           URI.ByteString.QQ
 
 import           Keys                     (fitbitKey)
 import           Network.OAuth.OAuth2
+
+import           GHC.Generics
+import           Data.Aeson
+import           Data.Aeson.Types
+
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
 
 ------------------------------------------------------------------------------
 
@@ -78,7 +91,7 @@ getApiCode :: Request -> ExchangeToken
 getApiCode request =
     case M.lookup "code" queryMap of
         Just code -> ExchangeToken $ T.decodeUtf8 code
-        Nothing   -> error "request doesn't include code"
+        Nothing   -> Prelude.error "request doesn't include code"
   where
     queryMap = convertQueryToMap $ queryString request
 
@@ -87,7 +100,7 @@ getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
         Right token -> return token
-        Left e      -> error $ lazyBSToString e
+        Left (e :: OAuth2Error Errors) -> Prelude.error $ show e
   where
     (url, body) = accessTokenUrl fitbitKey code
 
@@ -96,7 +109,7 @@ getApiUser mgr token = do
     result <- authGetJSON mgr token [uri|https://api.fitbit.com/1/user/-/profile.json|]
     case result of
         Right user -> return user
-        Left e     -> error $ lazyBSToString e
+        Left (e :: OAuth2Error Errors) -> Prelude.error $ show e
 
 convertQueryToMap :: Query -> M.Map B.ByteString B.ByteString
 convertQueryToMap query =

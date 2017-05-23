@@ -1,6 +1,8 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-
 
@@ -13,11 +15,9 @@ douban oauth2: http://developers.douban.com/wiki/?title=oauth2
 module Main where
 
 import qualified Data.ByteString.Char8      as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import qualified Data.Text.Lazy.Encoding    as TL
-import qualified Data.Text.Lazy.IO          as TL
 import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
@@ -25,6 +25,17 @@ import           URI.ByteString.QQ
 import           Network.OAuth.OAuth2
 
 import           Keys                       (doubanKey)
+
+import           GHC.Generics
+import           Data.Aeson
+import           Data.Aeson.Types
+
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
 main :: IO ()
 main = do
@@ -37,13 +48,14 @@ main = do
                   , ("client_secret", T.encodeUtf8 $ oauthClientSecret doubanKey)
                   ]
 
-  token <- doJSONPostRequest mgr doubanKey url (extraBody ++ body)
+  token :: OAuth2Result Errors OAuth2Token <- doJSONPostRequest mgr doubanKey url (extraBody ++ body)
   print token
   case token of
     Right r -> do
+      -- TODO: display Chinese character. (Text UTF-8 encodeing does not work, why?)
       uid <- authGetBS mgr (accessToken r) [uri|https://api.douban.com/v2/user/~me|]
-      TL.putStrLn $ either TL.decodeUtf8 TL.decodeUtf8 uid
-    Left l -> BSL.putStrLn l
+      putStrLn $ either (show :: OAuth2Error Errors -> String) (show . TL.decodeUtf8) uid
+    Left l -> print l
 
 sToBS :: String -> BS.ByteString
 sToBS = T.encodeUtf8 . T.pack
