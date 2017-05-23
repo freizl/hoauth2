@@ -29,7 +29,6 @@ import           Lens.Micro
 import           Lens.Micro.Extras
 import           Network.HTTP.Conduit as C
 import qualified Network.HTTP.Types   as H
-import           Data.Void
 
 --------------------------------------------------
 -- * Data Types
@@ -67,10 +66,6 @@ instance FromJSON OAuth2Token where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 instance ToJSON OAuth2Token where
     toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
-
--- | Resources Access Responses https://tools.ietf.org/html/rfc6749#section-7.2
--- No standard responses defined, so @Void@.
-type ResourceAccessErrors = Void
 
 data OAuth2Error a =
   OAuth2Error
