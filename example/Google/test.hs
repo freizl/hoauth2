@@ -83,9 +83,8 @@ main = do
 offlineCase :: Manager -> IO ()
 offlineCase mgr = do
     BS.putStrLn $ serializeURIRef' $ appendQueryParams (googleScopeEmail ++ googleAccessOffline) $ authorizationUrl googleKey
-    putStrLn "visit the url and paste code here: "
+    putStrLn "offline mode: visit the url and paste code here: "
     code <- getLine
-    fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack code
     (Right token) <- fetchAccessToken mgr googleKey $ ExchangeToken $ T.pack code
     f (accessToken token)
     --
@@ -96,7 +95,7 @@ offlineCase mgr = do
         Nothing -> putStrLn "Failed to fetch refresh token"
         Just tk -> do
             (Right token') <- fetchRefreshToken mgr googleKey tk
-            f token'
+            f (accessToken token')
             --validateToken accessToken >>= print
             --(validateToken' accessToken :: IO (OAuth2Result Token)) >>= print
     where f token = do
@@ -110,7 +109,7 @@ normalCase mgr = do
     putStr "Trying invalid token..."
     validateToken mgr (AccessToken "invalid") >>= print
     BS.putStrLn $ serializeURIRef' $ appendQueryParams googleScopeUserInfo (authorizationUrl googleKey)
-    putStrLn "visit the url and paste code here: "
+    putStrLn "normal mode: visit the url and paste code here: "
     code <- fmap (ExchangeToken . T.pack) getLine
     maybeToken <- fetchAccessToken mgr googleKey code
     print maybeToken

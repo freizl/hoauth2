@@ -61,6 +61,9 @@ test-douban:
 test-google:
 	$(CBD) exec test-google
 
+test-google-offline:
+	$(CBD) exec test-google offline
+
 test-facebook:
 	$(CBD) exec test-facebook
 

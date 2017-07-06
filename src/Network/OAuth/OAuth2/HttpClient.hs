@@ -53,10 +53,11 @@ fetchAccessToken manager oa code = doFlexiblePostRequest manager oa uri body
 
 
 -- | Request a new AccessToken with the Refresh Token.
+-- TODO: seems more approporate to rename to refreshAccessToken
 fetchRefreshToken :: Manager                         -- ^ HTTP connection manager.
                      -> OAuth2                       -- ^ OAuth context
                      -> RefreshToken                 -- ^ refresh token gained after authorization
-                     -> IO (OAuth2Result TR.Errors AccessToken)
+                     -> IO (OAuth2Result TR.Errors OAuth2Token)
 fetchRefreshToken manager oa token = doFlexiblePostRequest manager oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa token
 
