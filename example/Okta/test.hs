@@ -43,5 +43,5 @@ main = do
       Left _   -> putStrLn "no access token found yet"
 
 getUserInfo :: Manager -> AccessToken -> IO (OAuth2Result Errors BSL.ByteString)
-getUserInfo mgr token = do
+getUserInfo mgr token =
   authGetBS mgr token [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
