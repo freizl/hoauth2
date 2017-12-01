@@ -185,9 +185,9 @@ parseResponseJSON :: FromJSON err => FromJSON a
               => OAuth2Result err BSL.ByteString
               -> OAuth2Result err a
 parseResponseJSON (Left b) = Left b
-parseResponseJSON (Right b) = case decode b of
-                            Nothing -> Left (parseOAuth2Error b)
-                            Just x -> Right x
+parseResponseJSON (Right b) = case eitherDecode b of
+                            Left e -> Left $ mkDecodeOAuth2Error b e
+                            Right x -> Right x
 
 -- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String
 parseResponseString :: FromJSON err => FromJSON a

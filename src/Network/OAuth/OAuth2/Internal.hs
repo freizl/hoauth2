@@ -88,8 +88,14 @@ instance ToJSON err => ToJSON (OAuth2Error err) where
 
 parseOAuth2Error :: FromJSON err => BSL.ByteString -> OAuth2Error err
 parseOAuth2Error string =
-  either (\err -> OAuth2Error (Left "Decode error") (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict string)) Nothing) id (eitherDecode string)
+  either (mkDecodeOAuth2Error string) id (eitherDecode string)
 
+mkDecodeOAuth2Error :: BSL.ByteString -> String -> OAuth2Error err
+mkDecodeOAuth2Error response err =
+  OAuth2Error
+    (Left "Decode error")
+    (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
+    Nothing
 
 --------------------------------------------------
 -- * Types Synonym
