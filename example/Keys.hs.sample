@@ -70,3 +70,11 @@ dropboxKey = OAuth2 { oauthClientId = "xxx"
                     , oauthOAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
                     , oauthAccessTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
                     }
+
+oktaKey :: OAuth2
+oktaKey = OAuth2 { oauthClientId = "xxx"
+                 , oauthClientSecret = "xxx"
+                 , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
+                 , oauthOAuthorizeEndpoint = [uri|https://dev-148986.oktapreview.com/oauth2/v1/authorize|]
+                 , oauthAccessTokenEndpoint = [uri|https://dev-148986.oktapreview.com/oauth2/v1/token|]
+                 }

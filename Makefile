@@ -78,3 +78,6 @@ test-stackexchange:
 
 test-dropbox:
 	$(CBD) exec test-dropbox
+
+test-okta:
+	$(CBD) exec test-okta
