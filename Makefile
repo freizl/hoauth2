@@ -51,6 +51,8 @@ ci-lint:
 	$(CBD) install hlint
 	$(CBD) exec hlint -- src example
 
+ci-nightly: nightly
+
 ####################
 ### Tests
 ####################

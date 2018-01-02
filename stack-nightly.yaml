@@ -1,12 +1,8 @@
-resolver: nightly-2018-01-02
-
-packages:
-  - '.'
-
-extra-deps:
-  - uri-bytestring-aeson-0.1.0.0
-  - http-types-0.11
-
 flags:
   hoauth2:
     test: true
+packages:
+- .
+extra-deps:
+- http-types-0.11
+resolver: nightly-2018-01-02
