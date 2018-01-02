@@ -1,7 +1,7 @@
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Main where
@@ -24,9 +24,9 @@ import           URI.ByteString.QQ
 import           Keys                     (fitbitKey)
 import           Network.OAuth.OAuth2
 
-import           GHC.Generics
 import           Data.Aeson
 import           Data.Aeson.Types
+import           GHC.Generics
 
 data Errors =
   SomeRandomError
@@ -99,7 +99,7 @@ getApiToken :: Manager -> ExchangeToken -> IO OAuth2Token
 getApiToken mgr code = do
     result <- doJSONPostRequest mgr fitbitKey url $ body ++ [("state", state)]
     case result of
-        Right token -> return token
+        Right token                    -> return token
         Left (e :: OAuth2Error Errors) -> Prelude.error $ show e
   where
     (url, body) = accessTokenUrl fitbitKey code
@@ -108,7 +108,7 @@ getApiUser :: Manager -> AccessToken -> IO FitbitUser
 getApiUser mgr token = do
     result <- authGetJSON mgr token [uri|https://api.fitbit.com/1/user/-/profile.json|]
     case result of
-        Right user -> return user
+        Right user                     -> return user
         Left (e :: OAuth2Error Errors) -> Prelude.error $ show e
 
 convertQueryToMap :: Query -> M.Map B.ByteString B.ByteString

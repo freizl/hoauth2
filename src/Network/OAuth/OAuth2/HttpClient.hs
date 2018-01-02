@@ -1,3 +1,4 @@
+{-# LANGUAGE ExplicitForAll    #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -27,17 +28,17 @@ module Network.OAuth.OAuth2.HttpClient (
 ) where
 
 import           Data.Aeson
-import qualified Data.ByteString.Char8         as BS
-import qualified Data.ByteString.Lazy.Char8    as BSL
-import qualified Data.HashMap.Strict           as HM (fromList)
+import qualified Data.ByteString.Char8             as BS
+import qualified Data.ByteString.Lazy.Char8        as BSL
+import qualified Data.HashMap.Strict               as HM (fromList)
 import           Data.Maybe
-import qualified Data.Text.Encoding            as T
-import           Network.HTTP.Conduit          hiding (withManager)
-import qualified Network.HTTP.Types            as HT
-import           Network.HTTP.Types.URI        (parseQuery)
+import qualified Data.Text.Encoding                as T
+import           Network.HTTP.Conduit
+import qualified Network.HTTP.Types                as HT
+import           Network.HTTP.Types.URI            (parseQuery)
 import           Network.OAuth.OAuth2.Internal
-import           URI.ByteString
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           URI.ByteString
 
 --------------------------------------------------
 -- * Token management
@@ -186,7 +187,7 @@ parseResponseJSON :: FromJSON err => FromJSON a
               -> OAuth2Result err a
 parseResponseJSON (Left b) = Left b
 parseResponseJSON (Right b) = case eitherDecode b of
-                            Left e -> Left $ mkDecodeOAuth2Error b e
+                            Left e  -> Left $ mkDecodeOAuth2Error b e
                             Right x -> Right x
 
 -- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String

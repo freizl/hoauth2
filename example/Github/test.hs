@@ -1,17 +1,17 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
 
 -- | Github API: http://developer.github.com/v3/oauth/
 
 module Main where
 
-import           Control.Monad        (mzero)
-import qualified Data.ByteString      as BS
-import           Data.Text            (Text)
-import qualified Data.Text            as T
-import qualified Data.Text.Encoding   as T
+import           Control.Monad                             (mzero)
+import qualified Data.ByteString                           as BS
+import           Data.Text                                 (Text)
+import qualified Data.Text                                 as T
+import qualified Data.Text.Encoding                        as T
 import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
@@ -21,9 +21,9 @@ import qualified Network.OAuth.OAuth2.AuthorizationRequest as AR
 
 import           Keys
 
-import           GHC.Generics
 import           Data.Aeson
 import           Data.Aeson.Types
+import           GHC.Generics
 
 data Errors =
   SomeRandomError

@@ -1,7 +1,7 @@
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 {-
@@ -14,21 +14,21 @@ douban oauth2: http://developers.douban.com/wiki/?title=oauth2
 
 module Main where
 
-import qualified Data.ByteString.Char8      as BS
-import qualified Data.Text                  as T
-import qualified Data.Text.Encoding         as T
-import qualified Data.Text.Lazy.Encoding    as TL
+import qualified Data.ByteString.Char8   as BS
+import qualified Data.Text               as T
+import qualified Data.Text.Encoding      as T
+import qualified Data.Text.Lazy.Encoding as TL
 import           Network.HTTP.Conduit
 import           URI.ByteString
 import           URI.ByteString.QQ
 
 import           Network.OAuth.OAuth2
 
-import           Keys                       (doubanKey)
+import           Keys                    (doubanKey)
 
-import           GHC.Generics
 import           Data.Aeson
 import           Data.Aeson.Types
+import           GHC.Generics
 
 data Errors =
   SomeRandomError

@@ -22,7 +22,6 @@ import           Data.Text                     (Text)
 import qualified Data.Text                     as T
 import           GHC.Generics
 import           Network.HTTP.Conduit
-import           Prelude                       hiding (id)
 import           System.Environment            (getArgs)
 import           URI.ByteString
 import           URI.ByteString.QQ

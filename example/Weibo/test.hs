@@ -1,7 +1,7 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
 
 {-
 
@@ -22,10 +22,10 @@ https://github.com/HaskellCNOrg/snaplet-oauth/tree/master/test
 
 module Main where
 
-import qualified Data.ByteString            as BS
-import qualified Data.ByteString.Lazy       as BSL
-import qualified Data.Text                  as T
-import qualified Data.Text.Encoding         as T
+import qualified Data.ByteString      as BS
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.Text            as T
+import qualified Data.Text.Encoding   as T
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import           URI.ByteString
@@ -33,9 +33,9 @@ import           URI.ByteString.QQ
 
 import           Keys
 
-import           GHC.Generics
 import           Data.Aeson
 import           Data.Aeson.Types
+import           GHC.Generics
 
 data Errors =
   SomeRandomError

@@ -1,8 +1,8 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE DeriveGeneric     #-}
 
 {- Facebook example -}
 
@@ -17,13 +17,12 @@ import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.Encoding         as T
 import           Network.HTTP.Conduit
-import           Prelude                    hiding (id)
 import           URI.ByteString
 import           URI.ByteString.QQ
 
-import           GHC.Generics
 import           Data.Aeson
 import           Data.Aeson.Types
+import           GHC.Generics
 
 data Errors =
   SomeRandomError

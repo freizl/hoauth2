@@ -10,9 +10,8 @@
 
 module Network.OAuth.OAuth2.Internal where
 
-import           Prelude              hiding (error)
-import           Control.Arrow        (second)
 import           Control.Applicative
+import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
 import           Data.Aeson.Types
@@ -23,12 +22,12 @@ import           Data.Monoid
 import           Data.Text            (Text, pack)
 import           Data.Text.Encoding
 import           GHC.Generics
-import           URI.ByteString
-import           URI.ByteString.Aeson ()
 import           Lens.Micro
 import           Lens.Micro.Extras
 import           Network.HTTP.Conduit as C
 import qualified Network.HTTP.Types   as H
+import           URI.ByteString
+import           URI.ByteString.Aeson ()
 
 --------------------------------------------------
 -- * Data Types
@@ -69,9 +68,9 @@ instance ToJSON OAuth2Token where
 
 data OAuth2Error a =
   OAuth2Error
-    { error :: Either Text a
+    { error            :: Either Text a
     , errorDescription :: Maybe Text
-    , errorUri :: Maybe (URIRef Absolute) }
+    , errorUri         :: Maybe (URIRef Absolute) }
   deriving (Show, Eq, Generic)
 
 instance FromJSON err => FromJSON (OAuth2Error err) where

@@ -23,13 +23,16 @@ rebuild: clean build
 nightly: clean
 	$(CBD) --stack-yaml stack-nightly.yaml build --test
 
+
+stylish:
+	$(CBD) exec stylish-haskell --  -i src/Network/OAuth/**/*.hs
+	$(CBD) exec stylish-haskell --  -i src/Network/OAuth/*.hs
+	$(CBD) exec stylish-haskell --  -i example/*.hs
+	$(CBD) exec stylish-haskell --  -i example/*.hs.sample
+	$(CBD) exec stylish-haskell --  -i example/**/*.hs
+
 hlint:
-	$(STYLE) -i src/Network/OAuth/**/*.hs
-	$(STYLE) -i src/Network/OAuth/*.hs
-	$(STYLE) -i example/*.hs
-	$(STYLE) -i example/*.hs.sample
-	$(STYLE) -i example/**/*.hs
-	$(HLINT) src/ example --report=$(DIST)/hlint.html
+	$(CBD) exec hlint -- src/ example --report=$(DIST)/hlint.html
 
 doc: build
 	$(CBD) haddock

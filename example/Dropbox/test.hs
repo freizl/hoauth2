@@ -1,18 +1,18 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric     #-}
 
 module Main where
 
+import           Data.Aeson
+import           Data.Aeson.Types
 import qualified Data.ByteString.Char8      as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text                  as T
-import           Data.Aeson
-import           Data.Aeson.Types
+import           GHC.Generics
 import           Network.HTTP.Conduit
 import qualified Network.HTTP.Types         as HT
 import           URI.ByteString
-import           GHC.Generics
 
 import           Network.OAuth.OAuth2
 

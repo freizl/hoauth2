@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Network.OAuth.OAuth2.AuthorizationRequest where
 
