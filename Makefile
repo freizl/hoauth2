@@ -6,8 +6,8 @@ HLINT=hlint
 default: build
 
 clean:
-	stack clean
 	cabal clean
+	stack clean
 
 create-keys:
 	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
@@ -51,7 +51,7 @@ ci-lint:
 	$(CBD) install hlint
 	$(CBD) exec hlint -- src example
 
-ci-nightly: nightly
+ci-nightly: create-keys nightly
 
 ####################
 ### Tests
