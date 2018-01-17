@@ -31,3 +31,6 @@ install:
 
 script:
   - make ci-$TEST_SUITE
+
+notifications:
+  slack: freizl:D42Dy68Q4Cj8Bjw5Qi9mZrQf
