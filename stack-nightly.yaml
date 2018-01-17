@@ -1,8 +1,12 @@
 flags:
   hoauth2:
     test: true
+
 packages:
-- .
+  - .
+
 extra-deps:
-- http-types-0.11
-resolver: nightly-2018-01-02
+  - http-conduit-2.3.0
+  - http-types-0.11
+
+resolver: nightly-2018-01-17
