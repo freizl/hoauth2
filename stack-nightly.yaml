@@ -7,6 +7,6 @@ packages:
 
 extra-deps:
   - http-conduit-2.3.0
-  - http-types-0.11
+  - http-types-0.12
 
 resolver: nightly-2018-01-17
