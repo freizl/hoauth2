@@ -1,0 +1,19 @@
+<html>
+    <body>
+        <h1>Hello OAuth2</h1>
+        {{#idps}}
+        <section class="login-with">
+
+            {{^isLogin}}
+            <a href="{{codeFlowUri}}">Login {{name}}</a>
+            {{/isLogin}}
+
+            {{#isLogin}}
+            <h2>welcome to {{name}}</h2>
+            <div class="result"></div>
+            {{/isLogin}}
+
+        </section>
+        {{/idps}}
+    </body>
+</html>
