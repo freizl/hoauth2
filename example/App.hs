@@ -1,7 +1,13 @@
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module App (app, waiApp) where
 
+import Data.Bifunctor
+import           Data.Aeson
+import           Data.Aeson.Types
 import qualified Control.Applicative                  as CA
 import           Control.Monad
 import           Control.Monad.Error.Class
@@ -11,10 +17,15 @@ import qualified Data.ByteString.Lazy.Char8           as BSL
 import qualified Data.HashMap.Strict                  as Map
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as TL
+-- import qualified Data.Text                       as T
 import qualified Data.Text.Encoding                       as TE
 import           Network.HTTP.Types
 import           Network.Wai.Handler.Warp             (run)
 import           Prelude                              hiding (exp)
+import           Network.HTTP.Conduit
+import qualified Network.HTTP.Types         as HT
+import           GHC.Generics
+
 
 import           Data.List
 import           Data.Maybe
@@ -30,18 +41,20 @@ import           Network.OAuth.OAuth2
 import           Cookie
 import           Views
 import Types
+import Utils
 import Keys
+  
 
 ------------------------------
 -- App
 ------------------------------
 
-port = 9988
+myServerPort = 9988
 
 app :: IO ()
-app = putStrLn ("Starting Server. http://localhost:" ++ (show port))
+app = putStrLn ("Starting Server. http://localhost:" ++ (show myServerPort))
          >> waiApp
-         >>= run port
+         >>= run myServerPort
 
 waiApp :: IO WAI.Application
 waiApp = do
@@ -76,7 +89,7 @@ githubCodUri = ""
 
 oktaCodeUri :: Text
 oktaCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams [("scope", "openid profile"), ("state", "test-state-123;idp=okta")]
+  $ appendQueryParams [("scope", "openid profile"), ("state", "okta.test-state-123")]
   $ authorizationUrl oktaKey
 
 
@@ -95,8 +108,56 @@ globalErrorHandler t = status status401 >> html t
 indexH :: ActionM ()
 indexH = overviewTpl idps
 
+resultTpl = indexH
 
-callbackH = undefined
+callbackH = do
+  pas <- params
+  let codeP = paramValue "code" pas
+  let stateP = paramValue "state" pas
+  when (null codeP) (errorM "ERROR: no code from callback request")
+  when (null stateP) (errorM "ERROR: no state from callback request")
+  let maybeIdpName = idpFromText $ TL.takeWhile (/= '.') (head stateP)
+  case maybeIdpName of
+    Just idpName -> fetchTokenAndUser (head codeP) idpName
+    Nothing -> resultTpl         -- TODO: show error message
+
+fetchTokenAndUser :: TL.Text           -- ^ code
+                  -> IDP
+                  -> ActionM ()
+fetchTokenAndUser code idpInput = do
+  -- TODO: danger using head
+  let idp = head $ filter (\idpO -> (idpName idpO) == idpInput) idps
+  result <- liftIO $ do
+    mgr <- newManager tlsManagerSettings
+    token <- fetchAccessToken mgr (oauth2Key idp) (ExchangeToken $ TL.toStrict code)
+    case token of
+      Right at -> getUserInfo mgr (accessToken at)
+      Left e -> return (Left $ TL.pack $ show e)
+  case result of
+    Right oUser -> overviewTpl [ idp {loginUser = Just (LoginUser $ name oUser) } ]
+    Left err -> errorM err
+
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
+
+data OktaUser = OktaUser { name :: Text }
+  deriving (Show, Generic)
+
+instance FromJSON OktaUser where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+
+instance ToJSON OktaUser where
+    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
+
+
+getUserInfo :: Manager -> AccessToken -> IO (Either Text OktaUser)
+getUserInfo mgr token = do
+  re <- authGetJSON mgr token [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+  return (first (TL.pack . show) ( re :: OAuth2Result Errors OktaUser ))
 
 {-
 loginRedirectH :: Config -> ActionM ()
