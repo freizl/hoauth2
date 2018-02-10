@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Types where
 
@@ -7,9 +8,13 @@ import           Network.OAuth.OAuth2
 import           Data.Text.Lazy
 import qualified Data.Text.Lazy as TL
 import Data.Maybe
+import Data.Hashable
+import           GHC.Generics
 
 data IDP = Okta | Github | Google
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
+
+instance Hashable IDP
 
 idpFromText :: Text -> Maybe IDP
 idpFromText ift = case (TL.unpack $ TL.toLower ift) of
@@ -20,14 +25,14 @@ idpFromText ift = case (TL.unpack $ TL.toLower ift) of
 
 data LoginUser =
   LoginUser { loginUserName :: Text
-            } deriving (Eq)
+            } deriving (Eq, Show)
 
 data IDPData = IDPData
   { codeFlowUri :: Text
   , loginUser :: Maybe LoginUser
   , idpName :: IDP
   , oauth2Key :: OAuth2
-  } deriving (Eq)
+  } deriving (Eq, Show)
 
 -- TODO: make type family
 mkIDPData :: IDP -> OAuth2 -> Text -> IDPData

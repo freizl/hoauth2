@@ -43,7 +43,7 @@ import           Views
 import Types
 import Utils
 import Keys
-  
+import Session
 
 ------------------------------
 -- App
@@ -56,14 +56,17 @@ app = putStrLn ("Starting Server. http://localhost:" ++ (show myServerPort))
          >> waiApp
          >>= run myServerPort
 
+-- TODO: how to add either Monad or a middleware to do session?
 waiApp :: IO WAI.Application
 waiApp = do
-  -- cache <- initKeyCache
+  cache <- initKeyCache
+  idps cache
   scottyApp $ do
     middleware $ staticPolicy (mapAssetsDir >-> addBase "dist")
     defaultHandler globalErrorHandler
-    get "/" $ indexH
-    get "/oauth2/callback" $ callbackH
+    get "/" $ indexH cache
+    get "/oauth2/callback" $ callbackH cache
+    get "/logout" $ logoutH cache
     --get "/authorization-code/login-redirect" $ loginRedirectH c
     --get "/authorization-code/login-custom" $ loginCustomH c
     --get "/authorization-code/profile" $ profileH c
@@ -79,18 +82,22 @@ mapAssetsDir = policy removeAssetsPrefix
 -- * Handlers
 --------------------------------------------------
 
-idps :: [IDPData]
-idps =
+idps :: KeyCache -> IO ()
+idps c =
+  mapM_ (\idp -> insertKeys c (idpName idp) idp)
   [ mkIDPData Okta oktaKey oktaCodeUri
-  , mkIDPData Github githubKey githubCodUri
+  , mkIDPData Github githubKey githubCodeUri
   ]
-
-githubCodUri = ""
 
 oktaCodeUri :: Text
 oktaCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams [("scope", "openid profile"), ("state", "okta.test-state-123")]
   $ authorizationUrl oktaKey
+
+githubCodeUri :: Text
+githubCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
+  $ appendQueryParams [("state", "github.test-state-123")]
+  $ authorizationUrl githubKey
 
 
 redirectToProfileM :: ActionM ()
@@ -105,12 +112,24 @@ errorM = throwError . ActionError
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status401 >> html t
 
-indexH :: ActionM ()
-indexH = overviewTpl idps
+logoutH :: KeyCache -> ActionM ()
+logoutH c = do
+  pas <- params
+  let idpP = paramValue "idp" pas
+  when (null idpP) redirectToHomeM
+  let maybeIdp = idpFromText (head idpP)
+  case maybeIdp of
+    Just idpInput -> liftIO (removeKey c idpInput) >> redirectToHomeM
+    Nothing -> redirectToHomeM
 
-resultTpl = indexH
+indexH :: KeyCache -> ActionM ()
+indexH c = do
+  is <- liftIO (allValues c)
+  overviewTpl is
 
-callbackH = do
+resultTpl = undefined
+
+callbackH c = do
   pas <- params
   let codeP = paramValue "code" pas
   let stateP = paramValue "state" pas
@@ -118,23 +137,29 @@ callbackH = do
   when (null stateP) (errorM "ERROR: no state from callback request")
   let maybeIdpName = idpFromText $ TL.takeWhile (/= '.') (head stateP)
   case maybeIdpName of
-    Just idpName -> fetchTokenAndUser (head codeP) idpName
+    Just idpName -> fetchTokenAndUser (head codeP) c idpName
     Nothing -> resultTpl         -- TODO: show error message
 
 fetchTokenAndUser :: TL.Text           -- ^ code
+                  -> KeyCache
                   -> IDP
                   -> ActionM ()
-fetchTokenAndUser code idpInput = do
+fetchTokenAndUser code store idpInput = do
   -- TODO: danger using head
-  let idp = head $ filter (\idpO -> (idpName idpO) == idpInput) idps
+  mayBeIdp <- liftIO $ lookupKey store idpInput 
+  when (isNothing mayBeIdp) (errorM "Error: cannot find idp from session")
+  let idpData = fromJust mayBeIdp
   result <- liftIO $ do
     mgr <- newManager tlsManagerSettings
-    token <- fetchAccessToken mgr (oauth2Key idp) (ExchangeToken $ TL.toStrict code)
+    token <- fetchAccessToken mgr (oauth2Key idpData) (ExchangeToken $ TL.toStrict code)
     case token of
-      Right at -> getUserInfo mgr (accessToken at)
+      Right at -> getUserInfo idpInput mgr (accessToken at)
       Left e -> return (Left $ TL.pack $ show e)
   case result of
-    Right oUser -> overviewTpl [ idp {loginUser = Just (LoginUser $ name oUser) } ]
+    Right lUser -> do
+      let newIdp = idpData {loginUser = Just lUser }
+      liftIO $ insertKeys store idpInput newIdp
+      redirectToHomeM
     Left err -> errorM err
 
 data Errors =
@@ -144,20 +169,40 @@ data Errors =
 instance FromJSON Errors where
   parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
-data OktaUser = OktaUser { name :: Text }
-  deriving (Show, Generic)
+data OktaUser = OktaUser { oname :: Text }
+  deriving (Show)
+
+data GithubUser = GithubUser { gname :: Text
+                             , gid :: Integer
+                             }
+  deriving (Show)
 
 instance FromJSON OktaUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+  parseJSON (Object v) = OktaUser
+                         <$> v .: "name"
 
-instance ToJSON OktaUser where
-    toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
+instance FromJSON GithubUser where
+  parseJSON (Object v) = GithubUser
+                         <$> v .: "name"
+                         <*> v .: "id"
 
+getUserInfo :: IDP -> Manager -> AccessToken -> IO (Either Text LoginUser)
+getUserInfo idp mgr token = case idp of
+  Okta -> getOktaUserInfo mgr token
+  Github -> getGithubUserInfo mgr token
+  _ -> return (Left "not yet support IDP")
 
-getUserInfo :: Manager -> AccessToken -> IO (Either Text OktaUser)
-getUserInfo mgr token = do
+getGithubUserInfo :: Manager -> AccessToken -> IO (Either Text LoginUser)
+getGithubUserInfo mgr token = do
+  re <- authGetJSON mgr token [uri|https://api.github.com/user|]
+  return (bimap (TL.pack . show) toLoginUser ( re :: OAuth2Result Errors GithubUser))
+  where toLoginUser ouser = LoginUser { loginUserName = gname ouser }
+  
+getOktaUserInfo :: Manager -> AccessToken -> IO (Either Text LoginUser)
+getOktaUserInfo mgr token = do
   re <- authGetJSON mgr token [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
-  return (first (TL.pack . show) ( re :: OAuth2Result Errors OktaUser ))
+  return (bimap (TL.pack . show) toLoginUser ( re :: OAuth2Result Errors OktaUser ))
+  where toLoginUser ouser = LoginUser { loginUserName = oname ouser }
 
 {-
 loginRedirectH :: Config -> ActionM ()
