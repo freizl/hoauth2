@@ -10,7 +10,9 @@
 
             {{#isLogin}}
             <h2>welcome to {{name}}</h2>
-            <div class="result"></div>
+            {{#user}}
+            <div class="result">Hello, {{name}}</div>
+            {{/user}}
             {{/isLogin}}
 
         </section>

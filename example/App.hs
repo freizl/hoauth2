@@ -6,11 +6,12 @@ import qualified Control.Applicative                  as CA
 import           Control.Monad
 import           Control.Monad.Error.Class
 import           Control.Monad.IO.Class               (liftIO)
-import qualified Data.ByteString.Lazy.Char8           as BS
+import qualified Data.ByteString.Char8           as BS
+import qualified Data.ByteString.Lazy.Char8           as BSL
 import qualified Data.HashMap.Strict                  as Map
 import           Data.Text.Lazy                       (Text)
-import qualified Data.Text.Lazy                       as T
---import           Data.Time.Format
+import qualified Data.Text.Lazy                       as TL
+import qualified Data.Text.Encoding                       as TE
 import           Network.HTTP.Types
 import           Network.Wai.Handler.Warp             (run)
 import           Prelude                              hiding (exp)
@@ -22,10 +23,14 @@ import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
 import           Web.Scotty
 import           Web.Scotty.Internal.Types
+import           URI.ByteString
+import           URI.ByteString.QQ
+import           Network.OAuth.OAuth2
 
 import           Cookie
 import           Views
 import Types
+import Keys
 
 ------------------------------
 -- App
@@ -34,7 +39,7 @@ import Types
 port = 9988
 
 app :: IO ()
-app = putStrLn ("Starting Server at " ++ (show port))
+app = putStrLn ("Starting Server. http://localhost:" ++ (show port))
          >> waiApp
          >>= run port
 
@@ -45,6 +50,7 @@ waiApp = do
     middleware $ staticPolicy (mapAssetsDir >-> addBase "dist")
     defaultHandler globalErrorHandler
     get "/" $ indexH
+    get "/oauth2/callback" $ callbackH
     --get "/authorization-code/login-redirect" $ loginRedirectH c
     --get "/authorization-code/login-custom" $ loginCustomH c
     --get "/authorization-code/profile" $ profileH c
@@ -62,9 +68,17 @@ mapAssetsDir = policy removeAssetsPrefix
 
 idps :: [IDPData]
 idps =
-  [ IDPData "/abc" False Nothing Okta
-  , IDPData "http://www.github.com/auth" False Nothing Github
+  [ mkIDPData Okta oktaKey oktaCodeUri
+  , mkIDPData Github githubKey githubCodUri
   ]
+
+githubCodUri = ""
+
+oktaCodeUri :: Text
+oktaCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
+  $ appendQueryParams [("scope", "openid profile"), ("state", "test-state-123;idp=okta")]
+  $ authorizationUrl oktaKey
+
 
 redirectToProfileM :: ActionM ()
 redirectToProfileM = redirect "/authorization-code/profile"
@@ -80,6 +94,9 @@ globalErrorHandler t = status status401 >> html t
 
 indexH :: ActionM ()
 indexH = overviewTpl idps
+
+
+callbackH = undefined
 
 {-
 loginRedirectH :: Config -> ActionM ()
