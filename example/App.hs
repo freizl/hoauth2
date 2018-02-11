@@ -2,6 +2,8 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ExistentialQuantification #-}
 
 module App (app, waiApp) where
 
@@ -44,6 +46,7 @@ import Types
 import Utils
 import Keys
 import Session
+import Api
 
 ------------------------------
 -- App
@@ -67,11 +70,6 @@ waiApp = do
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
-    --get "/authorization-code/login-redirect" $ loginRedirectH c
-    --get "/authorization-code/login-custom" $ loginCustomH c
-    --get "/authorization-code/profile" $ profileH c
-    --get "/authorization-code/logout" logoutH
-    --get "/authorization-code/callback" $ callbackH cache c
 
 
 mapAssetsDir :: Policy
@@ -87,6 +85,7 @@ idps c =
   mapM_ (\idp -> insertKeys c (idpName idp) idp)
   [ mkIDPData Okta oktaKey oktaCodeUri
   , mkIDPData Github githubKey githubCodeUri
+  , mkIDPData Google googleKey googleCodeUri
   ]
 
 oktaCodeUri :: Text
@@ -99,6 +98,14 @@ githubCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams [("state", "github.test-state-123")]
   $ authorizationUrl githubKey
 
+googleCodeUri :: Text
+googleCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
+  $ appendQueryParams (googleQueryParams)
+  $ authorizationUrl googleKey
+googleQueryParams :: QueryParams
+googleQueryParams = [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
+                    , ("state", "google.test-state-123")
+                    ]
 
 redirectToProfileM :: ActionM ()
 redirectToProfileM = redirect "/authorization-code/profile"
@@ -161,48 +168,6 @@ fetchTokenAndUser code store idpInput = do
       liftIO $ insertKeys store idpInput newIdp
       redirectToHomeM
     Left err -> errorM err
-
-data Errors =
-  SomeRandomError
-  deriving (Show, Eq, Generic)
-
-instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
-
-data OktaUser = OktaUser { oname :: Text }
-  deriving (Show)
-
-data GithubUser = GithubUser { gname :: Text
-                             , gid :: Integer
-                             }
-  deriving (Show)
-
-instance FromJSON OktaUser where
-  parseJSON (Object v) = OktaUser
-                         <$> v .: "name"
-
-instance FromJSON GithubUser where
-  parseJSON (Object v) = GithubUser
-                         <$> v .: "name"
-                         <*> v .: "id"
-
-getUserInfo :: IDP -> Manager -> AccessToken -> IO (Either Text LoginUser)
-getUserInfo idp mgr token = case idp of
-  Okta -> getOktaUserInfo mgr token
-  Github -> getGithubUserInfo mgr token
-  _ -> return (Left "not yet support IDP")
-
-getGithubUserInfo :: Manager -> AccessToken -> IO (Either Text LoginUser)
-getGithubUserInfo mgr token = do
-  re <- authGetJSON mgr token [uri|https://api.github.com/user|]
-  return (bimap (TL.pack . show) toLoginUser ( re :: OAuth2Result Errors GithubUser))
-  where toLoginUser ouser = LoginUser { loginUserName = gname ouser }
-  
-getOktaUserInfo :: Manager -> AccessToken -> IO (Either Text LoginUser)
-getOktaUserInfo mgr token = do
-  re <- authGetJSON mgr token [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
-  return (bimap (TL.pack . show) toLoginUser ( re :: OAuth2Result Errors OktaUser ))
-  where toLoginUser ouser = LoginUser { loginUserName = oname ouser }
 
 {-
 loginRedirectH :: Config -> ActionM ()

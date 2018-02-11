@@ -1,5 +1,10 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE QuasiQuotes       #-}
+
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 module Types where
 
 import           Text.Mustache
@@ -10,9 +15,17 @@ import qualified Data.Text.Lazy as TL
 import Data.Maybe
 import Data.Hashable
 import           GHC.Generics
+import           Data.Aeson
+import           Data.Aeson.Types
+import           Network.HTTP.Conduit
+import           URI.ByteString
+import           URI.ByteString.QQ
+import Data.Bifunctor
 
 data IDP = Okta | Github | Google
   deriving (Show, Eq, Generic)
+
+data Okta2 = Okta2
 
 instance Hashable IDP
 
@@ -36,17 +49,16 @@ data IDPData = IDPData
 
 -- TODO: make type family
 mkIDPData :: IDP -> OAuth2 -> Text -> IDPData
-mkIDPData idp key uri =
-    IDPData { codeFlowUri = uri
-            , loginUser = Nothing
-            , idpName = idp
-            , oauth2Key = key
-            }
-data TemplateData =
-  TemplateData { idpData :: [IDPData]
-               } deriving (Eq)
+mkIDPData idp key uri = IDPData { codeFlowUri = uri
+                                , loginUser = Nothing
+                                , idpName = idp
+                                , oauth2Key = key
+                                }
 
+data TemplateData = TemplateData { idpData :: [IDPData]
+                                 } deriving (Eq)
 
+-- * Mustache instances
 instance ToMustache IDPData where
   toMustache t' = M.object
     [ "codeFlowUri" ~> codeFlowUri t'
