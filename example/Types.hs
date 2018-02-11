@@ -22,10 +22,17 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import Data.Bifunctor
 
-data IDP = Okta | Github | Google
+data IDP =
+    Douban
+  | Dropbox
+  | Facebook
+  | Fitbit
+  | Github
+  | Google
+  | Okta
+  | StackExchange
+  | Weibo
   deriving (Show, Eq, Generic)
-
-data Okta2 = Okta2
 
 instance Hashable IDP
 
@@ -34,6 +41,12 @@ idpFromText ift = case (TL.unpack $ TL.toLower ift) of
   "okta" -> Just Okta
   "github" -> Just Github
   "google" -> Just Google
+  "douban" -> Just Douban
+  "dropbox" -> Just Dropbox
+  "facebook" -> Just Facebook
+  "fitbit" -> Just Fitbit
+  "weibo" -> Just Weibo
+  "stackexchaneg" -> Just StackExchange
   _ -> Nothing
 
 data LoginUser =

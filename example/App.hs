@@ -86,6 +86,12 @@ idps c =
   [ mkIDPData Okta oktaKey oktaCodeUri
   , mkIDPData Github githubKey githubCodeUri
   , mkIDPData Google googleKey googleCodeUri
+  , mkIDPData Douban doubanKey doubanCodeUri
+  , mkIDPData Dropbox dropboxKey dropboxCodeUri
+  , mkIDPData Facebook facebookKey facebookCodeUri
+  , mkIDPData Fitbit fitbitKey fitbitCodeUri
+  , mkIDPData Weibo weiboKey weiboCodeUri
+  , mkIDPData StackExchange stackexchangeKey stackexchangeCodeUri
   ]
 
 oktaCodeUri :: Text
@@ -106,6 +112,20 @@ googleQueryParams :: QueryParams
 googleQueryParams = [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
                     , ("state", "google.test-state-123")
                     ]
+doubanCodeUri = createCodeUri doubanKey [("state", "douban.test-state-123")]
+dropboxCodeUri = createCodeUri dropboxKey [("state", "dropbox.test-state-123")]
+facebookCodeUri = createCodeUri facebookKey [ ("state", "facebook.test-state-123")
+                                            , ("scope", "user_about_me,email")
+                                            ]
+fitbitCodeUri = createCodeUri fitbitKey [("state", "fitbit.test-state-123")
+                                        , ("scope", "profile")
+                                        ]
+weiboCodeUri = createCodeUri weiboKey [("state", "weibo.test-state-123")]
+stackexchangeCodeUri = createCodeUri stackexchangeKey [("state", "stackexchange.test-state-123")]
+
+createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
+  $ appendQueryParams params
+  $ authorizationUrl key
 
 redirectToProfileM :: ActionM ()
 redirectToProfileM = redirect "/authorization-code/profile"
