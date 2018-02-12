@@ -19,7 +19,7 @@ import qualified Data.ByteString.Lazy.Char8           as BSL
 import qualified Data.HashMap.Strict                  as Map
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as TL
--- import qualified Data.Text                       as T
+import qualified Data.Text                       as T
 import qualified Data.Text.Encoding                       as TE
 import           Network.HTTP.Types
 import           Network.Wai.Handler.Warp             (run)
@@ -83,49 +83,16 @@ mapAssetsDir = policy removeAssetsPrefix
 idps :: KeyCache -> IO ()
 idps c =
   mapM_ (\idp -> insertKeys c (idpName idp) idp)
-  [ mkIDPData Okta oktaKey oktaCodeUri
-  , mkIDPData Github githubKey githubCodeUri
-  , mkIDPData Google googleKey googleCodeUri
-  , mkIDPData Douban doubanKey doubanCodeUri
-  , mkIDPData Dropbox dropboxKey dropboxCodeUri
-  , mkIDPData Facebook facebookKey facebookCodeUri
-  , mkIDPData Fitbit fitbitKey fitbitCodeUri
-  , mkIDPData Weibo weiboKey weiboCodeUri
-  , mkIDPData StackExchange stackexchangeKey stackexchangeCodeUri
+  [ mkIDPData Okta
+  , mkIDPData Github
+  , mkIDPData Google
+  , mkIDPData Douban
+  , mkIDPData Dropbox
+  , mkIDPData Facebook
+  , mkIDPData Fitbit
+  , mkIDPData Weibo
+  , mkIDPData StackExchange
   ]
-
-oktaCodeUri :: Text
-oktaCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams [("scope", "openid profile"), ("state", "okta.test-state-123")]
-  $ authorizationUrl oktaKey
-
-githubCodeUri :: Text
-githubCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams [("state", "github.test-state-123")]
-  $ authorizationUrl githubKey
-
-googleCodeUri :: Text
-googleCodeUri = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams (googleQueryParams)
-  $ authorizationUrl googleKey
-googleQueryParams :: QueryParams
-googleQueryParams = [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
-                    , ("state", "google.test-state-123")
-                    ]
-doubanCodeUri = createCodeUri doubanKey [("state", "douban.test-state-123")]
-dropboxCodeUri = createCodeUri dropboxKey [("state", "dropbox.test-state-123")]
-facebookCodeUri = createCodeUri facebookKey [ ("state", "facebook.test-state-123")
-                                            , ("scope", "user_about_me,email")
-                                            ]
-fitbitCodeUri = createCodeUri fitbitKey [("state", "fitbit.test-state-123")
-                                        , ("scope", "profile")
-                                        ]
-weiboCodeUri = createCodeUri weiboKey [("state", "weibo.test-state-123")]
-stackexchangeCodeUri = createCodeUri stackexchangeKey [("state", "stackexchange.test-state-123")]
-
-createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams params
-  $ authorizationUrl key
 
 redirectToProfileM :: ActionM ()
 redirectToProfileM = redirect "/authorization-code/profile"
@@ -173,14 +140,15 @@ fetchTokenAndUser :: TL.Text           -- ^ code
                   -> ActionM ()
 fetchTokenAndUser code store idpInput = do
   -- TODO: danger using head
-  mayBeIdp <- liftIO $ lookupKey store idpInput 
+  mayBeIdp <- liftIO $ lookupKey store idpInput
   when (isNothing mayBeIdp) (errorM "Error: cannot find idp from session")
   let idpData = fromJust mayBeIdp
   result <- liftIO $ do
     mgr <- newManager tlsManagerSettings
-    token <- fetchAccessToken mgr (oauth2Key idpData) (ExchangeToken $ TL.toStrict code)
+    -- token <- fetchAccessToken mgr (oauth2Key idpData) (ExchangeToken $ TL.toStrict code)
+    token <- tryFetchAT idpData mgr (ExchangeToken $ TL.toStrict code)
     case token of
-      Right at -> getUserInfo idpInput mgr (accessToken at)
+      Right at -> getUserInfo idpData mgr (accessToken at)
       Left e -> return (Left $ TL.pack $ show e)
   case result of
     Right lUser -> do
@@ -188,6 +156,24 @@ fetchTokenAndUser code store idpInput = do
       liftIO $ insertKeys store idpInput newIdp
       redirectToHomeM
     Left err -> errorM err
+
+-- Fetch Access Token
+
+tryFetchAT idpData mgr code =
+  case idpName idpData of
+    Okta -> getAT idpData mgr code
+    Github -> getAT idpData mgr code
+    Google -> getAT idpData mgr code
+    Douban -> postAT idpData mgr code
+
+getAT idpData mgr code = fetchAccessToken mgr (oauth2Key idpData) code
+postAT idpData mgr code = do
+  let okey = oauth2Key idpData
+  let (url, body) = accessTokenUrl okey code
+  let extraBody = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
+                  , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
+                  ]
+  doJSONPostRequest mgr doubanKey url (extraBody ++ body)
 
 {-
 loginRedirectH :: Config -> ActionM ()

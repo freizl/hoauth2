@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE QuasiQuotes       #-}
-
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
 module Types where
@@ -53,20 +53,18 @@ data LoginUser =
   LoginUser { loginUserName :: Text
             } deriving (Eq, Show)
 
-data IDPData = IDPData
-  { codeFlowUri :: Text
-  , loginUser :: Maybe LoginUser
-  , idpName :: IDP
-  , oauth2Key :: OAuth2
-  } deriving (Eq, Show)
+data IDPData = forall a . FromJSON a =>
+  IDPData { codeFlowUri :: Text
+          , loginUser :: Maybe LoginUser
+          , idpName :: IDP
+          , oauth2Key :: OAuth2
+          , userApiUri :: URI
+          , toLoginUser :: a -> LoginUser
+          }
 
--- TODO: make type family
-mkIDPData :: IDP -> OAuth2 -> Text -> IDPData
-mkIDPData idp key uri = IDPData { codeFlowUri = uri
-                                , loginUser = Nothing
-                                , idpName = idp
-                                , oauth2Key = key
-                                }
+-- simplify use case to only allow one idp instance for now.
+instance Eq IDPData where
+  a == b = (idpName a) == (idpName b)
 
 data TemplateData = TemplateData { idpData :: [IDPData]
                                  } deriving (Eq)

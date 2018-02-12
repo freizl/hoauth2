@@ -168,7 +168,11 @@ authRequest :: FromJSON err => Request          -- ^ Request to perform
                -> (Request -> Request)          -- ^ Modify request before sending
                -> Manager                       -- ^ HTTP connection manager.
                -> IO (OAuth2Result err BSL.ByteString)
-authRequest req upReq manager = fmap handleResponse (httpLbs (upReq req) manager)
+-- authRequest req upReq manager = fmap handleResponse (httpLbs (upReq req) manager)
+authRequest req upReq manager = do
+  resp <- (httpLbs (upReq req) manager)
+  print $ responseBody resp
+  return $ handleResponse resp
 
 --------------------------------------------------
 -- * Utilities
