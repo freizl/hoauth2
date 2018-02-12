@@ -16,6 +16,8 @@ import           Network.OAuth.OAuth2
 import           Text.Mustache
 import qualified Text.Mustache        as M
 import           URI.ByteString
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           Network.HTTP.Conduit
 
 data IDP =
     Douban
@@ -53,6 +55,7 @@ data IDPData = forall a . FromJSON a =>
           , loginUser   :: Maybe LoginUser
           , idpName     :: IDP
           , oauth2Key   :: OAuth2
+          , toFetchAccessToken :: Manager -> OAuth2 -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
           , userApiUri  :: URI
           , toLoginUser :: a -> LoginUser
           }
