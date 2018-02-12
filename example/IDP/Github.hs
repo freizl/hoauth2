@@ -1,18 +1,18 @@
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes   #-}
 
 module IDP.Github where
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           GHC.Generics
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
 
-import Types
+import           Types
 
 data GithubUser = GithubUser { name :: Text
-                             , id :: Integer
+                             , id   :: Integer
                              } deriving (Show, Generic)
 
 instance FromJSON GithubUser where

@@ -1,19 +1,19 @@
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes   #-}
 
 module IDP.Dropbox where
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           GHC.Generics
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
-import Types
 
-data DropboxName = DropboxName { displayName :: Text }
+newtype DropboxName = DropboxName { displayName :: Text }
                  deriving (Show, Generic)
 data DropboxUser = DropboxUser { email :: Text
-                               , name :: DropboxName
+                               , name  :: DropboxName
                                } deriving (Show, Generic)
 
 instance FromJSON DropboxName where
@@ -25,4 +25,4 @@ userInfoUri :: URI
 userInfoUri = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
 
 toLoginUser :: DropboxUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = (displayName $ name ouser) }
+toLoginUser ouser = LoginUser { loginUserName = displayName $ name ouser }

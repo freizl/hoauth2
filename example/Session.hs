@@ -7,7 +7,7 @@ import qualified Data.HashMap.Strict     as Map
 import           Data.Maybe
 import           Data.Text.Lazy          (Text)
 
-import Types
+import           Types
 
 type KeyCache = MVar (Map.HashMap IDP IDPData)
 

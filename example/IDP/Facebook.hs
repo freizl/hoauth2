@@ -1,17 +1,17 @@
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes   #-}
 
 module IDP.Facebook where
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           GHC.Generics
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
-import Types
 
-data FacebookUser = FacebookUser { id :: Text
-                                 , name :: Text
+data FacebookUser = FacebookUser { id    :: Text
+                                 , name  :: Text
                                  , email :: Text
                                  } deriving (Show, Generic)
 

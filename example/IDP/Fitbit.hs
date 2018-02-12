@@ -1,16 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings   #-}
 
 module IDP.Fitbit where
-import           Control.Monad            (mzero)
+import           Control.Monad     (mzero)
 import           Data.Aeson
-import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
-import Types
 
 data FitbitUser = FitbitUser
     { userId   :: Text

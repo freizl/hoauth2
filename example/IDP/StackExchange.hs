@@ -1,16 +1,16 @@
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes   #-}
 
 module IDP.StackExchange where
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           GHC.Generics
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
-import Types
 
-data StackExchangeUser = StackExchangeUser { userId :: Integer
+data StackExchangeUser = StackExchangeUser { userId      :: Integer
                                            , displayName :: Text
                                            } deriving (Show, Generic)
 

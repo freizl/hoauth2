@@ -1,16 +1,16 @@
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes   #-}
 
 module IDP.Okta where
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           GHC.Generics
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
-import Types
 
-data OktaUser = OktaUser { name :: Text
+data OktaUser = OktaUser { name              :: Text
                          , preferredUsername :: Text
                          } deriving (Show, Generic)
 

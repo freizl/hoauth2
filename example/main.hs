@@ -1,10 +1,6 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Main where
 
--- import           System.Environment
-
-import           App   (app)
+import           App (app)
 
 main :: IO ()
 main =

@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Utils where
 
 import qualified Data.Aeson                 as Aeson

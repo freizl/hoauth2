@@ -8,7 +8,7 @@ import           Text.Mustache
 import           Text.Parsec.Error
 import           Web.Scotty
 
-import Types
+import           Types
 
 type CookieUser = String
 
@@ -35,11 +35,4 @@ tplH path xs = do
   html s
 
 
-overviewTpl = tplH "index" 
-
-{-
-loginCustomTpl = tplH "login-custom" Nothing
-
-profileTpl :: CookieUser -> Config -> ActionM ()
-profileTpl u = tplH "profile" (Just u)
--}
+overviewTpl = tplH "index"

@@ -1,18 +1,18 @@
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes   #-}
 
 module IDP.Google where
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Text.Lazy    (Text)
+import           GHC.Generics
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Text.Lazy                       (Text)
-import           GHC.Generics
 
-import Types
+import           Types
 
 data GoogleUser = GoogleUser { name :: Text
-                             , id :: Text
+                             , id   :: Text
                              } deriving (Show, Generic)
 
 instance FromJSON GoogleUser where

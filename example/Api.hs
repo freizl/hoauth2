@@ -1,35 +1,34 @@
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE RankNTypes                #-}
 
 module Api where
 
-import Data.Bifunctor
 import           Data.Aeson
 import           Data.Aeson.Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Network.OAuth.OAuth2
-import           Data.Text.Lazy                       (Text)
-import qualified Data.Text.Lazy                       as TL
-import qualified Data.Text.Encoding                       as TE
-import           Network.HTTP.Conduit
+import           Data.Bifunctor
+import           Data.ByteString      (ByteString)
+import qualified Data.Text.Encoding   as TE
+import           Data.Text.Lazy       (Text)
+import qualified Data.Text.Lazy       as TL
 import           GHC.Generics
+import           Network.HTTP.Conduit
+import           Network.OAuth.OAuth2
+import           URI.ByteString
 
-import Keys
-import Types
-import qualified IDP.Okta as IOkta
-import qualified IDP.Github as IGithub
-import qualified IDP.Douban as IDouban
-import qualified IDP.Dropbox as IDropbox
-import qualified IDP.Facebook as IFacebook
-import qualified IDP.Fitbit as IFitbit
-import qualified IDP.Google as IGoogle
-import qualified IDP.StackExchange as IStackExchange
-import qualified IDP.Weibo as IWeibo
+import qualified IDP.Douban           as IDouban
+import qualified IDP.Dropbox          as IDropbox
+import qualified IDP.Facebook         as IFacebook
+import qualified IDP.Fitbit           as IFitbit
+import qualified IDP.Github           as IGithub
+import qualified IDP.Google           as IGoogle
+import qualified IDP.Okta             as IOkta
+import qualified IDP.StackExchange    as IStackExchange
+import qualified IDP.Weibo            as IWeibo
+import           Keys
+import           Types
 
 data Errors =
   SomeRandomError
@@ -38,15 +37,18 @@ data Errors =
 instance FromJSON Errors where
   parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
+createCodeUri :: OAuth2
+              -> [(ByteString, ByteString)]
+              -> Text
 createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams params
   $ authorizationUrl key
 
 mkIDPData :: IDP -> IDPData
 mkIDPData Okta =
-  let uri = createCodeUri oktaKey [("scope", "openid profile"), ("state", "okta.test-state-123")]
+  let userUri = createCodeUri oktaKey [("scope", "openid profile"), ("state", "okta.test-state-123")]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Okta
           , oauth2Key = oktaKey
@@ -54,9 +56,9 @@ mkIDPData Okta =
           , toLoginUser = IOkta.toLoginUser
           }
 mkIDPData Douban =
-  let uri = createCodeUri doubanKey [("state", "douban.test-state-123")]
+  let userUri = createCodeUri doubanKey [("state", "douban.test-state-123")]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Douban
           , oauth2Key = doubanKey
@@ -64,9 +66,9 @@ mkIDPData Douban =
           , toLoginUser = IDouban.toLoginUser
           }
 mkIDPData Dropbox =
-  let uri = createCodeUri dropboxKey [("state", "dropbox.test-state-123")]
+  let userUri = createCodeUri dropboxKey [("state", "dropbox.test-state-123")]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Dropbox
           , oauth2Key = dropboxKey
@@ -74,11 +76,11 @@ mkIDPData Dropbox =
           , toLoginUser = IDropbox.toLoginUser
           }
 mkIDPData Facebook =
-  let uri = createCodeUri facebookKey [ ("state", "facebook.test-state-123")
+  let userUri = createCodeUri facebookKey [ ("state", "facebook.test-state-123")
                                             , ("scope", "user_about_me,email")
                                             ]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Facebook
           , oauth2Key = facebookKey
@@ -86,11 +88,11 @@ mkIDPData Facebook =
           , toLoginUser = IFacebook.toLoginUser
           }
 mkIDPData Fitbit =
-  let uri = createCodeUri fitbitKey [("state", "fitbit.test-state-123")
+  let userUri = createCodeUri fitbitKey [("state", "fitbit.test-state-123")
                                     , ("scope", "profile")
                                     ]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Fitbit
           , oauth2Key = fitbitKey
@@ -99,9 +101,9 @@ mkIDPData Fitbit =
           }
 
 mkIDPData Github =
-  let uri = createCodeUri githubKey [("state", "github.test-state-123")]
+  let userUri = createCodeUri githubKey [("state", "github.test-state-123")]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Github
           , oauth2Key = githubKey
@@ -109,11 +111,11 @@ mkIDPData Github =
           , toLoginUser = IGithub.toLoginUser
           }
 mkIDPData Google =
-  let uri = createCodeUri googleKey [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
+  let userUri = createCodeUri googleKey [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
                                     , ("state", "google.test-state-123")
                                     ]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Google
           , oauth2Key = googleKey
@@ -121,9 +123,9 @@ mkIDPData Google =
           , toLoginUser = IGoogle.toLoginUser
           }
 mkIDPData StackExchange =
-  let uri = createCodeUri stackexchangeKey [("state", "stackexchange.test-state-123")]
+  let userUri = createCodeUri stackexchangeKey [("state", "stackexchange.test-state-123")]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = StackExchange
           , oauth2Key = stackexchangeKey
@@ -131,9 +133,9 @@ mkIDPData StackExchange =
           , toLoginUser = IStackExchange.toLoginUser
           }
 mkIDPData Weibo =
-  let uri = createCodeUri weiboKey [("state", "weibo.test-state-123")]
+  let userUri = createCodeUri weiboKey [("state", "weibo.test-state-123")]
   in
-  IDPData { codeFlowUri = uri
+  IDPData { codeFlowUri = userUri
           , loginUser = Nothing
           , idpName = Weibo
           , oauth2Key = weiboKey
@@ -142,34 +144,38 @@ mkIDPData Weibo =
           }
 
 getUserInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
-getUserInfo idpData mgr token = do
-  case (idpName idpData) of
-    Dropbox -> getDropboxUser idpData mgr token
-    Weibo -> getWeiboUser idpData mgr token
-    StackExchange -> getStackExchangeUser idpData mgr token
-    _ -> getUserInfoInteral idpData mgr token
+getUserInfo idpD mgr token =
+  case idpName idpD of
+    Dropbox       -> getDropboxUser idpD mgr token
+    Weibo         -> getWeiboUser idpD mgr token
+    StackExchange -> getStackExchangeUser idpD mgr token
+    _             -> getUserInfoInteral idpD mgr token
 
 getUserInfoInteral :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
-getUserInfoInteral (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
-  re <- authGetJSON mgr token userApiUri
-  return (bimap showGetError toLoginUser re)
+getUserInfoInteral (IDPData _ _ _ _ userUri toUser) mgr token = do
+  re <- authGetJSON mgr token userUri
+  return (bimap showGetError toUser re)
 
 showGetError :: OAuth2Error Errors -> Text
 showGetError = TL.pack . show
 
+getDropboxUser, getWeiboUser, getStackExchangeUser :: IDPData
+  -> Manager
+  -> AccessToken
+  -> IO (Either Text LoginUser)
 -- Dropbox API request
 -- set token in header
 -- nothing for body
 -- content-type: application/json
-getDropboxUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
-  re <- parseResponseJSON <$> authPostBS3 mgr token userApiUri []
-  return (bimap showGetError toLoginUser re)
+getDropboxUser (IDPData _ _ _ _ userUri toUser) mgr token = do
+  re <- parseResponseJSON <$> authPostBS3 mgr token userUri []
+  return (bimap showGetError toUser re)
 
-getWeiboUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
-  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
-  return (bimap showGetError toLoginUser re)
+getWeiboUser (IDPData _ _ _ _ userUri toUser) mgr token = do
+  re <- parseResponseJSON <$> authGetBS' mgr token userUri
+  return (bimap showGetError toUser re)
 
-getStackExchangeUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
-  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
-  return (bimap showGetError toLoginUser re)
+getStackExchangeUser (IDPData _ _ _ _ userUri toUser) mgr token = do
+  re <- parseResponseJSON <$> authGetBS' mgr token userUri
+  return (bimap showGetError toUser re)
 
