@@ -146,6 +146,7 @@ getUserInfo idpData mgr token = do
   case (idpName idpData) of
     Dropbox -> getDropboxUser idpData mgr token
     Weibo -> getWeiboUser idpData mgr token
+    StackExchange -> getStackExchangeUser idpData mgr token
     _ -> getUserInfoInteral idpData mgr token
 
 getUserInfoInteral :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
@@ -167,3 +168,8 @@ getDropboxUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
 getWeiboUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
   re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
   return (bimap showGetError toLoginUser re)
+
+getStackExchangeUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
+  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
+  return (bimap showGetError toLoginUser re)
+

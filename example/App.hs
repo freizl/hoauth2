@@ -163,7 +163,7 @@ tryFetchAT idpData mgr code =
     Github -> getAT idpData mgr code
     Google -> getAT idpData mgr code
     Facebook -> postAT idpData mgr code
-    StackExchange -> getAT idpData mgr code
+    StackExchange -> postAT3 idpData mgr code
     Weibo -> getAT idpData mgr code
     Fitbit -> getAT idpData mgr code
     Douban -> postAT idpData mgr code
@@ -180,8 +180,19 @@ postAT idpData mgr code = do
 postAT2 idpData mgr code = do
   let okey = oauth2Key idpData
   let (url, body) = accessTokenUrl okey code
-  -- let extraBody = [("state", "fitbit")]
   doJSONPostRequest mgr (oauth2Key idpData) url (body)
+
+postAT3 idpData mgr code = do
+  let okey = oauth2Key idpData
+  let (url, body) = accessTokenUrl okey code
+  let extraBody = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
+                  , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
+                  ]
+    -- NOTE: stackexchange doesn't really comply with standard, its access token response looks like
+    -- `access_token=...&expires=1234`.
+    -- the `doFlexiblePostRequest` is able to convert it to OAuth2Token type
+    -- but the `expires` is lost given standard naming is `expires_in`
+  doFlexiblePostRequest mgr okey url (extraBody ++ body)
 
 {-
 loginRedirectH :: Config -> ActionM ()

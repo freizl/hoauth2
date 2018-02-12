@@ -10,15 +10,15 @@ import           Data.Text.Lazy                       (Text)
 import           GHC.Generics
 import Types
 
-data StackExchangeUser = StackExchangeUser { name :: Text
-                         , preferredUsername :: Text
-                         } deriving (Show, Generic)
+data StackExchangeUser = StackExchangeUser { userId :: Integer
+                                           , displayName :: Text
+                                           } deriving (Show, Generic)
 
 instance FromJSON StackExchangeUser where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 userInfoUri :: URI
-userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+userInfoUri = [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
 
 toLoginUser :: StackExchangeUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = name ouser }
+toLoginUser ouser = LoginUser { loginUserName = displayName ouser }
