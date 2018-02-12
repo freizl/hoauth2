@@ -9,25 +9,25 @@ module Api where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
-import           Data.ByteString      (ByteString)
-import qualified Data.Text.Encoding   as TE
-import           Data.Text.Lazy       (Text)
-import qualified Data.Text.Lazy       as TL
+import           Data.ByteString                   (ByteString)
+import qualified Data.Text.Encoding                as TE
+import           Data.Text.Lazy                    (Text)
+import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
-import           URI.ByteString
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           URI.ByteString
 
-import qualified IDP.Douban           as IDouban
-import qualified IDP.Dropbox          as IDropbox
-import qualified IDP.Facebook         as IFacebook
-import qualified IDP.Fitbit           as IFitbit
-import qualified IDP.Github           as IGithub
-import qualified IDP.Google           as IGoogle
-import qualified IDP.Okta             as IOkta
-import qualified IDP.StackExchange    as IStackExchange
-import qualified IDP.Weibo            as IWeibo
+import qualified IDP.Douban                        as IDouban
+import qualified IDP.Dropbox                       as IDropbox
+import qualified IDP.Facebook                      as IFacebook
+import qualified IDP.Fitbit                        as IFitbit
+import qualified IDP.Github                        as IGithub
+import qualified IDP.Google                        as IGoogle
+import qualified IDP.Okta                          as IOkta
+import qualified IDP.StackExchange                 as IStackExchange
+import qualified IDP.Weibo                         as IWeibo
 import           Keys
 import           Types
 
@@ -194,6 +194,10 @@ getStackExchangeUser (IDPData _ _ _ _ _ userUri toUser) mgr token = do
 
 -- * Fetch Access Token
 --
+tryFetchAT :: IDPData
+  -> Manager
+  -> ExchangeToken
+  -> IO (OAuth2Result TR.Errors OAuth2Token)
 tryFetchAT (IDPData _ _ _ okey fetchAccessTokenFn _ _) mgr code = do
   fetchAccessTokenFn mgr okey code
 
@@ -201,7 +205,7 @@ getAT, postAT, postAT2 :: Manager
   -> OAuth2
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAT mgr okey = fetchAccessToken mgr okey
+getAT = fetchAccessToken
 postAT = postATX doJSONPostRequest
 postAT2 = postATX doFlexiblePostRequest
 

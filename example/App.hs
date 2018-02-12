@@ -7,21 +7,18 @@ module App (app, waiApp) where
 
 import           Control.Monad
 import           Control.Monad.Error.Class
-import           Control.Monad.IO.Class            (liftIO)
-import qualified Data.Text.Encoding                as TE
-import           Data.Text.Lazy                    (Text)
-import qualified Data.Text.Lazy                    as TL
+import           Control.Monad.IO.Class        (liftIO)
+import           Data.Text.Lazy                (Text)
+import qualified Data.Text.Lazy                as TL
 import           Network.HTTP.Conduit
 import           Network.HTTP.Types
-import           Network.Wai.Handler.Warp          (run)
+import           Network.Wai.Handler.Warp      (run)
 import           Prelude
-import           URI.ByteString
 
 
 import           Data.Maybe
 import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import qualified Network.Wai                       as WAI
+import qualified Network.Wai                   as WAI
 import           Network.Wai.Middleware.Static
 import           Web.Scotty
 import           Web.Scotty.Internal.Types
