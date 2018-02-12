@@ -137,7 +137,7 @@ fetchTokenAndUser code store idpInput = do
 
 -- Fetch Access Token
 
-tryFetchAT, getAT, postAT, postAT2 :: IDPData
+tryFetchAT, getAT, postATX, postAT, postAT2 :: IDPData
   -> Manager
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
@@ -148,22 +148,16 @@ tryFetchAT idpD mgr code =
     _             -> getAT idpD mgr code
 
 getAT idpD mgr = fetchAccessToken mgr (oauth2Key idpD)
-postAT idpD mgr code = do
-  let okey = oauth2Key idpD
-  let (url, body1) = accessTokenUrl okey code
-  let extraBody = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
-                  , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
-                  ]
-  doJSONPostRequest mgr (oauth2Key idpD) url (extraBody ++ body1)
 
-postAT2 idpD mgr code = do
+postATX postFn idpD mgr code = do
   let okey = oauth2Key idpD
   let (url, body1) = accessTokenUrl okey code
-  let extraBody = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
+  let extraBody = authClientBody okey
+  postFn mgr okey url (extraBody ++ body1)
+
+postAT idpD mgr code = postATX doJSONPostRequest
+postAT2 idpD mgr code = postATX doFlexiblePostRequest
+
+authClientBody okey = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
                   , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
                   ]
-    -- NOTE: stackexchange doesn't really comply with standard, its access token response looks like
-    -- `access_token=...&expires=1234`.
-    -- the `doFlexiblePostRequest` is able to convert it to OAuth2Token type
-    -- but the `expires` is lost given standard naming is `expires_in`
-  doFlexiblePostRequest mgr okey url (extraBody ++ body1)

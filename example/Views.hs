@@ -35,4 +35,5 @@ tplH path xs = do
   html s
 
 
+overviewTpl :: [IDPData] -> ActionM ()
 overviewTpl = tplH "index"

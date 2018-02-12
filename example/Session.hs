@@ -4,8 +4,6 @@ module Session where
 
 import           Control.Concurrent.MVar
 import qualified Data.HashMap.Strict     as Map
-import           Data.Maybe
-import           Data.Text.Lazy          (Text)
 
 import           Types
 

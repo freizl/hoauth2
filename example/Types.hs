@@ -7,19 +7,15 @@
 module Types where
 
 import           Data.Aeson
-import           Data.Aeson.Types
-import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Maybe
 import           Data.Text.Lazy
 import qualified Data.Text.Lazy       as TL
 import           GHC.Generics
-import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import           Text.Mustache
 import qualified Text.Mustache        as M
 import           URI.ByteString
-import           URI.ByteString.QQ
 
 data IDP =
     Douban

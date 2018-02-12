@@ -1,15 +1,11 @@
 module Utils where
 
-import qualified Data.Aeson                 as Aeson
-import           Data.ByteString            (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as BS
-import qualified Data.Text.Encoding         as T
-import           Data.Text.Lazy             (Text)
-import qualified Data.Text.Lazy             as TL
+import qualified Data.Aeson                as Aeson
+import           Data.ByteString           (ByteString)
+import qualified Data.Text.Encoding        as T
+import           Data.Text.Lazy            (Text)
+import qualified Data.Text.Lazy            as TL
 import           Web.Scotty.Internal.Types
-
-import           Types
-
 
 tlToBS :: TL.Text -> ByteString
 tlToBS = T.encodeUtf8 . TL.toStrict
