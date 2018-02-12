@@ -65,16 +65,12 @@ waiApp = do
   cache <- initKeyCache
   idps cache
   scottyApp $ do
-    middleware $ staticPolicy (mapAssetsDir >-> addBase "dist")
+    middleware $ staticPolicy (addBase "example/assets")
     defaultHandler globalErrorHandler
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
 
-
-mapAssetsDir :: Policy
-mapAssetsDir = policy removeAssetsPrefix
-  where removeAssetsPrefix s = stripPrefix "assets/" s CA.<|> Just s
 
 --------------------------------------------------
 -- * Handlers
