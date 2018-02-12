@@ -1,7 +1,9 @@
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings   #-}
 
 module IDP.Fitbit where
+import           Control.Monad            (mzero)
 import           Data.Aeson
 import           Data.Aeson.Types
 import           URI.ByteString
@@ -10,15 +12,23 @@ import           Data.Text.Lazy                       (Text)
 import           GHC.Generics
 import Types
 
-data FitbitUser = FitbitUser { name :: Text
-                         , preferredUsername :: Text
-                         } deriving (Show, Generic)
+data FitbitUser = FitbitUser
+    { userId   :: Text
+    , userName :: Text
+    , userAge  :: Int
+    } deriving (Show, Eq)
 
 instance FromJSON FitbitUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+    parseJSON (Object o) =
+        FitbitUser
+        <$> ((o .: "user") >>= (.: "encodedId"))
+        <*> ((o .: "user") >>= (.: "fullName"))
+        <*> ((o .: "user") >>= (.: "age"))
+    parseJSON _ = mzero
+
 
 userInfoUri :: URI
-userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
 toLoginUser :: FitbitUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = name ouser }
+toLoginUser ouser = LoginUser { loginUserName = userName ouser }

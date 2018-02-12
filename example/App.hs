@@ -147,6 +147,7 @@ fetchTokenAndUser code store idpInput = do
     mgr <- newManager tlsManagerSettings
     -- token <- fetchAccessToken mgr (oauth2Key idpData) (ExchangeToken $ TL.toStrict code)
     token <- tryFetchAT idpData mgr (ExchangeToken $ TL.toStrict code)
+    print token
     case token of
       Right at -> getUserInfo idpData mgr (accessToken at)
       Left e -> return (Left $ TL.pack $ show e)
@@ -162,8 +163,13 @@ fetchTokenAndUser code store idpInput = do
 tryFetchAT idpData mgr code =
   case idpName idpData of
     Okta -> getAT idpData mgr code
+    Dropbox -> getAT idpData mgr code
     Github -> getAT idpData mgr code
     Google -> getAT idpData mgr code
+    Facebook -> postAT idpData mgr code
+    StackExchange -> getAT idpData mgr code
+    Weibo -> getAT idpData mgr code
+    Fitbit -> getAT idpData mgr code
     Douban -> postAT idpData mgr code
 
 getAT idpData mgr code = fetchAccessToken mgr (oauth2Key idpData) code
@@ -173,7 +179,13 @@ postAT idpData mgr code = do
   let extraBody = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
                   , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
                   ]
-  doJSONPostRequest mgr doubanKey url (extraBody ++ body)
+  doJSONPostRequest mgr (oauth2Key idpData) url (extraBody ++ body)
+
+postAT2 idpData mgr code = do
+  let okey = oauth2Key idpData
+  let (url, body) = accessTokenUrl okey code
+  -- let extraBody = [("state", "fitbit")]
+  doJSONPostRequest mgr (oauth2Key idpData) url (body)
 
 {-
 loginRedirectH :: Config -> ActionM ()

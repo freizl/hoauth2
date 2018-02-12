@@ -42,7 +42,6 @@ createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams params
   $ authorizationUrl key
 
--- TODO: make type family
 mkIDPData :: IDP -> IDPData
 mkIDPData Okta =
   let uri = createCodeUri oktaKey [("scope", "openid profile"), ("state", "okta.test-state-123")]
@@ -70,7 +69,7 @@ mkIDPData Dropbox =
   IDPData { codeFlowUri = uri
           , loginUser = Nothing
           , idpName = Dropbox
-          , oauth2Key = oktaKey
+          , oauth2Key = dropboxKey
           , userApiUri = IDropbox.userInfoUri
           , toLoginUser = IDropbox.toLoginUser
           }
@@ -82,7 +81,7 @@ mkIDPData Facebook =
   IDPData { codeFlowUri = uri
           , loginUser = Nothing
           , idpName = Facebook
-          , oauth2Key = oktaKey
+          , oauth2Key = facebookKey
           , userApiUri = IFacebook.userInfoUri
           , toLoginUser = IFacebook.toLoginUser
           }
@@ -94,7 +93,7 @@ mkIDPData Fitbit =
   IDPData { codeFlowUri = uri
           , loginUser = Nothing
           , idpName = Fitbit
-          , oauth2Key = oktaKey
+          , oauth2Key = fitbitKey
           , userApiUri = IFitbit.userInfoUri
           , toLoginUser = IFitbit.toLoginUser
           }
@@ -105,19 +104,19 @@ mkIDPData Github =
   IDPData { codeFlowUri = uri
           , loginUser = Nothing
           , idpName = Github
-          , oauth2Key = oktaKey
+          , oauth2Key = githubKey
           , userApiUri = IGithub.userInfoUri
           , toLoginUser = IGithub.toLoginUser
           }
 mkIDPData Google =
   let uri = createCodeUri googleKey [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
-                    , ("state", "google.test-state-123")
-                    ]
+                                    , ("state", "google.test-state-123")
+                                    ]
   in
   IDPData { codeFlowUri = uri
           , loginUser = Nothing
           , idpName = Google
-          , oauth2Key = oktaKey
+          , oauth2Key = googleKey
           , userApiUri = IGoogle.userInfoUri
           , toLoginUser = IGoogle.toLoginUser
           }
@@ -137,31 +136,17 @@ mkIDPData Weibo =
   IDPData { codeFlowUri = uri
           , loginUser = Nothing
           , idpName = Weibo
-          , oauth2Key = oktaKey
+          , oauth2Key = weiboKey
           , userApiUri = IWeibo.userInfoUri
           , toLoginUser = IWeibo.toLoginUser
           }
-{-
-data UserApi = forall a . FromJSON a
-  => UserApi { userApiUri :: URI
-             , toLoginUser :: a -> LoginUser
-             }
-
-getUserApi :: IDP -> UserApi
-getUserApi Okta = UserApi { userApiUri = IOkta.userInfoUri
-                          , toLoginUser = IOkta.toLoginUser
-                          }
-getUserApi Github = UserApi { userApiUri = IGithub.userInfoUri
-                            , toLoginUser = IGithub.toLoginUser
-                            }
-getUserApi Google = UserApi { userApiUri = IGoogle.userInfoUri
-                            , toLoginUser = IGoogle.toLoginUser
-                            }
--}
 
 getUserInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
 getUserInfo idpData mgr token = do
-  getUserInfoInteral idpData mgr token
+  case (idpName idpData) of
+    Dropbox -> getDropboxUser idpData mgr token
+    Weibo -> getWeiboUser idpData mgr token
+    _ -> getUserInfoInteral idpData mgr token
 
 getUserInfoInteral :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
 getUserInfoInteral (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
@@ -171,3 +156,14 @@ getUserInfoInteral (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
 showGetError :: OAuth2Error Errors -> Text
 showGetError = TL.pack . show
 
+-- Dropbox API request
+-- set token in header
+-- nothing for body
+-- content-type: application/json
+getDropboxUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
+  re <- parseResponseJSON <$> authPostBS3 mgr token userApiUri []
+  return (bimap showGetError toLoginUser re)
+
+getWeiboUser (IDPData _ _ _ _ userApiUri toLoginUser) mgr token = do
+  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
+  return (bimap showGetError toLoginUser re)

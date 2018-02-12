@@ -10,15 +10,19 @@ import           Data.Text.Lazy                       (Text)
 import           GHC.Generics
 import Types
 
-data DropboxUser = DropboxUser { name :: Text
-                         , preferredUsername :: Text
-                         } deriving (Show, Generic)
+data DropboxName = DropboxName { displayName :: Text }
+                 deriving (Show, Generic)
+data DropboxUser = DropboxUser { email :: Text
+                               , name :: DropboxName
+                               } deriving (Show, Generic)
 
+instance FromJSON DropboxName where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 instance FromJSON DropboxUser where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 userInfoUri :: URI
-userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+userInfoUri = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
 
 toLoginUser :: DropboxUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = name ouser }
+toLoginUser ouser = LoginUser { loginUserName = (displayName $ name ouser) }

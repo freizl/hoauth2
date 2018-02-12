@@ -7,18 +7,26 @@ import           Data.Aeson.Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Data.Text.Lazy                       (Text)
+import qualified Data.Text.Lazy as TL
 import           GHC.Generics
 import Types
 
-data WeiboUser = WeiboUser { name :: Text
-                         , preferredUsername :: Text
-                         } deriving (Show, Generic)
+-- TODO: http://open.weibo.com/wiki/2/users/show
+data WeiboUser = WeiboUser { id :: Integer
+                           , name :: Text
+                           , screenName :: Text
+                           } deriving (Show, Generic)
 
+data WeiboUID = WeiboUID { uid :: Integer }
+  deriving (Show, Generic)
+
+instance FromJSON WeiboUID where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 instance FromJSON WeiboUser where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 userInfoUri :: URI
-userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+userInfoUri = [uri|https://api.weibo.com/2/account/get_uid.json|]
 
-toLoginUser :: WeiboUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = name ouser }
+toLoginUser :: WeiboUID -> LoginUser
+toLoginUser ouser = LoginUser { loginUserName = (TL.pack $ show $ uid ouser) }

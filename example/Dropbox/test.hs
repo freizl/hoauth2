@@ -34,12 +34,12 @@ main = do
     token <- fetchAccessToken mgr dropboxKey (ExchangeToken (T.pack code))
     print token
     case token of
-      Right at -> getSpaceUsage mgr (accessToken at) >>= print
+      Right at -> getAccount mgr (accessToken at) >>= print
       Left _   -> putStrLn "no access token found yet"
 
-getSpaceUsage :: Manager -> AccessToken -> IO (OAuth2Result Errors BSL.ByteString)
-getSpaceUsage mgr token = do
-  req <- parseRequest $ BS.unpack "https://api.dropboxapi.com/2/users/get_space_usage"
+getAccount :: Manager -> AccessToken -> IO (OAuth2Result Errors BSL.ByteString)
+getAccount mgr token = do
+  req <- parseRequest $ BS.unpack "https://api.dropboxapi.com/2/users/get_current_account"
   authRequest req upReq mgr
   where upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
         upBody req = req {requestBody = "null" }
