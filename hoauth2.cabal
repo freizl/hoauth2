@@ -35,12 +35,12 @@ tested-with:         GHC <= 8.0.2
 
 Extra-source-files: README.md
                     example/Keys.hs.sample
-                    example/idp/Google.hs
-                    example/idp/Weibo.hs
-                    example/idp/Github.hs
-                    example/idp/Facebook.hs
-                    example/idp/Fitbit.hs
-                    example/idp/Douban.hs
+                    example/IDP/Google.hs
+                    example/IDP/Weibo.hs
+                    example/IDP/Github.hs
+                    example/IDP/Facebook.hs
+                    example/IDP/Fitbit.hs
+                    example/IDP/Douban.hs
                     example/Api.hs
                     example/App.hs
                     example/Session.hs

@@ -51,7 +51,8 @@ ci-lint: create-keys
 	$(CBD) install hlint
 	$(CBD) exec hlint -- src example
 
-ci-nightly: create-keys nightly
+ci-nightly: create-keys 
+	$(CBD) --stack-yaml stack-nightly.yaml +RTS -N2 -RTS build --no-terminal --skip-ghc-check --fast --test
 
 ####################
 ### Tests
