@@ -64,7 +64,7 @@ mkIDPData Douban =
           , loginUser = Nothing
           , idpName = Douban
           , oauth2Key = doubanKey
-          , toFetchAccessToken = getAT
+          , toFetchAccessToken = postAT
           , userApiUri = IDouban.userInfoUri
           , toLoginUser = IDouban.toLoginUser
           }

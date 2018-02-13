@@ -43,7 +43,7 @@ idpFromText ift = case TL.unpack $ TL.toLower ift of
   "facebook"      -> Just Facebook
   "fitbit"        -> Just Fitbit
   "weibo"         -> Just Weibo
-  "stackexchaneg" -> Just StackExchange
+  "stackexchange" -> Just StackExchange
   _               -> Nothing
 
 newtype LoginUser =

@@ -122,7 +122,7 @@ fetchTokenAndUser code store idpInput = do
   result <- liftIO $ do
     mgr <- newManager tlsManagerSettings
     token <- tryFetchAT idpD mgr (ExchangeToken $ TL.toStrict code)
-    --print token
+    print token
     case token of
       -- TODO: close mgr?
       Right at -> getUserInfo idpD mgr (accessToken at)

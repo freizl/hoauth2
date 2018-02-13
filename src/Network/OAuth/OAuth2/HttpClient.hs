@@ -124,6 +124,7 @@ authGetBS' :: FromJSON err => Manager                -- ^ HTTP connection manage
              -> IO (OAuth2Result err BSL.ByteString) -- ^ Response as ByteString
 authGetBS' manager token url = do
   req <- uriToRequest (url `appendAccessToken` token)
+  print $ queryString req
   authRequest req upReq manager
   where upReq = updateRequestHeaders Nothing . setMethod HT.GET
 
