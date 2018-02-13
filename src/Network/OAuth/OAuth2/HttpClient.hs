@@ -18,6 +18,7 @@ module Network.OAuth.OAuth2.HttpClient (
   authPostJSON,
   authPostBS,
   authPostBS',
+  authPostBS3,
   authRequest,
 -- * Utilities
   handleResponse,
@@ -159,6 +160,19 @@ authPostBS' manager token url pb = do
   authRequest req upReq manager
   where upBody = urlEncodedBody (pb ++ accessTokenToParam token)
         upHeaders = updateRequestHeaders Nothing . setMethod HT.POST
+        upReq = upHeaders . upBody
+
+-- | Conduct POST request with access token in the header and null in body
+authPostBS3 :: FromJSON err => Manager               -- ^ HTTP connection manager.
+             -> AccessToken
+             -> URI
+             -> PostBody
+             -> IO (OAuth2Result err BSL.ByteString) -- ^ Response as ByteString
+authPostBS3 manager token url pb = do
+  req <- uriToRequest url
+  authRequest req upReq manager
+  where upBody req = req { requestBody = "null" }
+        upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
         upReq = upHeaders . upBody
 
 -- |Send an HTTP request including the Authorization header with the specified

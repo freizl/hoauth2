@@ -1,0 +1,10 @@
+body {
+    padding: 10px 50px;
+}
+
+.login-with {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid grey;
+    border-radius: 5px;
+}
