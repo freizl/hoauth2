@@ -35,12 +35,22 @@ tested-with:         GHC <= 8.0.2
 
 Extra-source-files: README.md
                     example/Keys.hs.sample
-                    example/Google/test.hs
-                    example/Weibo/test.hs
-                    example/Github/test.hs
-                    example/Facebook/test.hs
-                    example/Fitbit/test.hs
-                    example/Douban/test.hs
+                    example/idp/Google.hs
+                    example/idp/Weibo.hs
+                    example/idp/Github.hs
+                    example/idp/Facebook.hs
+                    example/idp/Fitbit.hs
+                    example/idp/Douban.hs
+                    example/Api.hs
+                    example/App.hs
+                    example/Session.hs
+                    example/Types.hs
+                    example/Utils.hs
+                    example/Views.hs
+                    example/main.hs
+                    example/README.md
+                    example/templates/index.mustache
+                    example/assets/main.css
 
 Cabal-version:       >=1.10
 
@@ -72,32 +82,6 @@ Library
                  uri-bytestring-aeson >= 0.1   && < 0.2,
                  microlens            >= 0.4.0 && < 0.5,
                  exceptions           >= 0.8.3 && < 0.9
-
-  if impl(ghc >= 6.12.0)
-      ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-                   -fno-warn-unused-do-bind
-  else
-      ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-
-
-Executable test-stackexchange
-  if flag(test)
-    Buildable: True
-  else
-    Buildable: False
-
-  main-is:             StackExchange/test.hs
-  other-modules:       Keys
-  hs-source-dirs:      example
-  default-language:    Haskell2010
-  build-depends:       base              >= 4.5    && < 5,
-                       http-types        >= 0.11    && < 0.13,
-                       http-conduit      >= 2.1    && < 2.4,
-                       text              >= 0.11   && < 1.3,
-                       bytestring        >= 0.9    && < 0.11,
-                       uri-bytestring    >= 0.2.3.1 && < 0.4,
-                       aeson             >= 0.11   && < 1.3,
-                       hoauth2
 
   if impl(ghc >= 6.12.0)
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
@@ -151,7 +135,6 @@ Executable demo-server
                        parsec,
                        hashable,
                        hoauth2
-
 
   if impl(ghc >= 6.12.0)
       ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
