@@ -198,8 +198,7 @@ tryFetchAT :: IDPData
   -> Manager
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
-tryFetchAT (IDPData _ _ _ okey fetchAccessTokenFn _ _) mgr code = do
-  fetchAccessTokenFn mgr okey code
+tryFetchAT (IDPData _ _ _ okey fetchAccessTokenFn _ _) mgr = fetchAccessTokenFn mgr okey
 
 getAT, postAT, postAT2 :: Manager
   -> OAuth2

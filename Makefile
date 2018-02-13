@@ -47,7 +47,7 @@ dist: build
 ci-build: create-keys
 	$(CBD) +RTS -N2 -RTS build --no-terminal --skip-ghc-check --fast --test
 
-ci-lint:
+ci-lint: create-keys
 	$(CBD) install hlint
 	$(CBD) exec hlint -- src example
 
