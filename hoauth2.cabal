@@ -41,6 +41,7 @@ Extra-source-files: README.md
                     example/IDP/Facebook.hs
                     example/IDP/Fitbit.hs
                     example/IDP/Douban.hs
+                    example/IDP/Linkedin.hs
                     example/Api.hs
                     example/App.hs
                     example/Session.hs
@@ -107,6 +108,7 @@ Executable demo-server
                        IDP.Okta
                        IDP.StackExchange
                        IDP.Weibo
+                       IDP.Linkedin
                        Keys
                        Session
                        Types

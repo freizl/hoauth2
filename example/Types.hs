@@ -29,6 +29,7 @@ data IDP =
   | Okta
   | StackExchange
   | Weibo
+  | Linkedin
   deriving (Show, Eq, Generic)
 
 instance Hashable IDP
@@ -44,6 +45,7 @@ idpFromText ift = case TL.unpack $ TL.toLower ift of
   "fitbit"        -> Just Fitbit
   "weibo"         -> Just Weibo
   "stackexchange" -> Just StackExchange
+  "linkedin"      -> Just Linkedin
   _               -> Nothing
 
 newtype LoginUser =

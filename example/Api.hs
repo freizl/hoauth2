@@ -27,6 +27,7 @@ import qualified IDP.Facebook                      as IFacebook
 import qualified IDP.Fitbit                        as IFitbit
 import qualified IDP.Github                        as IGithub
 import qualified IDP.Google                        as IGoogle
+import qualified IDP.Linkedin                      as ILinkedin
 import qualified IDP.Okta                          as IOkta
 import qualified IDP.StackExchange                 as IStackExchange
 import qualified IDP.Weibo                         as IWeibo
@@ -155,13 +156,25 @@ mkIDPData Weibo =
           , toLoginUser = IWeibo.toLoginUser
           }
 
+mkIDPData Linkedin =
+  let userUri = createCodeUri linkedinKey [("state", "linkedin.test-state-123")]
+  in
+  IDPData { codeFlowUri = userUri
+          , loginUser = Nothing
+          , idpName = Linkedin
+          , oauth2Key = linkedinKey
+          , toFetchAccessToken = postAT
+          , userApiUri = ILinkedin.userInfoUri
+          , toLoginUser = ILinkedin.toLoginUser
+          }
+
 -- * Fetch UserInfo
 --
 getUserInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
 getUserInfo idpD mgr token =
   case idpName idpD of
-    Dropbox       -> getDropboxUser idpD mgr token
-    Weibo         -> getWeiboUser idpD mgr token
+    Dropbox       -> getUserWithAccessTokenInHeaderOnly idpD mgr token
+    Weibo         -> getUserWithAccessTokenAsParam idpD mgr token
     StackExchange -> getStackExchangeUser idpD mgr token
     _             -> getUserInfoInteral idpD mgr token
 
@@ -173,22 +186,30 @@ getUserInfoInteral IDPData {..} mgr token = do
 showGetError :: OAuth2Error Errors -> Text
 showGetError = TL.pack . show
 
-getDropboxUser, getWeiboUser, getStackExchangeUser :: IDPData
+getUserWithAccessTokenInHeaderOnly, getUserWithAccessTokenAsParam, getStackExchangeUser :: IDPData
   -> Manager
   -> AccessToken
   -> IO (Either Text LoginUser)
--- Dropbox API request
--- set token in header
+
+-- fetch user info via
+-- POST
+-- set token in header only
 -- nothing for body
--- content-type: application/json
-getDropboxUser IDPData {..} mgr token = do
+getUserWithAccessTokenInHeaderOnly IDPData {..} mgr token = do
   re <- parseResponseJSON <$> authPostBS3 mgr token userApiUri
   return (bimap showGetError toLoginUser re)
 
-getWeiboUser IDPData {..} mgr token = do
+-- fetch user info via
+-- GET
+-- access token in query param only
+getUserWithAccessTokenAsParam IDPData {..} mgr token = do
   re <- parseResponseJSON <$> authGetBS2 mgr token userApiUri
   return (bimap showGetError toLoginUser re)
 
+-- fetch user info via
+-- GET
+-- access token in query param only
+-- append extra application key
 getStackExchangeUser IDPData {..} mgr token = do
   re <- parseResponseJSON
         <$> authGetBS2 mgr token
