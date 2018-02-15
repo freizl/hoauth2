@@ -166,9 +166,8 @@ authPostBS' manager token url pb = do
 authPostBS3 :: FromJSON err => Manager               -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
-             -> PostBody
              -> IO (OAuth2Result err BSL.ByteString) -- ^ Response as ByteString
-authPostBS3 manager token url pb = do
+authPostBS3 manager token url = do
   req <- uriToRequest url
   authRequest req upReq manager
   where upBody req = req { requestBody = "null" }
