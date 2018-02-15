@@ -139,7 +139,7 @@ mkIDPData StackExchange =
           , loginUser = Nothing
           , idpName = StackExchange
           , oauth2Key = stackexchangeKey
-          , toFetchAccessToken = postAT2
+          , toFetchAccessToken = postAT
           , userApiUri = IStackExchange.userInfoUri
           , toLoginUser = IStackExchange.toLoginUser
           }
@@ -207,13 +207,12 @@ tryFetchAT :: IDPData
   -> IO (OAuth2Result TR.Errors OAuth2Token)
 tryFetchAT IDPData {..} mgr = toFetchAccessToken mgr oauth2Key
 
-getAT, postAT, postAT2 :: Manager
+getAT, postAT:: Manager
   -> OAuth2
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
 getAT = fetchAccessToken
 postAT = postATX doJSONPostRequest
-postAT2 = postATX doFlexiblePostRequest
 
 postATX :: (Manager -> OAuth2 -> URI -> PostBody -> IO (OAuth2Result TR.Errors OAuth2Token))
         -> Manager
