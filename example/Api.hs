@@ -15,11 +15,11 @@ import qualified Data.Text.Encoding                as TE
 import           Data.Text.Lazy                    (Text)
 import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
+import           Lens.Micro
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           URI.ByteString
-import           Lens.Micro
 
 import qualified IDP.Douban                        as IDouban
 import qualified IDP.Dropbox                       as IDropbox
