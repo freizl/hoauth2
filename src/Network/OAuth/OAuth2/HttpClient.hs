@@ -14,10 +14,10 @@ module Network.OAuth.OAuth2.HttpClient (
 -- * AUTH requests
   authGetJSON,
   authGetBS,
-  authGetBS',
+  authGetBS2,
   authPostJSON,
   authPostBS,
-  authPostBS',
+  authPostBS2,
   authPostBS3,
   authRequest,
 -- * Utilities
@@ -118,12 +118,13 @@ authGetBS manager token url = do
   where upReq = updateRequestHeaders (Just token) . setMethod HT.GET
 
 -- | same to 'authGetBS' but set access token to query parameter rather than header
-authGetBS' :: FromJSON err => Manager                -- ^ HTTP connection manager.
+authGetBS2 :: FromJSON err => Manager                -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
              -> IO (OAuth2Result err BSL.ByteString) -- ^ Response as ByteString
-authGetBS' manager token url = do
+authGetBS2 manager token url = do
   req <- uriToRequest (url `appendAccessToken` token)
+  -- print $ queryString req
   authRequest req upReq manager
   where upReq = updateRequestHeaders Nothing . setMethod HT.GET
 
@@ -150,12 +151,12 @@ authPostBS manager token url pb = do
         upReq = upHeaders . upBody
 
 -- | Conduct POST request with access token in the request body rather header
-authPostBS' :: FromJSON err => Manager               -- ^ HTTP connection manager.
+authPostBS2 :: FromJSON err => Manager               -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
              -> PostBody
              -> IO (OAuth2Result err BSL.ByteString) -- ^ Response as ByteString
-authPostBS' manager token url pb = do
+authPostBS2 manager token url pb = do
   req <- uriToRequest url
   authRequest req upReq manager
   where upBody = urlEncodedBody (pb ++ accessTokenToParam token)
