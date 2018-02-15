@@ -3,6 +3,7 @@
 
 module Keys where
 
+import           Data.ByteString      (ByteString)
 import           Network.OAuth.OAuth2
 import           URI.ByteString.QQ
 
