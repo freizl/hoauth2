@@ -18,6 +18,9 @@ build:
 watch:
 	$(CBD) build --test --file-watch
 
+watch-demo:
+	$(CBD) build hoauth2:demo-server --file-watch
+
 rebuild: clean build
 
 nightly: clean
@@ -58,32 +61,5 @@ ci-nightly: create-keys
 ### Tests
 ####################
 
-test-weibo:
-	$(CBD) exec test-weibo
-
-test-douban:
-	$(CBD) exec test-douban
-
-test-google:
-	$(CBD) exec test-google
-
-test-google-offline:
-	$(CBD) exec test-google offline
-
-test-facebook:
-	$(CBD) exec test-facebook
-
-test-github:
-	$(CBD) exec test-github
-
-test-fitbit:
-	$(CBD) exec test-fitbit
-
-test-stackexchange:
-	$(CBD) exec test-stackexchange
-
-test-dropbox:
-	$(CBD) exec test-dropbox
-
-test-okta:
-	$(CBD) exec test-okta
+demo:
+	$(CBD) exec demo-server

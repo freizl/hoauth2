@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE RecordWildCards           #-}
 
 module Api where
 
@@ -164,9 +165,9 @@ getUserInfo idpD mgr token =
     _             -> getUserInfoInteral idpD mgr token
 
 getUserInfoInteral :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
-getUserInfoInteral (IDPData _ _ _ _ _ userUri toUser) mgr token = do
-  re <- authGetJSON mgr token userUri
-  return (bimap showGetError toUser re)
+getUserInfoInteral IDPData {..} mgr token = do
+  re <- authGetJSON mgr token userApiUri
+  return (bimap showGetError toLoginUser re)
 
 showGetError :: OAuth2Error Errors -> Text
 showGetError = TL.pack . show
@@ -179,17 +180,17 @@ getDropboxUser, getWeiboUser, getStackExchangeUser :: IDPData
 -- set token in header
 -- nothing for body
 -- content-type: application/json
-getDropboxUser (IDPData _ _ _ _ _ userUri toUser) mgr token = do
-  re <- parseResponseJSON <$> authPostBS3 mgr token userUri []
-  return (bimap showGetError toUser re)
+getDropboxUser IDPData {..} mgr token = do
+  re <- parseResponseJSON <$> authPostBS3 mgr token userApiUri
+  return (bimap showGetError toLoginUser re)
 
-getWeiboUser (IDPData _ _ _ _ _ userUri toUser) mgr token = do
-  re <- parseResponseJSON <$> authGetBS' mgr token userUri
-  return (bimap showGetError toUser re)
+getWeiboUser IDPData {..} mgr token = do
+  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
+  return (bimap showGetError toLoginUser re)
 
-getStackExchangeUser (IDPData _ _ _ _ _ userUri toUser) mgr token = do
-  re <- parseResponseJSON <$> authGetBS' mgr token userUri
-  return (bimap showGetError toUser re)
+getStackExchangeUser IDPData {..} mgr token = do
+  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
+  return (bimap showGetError toLoginUser re)
 
 
 -- * Fetch Access Token
@@ -198,7 +199,7 @@ tryFetchAT :: IDPData
   -> Manager
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
-tryFetchAT (IDPData _ _ _ okey fetchAccessTokenFn _ _) mgr = fetchAccessTokenFn mgr okey
+tryFetchAT IDPData {..} mgr = toFetchAccessToken mgr oauth2Key
 
 getAT, postAT, postAT2 :: Manager
   -> OAuth2
@@ -218,6 +219,7 @@ postATX postFn mgr okey code = do
   let extraBody = authClientBody okey
   postFn mgr okey url (extraBody ++ body1)
 
+authClientBody :: OAuth2 -> [(ByteString, ByteString)]
 authClientBody okey = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
                       , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
                       ]
