@@ -19,6 +19,7 @@ import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           URI.ByteString
+import           Lens.Micro
 
 import qualified IDP.Douban                        as IDouban
 import qualified IDP.Dropbox                       as IDropbox
@@ -138,7 +139,7 @@ mkIDPData StackExchange =
           , loginUser = Nothing
           , idpName = StackExchange
           , oauth2Key = stackexchangeKey
-          , toFetchAccessToken = postAT2
+          , toFetchAccessToken = postAT
           , userApiUri = IStackExchange.userInfoUri
           , toLoginUser = IStackExchange.toLoginUser
           }
@@ -185,13 +186,18 @@ getDropboxUser IDPData {..} mgr token = do
   return (bimap showGetError toLoginUser re)
 
 getWeiboUser IDPData {..} mgr token = do
-  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
+  re <- parseResponseJSON <$> authGetBS2 mgr token userApiUri
   return (bimap showGetError toLoginUser re)
 
 getStackExchangeUser IDPData {..} mgr token = do
-  re <- parseResponseJSON <$> authGetBS' mgr token userApiUri
+  re <- parseResponseJSON
+        <$> authGetBS2 mgr token
+            (userApiUri `appendStackExchangeAppKey` stackexchangeAppKey)
   return (bimap showGetError toLoginUser re)
 
+appendStackExchangeAppKey :: URI -> ByteString -> URI
+appendStackExchangeAppKey uri k =
+  over (queryL . queryPairsL) (\query -> query ++ [("key", k)]) uri
 
 -- * Fetch Access Token
 --
@@ -201,13 +207,12 @@ tryFetchAT :: IDPData
   -> IO (OAuth2Result TR.Errors OAuth2Token)
 tryFetchAT IDPData {..} mgr = toFetchAccessToken mgr oauth2Key
 
-getAT, postAT, postAT2 :: Manager
+getAT, postAT:: Manager
   -> OAuth2
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
 getAT = fetchAccessToken
 postAT = postATX doJSONPostRequest
-postAT2 = postATX doFlexiblePostRequest
 
 postATX :: (Manager -> OAuth2 -> URI -> PostBody -> IO (OAuth2Result TR.Errors OAuth2Token))
         -> Manager

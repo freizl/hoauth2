@@ -56,6 +56,11 @@ fitbitKey = OAuth2 { oauthClientId = "xxxxxx"
                    , oauthAccessTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
                    }
 
+-- fix key from your application edit page
+-- https://stackapps.com/apps/oauth
+stackexchangeAppKey :: ByteString
+stackexchangeAppKey = "xxxxxx"
+
 stackexchangeKey :: OAuth2
 stackexchangeKey = OAuth2 { oauthClientId = "xx"
                           , oauthClientSecret = "xxxxxxxxxxxxxxx"
