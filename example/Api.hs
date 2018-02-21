@@ -27,7 +27,6 @@ import qualified IDP.Facebook                      as IFacebook
 import qualified IDP.Fitbit                        as IFitbit
 import qualified IDP.Github                        as IGithub
 import qualified IDP.Google                        as IGoogle
-import qualified IDP.Linkedin                      as ILinkedin
 import qualified IDP.Okta                          as IOkta
 import qualified IDP.StackExchange                 as IStackExchange
 import qualified IDP.Weibo                         as IWeibo
@@ -156,6 +155,7 @@ mkIDPData Weibo =
           , toLoginUser = IWeibo.toLoginUser
           }
 
+{-
 mkIDPData Linkedin =
   let userUri = createCodeUri linkedinKey [("state", "linkedin.test-state-123")]
   in
@@ -167,6 +167,7 @@ mkIDPData Linkedin =
           , userApiUri = ILinkedin.userInfoUri
           , toLoginUser = ILinkedin.toLoginUser
           }
+-}
 
 -- * Fetch UserInfo
 --

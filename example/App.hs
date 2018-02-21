@@ -71,7 +71,6 @@ idps c =
                   , Fitbit
                   , Weibo
                   , StackExchange
-                  , Linkedin
                   ]
   )
 

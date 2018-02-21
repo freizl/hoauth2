@@ -3,6 +3,11 @@
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
 
+{-
+  disabled since it's not yet working. error:
+  - serviceErrorCode:100
+  - message:Not enough permissions to access /me GET
+-}
 module IDP.Linkedin where
 import           Data.Aeson
 import           Data.Text.Lazy    (Text)
