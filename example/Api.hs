@@ -155,20 +155,6 @@ mkIDPData Weibo =
           , toLoginUser = IWeibo.toLoginUser
           }
 
-{-
-mkIDPData Linkedin =
-  let userUri = createCodeUri linkedinKey [("state", "linkedin.test-state-123")]
-  in
-  IDPData { codeFlowUri = userUri
-          , loginUser = Nothing
-          , idpName = Linkedin
-          , oauth2Key = linkedinKey
-          , toFetchAccessToken = postAT
-          , userApiUri = ILinkedin.userInfoUri
-          , toLoginUser = ILinkedin.toLoginUser
-          }
--}
-
 -- * Fetch UserInfo
 --
 getUserInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)

@@ -30,3 +30,17 @@ userInfoUri = [uri|https://api.linkedin.com/v2/me|]
 
 toLoginUser :: LinkedinUser -> LoginUser
 toLoginUser LinkedinUser {..} = LoginUser { loginUserName = firstName `TL.append` " " `TL.append` lastName }
+
+{-
+mkIDPData Linkedin =
+  let userUri = createCodeUri linkedinKey [("state", "linkedin.test-state-123")]
+  in
+  IDPData { codeFlowUri = userUri
+          , loginUser = Nothing
+          , idpName = Linkedin
+          , oauth2Key = linkedinKey
+          , toFetchAccessToken = postAT
+          , userApiUri = ILinkedin.userInfoUri
+          , toLoginUser = ILinkedin.toLoginUser
+          }
+-}
