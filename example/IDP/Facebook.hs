@@ -9,6 +9,11 @@ import           GHC.Generics
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Data.Bifunctor
+import           Network.OAuth.OAuth2
+import           Network.HTTP.Conduit
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import TokenUtil
 
 data FacebookUser = FacebookUser { id    :: Text
                                  , name  :: Text
@@ -23,3 +28,14 @@ userInfoUri = [uri|https://graph.facebook.com/me?fields=id,name,email|]
 
 toLoginUser :: FacebookUser -> LoginUser
 toLoginUser ouser = LoginUser { loginUserName = name ouser }
+
+getUserInfo :: FromJSON a => Manager -> AccessToken -> IO (OAuth2Result a LoginUser)
+getUserInfo mgr at = do
+  re <- authGetJSON mgr at userInfoUri
+  return (second toLoginUser re)
+
+getAccessToken :: Manager
+               -> OAuth2
+               -> ExchangeToken
+               -> IO (OAuth2Result TR.Errors OAuth2Token)
+getAccessToken = postAT

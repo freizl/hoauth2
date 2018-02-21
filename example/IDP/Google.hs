@@ -8,6 +8,11 @@ import           Data.Text.Lazy    (Text)
 import           GHC.Generics
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Data.Bifunctor
+import           Network.OAuth.OAuth2
+import           Network.HTTP.Conduit
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import TokenUtil
 
 import           Types
 
@@ -23,3 +28,14 @@ userInfoUri = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
 
 toLoginUser :: GoogleUser -> LoginUser
 toLoginUser guser = LoginUser { loginUserName = name guser }
+
+getUserInfo :: FromJSON a => Manager -> AccessToken -> IO (OAuth2Result a LoginUser)
+getUserInfo mgr at = do
+  re <- authGetJSON mgr at userInfoUri
+  return (second toLoginUser re)
+
+getAccessToken :: Manager
+               -> OAuth2
+               -> ExchangeToken
+               -> IO (OAuth2Result TR.Errors OAuth2Token)
+getAccessToken = getAT

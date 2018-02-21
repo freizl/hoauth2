@@ -21,3 +21,5 @@ parseValue Nothing = Nothing
 parseValue (Just a) = case Aeson.fromJSON a of
   Aeson.Error _   -> Nothing
   Aeson.Success b -> Just b
+
+

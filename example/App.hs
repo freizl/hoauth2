@@ -125,7 +125,7 @@ fetchTokenAndUser code store idpInput = do
     token <- tryFetchAT idpD mgr (ExchangeToken $ TL.toStrict code)
     --print token
     case token of
-      Right at -> getUserInfo idpD mgr (accessToken at)
+      Right at -> userInfo idpD mgr (accessToken at)
       Left e   -> return (Left $ TL.pack $ "cannot fetch asses token. error detail: " ++ show e)
   case result of
     Right lUser -> do

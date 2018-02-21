@@ -8,6 +8,11 @@ import           Data.Text.Lazy    (Text)
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Network.HTTP.Conduit
+import           Data.Bifunctor
+import           Network.OAuth.OAuth2
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import TokenUtil
 
 data FitbitUser = FitbitUser
     { userId   :: Text
@@ -29,3 +34,14 @@ userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
 toLoginUser :: FitbitUser -> LoginUser
 toLoginUser ouser = LoginUser { loginUserName = userName ouser }
+
+getUserInfo :: FromJSON a => Manager -> AccessToken -> IO (OAuth2Result a LoginUser)
+getUserInfo mgr at = do
+  re <- authGetJSON mgr at userInfoUri
+  return (second toLoginUser re)
+
+getAccessToken :: Manager
+               -> OAuth2
+               -> ExchangeToken
+               -> IO (OAuth2Result TR.Errors OAuth2Token)
+getAccessToken = getAT

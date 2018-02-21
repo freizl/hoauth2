@@ -7,15 +7,11 @@
 
 module Api where
 
-import           Data.Aeson
-import           Data.Aeson.Types
 import           Data.Bifunctor
 import           Data.ByteString                   (ByteString)
 import qualified Data.Text.Encoding                as TE
 import           Data.Text.Lazy                    (Text)
 import qualified Data.Text.Lazy                    as TL
-import           GHC.Generics
-import           Lens.Micro
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
@@ -33,13 +29,6 @@ import qualified IDP.Weibo                         as IWeibo
 import           Keys
 import           Types
 
-data Errors =
-  SomeRandomError
-  deriving (Show, Eq, Generic)
-
-instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
-
 createCodeUri :: OAuth2
               -> [(ByteString, ByteString)]
               -> Text
@@ -55,9 +44,8 @@ mkIDPData Okta =
           , loginUser = Nothing
           , idpName = Okta
           , oauth2Key = oktaKey
-          , toFetchAccessToken = getAT
-          , userApiUri = IOkta.userInfoUri
-          , toLoginUser = IOkta.toLoginUser
+          , getAccessToken = IOkta.getAccessToken
+          , getUserInfo = IOkta.getUserInfo
           }
 mkIDPData Douban =
   let userUri = createCodeUri doubanKey [("state", "douban.test-state-123")]
@@ -66,9 +54,8 @@ mkIDPData Douban =
           , loginUser = Nothing
           , idpName = Douban
           , oauth2Key = doubanKey
-          , toFetchAccessToken = postAT
-          , userApiUri = IDouban.userInfoUri
-          , toLoginUser = IDouban.toLoginUser
+          , getAccessToken = IDouban.getAccessToken
+          , getUserInfo = IDouban.getUserInfo
           }
 mkIDPData Dropbox =
   let userUri = createCodeUri dropboxKey [("state", "dropbox.test-state-123")]
@@ -77,9 +64,8 @@ mkIDPData Dropbox =
           , loginUser = Nothing
           , idpName = Dropbox
           , oauth2Key = dropboxKey
-          , toFetchAccessToken = getAT
-          , userApiUri = IDropbox.userInfoUri
-          , toLoginUser = IDropbox.toLoginUser
+          , getAccessToken = IDropbox.getAccessToken
+          , getUserInfo = IDropbox.getUserInfo
           }
 mkIDPData Facebook =
   let userUri = createCodeUri facebookKey [ ("state", "facebook.test-state-123")
@@ -90,9 +76,8 @@ mkIDPData Facebook =
           , loginUser = Nothing
           , idpName = Facebook
           , oauth2Key = facebookKey
-          , toFetchAccessToken = postAT
-          , userApiUri = IFacebook.userInfoUri
-          , toLoginUser = IFacebook.toLoginUser
+          , getAccessToken = IFacebook.getAccessToken
+          , getUserInfo = IFacebook.getUserInfo
           }
 mkIDPData Fitbit =
   let userUri = createCodeUri fitbitKey [("state", "fitbit.test-state-123")
@@ -103,9 +88,8 @@ mkIDPData Fitbit =
           , loginUser = Nothing
           , idpName = Fitbit
           , oauth2Key = fitbitKey
-          , toFetchAccessToken = getAT
-          , userApiUri = IFitbit.userInfoUri
-          , toLoginUser = IFitbit.toLoginUser
+          , getAccessToken = IFitbit.getAccessToken
+          , getUserInfo = IFitbit.getUserInfo
           }
 
 mkIDPData Github =
@@ -115,9 +99,8 @@ mkIDPData Github =
           , loginUser = Nothing
           , idpName = Github
           , oauth2Key = githubKey
-          , toFetchAccessToken = getAT
-          , userApiUri = IGithub.userInfoUri
-          , toLoginUser = IGithub.toLoginUser
+          , getAccessToken = IGithub.getAccessToken
+          , getUserInfo = IGithub.getUserInfo
           }
 mkIDPData Google =
   let userUri = createCodeUri googleKey [ ("scope", "https://www.googleapis.com/auth/userinfo.email")
@@ -128,9 +111,8 @@ mkIDPData Google =
           , loginUser = Nothing
           , idpName = Google
           , oauth2Key = googleKey
-          , toFetchAccessToken = getAT
-          , userApiUri = IGoogle.userInfoUri
-          , toLoginUser = IGoogle.toLoginUser
+          , getAccessToken = IGoogle.getAccessToken
+          , getUserInfo = IGoogle.getUserInfo
           }
 mkIDPData StackExchange =
   let userUri = createCodeUri stackexchangeKey [("state", "stackexchange.test-state-123")]
@@ -139,9 +121,8 @@ mkIDPData StackExchange =
           , loginUser = Nothing
           , idpName = StackExchange
           , oauth2Key = stackexchangeKey
-          , toFetchAccessToken = postAT
-          , userApiUri = IStackExchange.userInfoUri
-          , toLoginUser = IStackExchange.toLoginUser
+          , getAccessToken = IStackExchange.getAccessToken
+          , getUserInfo = IStackExchange.getUserInfo
           }
 mkIDPData Weibo =
   let userUri = createCodeUri weiboKey [("state", "weibo.test-state-123")]
@@ -150,62 +131,19 @@ mkIDPData Weibo =
           , loginUser = Nothing
           , idpName = Weibo
           , oauth2Key = weiboKey
-          , toFetchAccessToken = getAT
-          , userApiUri = IWeibo.userInfoUri
-          , toLoginUser = IWeibo.toLoginUser
+          , getAccessToken = IWeibo.getAccessToken
+          , getUserInfo = IWeibo.getUserInfo
           }
 
 -- * Fetch UserInfo
 --
-getUserInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
-getUserInfo idpD mgr token =
-  case idpName idpD of
-    Dropbox       -> getUserWithAccessTokenInHeaderOnly idpD mgr token
-    Weibo         -> getUserWithAccessTokenAsParam idpD mgr token
-    StackExchange -> getStackExchangeUser idpD mgr token
-    _             -> getUserInfoInteral idpD mgr token
+userInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
+userInfo IDPData {..} mgr token = do
+  re <- getUserInfo mgr token
+  return (first displayOAuth2Error re)
 
-getUserInfoInteral :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
-getUserInfoInteral IDPData {..} mgr token = do
-  re <- authGetJSON mgr token userApiUri
-  return (bimap showGetError toLoginUser re)
-
-showGetError :: OAuth2Error Errors -> Text
-showGetError = TL.pack . show
-
-getUserWithAccessTokenInHeaderOnly, getUserWithAccessTokenAsParam, getStackExchangeUser :: IDPData
-  -> Manager
-  -> AccessToken
-  -> IO (Either Text LoginUser)
-
--- fetch user info via
--- POST
--- set token in header only
--- nothing for body
-getUserWithAccessTokenInHeaderOnly IDPData {..} mgr token = do
-  re <- parseResponseJSON <$> authPostBS3 mgr token userApiUri
-  return (bimap showGetError toLoginUser re)
-
--- fetch user info via
--- GET
--- access token in query param only
-getUserWithAccessTokenAsParam IDPData {..} mgr token = do
-  re <- parseResponseJSON <$> authGetBS2 mgr token userApiUri
-  return (bimap showGetError toLoginUser re)
-
--- fetch user info via
--- GET
--- access token in query param only
--- append extra application key
-getStackExchangeUser IDPData {..} mgr token = do
-  re <- parseResponseJSON
-        <$> authGetBS2 mgr token
-            (userApiUri `appendStackExchangeAppKey` stackexchangeAppKey)
-  return (bimap showGetError toLoginUser re)
-
-appendStackExchangeAppKey :: URI -> ByteString -> URI
-appendStackExchangeAppKey uri k =
-  over (queryL . queryPairsL) (\query -> query ++ [("key", k)]) uri
+displayOAuth2Error :: OAuth2Error Errors -> Text
+displayOAuth2Error = TL.pack . show
 
 -- * Fetch Access Token
 --
@@ -213,26 +151,5 @@ tryFetchAT :: IDPData
   -> Manager
   -> ExchangeToken
   -> IO (OAuth2Result TR.Errors OAuth2Token)
-tryFetchAT IDPData {..} mgr = toFetchAccessToken mgr oauth2Key
+tryFetchAT IDPData {..} mgr = getAccessToken mgr oauth2Key
 
-getAT, postAT:: Manager
-  -> OAuth2
-  -> ExchangeToken
-  -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAT = fetchAccessToken
-postAT = postATX doJSONPostRequest
-
-postATX :: (Manager -> OAuth2 -> URI -> PostBody -> IO (OAuth2Result TR.Errors OAuth2Token))
-        -> Manager
-        -> OAuth2
-        -> ExchangeToken
-        -> IO (OAuth2Result TR.Errors OAuth2Token)
-postATX postFn mgr okey code = do
-  let (url, body1) = accessTokenUrl okey code
-  let extraBody = authClientBody okey
-  postFn mgr okey url (extraBody ++ body1)
-
-authClientBody :: OAuth2 -> [(ByteString, ByteString)]
-authClientBody okey = [ ("client_id", TE.encodeUtf8 $ oauthClientId okey)
-                      , ("client_secret", TE.encodeUtf8 $ oauthClientSecret okey)
-                      ]

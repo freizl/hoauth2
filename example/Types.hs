@@ -3,10 +3,12 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE TypeFamilies              #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Types where
 
 import           Data.Aeson
+import           Data.Aeson.Types
 import           Data.Hashable
 import           Data.Maybe
 import           Data.Text.Lazy
@@ -18,6 +20,16 @@ import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Text.Mustache
 import qualified Text.Mustache                     as M
 import           URI.ByteString
+
+
+-- dummy oauth2 request error
+--
+data Errors =
+  SomeRandomError
+  deriving (Show, Eq, Generic)
+
+instance FromJSON Errors where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
 data IDP =
     Douban
@@ -50,14 +62,13 @@ newtype LoginUser =
   LoginUser { loginUserName :: Text
             } deriving (Eq, Show)
 
-data IDPData = forall a . FromJSON a =>
+data IDPData = 
   IDPData { codeFlowUri :: Text
           , loginUser   :: Maybe LoginUser
           , idpName     :: IDP
           , oauth2Key   :: OAuth2
-          , toFetchAccessToken :: Manager -> OAuth2 -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
-          , userApiUri  :: URI
-          , toLoginUser :: a -> LoginUser
+          , getAccessToken :: Manager -> OAuth2 -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
+          , getUserInfo :: Manager -> AccessToken -> IO (OAuth2Result Errors LoginUser)
           }
 
 -- simplify use case to only allow one idp instance for now.
