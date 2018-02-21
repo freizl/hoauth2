@@ -60,18 +60,19 @@ waiApp = do
 
 idps :: KeyCache -> IO ()
 idps c =
-  mapM_ (\idp -> insertKeys c (idpName idp) idp)
   -- TODO: leverage generic ?
-  [ mkIDPData Okta
-  , mkIDPData Github
-  , mkIDPData Google
-  , mkIDPData Douban
-  , mkIDPData Dropbox
-  , mkIDPData Facebook
-  , mkIDPData Fitbit
-  , mkIDPData Weibo
-  , mkIDPData StackExchange
-  ]
+  mapM_ (\idp -> insertKeys c (idpName idp) idp)
+  (fmap mkIDPData [ Okta
+                  , Github
+                  , Google
+                  , Douban
+                  , Dropbox
+                  , Facebook
+                  , Fitbit
+                  , Weibo
+                  , StackExchange
+                  ]
+  )
 
 redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
