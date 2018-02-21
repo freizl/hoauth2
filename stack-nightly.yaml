@@ -10,3 +10,5 @@ extra-deps:
   - http-types-0.12
 
 resolver: nightly-2018-01-17
+
+allow-newer: true

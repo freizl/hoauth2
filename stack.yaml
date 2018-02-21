@@ -12,6 +12,8 @@ extra-deps:
   - http-types-0.12
   - http-conduit-2.3.0
 
+allow-newer: true
+
 # Override default flag values for local packages and extra-deps
 flags:
   hoauth2:
