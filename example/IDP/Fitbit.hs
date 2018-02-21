@@ -2,17 +2,17 @@
 {-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Fitbit where
-import           Control.Monad     (mzero)
+import           Control.Monad                     (mzero)
 import           Data.Aeson
-import           Data.Text.Lazy    (Text)
+import           Data.Bifunctor
+import           Data.Text.Lazy                    (Text)
+import           Network.HTTP.Conduit
+import           Network.OAuth.OAuth2
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           TokenUtil
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Network.HTTP.Conduit
-import           Data.Bifunctor
-import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import TokenUtil
 
 data FitbitUser = FitbitUser
     { userId   :: Text

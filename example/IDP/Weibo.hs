@@ -4,18 +4,18 @@
 module IDP.Weibo where
 import           Data.Aeson
 import           Data.Aeson.Types
-import           Data.Text.Lazy    (Text)
-import qualified Data.Text.Lazy    as TL
+import           Data.Bifunctor
+import           Data.Text.Lazy                    (Text)
+import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
+import           Network.HTTP.Conduit
+import           Network.OAuth.OAuth2
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Network.HTTP.Conduit
-import           Data.Bifunctor
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import           Network.OAuth.OAuth2
 
-import TokenUtil
+import           TokenUtil
 
 -- TODO: http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser { id         :: Integer

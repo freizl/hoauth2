@@ -42,11 +42,12 @@ Extra-source-files: README.md
                     example/IDP/Fitbit.hs
                     example/IDP/Douban.hs
                     example/IDP/Linkedin.hs
-                    example/Api.hs
+                    example/IDP.hs
                     example/App.hs
                     example/Session.hs
                     example/Types.hs
                     example/Utils.hs
+                    example/TokenUtil.hs
                     example/Views.hs
                     example/main.hs
                     example/README.md
@@ -97,7 +98,7 @@ Executable demo-server
     Buildable: False
 
   main-is:             main.hs
-  other-modules:       Api,
+  other-modules:       IDP,
                        App
                        IDP.Douban
                        IDP.Dropbox
@@ -114,6 +115,7 @@ Executable demo-server
                        Types
                        Utils
                        Views
+                       TokenUtil
   hs-source-dirs:      example
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,

@@ -4,16 +4,16 @@
 module IDP.Facebook where
 import           Data.Aeson
 import           Data.Aeson.Types
-import           Data.Text.Lazy    (Text)
+import           Data.Bifunctor
+import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
+import           Network.HTTP.Conduit
+import           Network.OAuth.OAuth2
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           TokenUtil
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Bifunctor
-import           Network.OAuth.OAuth2
-import           Network.HTTP.Conduit
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import TokenUtil
 
 data FacebookUser = FacebookUser { id    :: Text
                                  , name  :: Text

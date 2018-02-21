@@ -1,31 +1,23 @@
-{-# LANGUAGE DeriveGeneric             #-}
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE OverloadedStrings         #-}
-{-# LANGUAGE RankNTypes                #-}
-{-# LANGUAGE RecordWildCards           #-}
 
-module Api where
+module IDP where
 
-import           Data.Bifunctor
-import           Data.ByteString                   (ByteString)
-import qualified Data.Text.Encoding                as TE
-import           Data.Text.Lazy                    (Text)
-import qualified Data.Text.Lazy                    as TL
-import           Network.HTTP.Conduit
+import           Data.ByteString      (ByteString)
+import qualified Data.Text.Encoding   as TE
+import           Data.Text.Lazy       (Text)
+import qualified Data.Text.Lazy       as TL
 import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           URI.ByteString
 
-import qualified IDP.Douban                        as IDouban
-import qualified IDP.Dropbox                       as IDropbox
-import qualified IDP.Facebook                      as IFacebook
-import qualified IDP.Fitbit                        as IFitbit
-import qualified IDP.Github                        as IGithub
-import qualified IDP.Google                        as IGoogle
-import qualified IDP.Okta                          as IOkta
-import qualified IDP.StackExchange                 as IStackExchange
-import qualified IDP.Weibo                         as IWeibo
+import qualified IDP.Douban           as IDouban
+import qualified IDP.Dropbox          as IDropbox
+import qualified IDP.Facebook         as IFacebook
+import qualified IDP.Fitbit           as IFitbit
+import qualified IDP.Github           as IGithub
+import qualified IDP.Google           as IGoogle
+import qualified IDP.Okta             as IOkta
+import qualified IDP.StackExchange    as IStackExchange
+import qualified IDP.Weibo            as IWeibo
 import           Keys
 import           Types
 
@@ -135,21 +127,4 @@ mkIDPData Weibo =
           , getUserInfo = IWeibo.getUserInfo
           }
 
--- * Fetch UserInfo
---
-userInfo :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
-userInfo IDPData {..} mgr token = do
-  re <- getUserInfo mgr token
-  return (first displayOAuth2Error re)
-
-displayOAuth2Error :: OAuth2Error Errors -> Text
-displayOAuth2Error = TL.pack . show
-
--- * Fetch Access Token
---
-tryFetchAT :: IDPData
-  -> Manager
-  -> ExchangeToken
-  -> IO (OAuth2Result TR.Errors OAuth2Token)
-tryFetchAT IDPData {..} mgr = getAccessToken mgr oauth2Key
 

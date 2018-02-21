@@ -1,28 +1,28 @@
-{-# LANGUAGE DeriveGeneric   #-}
-{-# LANGUAGE QuasiQuotes     #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 {-
   NOTES: stackexchange API spec and its document just sucks!
 -}
 module IDP.StackExchange where
 import           Data.Aeson
-import           Data.ByteString                   (ByteString)
 import           Data.Aeson.Types
-import           Data.Text.Lazy    (Text)
-import qualified Data.Text.Lazy    as TL
-import           GHC.Generics
-import           Types
-import           Lens.Micro
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Network.HTTP.Conduit
 import           Data.Bifunctor
+import           Data.ByteString                   (ByteString)
+import           Data.Text.Lazy                    (Text)
+import qualified Data.Text.Lazy                    as TL
+import           GHC.Generics
+import           Keys
+import           Lens.Micro
+import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import TokenUtil
-import Keys
+import           TokenUtil
+import           Types
+import           URI.ByteString
+import           URI.ByteString.QQ
 
 data StackExchangeResp = StackExchangeResp { hasMore :: Bool
                                            , quotaMax :: Integer

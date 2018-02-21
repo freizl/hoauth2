@@ -1,14 +1,14 @@
-{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module TokenUtil where
 
-import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import           Network.HTTP.Conduit
 import           Data.ByteString                   (ByteString)
 import qualified Data.Text.Encoding                as TE
+import           Network.HTTP.Conduit
+import           Network.OAuth.OAuth2
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           Types
 import           URI.ByteString
-import Types
 
 getAT, postAT:: Manager
   -> OAuth2

@@ -2,8 +2,8 @@
 {-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE RankNTypes                #-}
 {-# LANGUAGE TypeFamilies              #-}
-{-# LANGUAGE RankNTypes #-}
 
 module Types where
 
@@ -62,7 +62,7 @@ newtype LoginUser =
   LoginUser { loginUserName :: Text
             } deriving (Eq, Show)
 
-data IDPData = 
+data IDPData =
   IDPData { codeFlowUri :: Text
           , loginUser   :: Maybe LoginUser
           , idpName     :: IDP
