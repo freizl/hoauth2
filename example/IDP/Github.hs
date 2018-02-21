@@ -10,7 +10,6 @@ import           GHC.Generics
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import           TokenUtil
 import           URI.ByteString
 import           URI.ByteString.QQ
 
@@ -38,4 +37,4 @@ getAccessToken :: Manager
                -> OAuth2
                -> ExchangeToken
                -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAccessToken = getAT
+getAccessToken = fetchAccessToken

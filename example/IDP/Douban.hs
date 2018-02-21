@@ -14,9 +14,6 @@ import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 
-
-import           TokenUtil
-
 data DoubanUser = DoubanUser { name :: Text
                              , uid  :: Text
                              } deriving (Show, Generic)
@@ -39,4 +36,4 @@ getAccessToken :: Manager
                -> OAuth2
                -> ExchangeToken
                -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAccessToken = postAT
+getAccessToken = fetchAccessToken2

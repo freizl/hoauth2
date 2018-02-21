@@ -15,8 +15,6 @@ import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 
-import           TokenUtil
-
 -- TODO: http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser { id         :: Integer
                            , name       :: Text
@@ -49,4 +47,4 @@ getAccessToken :: Manager
                -> OAuth2
                -> ExchangeToken
                -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAccessToken = getAT
+getAccessToken = fetchAccessToken

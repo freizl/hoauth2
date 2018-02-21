@@ -47,7 +47,6 @@ Extra-source-files: README.md
                     example/Session.hs
                     example/Types.hs
                     example/Utils.hs
-                    example/TokenUtil.hs
                     example/Views.hs
                     example/main.hs
                     example/README.md
@@ -115,7 +114,6 @@ Executable demo-server
                        Types
                        Utils
                        Views
-                       TokenUtil
   hs-source-dirs:      example
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
