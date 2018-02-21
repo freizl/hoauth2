@@ -20,7 +20,8 @@ instance FromJSON LinkedinUser where
     parseJSON = genericParseJSON defaultOptions
 
 userInfoUri :: URI
-userInfoUri = [uri|https://api.linkedin.com/v1/people/~?format=json|]
+userInfoUri = [uri|https://api.linkedin.com/v2/me|]
+
 
 toLoginUser :: LinkedinUser -> LoginUser
 toLoginUser LinkedinUser {..} = LoginUser { loginUserName = firstName `TL.append` " " `TL.append` lastName }
