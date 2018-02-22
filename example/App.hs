@@ -2,28 +2,29 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE RecordWildCards           #-}
 
 module App (app, waiApp) where
 
 import           Control.Monad
 import           Control.Monad.Error.Class
-import           Control.Monad.IO.Class        (liftIO)
-import           Data.Text.Lazy                (Text)
-import qualified Data.Text.Lazy                as TL
+import           Control.Monad.IO.Class            (liftIO)
+import           Data.Bifunctor
+import           Data.Maybe
+import           Data.Text.Lazy                    (Text)
+import qualified Data.Text.Lazy                    as TL
 import           Network.HTTP.Conduit
 import           Network.HTTP.Types
-import           Network.Wai.Handler.Warp      (run)
-import           Prelude
-
-
-import           Data.Maybe
 import           Network.OAuth.OAuth2
-import qualified Network.Wai                   as WAI
+import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import qualified Network.Wai                       as WAI
+import           Network.Wai.Handler.Warp          (run)
 import           Network.Wai.Middleware.Static
+import           Prelude
 import           Web.Scotty
 import           Web.Scotty.Internal.Types
 
-import           Api
+import           IDP
 import           Session
 import           Types
 import           Utils
@@ -125,7 +126,7 @@ fetchTokenAndUser code store idpInput = do
     token <- tryFetchAT idpD mgr (ExchangeToken $ TL.toStrict code)
     --print token
     case token of
-      Right at -> getUserInfo idpD mgr (accessToken at)
+      Right at -> tryFetchUser idpD mgr (accessToken at)
       Left e   -> return (Left $ TL.pack $ "cannot fetch asses token. error detail: " ++ show e)
   case result of
     Right lUser -> do
@@ -133,3 +134,21 @@ fetchTokenAndUser code store idpInput = do
       liftIO $ insertKeys store idpInput newIdp
       redirectToHomeM
     Left err -> errorM ("fetchTokenAndUser: " `TL.append` err)
+
+-- * Fetch UserInfo
+--
+tryFetchUser :: IDPData -> Manager -> AccessToken -> IO (Either Text LoginUser)
+tryFetchUser IDPData {..} mgr token = do
+  re <- getUserInfo mgr token
+  return (first displayOAuth2Error re)
+
+displayOAuth2Error :: OAuth2Error Errors -> Text
+displayOAuth2Error = TL.pack . show
+
+-- * Fetch Access Token
+--
+tryFetchAT :: IDPData
+  -> Manager
+  -> ExchangeToken
+  -> IO (OAuth2Result TR.Errors OAuth2Token)
+tryFetchAT IDPData {..} mgr = getAccessToken mgr oauth2Key
