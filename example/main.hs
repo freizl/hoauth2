@@ -1,7 +1,8 @@
 module Main where
 
 import           App (app)
+import App2 (test2)
 
 main :: IO ()
 main =
-  app
+  test2 >> app
