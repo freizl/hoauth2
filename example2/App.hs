@@ -3,6 +3,8 @@
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RankNTypes                #-}
 {-# LANGUAGE RecordWildCards           #-}
+{-# LANGUAGE TypeFamilies              #-}
+{-# LANGUAGE GADTs              #-}
 
 module App (app, waiApp) where
 
@@ -23,6 +25,7 @@ import           Network.Wai.Middleware.Static
 import           Prelude
 import           Web.Scotty
 import           Web.Scotty.Internal.Types
+import qualified Data.HashMap.Strict     as Map
 
 import           Session
 import           Types
@@ -49,7 +52,7 @@ app = putStrLn ("Starting Server. http://localhost:" ++ show myServerPort)
 waiApp :: IO WAI.Application
 waiApp = do
   cache <- initKeyCache
-  idps cache
+  initIdps cache
   scottyApp $ do
     middleware $ staticPolicy (addBase "example/assets")
     defaultHandler globalErrorHandler
@@ -62,15 +65,29 @@ waiApp = do
 -- * Handlers
 --------------------------------------------------
 
-idps :: KeyCache -> IO ()
-idps c =
+-- TODO: make this generic to discover any IDPs from idp directory.
+idps :: [ParsedIDP]
+idps = [ ParsedIDP IGithub.Github
+       , ParsedIDP IFacebook.Facebook
+       ]
+
+initIdps :: KeyCache -> IO ()
+initIdps c =
   mapM_ (\idp -> insertKeys c idp)
-  [ mkIDPData IGithub.Github
-  , mkIDPData IFacebook.Facebook
-  ]
-  
-mkIDPData :: (HasAuthUri a, IDPLabel a) => a -> IDPData
-mkIDPData idp = IDPData (authUri idp) Nothing (idpLabel idp)
+        (fmap mkIDPData idps)
+
+idpsMap :: Map.HashMap Text ParsedIDP
+idpsMap = Map.fromList $ fmap (\x@(ParsedIDP idp) -> (idpLabel idp, x)) idps
+
+data ParsedIDP = forall a. (IDP a, HasTokenReq a, HasUserReq a, IDPLabel a, HasAuthUri a) => ParsedIDP a
+
+parseIDP :: Text -> Either Text ParsedIDP
+parseIDP s = case Map.lookup s idpsMap of
+               Just v -> Right v
+               Nothing -> Left s
+
+mkIDPData :: ParsedIDP -> IDPData
+mkIDPData (ParsedIDP idp) = IDPData (authUri idp) Nothing (idpLabel idp)
 
 redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
@@ -86,11 +103,10 @@ logoutH c = do
   pas <- params
   let idpP = paramValue "idp" pas
   when (null idpP) redirectToHomeM
-  let maybeIdp = (head idpP)
+  let maybeIdp = parseIDP (head idpP)
   case maybeIdp of
-    "Github" -> liftIO (removeKey c IGithub.Github) >> redirectToHomeM
-    "Facebook" -> liftIO (removeKey c IFacebook.Facebook) >> redirectToHomeM
-    _       -> errorM ("logout: unknown IDP " `TL.append` head idpP)
+    Right (ParsedIDP idp) -> liftIO (removeKey c idp) >> redirectToHomeM
+    Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
 
 indexH :: KeyCache -> ActionM ()
 indexH c = do
@@ -104,13 +120,12 @@ callbackH c = do
   let stateP = paramValue "state" pas
   when (null codeP) (errorM "callbackH: no code from callback request")
   when (null stateP) (errorM "callbackH: no state from callback request")
-  let maybeIdpName = TL.takeWhile (/= '.') (head stateP)
+  let maybeIdpName = parseIDP (TL.takeWhile (/= '.') (head stateP))
   -- TODO: looks like `state` shall be passed when fetching access token
   --       turns out no IDP enforce this yet
   case maybeIdpName of
-    "Github" -> fetchTokenAndUser c (head codeP) IGithub.Github
-    "Facebook" -> fetchTokenAndUser c (head codeP) IFacebook.Facebook
-    _   -> errorM ("callbackH: cannot find IDP name from text " `TL.append` head stateP)
+    Right (ParsedIDP idp) -> fetchTokenAndUser c (head codeP) idp
+    Left e   -> errorM ("callbackH: cannot find IDP name from text " `TL.append` head stateP)
 
 fetchTokenAndUser :: (HasTokenReq a, HasUserReq a, IDPLabel a) => KeyCache
                   -> TL.Text           -- ^ code

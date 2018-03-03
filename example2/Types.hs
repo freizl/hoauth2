@@ -77,7 +77,7 @@ instance ToMustache IDPData where
     [ "codeFlowUri" ~> codeFlowUri t'
     , "isLogin" ~> isJust (loginUser t')
     , "user" ~> loginUser t'
-    , "name" ~> show (idpName t')
+    , "name" ~> TL.unpack (idpName t')
     ]
 
 instance ToMustache LoginUser where
