@@ -10,17 +10,14 @@ module IDP.StackExchange where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
-import           Data.ByteString                   (ByteString)
+import           Data.ByteString      (ByteString)
 import           Data.Hashable
-import           Data.Text.Lazy                    (Text)
-import qualified Data.Text.Lazy                    as TL
+import           Data.Text.Lazy       (Text)
+import qualified Data.Text.Lazy       as TL
 import           GHC.Generics
 import           Keys
-import           Keys
 import           Lens.Micro
-import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
@@ -35,12 +32,12 @@ instance IDP StackExchange
 instance HasLabel StackExchange
 
 instance HasTokenReq StackExchange where
-  tokenReq _ mgr code = fetchAccessToken2 mgr stackexchangeKey code
+  tokenReq _ mgr = fetchAccessToken2 mgr stackexchangeKey
 
 instance HasUserReq StackExchange where
-  userReq _ mgr at = do
+  userReq _ mgr token = do
     re <- parseResponseJSON
-          <$> authGetBS2 mgr at
+          <$> authGetBS2 mgr token
               (userInfoUri `appendStackExchangeAppKey` stackexchangeAppKey)
     return (second toLoginUser re)
 
@@ -73,19 +70,7 @@ toLoginUser StackExchangeResp {..} =
     [] -> LoginUser { loginUserName = TL.pack "Cannot find stackexchange user" }
     (user:_) -> LoginUser { loginUserName = displayName user }
 
-getUserInfo :: FromJSON a => Manager -> AccessToken -> IO (OAuth2Result a LoginUser)
-getUserInfo mgr at = do
-  re <- parseResponseJSON
-        <$> authGetBS2 mgr at
-            (userInfoUri `appendStackExchangeAppKey` stackexchangeAppKey)
-  return (second toLoginUser re)
-
 appendStackExchangeAppKey :: URI -> ByteString -> URI
-appendStackExchangeAppKey uri k =
-  over (queryL . queryPairsL) (\query -> query ++ [("key", k)]) uri
+appendStackExchangeAppKey useruri k =
+  over (queryL . queryPairsL) (\query -> query ++ [("key", k)]) useruri
 
-getAccessToken :: Manager
-               -> OAuth2
-               -> ExchangeToken
-               -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAccessToken = fetchAccessToken

@@ -10,9 +10,7 @@ import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
 import           Keys
-import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
@@ -28,7 +26,7 @@ instance IDP Fitbit
 instance HasLabel Fitbit
 
 instance HasTokenReq Fitbit where
-  tokenReq _ mgr code = fetchAccessToken mgr fitbitKey code
+  tokenReq _ mgr = fetchAccessToken mgr fitbitKey
 
 instance HasUserReq Fitbit where
   userReq _ mgr at = do
@@ -60,14 +58,3 @@ userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
 toLoginUser :: FitbitUser -> LoginUser
 toLoginUser ouser = LoginUser { loginUserName = userName ouser }
-
-getUserInfo :: FromJSON a => Manager -> AccessToken -> IO (OAuth2Result a LoginUser)
-getUserInfo mgr at = do
-  re <- authGetJSON mgr at userInfoUri
-  return (second toLoginUser re)
-
-getAccessToken :: Manager
-               -> OAuth2
-               -> ExchangeToken
-               -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAccessToken = fetchAccessToken

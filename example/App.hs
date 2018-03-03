@@ -3,24 +3,22 @@
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RankNTypes                #-}
-{-# LANGUAGE RecordWildCards           #-}
 {-# LANGUAGE TypeFamilies              #-}
 
 module App (app, waiApp) where
 
 import           Control.Monad
 import           Control.Monad.Error.Class
-import           Control.Monad.IO.Class            (liftIO)
+import           Control.Monad.IO.Class        (liftIO)
 import           Data.Bifunctor
 import           Data.Maybe
-import           Data.Text.Lazy                    (Text)
-import qualified Data.Text.Lazy                    as TL
+import           Data.Text.Lazy                (Text)
+import qualified Data.Text.Lazy                as TL
 import           Network.HTTP.Conduit
 import           Network.HTTP.Types
 import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import qualified Network.Wai                       as WAI
-import           Network.Wai.Handler.Warp          (run)
+import qualified Network.Wai                   as WAI
+import           Network.Wai.Handler.Warp      (run)
 import           Network.Wai.Middleware.Static
 import           Prelude
 import           Web.Scotty
@@ -31,8 +29,6 @@ import           Session
 import           Types
 import           Utils
 import           Views
-
-
 
 ------------------------------
 -- App
@@ -113,7 +109,7 @@ fetchTokenAndUser store code idpInput = do
   let idpD = fromJust mayBeIdp
   result <- liftIO $ do
     mgr <- newManager tlsManagerSettings
-    token <- tryFetchAT idpInput mgr (ExchangeToken $ TL.toStrict code)
+    token <- tokenReq idpInput mgr (ExchangeToken $ TL.toStrict code)
     when debug (print token)
     case token of
       Right at -> tryFetchUser idpInput mgr (accessToken at)
@@ -135,10 +131,3 @@ tryFetchUser idp mgr token = do
 displayOAuth2Error :: OAuth2Error Errors -> Text
 displayOAuth2Error = TL.pack . show
 
--- * Fetch Access Token
---
-tryFetchAT :: (HasTokenReq a) => a
-  -> Manager
-  -> ExchangeToken
-  -> IO (OAuth2Result TR.Errors OAuth2Token)
-tryFetchAT idp mgr code = tokenReq idp mgr code

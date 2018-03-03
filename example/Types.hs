@@ -10,11 +10,9 @@ module Types where
 import           Control.Concurrent.MVar
 import           Data.Aeson
 import           Data.Aeson.Types
-import           Data.ByteString                   (ByteString)
 import           Data.Hashable
 import qualified Data.HashMap.Strict               as Map
 import           Data.Maybe
-import qualified Data.Text.Encoding                as TE
 import           Data.Text.Lazy
 import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
@@ -23,7 +21,6 @@ import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Text.Mustache
 import qualified Text.Mustache                     as M
-import           URI.ByteString
 
 type IDPLabel = Text
 
