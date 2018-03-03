@@ -16,6 +16,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Data.Hashable
 import Keys
+import Utils
 
 data Facebook = Facebook deriving (Show, Generic)
 

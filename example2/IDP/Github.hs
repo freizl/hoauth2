@@ -16,6 +16,7 @@ import           URI.ByteString.QQ
 import           Data.Hashable
 import Keys
 import           Types
+import Utils
 import qualified Data.Text.Lazy       as TL
 
 data Github = Github deriving (Show, Generic)

@@ -48,14 +48,6 @@ class (IDP a) => HasTokenReq a where
 class (IDP a) => HasUserReq a where
   userReq :: FromJSON b => a -> Manager -> AccessToken -> IO (OAuth2Result b LoginUser)
 
-createCodeUri :: OAuth2
-  -> [(ByteString, ByteString)]
-  -> Text
-createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams params
-  $ authorizationUrl key
-
-
 -- dummy oauth2 request error
 --
 data Errors =
