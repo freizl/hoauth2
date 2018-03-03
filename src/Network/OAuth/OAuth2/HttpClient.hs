@@ -79,7 +79,7 @@ refreshAccessToken :: Manager                         -- ^ HTTP connection manag
 refreshAccessToken manager oa token = doFlexiblePostRequest manager oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa token
 
-{-# DEPRECATED fetchRefreshToken "Use refreshAccessToken" #-}
+{-# DEPRECATED fetchRefreshToken "Use refreshAccessToken since this method will be removed in future release" #-}
 fetchRefreshToken :: Manager                         -- ^ HTTP connection manager.
                      -> OAuth2                       -- ^ OAuth context
                      -> RefreshToken                 -- ^ refresh token gained after authorization
@@ -97,6 +97,7 @@ doJSONPostRequest :: FromJSON err => FromJSON a
 doJSONPostRequest manager oa uri body = fmap parseResponseJSON (doSimplePostRequest manager oa uri body)
 
 -- | Conduct post request and return response as JSON or Query String.
+{-# DEPRECATED doFlexiblePostRequest "Use doJSONPostRequest since this function would be removed in future release." #-}
 doFlexiblePostRequest :: FromJSON err => FromJSON a
                          => Manager                             -- ^ HTTP connection manager.
                          -> OAuth2                              -- ^ OAuth options
@@ -242,7 +243,7 @@ parseResponseString (Right b) = case parseQuery $ BSL.toStrict b of
     paramToPair (k, mv) = (T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
     errorMessage = parseOAuth2Error b
 
--- | Try 'parseResponseJSON' and 'parseResponseString'
+-- | Try 'parseResponseJSON', if failed then parses the @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String.
 parseResponseFlexible :: FromJSON err => FromJSON a
                          => OAuth2Result err BSL.ByteString
                          -> OAuth2Result err a
