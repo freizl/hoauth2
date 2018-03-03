@@ -36,7 +36,6 @@ instance HasUserReq Dropbox where
 
 instance HasAuthUri Dropbox where
   authUri _ = createCodeUri dropboxKey [ ("state", "Dropbox.test-state-123")
-                                        , ("scope", "user_about_me,email")
                                         ] 
 
 newtype DropboxName = DropboxName { displayName :: Text }

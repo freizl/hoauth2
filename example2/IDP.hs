@@ -29,6 +29,13 @@ import Session
 idps :: [IDPApp]
 idps = [ IDPApp IGithub.Github
        , IDPApp IFacebook.Facebook
+       , IDPApp IDouban.Douban
+       , IDPApp IDropbox.Dropbox
+       , IDPApp IFitbit.Fitbit
+       , IDPApp IGoogle.Google
+       , IDPApp IOkta.Okta
+       , IDPApp IStackExchange.StackExchange
+       , IDPApp IWeibo.Weibo
        ]
 
 initIdps :: CacheStore -> IO ()

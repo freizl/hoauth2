@@ -37,7 +37,7 @@ instance HasUserReq Fitbit where
 
 instance HasAuthUri Fitbit where
   authUri _ = createCodeUri fitbitKey [ ("state", "Fitbit.test-state-123")
-                                        , ("scope", "user_about_me,email")
+                                        , ("scope", "profile")
                                         ] 
 
 data FitbitUser = FitbitUser

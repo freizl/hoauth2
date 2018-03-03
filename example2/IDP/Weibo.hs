@@ -28,16 +28,15 @@ instance IDP Weibo
 instance HasLabel Weibo
 
 instance HasTokenReq Weibo where
-  tokenReq _ mgr code = fetchAccessToken2 mgr weiboKey code
+  tokenReq _ mgr code = fetchAccessToken mgr weiboKey code
 
 instance HasUserReq Weibo where
   userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+    re <- parseResponseJSON <$> authGetBS2 mgr at userInfoUri
     return (second toLoginUser re)
 
 instance HasAuthUri Weibo where
   authUri _ = createCodeUri weiboKey [ ("state", "Weibo.test-state-123")
-                                        , ("scope", "user_about_me,email")
                                         ] 
 
 -- TODO: http://open.weibo.com/wiki/2/users/show

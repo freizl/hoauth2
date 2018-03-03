@@ -36,7 +36,6 @@ instance HasUserReq Douban where
 
 instance HasAuthUri Douban where
   authUri _ = createCodeUri doubanKey [ ("state", "Douban.test-state-123")
-                                        , ("scope", "user_about_me,email")
                                         ] 
 
 data DoubanUser = DoubanUser { name :: Text

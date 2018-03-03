@@ -27,7 +27,7 @@ instance IDP Okta
 instance HasLabel Okta
 
 instance HasTokenReq Okta where
-  tokenReq _ mgr code = fetchAccessToken2 mgr oktaKey code
+  tokenReq _ mgr code = fetchAccessToken mgr oktaKey code
 
 instance HasUserReq Okta where
   userReq _ mgr at = do
@@ -36,7 +36,7 @@ instance HasUserReq Okta where
 
 instance HasAuthUri Okta where
   authUri _ = createCodeUri oktaKey [ ("state", "Okta.test-state-123")
-                                        , ("scope", "user_about_me,email")
+                                        , ("scope", "openid profile")
                                         ] 
 
 data OktaUser = OktaUser { name              :: Text

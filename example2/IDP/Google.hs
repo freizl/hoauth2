@@ -36,7 +36,7 @@ instance HasUserReq Google where
 
 instance HasAuthUri Google where
   authUri _ = createCodeUri googleKey [ ("state", "Google.test-state-123")
-                                        , ("scope", "user_about_me,email")
+                                      , ("scope", "https://www.googleapis.com/auth/userinfo.email")
                                         ] 
 
 data GoogleUser = GoogleUser { name :: Text

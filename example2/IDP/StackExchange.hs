@@ -36,17 +36,18 @@ instance IDP StackExchange
 instance HasLabel StackExchange
 
 instance HasTokenReq StackExchange where
-  tokenReq _ mgr code = fetchAccessToken2 mgr stackexchangeKey code
+  tokenReq _ mgr code = fetchAccessToken mgr stackexchangeKey code
 
 instance HasUserReq StackExchange where
   userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+    re <- parseResponseJSON
+          <$> authGetBS2 mgr at
+              (userInfoUri `appendStackExchangeAppKey` stackexchangeAppKey)
     return (second toLoginUser re)
 
 instance HasAuthUri StackExchange where
   authUri _ = createCodeUri stackexchangeKey [ ("state", "StackExchange.test-state-123")
-                                        , ("scope", "user_about_me,email")
-                                        ] 
+                                          ] 
 
 data StackExchangeResp = StackExchangeResp { hasMore :: Bool
                                            , quotaMax :: Integer

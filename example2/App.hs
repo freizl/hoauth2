@@ -61,6 +61,8 @@ waiApp = do
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
 
+debug :: Bool
+debug = True
 
 --------------------------------------------------
 -- * Handlers
@@ -115,7 +117,7 @@ fetchTokenAndUser store code idpInput = do
   result <- liftIO $ do
     mgr <- newManager tlsManagerSettings
     token <- tryFetchAT idpInput mgr (ExchangeToken $ TL.toStrict code)
-    --print token
+    when debug (print token)
     case token of
       Right at -> tryFetchUser idpInput mgr (accessToken at)
       Left e   -> return (Left $ TL.pack $ "cannot fetch asses token. error detail: " ++ show e)
