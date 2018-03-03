@@ -71,6 +71,9 @@ data IDPData =
 instance Eq IDPData where
   a == b = idpDisplayLabel a == idpDisplayLabel b
 
+instance Ord IDPData where
+  a `compare` b = idpDisplayLabel a `compare` idpDisplayLabel b
+
 newtype TemplateData = TemplateData { idpData :: [IDPData]
                                     } deriving (Eq)
 

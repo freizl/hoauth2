@@ -27,11 +27,11 @@ import Session
 -- TODO: make this generic to discover any IDPs from idp directory.
 -- 
 idps :: [IDPApp]
-idps = [ IDPApp IGithub.Github
-       , IDPApp IFacebook.Facebook
-       , IDPApp IDouban.Douban
+idps = [ IDPApp IDouban.Douban
        , IDPApp IDropbox.Dropbox
+       , IDPApp IFacebook.Facebook
        , IDPApp IFitbit.Fitbit
+       , IDPApp IGithub.Github
        , IDPApp IGoogle.Google
        , IDPApp IOkta.Okta
        , IDPApp IStackExchange.StackExchange

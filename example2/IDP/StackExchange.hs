@@ -36,7 +36,7 @@ instance IDP StackExchange
 instance HasLabel StackExchange
 
 instance HasTokenReq StackExchange where
-  tokenReq _ mgr code = fetchAccessToken mgr stackexchangeKey code
+  tokenReq _ mgr code = fetchAccessToken2 mgr stackexchangeKey code
 
 instance HasUserReq StackExchange where
   userReq _ mgr at = do
