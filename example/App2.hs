@@ -1,26 +1,25 @@
-{-# LANGUAGE OverloadedStrings         #-}
-{-# LANGUAGE DeriveGeneric             #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE RecordWildCards       #-}
-{-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 module App2 where
 
-import Keys
-import           Data.Text.Lazy
-import qualified Data.Text.Lazy as TL
-import Data.Maybe
-import Control.Monad
-import           Data.ByteString      (ByteString)
+import           Control.Monad
+import           Data.Aeson
+import           Data.Aeson.Types
+import           Data.ByteString                   (ByteString)
 import           Data.Hashable
+import qualified Data.HashMap.Strict               as Map
+import           Data.Maybe
+import           Data.Text.Lazy
+import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
+import           Keys
+import           Keys
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import           Data.Aeson
-import qualified Data.HashMap.Strict     as Map
-import           Data.Aeson.Types
-import Keys
 
 -- 1. extensible IDP
 -- 2. cache
@@ -44,9 +43,9 @@ data Method = GET | POST
 type Param = (ByteString, ByteString)
 
 data Req =
-  Req { body :: [Param]
+  Req { body   :: [Param]
       , method :: Method
-      , query :: [Param]
+      , query  :: [Param]
       }
 
 data G = G deriving (Show, Generic)
@@ -68,13 +67,13 @@ type KeyCache = forall a. OAuthIDP a => (Map.HashMap a IDPData)
 
 
 data IDPData =
-  IDPData { codeFlowReq :: Req
-          , loginUser   :: Maybe LoginUser
-          , idpName     :: forall i. OAuthIDP i => i
+  IDPData { codeFlowReq    :: Req
+          , loginUser      :: Maybe LoginUser
+          , idpName        :: forall i. OAuthIDP i => i
           , oauth2Config   :: OAuth2
           , accessTokenReq :: Req
-          , userInfoReq :: Req
-          , toLoginUser :: forall b. FromJSON b => b -> LoginUser
+          , userInfoReq    :: Req
+          , toLoginUser    :: forall b. FromJSON b => b -> LoginUser
           }
 
 class OAuthIDP i

@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module IDP.Weibo where
 import           Data.Aeson
@@ -14,6 +15,30 @@ import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Data.Hashable
+import Keys
+import Utils
+
+data Weibo = Weibo deriving (Show, Generic)
+
+instance Hashable Weibo
+
+instance IDP Weibo
+
+instance HasLabel Weibo
+
+instance HasTokenReq Weibo where
+  tokenReq _ mgr code = fetchAccessToken2 mgr weiboKey code
+
+instance HasUserReq Weibo where
+  userReq _ mgr at = do
+    re <- authGetJSON mgr at userInfoUri
+    return (second toLoginUser re)
+
+instance HasAuthUri Weibo where
+  authUri _ = createCodeUri weiboKey [ ("state", "Weibo.test-state-123")
+                                        , ("scope", "user_about_me,email")
+                                        ] 
 
 -- TODO: http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser { id         :: Integer
