@@ -3,11 +3,11 @@
 {-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Fitbit where
-import           Control.Monad                     (mzero)
+import           Control.Monad        (mzero)
 import           Data.Aeson
 import           Data.Bifunctor
 import           Data.Hashable
-import           Data.Text.Lazy                    (Text)
+import           Data.Text.Lazy       (Text)
 import           GHC.Generics
 import           Keys
 import           Network.OAuth.OAuth2
