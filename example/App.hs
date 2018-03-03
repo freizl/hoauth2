@@ -110,7 +110,7 @@ fetchTokenAndUser c code idp = do
   result <- liftIO $ tryFetchUser idp code
 
   case result of
-    Right luser -> (updateIdp c idpData luser) >> redirectToHomeM
+    Right luser -> updateIdp c idpData luser >> redirectToHomeM
     Left err    -> errorM ("fetchTokenAndUser: " `TL.append` err)
 
   where lookIdp c1 idp1 = liftIO $ lookupKey c1 (idpLabel idp1)
