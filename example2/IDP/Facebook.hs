@@ -23,7 +23,7 @@ instance Hashable Facebook
 
 instance IDP Facebook
 
-instance IDPLabel Facebook
+instance HasLabel Facebook
 
 instance HasTokenReq Facebook where
   tokenReq _ mgr code = fetchAccessToken2 mgr facebookKey code

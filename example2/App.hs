@@ -27,6 +27,7 @@ import           Web.Scotty
 import           Web.Scotty.Internal.Types
 import qualified Data.HashMap.Strict     as Map
 
+import           IDP
 import           Session
 import           Types
 import           Utils
@@ -51,7 +52,7 @@ app = putStrLn ("Starting Server. http://localhost:" ++ show myServerPort)
 -- TODO: how to add either Monad or a middleware to do session?
 waiApp :: IO WAI.Application
 waiApp = do
-  cache <- initKeyCache
+  cache <- initCacheStore
   initIdps cache
   scottyApp $ do
     middleware $ staticPolicy (addBase "example/assets")
@@ -65,30 +66,6 @@ waiApp = do
 -- * Handlers
 --------------------------------------------------
 
--- TODO: make this generic to discover any IDPs from idp directory.
-idps :: [ParsedIDP]
-idps = [ ParsedIDP IGithub.Github
-       , ParsedIDP IFacebook.Facebook
-       ]
-
-initIdps :: KeyCache -> IO ()
-initIdps c =
-  mapM_ (\idp -> insertKeys c idp)
-        (fmap mkIDPData idps)
-
-idpsMap :: Map.HashMap Text ParsedIDP
-idpsMap = Map.fromList $ fmap (\x@(ParsedIDP idp) -> (idpLabel idp, x)) idps
-
-data ParsedIDP = forall a. (IDP a, HasTokenReq a, HasUserReq a, IDPLabel a, HasAuthUri a) => ParsedIDP a
-
-parseIDP :: Text -> Either Text ParsedIDP
-parseIDP s = case Map.lookup s idpsMap of
-               Just v -> Right v
-               Nothing -> Left s
-
-mkIDPData :: ParsedIDP -> IDPData
-mkIDPData (ParsedIDP idp) = IDPData (authUri idp) Nothing (idpLabel idp)
-
 redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
 
@@ -98,22 +75,22 @@ errorM = throwError . ActionError
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status401 >> html t
 
-logoutH :: KeyCache -> ActionM ()
+logoutH :: CacheStore -> ActionM ()
 logoutH c = do
   pas <- params
   let idpP = paramValue "idp" pas
   when (null idpP) redirectToHomeM
   let maybeIdp = parseIDP (head idpP)
   case maybeIdp of
-    Right (ParsedIDP idp) -> liftIO (removeKey c idp) >> redirectToHomeM
+    Right (IDPApp idp) -> liftIO (removeKey c (idpLabel idp)) >> redirectToHomeM
     Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
 
-indexH :: KeyCache -> ActionM ()
+indexH :: CacheStore -> ActionM ()
 indexH c = do
   is <- liftIO (allValues c)
   overviewTpl is
 
-callbackH :: KeyCache -> ActionM ()
+callbackH :: CacheStore -> ActionM ()
 callbackH c = do
   pas <- params
   let codeP = paramValue "code" pas
@@ -124,15 +101,15 @@ callbackH c = do
   -- TODO: looks like `state` shall be passed when fetching access token
   --       turns out no IDP enforce this yet
   case maybeIdpName of
-    Right (ParsedIDP idp) -> fetchTokenAndUser c (head codeP) idp
+    Right (IDPApp idp) -> fetchTokenAndUser c (head codeP) idp
     Left e   -> errorM ("callbackH: cannot find IDP name from text " `TL.append` head stateP)
 
-fetchTokenAndUser :: (HasTokenReq a, HasUserReq a, IDPLabel a) => KeyCache
+fetchTokenAndUser :: (HasTokenReq a, HasUserReq a, HasLabel a) => CacheStore
                   -> TL.Text           -- ^ code
                   -> a
                   -> ActionM ()
 fetchTokenAndUser store code idpInput = do
-  mayBeIdp <- liftIO $ lookupKey store idpInput
+  mayBeIdp <- liftIO $ lookupKey store (idpLabel idpInput)
   when (isNothing mayBeIdp) (errorM "fetchTokenAndUser: cannot find idp data from cache")
   let idpD = fromJust mayBeIdp
   result <- liftIO $ do
@@ -145,7 +122,7 @@ fetchTokenAndUser store code idpInput = do
   case result of
     Right lUser -> do
       let newIdp = idpD {loginUser = Just lUser }
-      liftIO $ insertKeys store newIdp
+      liftIO $ insertIDPData store newIdp
       redirectToHomeM
     Left err -> errorM ("fetchTokenAndUser: " `TL.append` err)
 

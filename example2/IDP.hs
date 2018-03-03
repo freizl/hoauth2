@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ExistentialQuantification #-}
 
 module IDP where
 
@@ -20,15 +21,41 @@ import qualified IDP.StackExchange    as IStackExchange
 import qualified IDP.Weibo            as IWeibo
 import           Keys
 import           Types
+import qualified Data.HashMap.Strict     as Map
+import Session
 
+-- TODO: make this generic to discover any IDPs from idp directory.
+-- 
+idps :: [IDPApp]
+idps = [ IDPApp IGithub.Github
+       , IDPApp IFacebook.Facebook
+       ]
 
+initIdps :: CacheStore -> IO ()
+initIdps c =
+  mapM_ (\idp -> insertIDPData c idp)
+        (fmap mkIDPData idps)
+
+idpsMap :: Map.HashMap Text IDPApp
+idpsMap = Map.fromList $ fmap (\x@(IDPApp idp) -> (idpLabel idp, x)) idps
+
+data IDPApp = forall a. (IDP a, HasTokenReq a, HasUserReq a, HasLabel a, HasAuthUri a) => IDPApp a
+
+parseIDP :: Text -> Either Text IDPApp
+parseIDP s = maybe (Left s) Right (Map.lookup s idpsMap)
+
+mkIDPData :: IDPApp -> IDPData
+mkIDPData (IDPApp idp) = IDPData (authUri idp) Nothing (idpLabel idp)
+
+{- 
 createCodeUri :: OAuth2
               -> [(ByteString, ByteString)]
               -> Text
 createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams params
   $ authorizationUrl key
-
+ -}
+ {- 
 mkIDPData :: IDP -> IDPData
 mkIDPData Okta =
   let userUri = createCodeUri oktaKey [("scope", "openid profile"), ("state", "okta.test-state-123")]
@@ -128,4 +155,4 @@ mkIDPData Weibo =
           , getUserInfo = IWeibo.getUserInfo
           }
 
-
+ -}

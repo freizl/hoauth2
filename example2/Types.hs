@@ -22,11 +22,21 @@ import qualified Text.Mustache                     as M
 import           URI.ByteString
 import           Data.ByteString      (ByteString)
 import qualified Data.Text.Encoding   as TE
+import qualified Data.HashMap.Strict     as Map
+import           Control.Concurrent.MVar
 
+type IDPLabel = Text
+
+-- TODO: how to make following type work??
+-- type CacheStore = forall a. IDP a => MVar (Map.HashMap a IDPData)
+type CacheStore = MVar (Map.HashMap IDPLabel IDPData)
+
+-- * type class for defining a IDP
+--
 class (Hashable a, Show a) => IDP a
 
-class (IDP a) => IDPLabel a where
-  idpLabel :: a -> Text
+class (IDP a) => HasLabel a where
+  idpLabel :: a -> IDPLabel
   idpLabel = TL.pack . show
 
 class (IDP a) => HasAuthUri a where
@@ -45,6 +55,7 @@ createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams params
   $ authorizationUrl key
 
+
 -- dummy oauth2 request error
 --
 data Errors =
@@ -61,15 +72,15 @@ newtype LoginUser =
 data IDPData =
   IDPData { codeFlowUri :: Text
           , loginUser   :: Maybe LoginUser
-          , idpName     :: Text
+          , idpDisplayLabel     :: IDPLabel
           }
 
 -- simplify use case to only allow one idp instance for now.
 instance Eq IDPData where
-  a == b = idpName a == idpName b
+  a == b = idpDisplayLabel a == idpDisplayLabel b
 
 newtype TemplateData = TemplateData { idpData :: [IDPData]
-                                 } deriving (Eq)
+                                    } deriving (Eq)
 
 -- * Mustache instances
 instance ToMustache IDPData where
@@ -77,7 +88,7 @@ instance ToMustache IDPData where
     [ "codeFlowUri" ~> codeFlowUri t'
     , "isLogin" ~> isJust (loginUser t')
     , "user" ~> loginUser t'
-    , "name" ~> TL.unpack (idpName t')
+    , "name" ~> TL.unpack (idpDisplayLabel t')
     ]
 
 instance ToMustache LoginUser where

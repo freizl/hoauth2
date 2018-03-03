@@ -24,7 +24,7 @@ instance Hashable Github
 
 instance IDP Github
 
-instance IDPLabel Github
+instance HasLabel Github
 
 instance HasTokenReq Github where
   tokenReq _ mgr code = fetchAccessToken mgr githubKey code
