@@ -73,7 +73,7 @@ instance Eq IDPData where
 instance Ord IDPData where
   a `compare` b = idpDisplayLabel a `compare` idpDisplayLabel b
 
-newtype TemplateData = TemplateData { idpData :: [IDPData]
+newtype TemplateData = TemplateData { idpTemplateData :: [IDPData]
                                     } deriving (Eq)
 
 -- * Mustache instances
@@ -91,5 +91,5 @@ instance ToMustache LoginUser where
 
 instance ToMustache TemplateData where
   toMustache td' = M.object
-    [ "idps" ~> idpData td'
+    [ "idps" ~> idpTemplateData td'
     ]
