@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module IDP.Google where
 import           Data.Aeson
@@ -12,8 +13,31 @@ import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           URI.ByteString
 import           URI.ByteString.QQ
-
+import           Data.Hashable
+import Keys
+import Utils
 import           Types
+
+data Google = Google deriving (Show, Generic)
+
+instance Hashable Google
+
+instance IDP Google
+
+instance HasLabel Google
+
+instance HasTokenReq Google where
+  tokenReq _ mgr code = fetchAccessToken mgr googleKey code
+
+instance HasUserReq Google where
+  userReq _ mgr at = do
+    re <- authGetJSON mgr at userInfoUri
+    return (second toLoginUser re)
+
+instance HasAuthUri Google where
+  authUri _ = createCodeUri googleKey [ ("state", "Google.test-state-123")
+                                      , ("scope", "https://www.googleapis.com/auth/userinfo.email")
+                                        ] 
 
 data GoogleUser = GoogleUser { name :: Text
                              , id   :: Text

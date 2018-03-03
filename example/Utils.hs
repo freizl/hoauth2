@@ -6,6 +6,10 @@ import qualified Data.Text.Encoding        as T
 import           Data.Text.Lazy            (Text)
 import qualified Data.Text.Lazy            as TL
 import           Web.Scotty.Internal.Types
+import           Network.OAuth.OAuth2
+import qualified Data.Text.Lazy                    as TL
+import qualified Data.Text.Encoding   as TE
+import           URI.ByteString
 
 tlToBS :: TL.Text -> ByteString
 tlToBS = T.encodeUtf8 . TL.toStrict
@@ -21,5 +25,12 @@ parseValue Nothing = Nothing
 parseValue (Just a) = case Aeson.fromJSON a of
   Aeson.Error _   -> Nothing
   Aeson.Success b -> Just b
+
+createCodeUri :: OAuth2
+  -> [(ByteString, ByteString)]
+  -> Text
+createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
+  $ appendQueryParams params
+  $ authorizationUrl key
 
 

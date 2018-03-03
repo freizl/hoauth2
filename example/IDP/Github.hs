@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module IDP.Github where
 import           Data.Aeson
@@ -12,8 +13,30 @@ import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           URI.ByteString
 import           URI.ByteString.QQ
-
+import           Data.Hashable
+import Keys
 import           Types
+import Utils
+import qualified Data.Text.Lazy       as TL
+
+data Github = Github deriving (Show, Generic)
+
+instance Hashable Github
+
+instance IDP Github
+
+instance HasLabel Github
+
+instance HasTokenReq Github where
+  tokenReq _ mgr code = fetchAccessToken mgr githubKey code
+
+instance HasUserReq Github where
+  userReq _ mgr at = do
+    re <- authGetJSON mgr at userInfoUri
+    return (second toLoginUser re)
+
+instance HasAuthUri Github where
+  authUri _ = createCodeUri githubKey [("state", "Github.test-state-123")]
 
 data GithubUser = GithubUser { name :: Text
                              , id   :: Integer

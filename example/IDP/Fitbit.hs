@@ -1,5 +1,6 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module IDP.Fitbit where
 import           Control.Monad                     (mzero)
@@ -12,6 +13,32 @@ import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Data.Hashable
+import Keys
+import Utils
+import           GHC.Generics
+
+
+data Fitbit = Fitbit deriving (Show, Generic)
+
+instance Hashable Fitbit
+
+instance IDP Fitbit
+
+instance HasLabel Fitbit
+
+instance HasTokenReq Fitbit where
+  tokenReq _ mgr code = fetchAccessToken mgr fitbitKey code
+
+instance HasUserReq Fitbit where
+  userReq _ mgr at = do
+    re <- authGetJSON mgr at userInfoUri
+    return (second toLoginUser re)
+
+instance HasAuthUri Fitbit where
+  authUri _ = createCodeUri fitbitKey [ ("state", "Fitbit.test-state-123")
+                                        , ("scope", "profile")
+                                        ] 
 
 data FitbitUser = FitbitUser
     { userId   :: Text

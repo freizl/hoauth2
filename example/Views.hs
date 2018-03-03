@@ -7,6 +7,7 @@ import qualified Data.Text.Lazy         as TL
 import           Text.Mustache
 import           Text.Parsec.Error
 import           Web.Scotty
+import Data.List (sort)
 
 import           Types
 
@@ -24,8 +25,7 @@ tplS path xs = do
     Left e   -> return
                 $ TL.unlines
                 $ map TL.pack [ "can not parse template " ++ path ++ ".mustache" , show e ]
-    -- Right t' -> return $ TL.fromStrict $ substitute t' (TemplateData c u)
-    Right t' -> return $ TL.fromStrict $ substitute t' (TemplateData xs)
+    Right t' -> return $ TL.fromStrict $ substitute t' (TemplateData $ sort xs)
 
 tplH :: FilePath
      -> [IDPData]

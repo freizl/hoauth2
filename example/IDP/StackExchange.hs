@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-
   NOTES: stackexchange API spec and its document just sucks!
@@ -22,6 +23,31 @@ import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Data.Hashable
+import Keys
+import Utils
+
+data StackExchange = StackExchange deriving (Show, Generic)
+
+instance Hashable StackExchange
+
+instance IDP StackExchange
+
+instance HasLabel StackExchange
+
+instance HasTokenReq StackExchange where
+  tokenReq _ mgr code = fetchAccessToken2 mgr stackexchangeKey code
+
+instance HasUserReq StackExchange where
+  userReq _ mgr at = do
+    re <- parseResponseJSON
+          <$> authGetBS2 mgr at
+              (userInfoUri `appendStackExchangeAppKey` stackexchangeAppKey)
+    return (second toLoginUser re)
+
+instance HasAuthUri StackExchange where
+  authUri _ = createCodeUri stackexchangeKey [ ("state", "StackExchange.test-state-123")
+                                          ] 
 
 data StackExchangeResp = StackExchangeResp { hasMore :: Bool
                                            , quotaMax :: Integer
