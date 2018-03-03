@@ -3,11 +3,11 @@
 module Views where
 
 import           Control.Monad.IO.Class (liftIO)
+import           Data.List              (sort)
 import qualified Data.Text.Lazy         as TL
 import           Text.Mustache
 import           Text.Parsec.Error
 import           Web.Scotty
-import Data.List (sort)
 
 import           Types
 

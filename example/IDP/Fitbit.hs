@@ -1,22 +1,22 @@
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Fitbit where
 import           Control.Monad                     (mzero)
 import           Data.Aeson
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
+import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
-import           GHC.Generics
+import           Utils
 
 
 data Fitbit = Fitbit deriving (Show, Generic)
@@ -38,7 +38,7 @@ instance HasUserReq Fitbit where
 instance HasAuthUri Fitbit where
   authUri _ = createCodeUri fitbitKey [ ("state", "Fitbit.test-state-123")
                                         , ("scope", "profile")
-                                        ] 
+                                        ]
 
 data FitbitUser = FitbitUser
     { userId   :: Text

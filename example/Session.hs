@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE RankNTypes #-}
 
 {- mimic server side session store -}
 
@@ -6,7 +6,7 @@ module Session where
 
 import           Control.Concurrent.MVar
 import qualified Data.HashMap.Strict     as Map
-import Data.Text.Lazy
+import           Data.Text.Lazy
 
 import           Types
 

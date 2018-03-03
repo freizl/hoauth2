@@ -1,23 +1,23 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Github where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
+import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import           Types
-import Utils
-import qualified Data.Text.Lazy       as TL
+import           Utils
 
 data Github = Github deriving (Show, Generic)
 

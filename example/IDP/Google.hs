@@ -1,22 +1,22 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Google where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
-import           Types
+import           Utils
 
 data Google = Google deriving (Show, Generic)
 
@@ -37,7 +37,7 @@ instance HasUserReq Google where
 instance HasAuthUri Google where
   authUri _ = createCodeUri googleKey [ ("state", "Google.test-state-123")
                                       , ("scope", "https://www.googleapis.com/auth/userinfo.email")
-                                        ] 
+                                        ]
 
 data GoogleUser = GoogleUser { name :: Text
                              , id   :: Text

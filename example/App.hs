@@ -1,10 +1,10 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RankNTypes                #-}
 {-# LANGUAGE RecordWildCards           #-}
 {-# LANGUAGE TypeFamilies              #-}
-{-# LANGUAGE GADTs              #-}
 
 module App (app, waiApp) where
 
@@ -25,7 +25,6 @@ import           Network.Wai.Middleware.Static
 import           Prelude
 import           Web.Scotty
 import           Web.Scotty.Internal.Types
-import qualified Data.HashMap.Strict     as Map
 
 import           IDP
 import           Session
@@ -33,8 +32,6 @@ import           Types
 import           Utils
 import           Views
 
-import qualified IDP.Github           as IGithub
-import qualified IDP.Facebook         as IFacebook
 
 
 ------------------------------
@@ -104,7 +101,7 @@ callbackH c = do
   --       turns out no IDP enforce this yet
   case maybeIdpName of
     Right (IDPApp idp) -> fetchTokenAndUser c (head codeP) idp
-    Left e   -> errorM ("callbackH: cannot find IDP name from text " `TL.append` head stateP)
+    Left e   -> errorM ("callbackH: cannot find IDP name from text " `TL.append` e)
 
 fetchTokenAndUser :: (HasTokenReq a, HasUserReq a, HasLabel a) => CacheStore
                   -> TL.Text           -- ^ code

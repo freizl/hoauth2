@@ -7,10 +7,14 @@
 
 module Types where
 
+import           Control.Concurrent.MVar
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.ByteString                   (ByteString)
 import           Data.Hashable
+import qualified Data.HashMap.Strict               as Map
 import           Data.Maybe
+import qualified Data.Text.Encoding                as TE
 import           Data.Text.Lazy
 import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
@@ -20,10 +24,6 @@ import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Text.Mustache
 import qualified Text.Mustache                     as M
 import           URI.ByteString
-import           Data.ByteString      (ByteString)
-import qualified Data.Text.Encoding   as TE
-import qualified Data.HashMap.Strict     as Map
-import           Control.Concurrent.MVar
 
 type IDPLabel = Text
 
@@ -41,7 +41,7 @@ class (IDP a) => HasLabel a where
 
 class (IDP a) => HasAuthUri a where
   authUri :: a -> Text
-    
+
 class (IDP a) => HasTokenReq a where
   tokenReq :: a -> Manager -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
 
@@ -62,9 +62,9 @@ newtype LoginUser =
             } deriving (Eq, Show)
 
 data IDPData =
-  IDPData { codeFlowUri :: Text
-          , loginUser   :: Maybe LoginUser
-          , idpDisplayLabel     :: IDPLabel
+  IDPData { codeFlowUri     :: Text
+          , loginUser       :: Maybe LoginUser
+          , idpDisplayLabel :: IDPLabel
           }
 
 -- simplify use case to only allow one idp instance for now.

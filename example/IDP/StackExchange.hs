@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 {-
   NOTES: stackexchange API spec and its document just sucks!
@@ -12,9 +11,11 @@ import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
 import           Data.ByteString                   (ByteString)
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
+import           Keys
 import           Keys
 import           Lens.Micro
 import           Network.HTTP.Conduit
@@ -23,9 +24,7 @@ import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
+import           Utils
 
 data StackExchange = StackExchange deriving (Show, Generic)
 
@@ -47,7 +46,7 @@ instance HasUserReq StackExchange where
 
 instance HasAuthUri StackExchange where
   authUri _ = createCodeUri stackexchangeKey [ ("state", "StackExchange.test-state-123")
-                                          ] 
+                                          ]
 
 data StackExchangeResp = StackExchangeResp { hasMore :: Bool
                                            , quotaMax :: Integer

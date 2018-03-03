@@ -1,22 +1,22 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Dropbox where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
+import           Utils
 
 data Dropbox = Dropbox deriving (Show, Generic)
 
@@ -36,7 +36,7 @@ instance HasUserReq Dropbox where
 
 instance HasAuthUri Dropbox where
   authUri _ = createCodeUri dropboxKey [ ("state", "Dropbox.test-state-123")
-                                        ] 
+                                        ]
 
 newtype DropboxName = DropboxName { displayName :: Text }
                  deriving (Show, Generic)

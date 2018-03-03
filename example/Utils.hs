@@ -3,13 +3,13 @@ module Utils where
 import qualified Data.Aeson                as Aeson
 import           Data.ByteString           (ByteString)
 import qualified Data.Text.Encoding        as T
+import qualified Data.Text.Encoding        as TE
 import           Data.Text.Lazy            (Text)
 import qualified Data.Text.Lazy            as TL
-import           Web.Scotty.Internal.Types
+import qualified Data.Text.Lazy            as TL
 import           Network.OAuth.OAuth2
-import qualified Data.Text.Lazy                    as TL
-import qualified Data.Text.Encoding   as TE
 import           URI.ByteString
+import           Web.Scotty.Internal.Types
 
 tlToBS :: TL.Text -> ByteString
 tlToBS = T.encodeUtf8 . TL.toStrict

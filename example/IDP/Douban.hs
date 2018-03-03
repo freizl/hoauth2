@@ -1,22 +1,22 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Douban where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
+import           Utils
 
 data Douban = Douban deriving (Show, Generic)
 
@@ -36,7 +36,7 @@ instance HasUserReq Douban where
 
 instance HasAuthUri Douban where
   authUri _ = createCodeUri doubanKey [ ("state", "Douban.test-state-123")
-                                        ] 
+                                        ]
 
 data DoubanUser = DoubanUser { name :: Text
                              , uid  :: Text

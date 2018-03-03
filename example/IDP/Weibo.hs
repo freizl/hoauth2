@@ -1,23 +1,23 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Weibo where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import qualified Data.Text.Lazy                    as TL
 import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
+import           Utils
 
 data Weibo = Weibo deriving (Show, Generic)
 
@@ -37,7 +37,7 @@ instance HasUserReq Weibo where
 
 instance HasAuthUri Weibo where
   authUri _ = createCodeUri weiboKey [ ("state", "Weibo.test-state-123")
-                                        ] 
+                                        ]
 
 -- TODO: http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser { id         :: Integer

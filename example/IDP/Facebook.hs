@@ -1,22 +1,22 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Facebook where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
+import           Keys
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
-import           Data.Hashable
-import Keys
-import Utils
+import           Utils
 
 data Facebook = Facebook deriving (Show, Generic)
 
@@ -37,7 +37,7 @@ instance HasUserReq Facebook where
 instance HasAuthUri Facebook where
   authUri _ = createCodeUri facebookKey [ ("state", "Facebook.test-state-123")
                                         , ("scope", "user_about_me,email")
-                                        ] 
+                                        ]
 
 data FacebookUser = FacebookUser { id    :: Text
                                  , name  :: Text
