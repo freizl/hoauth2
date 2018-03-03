@@ -1,4 +1,3 @@
-{-# LANGUAGE ExistentialQuantification #-}
 
 module IDP where
 
@@ -36,8 +35,6 @@ initIdps c = mapM_ (insertIDPData c) (fmap mkIDPData idps)
 
 idpsMap :: Map.HashMap Text IDPApp
 idpsMap = Map.fromList $ fmap (\x@(IDPApp idp) -> (idpLabel idp, x)) idps
-
-data IDPApp = forall a. (IDP a, HasTokenReq a, HasUserReq a, HasLabel a, HasAuthUri a) => IDPApp a
 
 parseIDP :: Text -> Either Text IDPApp
 parseIDP s = maybe (Left s) Right (Map.lookup s idpsMap)

@@ -45,6 +45,8 @@ class (IDP a) => HasTokenReq a where
 class (IDP a) => HasUserReq a where
   userReq :: FromJSON b => a -> Manager -> AccessToken -> IO (OAuth2Result b LoginUser)
 
+data IDPApp = forall a. (IDP a, HasTokenReq a, HasUserReq a, HasLabel a, HasAuthUri a) => IDPApp a
+
 -- dummy oauth2 request error
 --
 data Errors =
