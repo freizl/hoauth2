@@ -1,4 +1,4 @@
-DIST=dist
+DIST=.stack-work/dist
 CBD=stack
 STYLE=stylish-haskell
 HLINT=hlint

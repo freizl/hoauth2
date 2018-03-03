@@ -1,19 +1,39 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.Github where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Bifunctor
+import           Data.Hashable
 import           Data.Text.Lazy                    (Text)
 import           GHC.Generics
-import           Network.HTTP.Conduit
+import           Keys
 import           Network.OAuth.OAuth2
-import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
+import           Utils
 
-import           Types
+data Github = Github deriving (Show, Generic)
+
+instance Hashable Github
+
+instance IDP Github
+
+instance HasLabel Github
+
+instance HasTokenReq Github where
+  tokenReq _ mgr = fetchAccessToken mgr githubKey
+
+instance HasUserReq Github where
+  userReq _ mgr at = do
+    re <- authGetJSON mgr at userInfoUri
+    return (second toLoginUser re)
+
+instance HasAuthUri Github where
+  authUri _ = createCodeUri githubKey [("state", "Github.test-state-123")]
 
 data GithubUser = GithubUser { name :: Text
                              , id   :: Integer
@@ -27,14 +47,3 @@ userInfoUri = [uri|https://api.github.com/user|]
 
 toLoginUser :: GithubUser -> LoginUser
 toLoginUser guser = LoginUser { loginUserName = name guser }
-
-getUserInfo :: FromJSON a => Manager -> AccessToken -> IO (OAuth2Result a LoginUser)
-getUserInfo mgr at = do
-  re <- authGetJSON mgr at userInfoUri
-  return (second toLoginUser re)
-
-getAccessToken :: Manager
-               -> OAuth2
-               -> ExchangeToken
-               -> IO (OAuth2Result TR.Errors OAuth2Token)
-getAccessToken = fetchAccessToken

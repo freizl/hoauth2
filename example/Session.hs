@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 {- mimic server side session store -}
 
 module Session where
@@ -7,32 +9,30 @@ import qualified Data.HashMap.Strict     as Map
 
 import           Types
 
-type KeyCache = MVar (Map.HashMap IDP IDPData)
+initCacheStore :: IO CacheStore
+initCacheStore = newMVar Map.empty
 
-initKeyCache :: IO KeyCache
-initKeyCache = newMVar Map.empty
-
-allValues :: KeyCache -> IO [IDPData]
+allValues :: CacheStore -> IO [IDPData]
 allValues store = do
   m1 <- tryReadMVar store
   return $ maybe [] Map.elems m1
 
-removeKey :: KeyCache -> IDP -> IO ()
+removeKey :: CacheStore -> IDPLabel -> IO ()
 removeKey store idpKey = do
   m1 <- takeMVar store
   let m2 = Map.update updateIdpData idpKey m1
   putMVar store m2
   where updateIdpData idpD = Just $ idpD { loginUser = Nothing }
 
-lookupKey :: KeyCache
-          -> IDP
+lookupKey :: CacheStore
+          -> IDPLabel
           -> IO (Maybe IDPData)
-lookupKey store key = do
+lookupKey store idpKey = do
   m1 <- tryReadMVar store
-  return $ maybe Nothing (Map.lookup key) m1
+  return $ maybe Nothing (Map.lookup idpKey) m1
 
-insertKeys :: KeyCache -> IDP -> IDPData -> IO ()
-insertKeys store key val = do
+insertIDPData :: CacheStore -> IDPData -> IO ()
+insertIDPData store val = do
   m1 <- takeMVar store
-  let m2 = Map.insert key val m1
+  let m2 = Map.insert (idpDisplayLabel val) val m1
   putMVar store m2
