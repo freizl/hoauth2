@@ -45,6 +45,9 @@ class (IDP a) => HasTokenReq a where
 class (IDP a) => HasUserReq a where
   userReq :: FromJSON b => a -> Manager -> AccessToken -> IO (OAuth2Result b LoginUser)
 
+-- Heterogenous collections
+-- https://wiki.haskell.org/Heterogenous_collections
+--
 data IDPApp = forall a. (IDP a, HasTokenReq a, HasUserReq a, HasLabel a, HasAuthUri a) => IDPApp a
 
 -- dummy oauth2 request error
