@@ -64,6 +64,7 @@ data OAuth2Token = OAuth2Token {
 instance FromJSON OAuth2Token where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 instance ToJSON OAuth2Token where
+    toJSON = genericToJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
     toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 data OAuth2Error a =
@@ -83,6 +84,7 @@ instance FromJSON err => FromJSON (OAuth2Error err) where
   parseJSON _ = fail "Expected an object"
 
 instance ToJSON err => ToJSON (OAuth2Error err) where
+  toJSON = genericToJSON defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
   toEncoding = genericToEncoding defaultOptions { constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True }
 
 parseOAuth2Error :: FromJSON err => BSL.ByteString -> OAuth2Error err
