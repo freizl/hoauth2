@@ -14,11 +14,9 @@ import           Control.Applicative
 import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
-import           Data.Aeson.Types
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
-import           Data.Monoid
 import           Data.Text            (Text, pack)
 import           Data.Text.Encoding
 import           GHC.Generics

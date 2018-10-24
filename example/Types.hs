@@ -9,7 +9,6 @@ module Types where
 
 import           Control.Concurrent.MVar
 import           Data.Aeson
-import           Data.Aeson.Types
 import           Data.Hashable
 import qualified Data.HashMap.Strict               as Map
 import           Data.Maybe

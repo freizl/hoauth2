@@ -8,7 +8,6 @@
 -}
 module IDP.StackExchange where
 import           Data.Aeson
-import           Data.Aeson.Types
 import           Data.Bifunctor
 import           Data.ByteString      (ByteString)
 import           Data.Hashable
