@@ -135,7 +135,7 @@ accessTokenUrl' ::  OAuth2
 accessTokenUrl' oa code gt = (uri, body)
   where uri  = oauthAccessTokenEndpoint oa
         body = catMaybes [ Just ("code", encodeUtf8 $ extoken code)
-                         , (("redirect_uri",) . serializeURIRef') <$> oauthCallback oa
+                         , ("redirect_uri",) . serializeURIRef' <$> oauthCallback oa
                          , fmap (("grant_type",) . encodeUtf8) gt
                          ]
 
