@@ -4,7 +4,6 @@
 
 module IDP.Google where
 import           Data.Aeson
-import           Data.Aeson.Types
 import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)

@@ -6,9 +6,11 @@ packages:
   - .
 
 extra-deps:
-  - http-conduit-2.3.0
-  - http-types-0.12
+  - expiring-cache-map-0.0.6.1
+  - uri-bytestring-0.3.2.1
+  - uri-bytestring-aeson-0.1.0.6
+  - wai-middleware-static-0.8.2
 
-resolver: nightly-2018-01-17
+resolver: nightly-2018-10-24
 
 allow-newer: true

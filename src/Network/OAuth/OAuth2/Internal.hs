@@ -14,11 +14,9 @@ import           Control.Applicative
 import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
-import           Data.Aeson.Types
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
-import           Data.Monoid
 import           Data.Text            (Text, pack)
 import           Data.Text.Encoding
 import           GHC.Generics
@@ -137,7 +135,7 @@ accessTokenUrl' ::  OAuth2
 accessTokenUrl' oa code gt = (uri, body)
   where uri  = oauthAccessTokenEndpoint oa
         body = catMaybes [ Just ("code", encodeUtf8 $ extoken code)
-                         , (("redirect_uri",) . serializeURIRef') <$> oauthCallback oa
+                         , ("redirect_uri",) . serializeURIRef' <$> oauthCallback oa
                          , fmap (("grant_type",) . encodeUtf8) gt
                          ]
 

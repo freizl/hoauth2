@@ -3,7 +3,6 @@
 module Network.OAuth.OAuth2.TokenRequest where
 
 import           Data.Aeson
-import           Data.Aeson.Types
 import           GHC.Generics
 
 instance FromJSON Errors where
