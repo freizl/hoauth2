@@ -14,10 +14,11 @@ import           Control.Applicative
 import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
+import           Data.Aeson.Types (explicitParseFieldMaybe, Parser)
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
-import           Data.Text            (Text, pack)
+import           Data.Text            (Text, pack, unpack)
 import           Data.Text.Encoding
 import           GHC.Generics
 import           Lens.Micro
@@ -58,9 +59,18 @@ data OAuth2Token = OAuth2Token {
     , idToken      :: Maybe IdToken
     } deriving (Show, Generic)
 
+parseIntFlexible :: Value -> Parser Int
+parseIntFlexible (String s) = pure . read $ unpack s
+parseIntFlexible v = parseJSON v
+
 -- | Parse JSON data into 'OAuth2Token'
 instance FromJSON OAuth2Token where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+    parseJSON = withObject "OAuth2Token" $ \v -> OAuth2Token
+        <$> v .: "access_token"
+        <*> v .:? "refresh_token"
+        <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
+        <*> v .:? "token_type"
+        <*> v .:? "id_token"
 instance ToJSON OAuth2Token where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
     toEncoding = genericToEncoding defaultOptions { fieldLabelModifier = camelTo2 '_' }
