@@ -1,6 +1,7 @@
 
 * IDPs
-  - douban: http://developers.douban.com/wiki/?title=oauth2
+  - AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
+  - douban: <http://developers.douban.com/wiki/?title=oauth2>
   - Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
   - Github: <http://developer.github.com/v3/oauth/>
   - Facebook: <http://developers.facebook.com/docs/facebook-login/>
