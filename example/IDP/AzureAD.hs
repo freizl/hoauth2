@@ -37,7 +37,7 @@ instance HasAuthUri AzureAD where
                                        , ("resource", "https://graph.microsoft.com")
                                        ]
 
-data AzureADUser = AzureADUser { mail :: Text } deriving (Show, Generic)
+newtype AzureADUser = AzureADUser { mail :: Text } deriving (Show, Generic)
 
 instance FromJSON AzureADUser where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
