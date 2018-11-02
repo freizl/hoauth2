@@ -4,6 +4,7 @@ module IDP where
 import           Data.Text.Lazy      (Text)
 
 import qualified Data.HashMap.Strict as Map
+import qualified IDP.AzureAD         as IAzureAD
 import qualified IDP.Douban          as IDouban
 import qualified IDP.Dropbox         as IDropbox
 import qualified IDP.Facebook        as IFacebook
@@ -19,7 +20,8 @@ import           Types
 -- TODO: make this generic to discover any IDPs from idp directory.
 --
 idps :: [IDPApp]
-idps = [ IDPApp IDouban.Douban
+idps = [ IDPApp IAzureAD.AzureAD
+       , IDPApp IDouban.Douban
        , IDPApp IDropbox.Dropbox
        , IDPApp IFacebook.Facebook
        , IDPApp IFitbit.Fitbit
