@@ -84,3 +84,11 @@ oktaKey = OAuth2 { oauthClientId = "xxx"
                  , oauthOAuthorizeEndpoint = [uri|https://dev-148986.oktapreview.com/oauth2/v1/authorize|]
                  , oauthAccessTokenEndpoint = [uri|https://dev-148986.oktapreview.com/oauth2/v1/token|]
                  }
+
+azureADKey :: OAuth2
+azureADKey = OAuth2 { oauthClientId = "xxx"
+                    , oauthClientSecret = "xxx"
+                    , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
+                    , oauthOAuthorizeEndpoint = [uri|https://login.windows.net/common/oauth2/authorize|]
+                    , oauthAccessTokenEndpoint = [uri|https://login.windows.net/common/oauth2/token|]
+                    }

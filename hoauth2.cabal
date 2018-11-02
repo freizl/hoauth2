@@ -6,6 +6,8 @@ Synopsis:            Haskell OAuth2 authentication client
 
 Description: Haskell OAuth2 authentication client. Tested with the following services:
              .
+             * AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
+             .
              * Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
              .
              * Github: <http://developer.github.com/v3/oauth/>
@@ -35,6 +37,7 @@ tested-with:         GHC <= 8.0.2
 
 Extra-source-files: README.md
                     example/Keys.hs.sample
+                    example/IDP/AzureAD.hs
                     example/IDP/Google.hs
                     example/IDP/Weibo.hs
                     example/IDP/Github.hs
@@ -99,6 +102,7 @@ Executable demo-server
   main-is:             main.hs
   other-modules:       IDP,
                        App
+                       IDP.AzureAD
                        IDP.Douban
                        IDP.Dropbox
                        IDP.Facebook
