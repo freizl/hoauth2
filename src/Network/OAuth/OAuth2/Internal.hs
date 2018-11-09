@@ -18,6 +18,7 @@ import           Data.Aeson.Types (explicitParseFieldMaybe, Parser)
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
+import           Data.Semigroup       ((<>))
 import           Data.Text            (Text, pack, unpack)
 import           Data.Text.Encoding
 import           GHC.Generics
