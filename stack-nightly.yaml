@@ -5,12 +5,4 @@ flags:
 packages:
   - .
 
-extra-deps:
-  - expiring-cache-map-0.0.6.1
-  - uri-bytestring-0.3.2.1
-  - uri-bytestring-aeson-0.1.0.6
-  - wai-middleware-static-0.8.2
-
-resolver: nightly-2018-10-24
-
-allow-newer: true
+resolver: nightly-2018-11-21
