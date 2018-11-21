@@ -1,6 +1,6 @@
 Name:                hoauth2
 -- http://wiki.haskell.org/Package_versioning_policy
-Version:             1.8.2
+Version:             1.8.3
 
 Synopsis:            Haskell OAuth2 authentication client
 
