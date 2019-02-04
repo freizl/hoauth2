@@ -10,3 +10,4 @@ cabal.sandbox.config
 *.bak
 .stack-work
 TAGS
+.DS_Store

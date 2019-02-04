@@ -131,7 +131,7 @@ Executable demo-server
                        containers        >= 0.4    && < 0.7,
                        aeson             >= 1.0.0.0 && < 1.5,
                        microlens            >= 0.4.0 && < 0.5,
-                       unordered-containers >= 0.2.8 && < 0.2.10,
+                       unordered-containers >= 0.2.5,
                        wai-extra >= 3.0.21.0 && < 3.0.25.0,
                        wai-middleware-static >= 0.8.1 && < 0.8.3,
                        mustache >= 2.2.3 && < 2.4.0,
