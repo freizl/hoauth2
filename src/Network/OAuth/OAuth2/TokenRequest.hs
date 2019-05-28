@@ -3,6 +3,8 @@
 module Network.OAuth.OAuth2.TokenRequest where
 
 import           Data.Aeson
+import           Data.Aeson.Types (allNullaryToStringTag, camelTo2,
+                                   constructorTagModifier)
 import           GHC.Generics
 
 instance FromJSON Errors where
