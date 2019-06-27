@@ -127,7 +127,7 @@ Executable demo-server
                        http-conduit      >= 2.1    && < 2.4,
                        http-types        >= 0.11    && < 0.13,
                        wai               >= 3.2    && < 3.3,
-                       warp              >= 3.2    && < 3.3,
+                       warp              >= 3.2    && < 3.4,
                        containers        >= 0.4    && < 0.7,
                        aeson             >= 1.0.0.0 && < 1.5,
                        microlens            >= 0.4.0 && < 0.5,
