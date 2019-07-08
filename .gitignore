@@ -11,3 +11,5 @@ cabal.sandbox.config
 .stack-work
 TAGS
 .DS_Store
+.ghc.environment.x86_64*
+dist-newstyle
