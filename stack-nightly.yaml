@@ -5,4 +5,4 @@ flags:
 packages:
   - .
 
-resolver: nightly-2019-08-24
+resolver: nightly-2018-11-21

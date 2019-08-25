@@ -33,7 +33,7 @@ Copyright:           Haisheng Wu
 Category:            Network
 Build-type:          Simple
 stability:           Beta
-tested-with:         GHC <= 8.6.5
+tested-with:         GHC <= 8.0.2
 
 Extra-source-files: README.md
                     example/Keys.hs.sample
