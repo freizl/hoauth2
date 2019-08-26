@@ -1,1 +1,1 @@
-(import ./release.nix).hoauth2.env
+(import ./default.nix).hoauth2.env
