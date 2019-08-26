@@ -29,7 +29,7 @@ lookupKey :: CacheStore
           -> IO (Maybe IDPData)
 lookupKey store idpKey = do
   m1 <- tryReadMVar store
-  return $ maybe Nothing (Map.lookup idpKey) m1
+  return (Map.lookup idpKey =<< m1)
 
 insertIDPData :: CacheStore -> IDPData -> IO ()
 insertIDPData store val = do
