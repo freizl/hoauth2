@@ -4,7 +4,7 @@ before_install:
   nix-env --install --attr nixpkgs.haskellPackages.hlint
 
 script:
-  # hlint src example
+  hlint src example
   nix-build
 
 notifications:
