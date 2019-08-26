@@ -4,8 +4,8 @@ before_install:
   nix-env --install --attr nixpkgs.haskellPackages.hlint
 
 script:
-  hlint src example
-  nix-build
+  - nix-shell --command 'hlint src example'
+  - nix-build
 
 notifications:
   slack: freizl:D42Dy68Q4Cj8Bjw5Qi9mZrQf
