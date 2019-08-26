@@ -15,11 +15,9 @@ A lightweight oauth2 haskell binding.
 
 ## Nix
 
-- assume 
-  1. `cabal-install` has been install (either globally or in nix store)
-  2. `nix-channel --add https://nixos.org/channels/nixos-19.03-small nixpkgs`
-- `nix-shell` (leverage `shell.nix`)
-- within `nix-shell`, go with `cabal v2-` style build.
+- assume `cabal-install` has been install (either globally or in nix store)
+- `nix-shell` then could do `cabal v2-` build
+- or `nix-build`
 
 # Contribute
 
