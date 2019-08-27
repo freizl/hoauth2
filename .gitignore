@@ -13,3 +13,6 @@ TAGS
 .DS_Store
 .ghc.environment.x86_64*
 dist-newstyle
+cabal.project.local
+cabal.project.local~
+result

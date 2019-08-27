@@ -13,6 +13,12 @@ A lightweight oauth2 haskell binding.
 - `make demo`
 - open <http://localhost:9988>
 
+## Nix
+
+- assume `cabal-install` has been install (either globally or in nix store)
+- `nix-shell` then could do `cabal v2-` build
+- or `nix-build`
+
 # Contribute
 
 Feel free send pull request or submit issue ticket.

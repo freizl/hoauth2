@@ -259,7 +259,7 @@ updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
   let extras = [ (HT.hUserAgent, "hoauth2")
                , (HT.hAccept, "application/json") ]
-      bearer = [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 (fromJust (fmap atoken t))) | isJust t]
+      bearer = [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 (atoken (fromJust t))) | isJust t]
       headers = bearer ++ extras ++ requestHeaders req
   in
   req { requestHeaders = headers }
