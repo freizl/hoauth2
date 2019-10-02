@@ -3,17 +3,17 @@
 {-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.AzureAD where
-import Data.Aeson
-import Data.Bifunctor
-import Data.Hashable
-import Data.Text.Lazy (Text)
-import GHC.Generics
-import Keys
-import Network.OAuth.OAuth2
-import Types
-import URI.ByteString
-import URI.ByteString.QQ
-import Utils
+import           Data.Aeson
+import           Data.Bifunctor
+import           Data.Hashable
+import           Data.Text.Lazy       (Text)
+import           GHC.Generics
+import           Keys
+import           Network.OAuth.OAuth2
+import           Types
+import           URI.ByteString
+import           URI.ByteString.QQ
+import           Utils
 
 data AzureAD = AzureAD deriving (Show, Generic)
 

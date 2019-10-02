@@ -14,7 +14,7 @@ import           Control.Applicative
 import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
-import           Data.Aeson.Types (explicitParseFieldMaybe, Parser)
+import           Data.Aeson.Types     (Parser, explicitParseFieldMaybe)
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
@@ -62,7 +62,7 @@ data OAuth2Token = OAuth2Token {
 
 parseIntFlexible :: Value -> Parser Int
 parseIntFlexible (String s) = pure . read $ unpack s
-parseIntFlexible v = parseJSON v
+parseIntFlexible v          = parseJSON v
 
 -- | Parse JSON data into 'OAuth2Token'
 instance FromJSON OAuth2Token where
