@@ -9,8 +9,6 @@ module Network.OAuth.OAuth2.HttpClient (
   fetchAccessToken,
   fetchAccessToken2,
   refreshAccessToken,
-  doJSONPostRequest,
-  doSimplePostRequest,
 -- * AUTH requests
   authGetJSON,
   authGetBS,
