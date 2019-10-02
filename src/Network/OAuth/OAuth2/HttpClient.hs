@@ -8,10 +8,8 @@ module Network.OAuth.OAuth2.HttpClient (
 -- * Token management
   fetchAccessToken,
   fetchAccessToken2,
-  fetchRefreshToken,
   refreshAccessToken,
   doJSONPostRequest,
-  doFlexiblePostRequest,
   doSimplePostRequest,
 -- * AUTH requests
   authGetJSON,
@@ -54,7 +52,7 @@ fetchAccessToken :: Manager                                   -- ^ HTTP connecti
                    -> OAuth2                                  -- ^ OAuth Data
                    -> ExchangeToken                           -- ^ OAuth 2 Tokens
                    -> IO (OAuth2Result TR.Errors OAuth2Token) -- ^ Access Token
-fetchAccessToken manager oa code = doFlexiblePostRequest manager oa uri body
+fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
 -- | Request OAuth2 Token
@@ -69,23 +67,15 @@ fetchAccessToken2 mgr oa code = do
   let extraBody = [ ("client_id", T.encodeUtf8 $ oauthClientId oa)
                   , ("client_secret", T.encodeUtf8 $ oauthClientSecret oa)
                   ]
-  doFlexiblePostRequest mgr oa url (extraBody ++ body1)
+  doJSONPostRequest mgr oa url (extraBody ++ body1)
 
 -- | Request a new AccessToken with the Refresh Token.
 refreshAccessToken :: Manager                         -- ^ HTTP connection manager.
                      -> OAuth2                       -- ^ OAuth context
                      -> RefreshToken                 -- ^ refresh token gained after authorization
                      -> IO (OAuth2Result TR.Errors OAuth2Token)
-refreshAccessToken manager oa token = doFlexiblePostRequest manager oa uri body
+refreshAccessToken manager oa token = doJSONPostRequest manager oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa token
-
-{-# DEPRECATED fetchRefreshToken "Use refreshAccessToken since this method will be removed in future release" #-}
-fetchRefreshToken :: Manager                         -- ^ HTTP connection manager.
-                     -> OAuth2                       -- ^ OAuth context
-                     -> RefreshToken                 -- ^ refresh token gained after authorization
-                     -> IO (OAuth2Result TR.Errors OAuth2Token)
-fetchRefreshToken = refreshAccessToken
-
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: FromJSON err => FromJSON a
@@ -95,16 +85,6 @@ doJSONPostRequest :: FromJSON err => FromJSON a
                   -> PostBody                            -- ^ request body
                   -> IO (OAuth2Result err a)             -- ^ Response as JSON
 doJSONPostRequest manager oa uri body = fmap parseResponseJSON (doSimplePostRequest manager oa uri body)
-
--- | Conduct post request and return response as JSON or Query String.
-{-# DEPRECATED doFlexiblePostRequest "Use doJSONPostRequest since this function would be removed in future release." #-}
-doFlexiblePostRequest :: FromJSON err => FromJSON a
-                         => Manager                             -- ^ HTTP connection manager.
-                         -> OAuth2                              -- ^ OAuth options
-                         -> URI                                 -- ^ The URL
-                         -> PostBody                            -- ^ request body
-                         -> IO (OAuth2Result err a)             -- ^ Response as ByteString
-doFlexiblePostRequest manager oa uri body = fmap parseResponseFlexible (doSimplePostRequest manager oa uri body)
 
 -- | Conduct post request.
 doSimplePostRequest :: FromJSON err => Manager                 -- ^ HTTP connection manager.
