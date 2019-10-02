@@ -10,6 +10,7 @@ import           Data.Text.Lazy       (Text)
 import           GHC.Generics
 import           Keys
 import           Network.OAuth.OAuth2
+import qualified Data.ByteString.Lazy.Char8        as BSL
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
@@ -28,8 +29,9 @@ instance HasTokenReq Dropbox where
 
 instance HasUserReq Dropbox where
   userReq _ mgr at = do
-    re <- parseResponseJSON <$> authPostBS3 mgr at userInfoUri
-    return (second toLoginUser re)
+    re <- authPostBS3 mgr at userInfoUri
+    return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
+
 
 instance HasAuthUri Dropbox where
   authUri _ = createCodeUri dropboxKey [ ("state", "Dropbox.test-state-123")

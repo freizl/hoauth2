@@ -18,6 +18,7 @@ import           GHC.Generics
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
+import qualified Data.ByteString.Lazy.Char8        as BSL
 import           Text.Mustache
 import qualified Text.Mustache                     as M
 
@@ -42,7 +43,7 @@ class (IDP a) => HasTokenReq a where
   tokenReq :: a -> Manager -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
 
 class (IDP a) => HasUserReq a where
-  userReq :: FromJSON b => a -> Manager -> AccessToken -> IO (OAuth2Result b LoginUser)
+  userReq :: a -> Manager -> AccessToken -> IO (Either BSL.ByteString LoginUser)
 
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections

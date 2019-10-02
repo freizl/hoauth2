@@ -5,12 +5,17 @@ import           Data.ByteString           (ByteString)
 import qualified Data.Text.Encoding        as TE
 import           Data.Text.Lazy            (Text)
 import qualified Data.Text.Lazy            as TL
+import qualified Data.ByteString.Lazy.Char8        as BSL
+
 import           Network.OAuth.OAuth2
 import           URI.ByteString
 import           Web.Scotty.Internal.Types
 
 tlToBS :: TL.Text -> ByteString
 tlToBS = TE.encodeUtf8 . TL.toStrict
+
+bslToText :: BSL.ByteString -> Text
+bslToText = TL.pack . BSL.unpack
 
 paramValue :: Text -> [Param] -> [Text]
 paramValue key = fmap snd . filter (hasParam key)
@@ -30,5 +35,3 @@ createCodeUri :: OAuth2
 createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
   $ appendQueryParams params
   $ authorizationUrl key
-
-

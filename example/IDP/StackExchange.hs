@@ -13,6 +13,7 @@ import           Data.ByteString      (ByteString)
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import qualified Data.Text.Lazy       as TL
+import qualified Data.ByteString.Lazy.Char8        as BSL
 import           GHC.Generics
 import           Keys
 import           Lens.Micro
@@ -35,10 +36,9 @@ instance HasTokenReq StackExchange where
 
 instance HasUserReq StackExchange where
   userReq _ mgr token = do
-    re <- parseResponseJSON
-          <$> authGetBS2 mgr token
+    re <- authGetBS2 mgr token
               (userInfoUri `appendStackExchangeAppKey` stackexchangeAppKey)
-    return (second toLoginUser re)
+    return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
 
 instance HasAuthUri StackExchange where
   authUri _ = createCodeUri stackexchangeKey [ ("state", "StackExchange.test-state-123")
@@ -72,4 +72,3 @@ toLoginUser StackExchangeResp {..} =
 appendStackExchangeAppKey :: URI -> ByteString -> URI
 appendStackExchangeAppKey useruri k =
   over (queryL . queryPairsL) (\query -> query ++ [("key", k)]) useruri
-

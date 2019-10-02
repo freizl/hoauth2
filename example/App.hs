@@ -23,7 +23,6 @@ import           Network.Wai.Middleware.Static
 import           Prelude
 import           Web.Scotty
 import           Web.Scotty.Internal.Types
-
 import           IDP
 import           Session
 import           Types
@@ -135,8 +134,4 @@ tryFetchUser idp code = do
 fetchUser :: (HasUserReq a) => a -> Manager -> AccessToken -> IO (Either Text LoginUser)
 fetchUser idp mgr token = do
   re <- userReq idp mgr token
-  return (first displayOAuth2Error re)
-
-displayOAuth2Error :: OAuth2Error Errors -> Text
-displayOAuth2Error = TL.pack . show
-
+  return (first bslToText re)

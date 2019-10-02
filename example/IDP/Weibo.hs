@@ -8,6 +8,7 @@ import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import qualified Data.Text.Lazy       as TL
+import qualified Data.ByteString.Lazy.Char8        as BSL
 import           GHC.Generics
 import           Keys
 import           Network.OAuth.OAuth2
@@ -32,8 +33,8 @@ instance HasTokenReq Weibo where
 -- access token in query param only
 instance HasUserReq Weibo where
   userReq _ mgr at = do
-    re <- parseResponseJSON <$> authGetBS2 mgr at userInfoUri
-    return (second toLoginUser re)
+    re <- authGetBS2 mgr at userInfoUri
+    return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
 
 instance HasAuthUri Weibo where
   authUri _ = createCodeUri weiboKey [ ("state", "Weibo.test-state-123")
