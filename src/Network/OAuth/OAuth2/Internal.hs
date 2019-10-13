@@ -15,6 +15,7 @@ import           Control.Arrow        (second)
 import           Control.Monad.Catch
 import           Data.Aeson
 import           Data.Aeson.Types     (Parser, explicitParseFieldMaybe)
+import           Data.Binary          (Binary)
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe
@@ -42,9 +43,9 @@ data OAuth2 = OAuth2 {
     , oauthCallback            :: Maybe URI
     } deriving (Show, Eq)
 
-newtype AccessToken = AccessToken { atoken :: Text } deriving (Show, FromJSON, ToJSON)
-newtype RefreshToken = RefreshToken { rtoken :: Text } deriving (Show, FromJSON, ToJSON)
-newtype IdToken = IdToken { idtoken :: Text } deriving (Show, FromJSON, ToJSON)
+newtype AccessToken = AccessToken { atoken :: Text } deriving (Binary, Show, FromJSON, ToJSON)
+newtype RefreshToken = RefreshToken { rtoken :: Text } deriving (Binary, Show, FromJSON, ToJSON)
+newtype IdToken = IdToken { idtoken :: Text } deriving (Binary, Show, FromJSON, ToJSON)
 newtype ExchangeToken = ExchangeToken { extoken :: Text } deriving (Show, FromJSON, ToJSON)
 
 
@@ -59,6 +60,8 @@ data OAuth2Token = OAuth2Token {
     , tokenType    :: Maybe Text
     , idToken      :: Maybe IdToken
     } deriving (Show, Generic)
+
+instance Binary OAuth2Token
 
 parseIntFlexible :: Value -> Parser Int
 parseIntFlexible (String s) = pure . read $ unpack s
