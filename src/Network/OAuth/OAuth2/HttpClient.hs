@@ -20,8 +20,8 @@ module Network.OAuth.OAuth2.HttpClient (
   authRequest
 ) where
 
-import Data.Bifunctor (first)
 import           Data.Aeson
+import           Data.Bifunctor                    (first)
 import qualified Data.ByteString.Char8             as BS
 import qualified Data.ByteString.Lazy.Char8        as BSL
 import qualified Data.HashMap.Strict               as HM (fromList)

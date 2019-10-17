@@ -25,7 +25,7 @@ stylish:
 	find src example -name '*.hs' | xargs stylish-haskell -i
 
 hlint:
-	hlint src/ example/ --report
+	hlint . --report
 
 doc: build
 	cabal v2-haddock

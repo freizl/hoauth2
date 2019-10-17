@@ -5,10 +5,10 @@
 module IDP.Weibo where
 import           Data.Aeson
 import           Data.Bifunctor
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import qualified Data.Text.Lazy       as TL
-import qualified Data.ByteString.Lazy.Char8        as BSL
+import           Data.Text.Lazy             (Text)
+import qualified Data.Text.Lazy             as TL
 import           GHC.Generics
 import           Keys
 import           Network.OAuth.OAuth2
