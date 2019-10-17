@@ -9,6 +9,7 @@ module Types where
 
 import           Control.Concurrent.MVar
 import           Data.Aeson
+import qualified Data.ByteString.Lazy.Char8        as BSL
 import           Data.Hashable
 import qualified Data.HashMap.Strict               as Map
 import           Data.Maybe
@@ -18,7 +19,6 @@ import           GHC.Generics
 import           Network.HTTP.Conduit
 import           Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
-import qualified Data.ByteString.Lazy.Char8        as BSL
 import           Text.Mustache
 import qualified Text.Mustache                     as M
 

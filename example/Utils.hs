@@ -1,11 +1,11 @@
 module Utils where
 
-import qualified Data.Aeson                as Aeson
-import           Data.ByteString           (ByteString)
-import qualified Data.Text.Encoding        as TE
-import           Data.Text.Lazy            (Text)
-import qualified Data.Text.Lazy            as TL
-import qualified Data.ByteString.Lazy.Char8        as BSL
+import qualified Data.Aeson                 as Aeson
+import           Data.ByteString            (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Data.Text.Encoding         as TE
+import           Data.Text.Lazy             (Text)
+import qualified Data.Text.Lazy             as TL
 
 import           Network.OAuth.OAuth2
 import           URI.ByteString

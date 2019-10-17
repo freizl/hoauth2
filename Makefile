@@ -10,26 +10,22 @@ create-keys:
 build:
 	cabal v2-build --flag=test
 
-### TODO
 watch:
-	cabal v2-build --file-watch
+	find src example -name '*.hs' | entr -s 'make build'
 
 build-demo:
 	cabal v2-build --flag=test demo-server
+
 start-demo:
 	cabal v2-exec --flag=test demo-server
 
 rebuild: clean build
 
 stylish:
-	cabal v2-exec stylish-haskell --  -i src/Network/OAuth/**/*.hs
-	cabal v2-exec stylish-haskell --  -i src/Network/OAuth/*.hs
-	cabal v2-exec stylish-haskell --  -i example/*.hs
-	cabal v2-exec stylish-haskell --  -i example/*.hs.sample
-	cabal v2-exec stylish-haskell --  -i example/**/*.hs
+	find src example -name '*.hs' | xargs stylish-haskell -i
 
 hlint:
-	cabal v2-exec hlint -- src/ example --report=dist-newstyle/hlint.html
+	hlint . --report
 
 doc: build
 	cabal v2-haddock
@@ -37,13 +33,16 @@ doc: build
 dist: build
 	cabal v2-sdist
 
-install-hlint:
-	cabal install hlint
+## Maybe use hpack?
+cabal2nix:
+	cabal2nix -ftest . > hoauth2.nix
 
 ####################
 ### CI
 ####################
 
-ci-build: build
+ci-build: create-keys
+	nix-build
 
-ci-lint: create-keys install-hlint hlint
+ci-lint:
+	nix-shell --command 'make hlint'
