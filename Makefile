@@ -11,7 +11,7 @@ build:
 	cabal v2-build --flag=test
 
 watch:
-  find src example -name '*.hs' | entr -s 'make build'
+	find src example -name '*.hs' | entr -s 'make build'
 
 build-demo:
 	cabal v2-build --flag=test demo-server
@@ -22,7 +22,7 @@ start-demo:
 rebuild: clean build
 
 stylish:
-  find src example -name '*.hs' | xargs stylish-haskell -i
+	find src example -name '*.hs' | xargs stylish-haskell -i
 
 hlint:
 	hlint src/ example --report=dist-newstyle/hlint.html
@@ -35,7 +35,7 @@ dist: build
 
 ## Maybe use hpack?
 cabal2nix:
-  cabal2nix -ftest . > hoauth2.nix
+	cabal2nix -ftest . > hoauth2.nix
 
 ####################
 ### CI
