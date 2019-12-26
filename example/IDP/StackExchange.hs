@@ -9,11 +9,11 @@
 module IDP.StackExchange where
 import           Data.Aeson
 import           Data.Bifunctor
-import           Data.ByteString      (ByteString)
+import           Data.ByteString            (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import qualified Data.Text.Lazy       as TL
-import qualified Data.ByteString.Lazy.Char8        as BSL
+import           Data.Text.Lazy             (Text)
+import qualified Data.Text.Lazy             as TL
 import           GHC.Generics
 import           Keys
 import           Lens.Micro

@@ -14,6 +14,7 @@ import           Data.Bifunctor
 import           Data.Maybe
 import           Data.Text.Lazy                (Text)
 import qualified Data.Text.Lazy                as TL
+import           IDP
 import           Network.HTTP.Conduit
 import           Network.HTTP.Types
 import           Network.OAuth.OAuth2
@@ -21,13 +22,12 @@ import qualified Network.Wai                   as WAI
 import           Network.Wai.Handler.Warp      (run)
 import           Network.Wai.Middleware.Static
 import           Prelude
-import           Web.Scotty
-import           Web.Scotty.Internal.Types
-import           IDP
 import           Session
 import           Types
 import           Utils
 import           Views
+import           Web.Scotty
+import           Web.Scotty.Internal.Types
 
 ------------------------------
 -- App

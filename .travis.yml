@@ -4,8 +4,12 @@ before_install:
   nix-env --install --attr nixpkgs.haskellPackages.hlint
 
 script:
-  - nix-shell --command 'hlint src example'
-  - nix-build
+  - make ci-$TEST_SUITE
+
+env:
+  matrix:
+    - TEST_SUITE=lint
+    - TEST_SUITE=build
 
 notifications:
   slack: freizl:D42Dy68Q4Cj8Bjw5Qi9mZrQf
@@ -21,11 +25,6 @@ notifications:
 # 
 # sudo: false
 # 
-# env:
-#   matrix:
-#     - TEST_SUITE=lint
-#     - TEST_SUITE=build
-#     - TEST_SUITE=nightly
 # 
 # cache:
 #   directories:

@@ -5,12 +5,12 @@
 module IDP.Dropbox where
 import           Data.Aeson
 import           Data.Bifunctor
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Hashable
-import           Data.Text.Lazy       (Text)
+import           Data.Text.Lazy             (Text)
 import           GHC.Generics
 import           Keys
 import           Network.OAuth.OAuth2
-import qualified Data.ByteString.Lazy.Char8        as BSL
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
