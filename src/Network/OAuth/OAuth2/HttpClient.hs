@@ -9,6 +9,7 @@ module Network.OAuth.OAuth2.HttpClient (
   fetchAccessToken,
   fetchAccessToken2,
   refreshAccessToken,
+  refreshAccessToken2,
 -- * AUTH requests
   authGetJSON,
   authGetBS,
@@ -38,19 +39,24 @@ import           URI.ByteString
 -- * Token management
 --------------------------------------------------
 
--- | Request OAuth2 Token
---   method: POST
---   authenticate in header
+-- | Fetch OAuth2 Token with authenticate in request header.
+--
+-- OAuth2 spec allows `client_id` and `client_secret` to
+-- either be sent in the header (as basic authentication)
+-- OR as form/url params.
+-- The OAuth server can choose to implement only one, or both.
+-- Unfortunately, there is no way for the OAuth client (i.e. this library) to
+-- know which method to use. Please take a look at the documentation of the
+-- service that you are integrating with and either use `fetchAccessToken` or `fetchAccessToken2`
 fetchAccessToken :: Manager                                   -- ^ HTTP connection manager
                    -> OAuth2                                  -- ^ OAuth Data
-                   -> ExchangeToken                           -- ^ OAuth 2 Tokens
+                   -> ExchangeToken                           -- ^ OAuth2 Code
                    -> IO (OAuth2Result TR.Errors OAuth2Token) -- ^ Access Token
 fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
--- | Request OAuth2 Token
---   method: POST
---   authenticate in both header and body
+-- | Please read the docs of `fetchAccessToken`.
+--
 fetchAccessToken2 :: Manager                                   -- ^ HTTP connection manager
                    -> OAuth2                                  -- ^ OAuth Data
                    -> ExchangeToken                           -- ^ OAuth 2 Tokens
@@ -62,13 +68,33 @@ fetchAccessToken2 mgr oa code = do
                   ]
   doJSONPostRequest mgr oa url (extraBody ++ body1)
 
--- | Request a new AccessToken with the Refresh Token.
+-- | Fetch a new AccessToken with the Refresh Token with authentication in request header.
+-- OAuth2 spec allows `client_id` and `client_secret` to
+-- either be sent in the header (as basic authentication)
+-- OR as form/url params.
+-- The OAuth server can choose to implement only one, or both.
+-- Unfortunately, there is no way for the OAuth client (i.e. this library) to
+-- know which method to use. Please take a look at the documentation of the
+-- service that you are integrating with and either use `refreshAccessToken` or `refreshAccessToken2`
 refreshAccessToken :: Manager                         -- ^ HTTP connection manager.
                      -> OAuth2                       -- ^ OAuth context
                      -> RefreshToken                 -- ^ refresh token gained after authorization
                      -> IO (OAuth2Result TR.Errors OAuth2Token)
 refreshAccessToken manager oa token = doJSONPostRequest manager oa uri body
                               where (uri, body) = refreshAccessTokenUrl oa token
+
+-- | Please read the docs of `refreshAccessToken`.
+--
+refreshAccessToken2 :: Manager                         -- ^ HTTP connection manager.
+                     -> OAuth2                       -- ^ OAuth context
+                     -> RefreshToken                 -- ^ refresh token gained after authorization
+                     -> IO (OAuth2Result TR.Errors OAuth2Token)
+refreshAccessToken2 manager oa token = do
+  let (uri, body) = refreshAccessTokenUrl oa token
+  let extraBody = [ ("client_id", T.encodeUtf8 $ oauthClientId oa)
+                  , ("client_secret", T.encodeUtf8 $ oauthClientSecret oa)
+                  ]
+  doJSONPostRequest manager oa uri (extraBody ++ body)
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest :: (FromJSON err, FromJSON a)
