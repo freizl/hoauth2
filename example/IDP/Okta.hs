@@ -33,8 +33,8 @@ instance HasUserReq Okta where
 
 instance HasAuthUri Okta where
   authUri _ = createCodeUri oktaKey [ ("state", "Okta.test-state-123")
-                                        , ("scope", "openid profile")
-                                        ]
+                                    , ("scope", "openid profile")
+                                    ]
 
 data OktaUser = OktaUser { name              :: Text
                          , preferredUsername :: Text
