@@ -23,6 +23,9 @@ instance IDP Douban
 
 instance HasLabel Douban
 
+instance HasTokenRefreshReq Douban where
+  tokenRefreshReq _ mgr rt = refreshAccessToken mgr doubanKey rt
+
 instance HasTokenReq Douban where
   tokenReq _ mgr = fetchAccessToken2 mgr doubanKey
 

@@ -26,6 +26,9 @@ instance HasLabel Okta
 instance HasTokenReq Okta where
   tokenReq _ mgr = fetchAccessToken mgr oktaKey
 
+instance HasTokenRefreshReq Okta where
+  tokenRefreshReq _ mgr rt = refreshAccessToken mgr oktaKey rt
+
 instance HasUserReq Okta where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
@@ -33,7 +36,7 @@ instance HasUserReq Okta where
 
 instance HasAuthUri Okta where
   authUri _ = createCodeUri oktaKey [ ("state", "Okta.test-state-123")
-                                    , ("scope", "openid profile")
+                                    , ("scope", "openid profile offline_access")
                                     ]
 
 data OktaUser = OktaUser { name              :: Text

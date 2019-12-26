@@ -52,6 +52,7 @@ waiApp = do
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
+    get "/refresh" $ refreshH cache
 
 debug :: Bool
 debug = True
@@ -68,6 +69,34 @@ errorM = throwError . ActionError
 
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status401 >> html t
+
+refreshH :: CacheStore -> ActionM ()
+refreshH c = do
+  pas <- params
+  let idpP = paramValue "idp" pas
+  when (null idpP) redirectToHomeM
+  let eitherIdpApp = parseIDP (head idpP)
+  case eitherIdpApp of
+    Right (IDPApp idp) -> do
+      maybeIdpData <- lookIdp c idp
+      when (isNothing maybeIdpData) (errorM "fetchTokenAndUser: cannot find idp data from cache")
+      let idpData = fromJust maybeIdpData
+      re <- liftIO $ doRefreshToken c idp idpData
+      case re of
+        Right newToken -> liftIO (print newToken) >> redirectToHomeM -- TODO: update access token in the store
+        Left e -> errorM (TL.pack e)
+    Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
+
+doRefreshToken c idp idpData = do
+  mgr <- newManager tlsManagerSettings
+  case oauth2Token idpData of
+    Nothing -> return $ Left "no token found for idp"
+    Just at -> do
+      case (refreshToken at) of
+        Nothing -> return $ Left "no refresh token presents"
+        Just rt -> do
+          re <- tokenRefreshReq idp mgr rt
+          return (first show re)
 
 logoutH :: CacheStore -> ActionM ()
 logoutH c = do
@@ -106,28 +135,42 @@ fetchTokenAndUser c code idp = do
   when (isNothing maybeIdpData) (errorM "fetchTokenAndUser: cannot find idp data from cache")
 
   let idpData = fromJust maybeIdpData
-  result <- liftIO $ tryFetchUser idp code
-
+  result <- liftIO $ fetchTokenAndUser' c code idp idpData
   case result of
-    Right luser -> updateIdp c idpData luser >> redirectToHomeM
-    Left err    -> errorM ("fetchTokenAndUser: " `TL.append` err)
+    Right _ -> redirectToHomeM
+    Left err    -> errorM err
 
-  where lookIdp c1 idp1 = liftIO $ lookupKey c1 (idpLabel idp1)
-        updateIdp c1 oldIdpData luser = liftIO $ insertIDPData c1 (oldIdpData {loginUser = Just luser })
 
--- TODO: may use Exception monad to capture error in this IO monad
---
-tryFetchUser :: (HasTokenReq a, HasUserReq a, HasLabel a)
-  => a
-  -> TL.Text           -- ^ code
-  -> IO (Either Text LoginUser)
-tryFetchUser idp code = do
+fetchTokenAndUser' c code idp idpData = do
   mgr <- newManager tlsManagerSettings
   token <- tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
   when debug (print token)
-  case token of
-    Right at -> fetchUser idp mgr (accessToken at)
+
+  result <- case token of
+    Right at -> do
+      tryFetchUser mgr at idp
     Left e   -> return (Left $ TL.pack $ "tryFetchUser: cannot fetch asses token. error detail: " ++ show e)
+
+  case result of
+    Right (luser, at) -> updateIdp c idpData luser at >> return (Right ())
+    Left err    -> return $ Left ("fetchTokenAndUser: " `TL.append` err)
+
+  where updateIdp c1 oldIdpData luser token =
+          insertIDPData c1 (oldIdpData {loginUser = Just luser, oauth2Token = Just token })
+
+lookIdp c1 idp1 = liftIO $ lookupKey c1 (idpLabel idp1)
+
+-- TODO: may use Exception monad to capture error in this IO monad
+--
+-- tryFetchUser :: (HasTokenReq a, HasUserReq a, HasLabel a)
+--   => a
+--   -> TL.Text           -- ^ code
+--   -> IO (Either Text LoginUser)
+tryFetchUser mgr at idp = do
+  re <- fetchUser idp mgr (accessToken at)
+  return $ case re of
+    Right user' -> Right (user', at)
+    Left e -> Left e
 
 -- * Fetch UserInfo
 --

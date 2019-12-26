@@ -44,4 +44,4 @@ parseIDP :: Text -> Either Text IDPApp
 parseIDP s = maybe (Left s) Right (Map.lookup s idpsMap)
 
 mkIDPData :: IDPApp -> IDPData
-mkIDPData (IDPApp idp) = IDPData (authUri idp) Nothing (idpLabel idp)
+mkIDPData (IDPApp idp) = IDPData (authUri idp) Nothing Nothing (idpLabel idp)

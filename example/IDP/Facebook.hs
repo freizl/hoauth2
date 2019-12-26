@@ -26,6 +26,9 @@ instance HasLabel Facebook
 instance HasTokenReq Facebook where
   tokenReq _ mgr = fetchAccessToken2 mgr facebookKey
 
+instance HasTokenRefreshReq Facebook where
+  tokenRefreshReq _ mgr rt = refreshAccessToken mgr facebookKey rt
+
 instance HasUserReq Facebook where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri

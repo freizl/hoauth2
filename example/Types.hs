@@ -42,13 +42,21 @@ class (IDP a) => HasAuthUri a where
 class (IDP a) => HasTokenReq a where
   tokenReq :: a -> Manager -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
 
+class (IDP a) => HasTokenRefreshReq a where
+  tokenRefreshReq :: a -> Manager -> RefreshToken -> IO (OAuth2Result TR.Errors OAuth2Token)
+
 class (IDP a) => HasUserReq a where
   userReq :: a -> Manager -> AccessToken -> IO (Either BSL.ByteString LoginUser)
 
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections
 --
-data IDPApp = forall a. (IDP a, HasTokenReq a, HasUserReq a, HasLabel a, HasAuthUri a) => IDPApp a
+data IDPApp = forall a. (IDP a,
+                         HasTokenRefreshReq a,
+                         HasTokenReq a,
+                         HasUserReq a,
+                         HasLabel a,
+                         HasAuthUri a) => IDPApp a
 
 -- dummy oauth2 request error
 --
@@ -66,6 +74,7 @@ newtype LoginUser =
 data IDPData =
   IDPData { codeFlowUri     :: Text
           , loginUser       :: Maybe LoginUser
+          , oauth2Token       :: Maybe OAuth2Token
           , idpDisplayLabel :: IDPLabel
           }
 

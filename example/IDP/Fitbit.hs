@@ -28,6 +28,9 @@ instance HasLabel Fitbit
 instance HasTokenReq Fitbit where
   tokenReq _ mgr = fetchAccessToken mgr fitbitKey
 
+instance HasTokenRefreshReq Fitbit where
+  tokenRefreshReq _ mgr rt = refreshAccessToken mgr fitbitKey rt
+
 instance HasUserReq Fitbit where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri

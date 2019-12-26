@@ -26,6 +26,9 @@ instance HasLabel ZOHO
 instance HasTokenReq ZOHO where
   tokenReq _ mgr = fetchAccessToken2 mgr zohoKey
 
+instance HasTokenRefreshReq ZOHO where
+  tokenRefreshReq _ mgr rt = refreshAccessToken2 mgr zohoKey rt
+
 instance HasUserReq ZOHO where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
@@ -35,6 +38,7 @@ instance HasAuthUri ZOHO where
   authUri _ = createCodeUri zohoKey [ ("state", "ZOHO.test-state-123")
                                     , ("scope", "ZohoCRM.users.READ")
                                     , ("access_type", "offline")
+                                    , ("prompt", "consent")
                                     ]
 
 data ZOHOUser = ZOHOUser { email              :: Text

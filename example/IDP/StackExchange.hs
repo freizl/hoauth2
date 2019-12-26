@@ -34,6 +34,9 @@ instance HasLabel StackExchange
 instance HasTokenReq StackExchange where
   tokenReq _ mgr = fetchAccessToken2 mgr stackexchangeKey
 
+instance HasTokenRefreshReq StackExchange where
+  tokenRefreshReq _ mgr rt = refreshAccessToken mgr stackexchangeKey rt
+
 instance HasUserReq StackExchange where
   userReq _ mgr token = do
     re <- authGetBS2 mgr token

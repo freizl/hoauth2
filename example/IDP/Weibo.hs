@@ -25,6 +25,9 @@ instance IDP Weibo
 
 instance HasLabel Weibo
 
+instance HasTokenRefreshReq Weibo where
+  tokenRefreshReq _ mgr rt = refreshAccessToken mgr weiboKey rt
+
 instance HasTokenReq Weibo where
   tokenReq _ mgr = fetchAccessToken mgr weiboKey
 
