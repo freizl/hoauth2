@@ -12,9 +12,9 @@ import qualified IDP.Fitbit          as IFitbit
 import qualified IDP.Github          as IGithub
 import qualified IDP.Google          as IGoogle
 import qualified IDP.Okta            as IOkta
-import qualified IDP.ZOHO            as IZOHO
 import qualified IDP.StackExchange   as IStackExchange
 import qualified IDP.Weibo           as IWeibo
+import qualified IDP.ZOHO            as IZOHO
 import           Session
 import           Types
 

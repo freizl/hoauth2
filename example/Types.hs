@@ -74,7 +74,7 @@ newtype LoginUser =
 data IDPData =
   IDPData { codeFlowUri     :: Text
           , loginUser       :: Maybe LoginUser
-          , oauth2Token       :: Maybe OAuth2Token
+          , oauth2Token     :: Maybe OAuth2Token
           , idpDisplayLabel :: IDPLabel
           }
 

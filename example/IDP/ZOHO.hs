@@ -41,7 +41,7 @@ instance HasAuthUri ZOHO where
                                     , ("prompt", "consent")
                                     ]
 
-data ZOHOUser = ZOHOUser { email              :: Text
+data ZOHOUser = ZOHOUser { email    :: Text
                          , fullName :: Text
                          } deriving (Show, Generic)
 
@@ -64,6 +64,6 @@ toLoginUser resp =
   let us = users resp
   in
     case us of
-      [] -> LoginUser { loginUserName = "no user found" }
+      []    -> LoginUser { loginUserName = "no user found" }
       (a:_) -> LoginUser { loginUserName = fullName a }
 

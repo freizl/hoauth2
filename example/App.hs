@@ -88,7 +88,7 @@ refreshH c = do
       re <- liftIO $ doRefreshToken c idp idpData
       case re of
         Right newToken -> liftIO (print newToken) >> redirectToHomeM -- TODO: update access token in the store
-        Left e -> errorM (TL.pack e)
+        Left e         -> errorM (TL.pack e)
     Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
 
 doRefreshToken c idp idpData = do
@@ -138,8 +138,8 @@ fetchTokenAndUser c code idp = do
   let idpData = fromJust maybeIdpData
   result <- liftIO $ fetchTokenAndUser' c code idp idpData
   case result of
-    Right _ -> redirectToHomeM
-    Left err    -> errorM err
+    Right _  -> redirectToHomeM
+    Left err -> errorM err
 
 fetchTokenAndUser' c code idp idpData = do
   mgr <- newManager tlsManagerSettings
@@ -169,7 +169,7 @@ tryFetchUser mgr at idp = do
   re <- fetchUser idp mgr (accessToken at)
   return $ case re of
     Right user' -> Right (user', at)
-    Left e -> Left e
+    Left e      -> Left e
 
 -- * Fetch UserInfo
 --
