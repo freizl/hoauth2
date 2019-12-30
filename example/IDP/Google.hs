@@ -26,6 +26,9 @@ instance HasLabel Google
 instance HasTokenReq Google where
   tokenReq _ mgr = fetchAccessToken mgr googleKey
 
+instance HasTokenRefreshReq Google where
+  tokenRefreshReq _ mgr = refreshAccessToken mgr googleKey
+
 instance HasUserReq Google where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri

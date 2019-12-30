@@ -110,6 +110,7 @@ Executable demo-server
                        IDP.StackExchange
                        IDP.Weibo
                        IDP.Linkedin
+                       IDP.ZOHO
                        Keys
                        Session
                        Types

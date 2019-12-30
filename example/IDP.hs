@@ -14,6 +14,7 @@ import qualified IDP.Google          as IGoogle
 import qualified IDP.Okta            as IOkta
 import qualified IDP.StackExchange   as IStackExchange
 import qualified IDP.Weibo           as IWeibo
+import qualified IDP.ZOHO            as IZOHO
 import           Session
 import           Types
 
@@ -30,6 +31,7 @@ idps = [ IDPApp IAzureAD.AzureAD
        , IDPApp IOkta.Okta
        , IDPApp IStackExchange.StackExchange
        , IDPApp IWeibo.Weibo
+       , IDPApp IZOHO.ZOHO
        ]
 
 initIdps :: CacheStore -> IO ()
@@ -42,4 +44,4 @@ parseIDP :: Text -> Either Text IDPApp
 parseIDP s = maybe (Left s) Right (Map.lookup s idpsMap)
 
 mkIDPData :: IDPApp -> IDPData
-mkIDPData (IDPApp idp) = IDPData (authUri idp) Nothing (idpLabel idp)
+mkIDPData (IDPApp idp) = IDPData (authUri idp) Nothing Nothing (idpLabel idp)

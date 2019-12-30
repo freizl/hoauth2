@@ -13,3 +13,7 @@
 
 * WIP: Linkedin
   - <https://developer.linkedin.com>
+
+* NOTES
+  - classes in Types.hs takes a (`IDP`) as first parameter but it is actually not used. bad pattern. how to fix it??
+  - refactor: `App.hs` is messy!

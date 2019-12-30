@@ -10,6 +10,9 @@ create-keys:
 build:
 	cabal v2-build --flag=test
 
+## ghcid --command="cabal v2-repl demo-server"
+## use `cabal v2-repl demo-server` is really handy
+##      :l example/main.hs
 watch:
 	find src example -name '*.hs' | entr -s 'make build'
 

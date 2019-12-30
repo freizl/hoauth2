@@ -26,6 +26,9 @@ instance HasLabel Github
 instance HasTokenReq Github where
   tokenReq _ mgr = fetchAccessToken mgr githubKey
 
+instance HasTokenRefreshReq Github where
+  tokenRefreshReq _ mgr = refreshAccessToken mgr githubKey
+
 instance HasUserReq Github where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
