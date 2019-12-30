@@ -9,7 +9,7 @@ module App (app, waiApp) where
 
 import           Control.Monad
 import           Control.Monad.Error.Class
-import           Control.Monad.IO.Class        (liftIO)
+import           Control.Monad.IO.Class        (liftIO, MonadIO)
 import           Data.Bifunctor
 import           Data.Maybe
 import           Data.Text.Lazy                (Text)
@@ -70,28 +70,30 @@ errorM = throwError . ActionError
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status401 >> html t
 
-readIdpParam :: ActionM ()
+readIdpParam :: ActionM (Either Text IDPApp)
 readIdpParam = do
   pas <- params
   let idpP = paramValue "idp" pas
   when (null idpP) redirectToHomeM
-  parseIDP (head idpP)
+  return $ parseIDP (head idpP)
 
 refreshH :: CacheStore -> ActionM ()
 refreshH c = do
-  let eitherIdpApp = readIdpParam
+  eitherIdpApp <- readIdpParam
   case eitherIdpApp of
     Right (IDPApp idp) -> do
       maybeIdpData <- lookIdp c idp
       when (isNothing maybeIdpData) (errorM "refreshH: cannot find idp data from cache")
       let idpData = fromJust maybeIdpData
-      re <- liftIO $ doRefreshToken c idp idpData
+      re <- liftIO $ doRefreshToken idp idpData
       case re of
         Right newToken -> liftIO (print newToken) >> redirectToHomeM -- TODO: update access token in the store
         Left e         -> errorM (TL.pack e)
     Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
 
-doRefreshToken c idp idpData = do
+doRefreshToken :: HasTokenRefreshReq a =>
+                  a -> IDPData -> IO (Either String OAuth2Token)
+doRefreshToken idp idpData = do
   mgr <- newManager tlsManagerSettings
   case oauth2Token idpData of
     Nothing -> return $ Left "no token found for idp"
@@ -104,7 +106,8 @@ doRefreshToken c idp idpData = do
 
 logoutH :: CacheStore -> ActionM ()
 logoutH c = do
-  let eitherIdpApp = parseIDP (head idpP)
+  eitherIdpApp <- readIdpParam
+  -- let eitherIdpApp = parseIDP (head idpP)
   case eitherIdpApp of
     Right (IDPApp idp) -> liftIO (removeKey c (idpLabel idp)) >> redirectToHomeM
     Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
@@ -141,6 +144,8 @@ fetchTokenAndUser c code idp = do
     Right _  -> redirectToHomeM
     Left err -> errorM err
 
+fetchTokenAndUser' :: (HasTokenReq a, HasUserReq a) =>
+                      CacheStore -> Text -> a -> IDPData -> IO (Either Text ())
 fetchTokenAndUser' c code idp idpData = do
   mgr <- newManager tlsManagerSettings
   token <- tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
@@ -157,14 +162,15 @@ fetchTokenAndUser' c code idp idpData = do
   where updateIdp c1 oldIdpData luser token =
           insertIDPData c1 (oldIdpData {loginUser = Just luser, oauth2Token = Just token })
 
+lookIdp :: (MonadIO m, HasLabel a) =>
+           CacheStore -> a -> m (Maybe IDPData)
 lookIdp c1 idp1 = liftIO $ lookupKey c1 (idpLabel idp1)
 
 -- TODO: may use Exception monad to capture error in this IO monad
 --
--- tryFetchUser :: (HasTokenReq a, HasUserReq a, HasLabel a)
---   => a
---   -> TL.Text           -- ^ code
---   -> IO (Either Text LoginUser)
+tryFetchUser :: HasUserReq a =>
+                Manager
+             -> OAuth2Token -> a -> IO (Either Text (LoginUser, OAuth2Token))
 tryFetchUser mgr at idp = do
   re <- fetchUser idp mgr (accessToken at)
   return $ case re of
