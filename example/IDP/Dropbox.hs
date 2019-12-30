@@ -28,7 +28,7 @@ instance HasTokenReq Dropbox where
   tokenReq _ mgr = fetchAccessToken mgr dropboxKey
 
 instance HasTokenRefreshReq Dropbox where
-  tokenRefreshReq _ mgr rt = refreshAccessToken mgr dropboxKey rt
+  tokenRefreshReq _ mgr = refreshAccessToken mgr dropboxKey
 
 instance HasUserReq Dropbox where
   userReq _ mgr at = do

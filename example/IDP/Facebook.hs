@@ -27,7 +27,7 @@ instance HasTokenReq Facebook where
   tokenReq _ mgr = fetchAccessToken2 mgr facebookKey
 
 instance HasTokenRefreshReq Facebook where
-  tokenRefreshReq _ mgr rt = refreshAccessToken mgr facebookKey rt
+  tokenRefreshReq _ mgr = refreshAccessToken mgr facebookKey
 
 instance HasUserReq Facebook where
   userReq _ mgr at = do

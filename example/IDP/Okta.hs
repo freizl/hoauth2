@@ -27,7 +27,7 @@ instance HasTokenReq Okta where
   tokenReq _ mgr = fetchAccessToken mgr oktaKey
 
 instance HasTokenRefreshReq Okta where
-  tokenRefreshReq _ mgr rt = refreshAccessToken mgr oktaKey rt
+  tokenRefreshReq _ mgr = refreshAccessToken mgr oktaKey
 
 instance HasUserReq Okta where
   userReq _ mgr at = do

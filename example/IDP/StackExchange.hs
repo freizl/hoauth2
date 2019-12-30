@@ -35,7 +35,7 @@ instance HasTokenReq StackExchange where
   tokenReq _ mgr = fetchAccessToken2 mgr stackexchangeKey
 
 instance HasTokenRefreshReq StackExchange where
-  tokenRefreshReq _ mgr rt = refreshAccessToken mgr stackexchangeKey rt
+  tokenRefreshReq _ mgr = refreshAccessToken mgr stackexchangeKey
 
 instance HasUserReq StackExchange where
   userReq _ mgr token = do

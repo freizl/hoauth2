@@ -27,7 +27,7 @@ instance HasTokenReq ZOHO where
   tokenReq _ mgr = fetchAccessToken2 mgr zohoKey
 
 instance HasTokenRefreshReq ZOHO where
-  tokenRefreshReq _ mgr rt = refreshAccessToken2 mgr zohoKey rt
+  tokenRefreshReq _ mgr = refreshAccessToken2 mgr zohoKey
 
 instance HasUserReq ZOHO where
   userReq _ mgr at = do
@@ -45,7 +45,7 @@ data ZOHOUser = ZOHOUser { email              :: Text
                          , fullName :: Text
                          } deriving (Show, Generic)
 
-data ZOHOUserResp = ZOHOUserResp { users :: [ZOHOUser] }
+newtype ZOHOUserResp = ZOHOUserResp { users :: [ZOHOUser] }
   deriving (Show, Generic)
 
 instance FromJSON ZOHOUserResp where

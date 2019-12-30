@@ -24,7 +24,7 @@ instance IDP AzureAD
 instance HasLabel AzureAD
 
 instance HasTokenRefreshReq AzureAD where
-  tokenRefreshReq _ mgr rt = refreshAccessToken mgr azureADKey rt
+  tokenRefreshReq _ mgr = refreshAccessToken mgr azureADKey
 
 instance HasTokenReq AzureAD where
   tokenReq _ mgr = fetchAccessToken mgr azureADKey

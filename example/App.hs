@@ -70,16 +70,20 @@ errorM = throwError . ActionError
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status401 >> html t
 
-refreshH :: CacheStore -> ActionM ()
-refreshH c = do
+readIdpParam :: ActionM ()
+readIdpParam = do
   pas <- params
   let idpP = paramValue "idp" pas
   when (null idpP) redirectToHomeM
-  let eitherIdpApp = parseIDP (head idpP)
+  parseIDP (head idpP)
+
+refreshH :: CacheStore -> ActionM ()
+refreshH c = do
+  let eitherIdpApp = readIdpParam
   case eitherIdpApp of
     Right (IDPApp idp) -> do
       maybeIdpData <- lookIdp c idp
-      when (isNothing maybeIdpData) (errorM "fetchTokenAndUser: cannot find idp data from cache")
+      when (isNothing maybeIdpData) (errorM "refreshH: cannot find idp data from cache")
       let idpData = fromJust maybeIdpData
       re <- liftIO $ doRefreshToken c idp idpData
       case re of
@@ -91,8 +95,8 @@ doRefreshToken c idp idpData = do
   mgr <- newManager tlsManagerSettings
   case oauth2Token idpData of
     Nothing -> return $ Left "no token found for idp"
-    Just at -> do
-      case (refreshToken at) of
+    Just at ->
+      case refreshToken at of
         Nothing -> return $ Left "no refresh token presents"
         Just rt -> do
           re <- tokenRefreshReq idp mgr rt
@@ -100,9 +104,6 @@ doRefreshToken c idp idpData = do
 
 logoutH :: CacheStore -> ActionM ()
 logoutH c = do
-  pas <- params
-  let idpP = paramValue "idp" pas
-  when (null idpP) redirectToHomeM
   let eitherIdpApp = parseIDP (head idpP)
   case eitherIdpApp of
     Right (IDPApp idp) -> liftIO (removeKey c (idpLabel idp)) >> redirectToHomeM
@@ -140,15 +141,13 @@ fetchTokenAndUser c code idp = do
     Right _ -> redirectToHomeM
     Left err    -> errorM err
 
-
 fetchTokenAndUser' c code idp idpData = do
   mgr <- newManager tlsManagerSettings
   token <- tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
   when debug (print token)
 
   result <- case token of
-    Right at -> do
-      tryFetchUser mgr at idp
+    Right at -> tryFetchUser mgr at idp
     Left e   -> return (Left $ TL.pack $ "tryFetchUser: cannot fetch asses token. error detail: " ++ show e)
 
   case result of
