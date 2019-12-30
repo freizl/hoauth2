@@ -9,7 +9,7 @@ module App (app, waiApp) where
 
 import           Control.Monad
 import           Control.Monad.Error.Class
-import           Control.Monad.IO.Class        (liftIO, MonadIO)
+import           Control.Monad.IO.Class        (MonadIO, liftIO)
 import           Data.Bifunctor
 import           Data.Maybe
 import           Data.Text.Lazy                (Text)
