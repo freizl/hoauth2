@@ -43,9 +43,9 @@ data OAuth2 = OAuth2 {
     , oauthCallback            :: Maybe URI
     } deriving (Show, Eq)
 
-newtype AccessToken = AccessToken { atoken :: Text } deriving (Binary, Show, FromJSON, ToJSON)
-newtype RefreshToken = RefreshToken { rtoken :: Text } deriving (Binary, Show, FromJSON, ToJSON)
-newtype IdToken = IdToken { idtoken :: Text } deriving (Binary, Show, FromJSON, ToJSON)
+newtype AccessToken = AccessToken { atoken :: Text } deriving (Binary, Eq, Show, FromJSON, ToJSON)
+newtype RefreshToken = RefreshToken { rtoken :: Text } deriving (Binary, Eq, Show, FromJSON, ToJSON)
+newtype IdToken = IdToken { idtoken :: Text } deriving (Binary, Eq, Show, FromJSON, ToJSON)
 newtype ExchangeToken = ExchangeToken { extoken :: Text } deriving (Show, FromJSON, ToJSON)
 
 
@@ -59,7 +59,7 @@ data OAuth2Token = OAuth2Token {
     , expiresIn    :: Maybe Int
     , tokenType    :: Maybe Text
     , idToken      :: Maybe IdToken
-    } deriving (Show, Generic)
+    } deriving (Eq, Show, Generic)
 
 instance Binary OAuth2Token
 
