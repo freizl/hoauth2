@@ -9,7 +9,7 @@ import           URI.ByteString.QQ
 
 weiboKey :: OAuth2
 weiboKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
-                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthClientSecret = Just "xxxxxxxxxxxxxxxxxxxxxx"
                    , oauthCallback = Just [uri|http://127.0.0.1:9988/oauthCallback|]
                    , oauthOAuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|]
                    , oauthAccessTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
@@ -18,7 +18,7 @@ weiboKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
 -- | http://developer.github.com/v3/oauth/
 githubKey :: OAuth2
 githubKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
-                    , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                    , oauthClientSecret = Just "xxxxxxxxxxxxxxxxxxxxxx"
                     , oauthCallback = Just [uri|http://127.0.0.1:9988/githubCallback|]
                     , oauthOAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
                     , oauthAccessTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
@@ -27,7 +27,7 @@ githubKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
 -- | oauthCallback = Just "https://developers.google.com/oauthplayground"
 googleKey :: OAuth2
 googleKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx.apps.googleusercontent.com"
-                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthClientSecret = Just "xxxxxxxxxxxxxxxxxxxxxx"
                    , oauthCallback = Just [uri|http://127.0.0.1:9988/googleCallback|]
                    , oauthOAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/auth|]
                    , oauthAccessTokenEndpoint = [uri|https://www.googleapis.com/oauth2/v3/token|]
@@ -35,7 +35,7 @@ googleKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx.apps.googleusercontent.com
 
 facebookKey :: OAuth2
 facebookKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
-                     , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                     , oauthClientSecret = Just "xxxxxxxxxxxxxxxxxxxxxx"
                      , oauthCallback = Just [uri|http://t.haskellcn.org/cb|]
                      , oauthOAuthorizeEndpoint = [uri|https://www.facebook.com/dialog/oauth|]
                      , oauthAccessTokenEndpoint = [uri|https://graph.facebook.com/v2.3/oauth/access_token|]
@@ -43,7 +43,7 @@ facebookKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
 
 doubanKey :: OAuth2
 doubanKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
-                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthClientSecret = Just "xxxxxxxxxxxxxxxxxxxxxx"
                    , oauthCallback = Just [uri|http://localhost:9999/oauthCallback|]
                    , oauthOAuthorizeEndpoint = [uri|https://www.douban.com/service/auth2/auth|]
                    , oauthAccessTokenEndpoint = [uri|https://www.douban.com/service/auth2/token|]
@@ -51,7 +51,7 @@ doubanKey = OAuth2 { oauthClientId = "xxxxxxxxxxxxxxx"
 
 fitbitKey :: OAuth2
 fitbitKey = OAuth2 { oauthClientId = "xxxxxx"
-                   , oauthClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                   , oauthClientSecret = Just "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                    , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
                    , oauthOAuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|]
                    , oauthAccessTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
@@ -64,14 +64,14 @@ stackexchangeAppKey = "xxxxxx"
 
 stackexchangeKey :: OAuth2
 stackexchangeKey = OAuth2 { oauthClientId = "xx"
-                          , oauthClientSecret = "xxxxxxxxxxxxxxx"
+                          , oauthClientSecret = Just "xxxxxxxxxxxxxxx"
                           , oauthCallback = Just [uri|http://c.haskellcn.org/cb|]
                           , oauthOAuthorizeEndpoint = [uri|https://stackexchange.com/oauth|]
                           , oauthAccessTokenEndpoint = [uri|https://stackexchange.com/oauth/access_token|]
                           }
 dropboxKey :: OAuth2
 dropboxKey = OAuth2 { oauthClientId = "xxx"
-                    , oauthClientSecret = "xxx"
+                    , oauthClientSecret = Just "xxx"
                     , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
                     , oauthOAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
                     , oauthAccessTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
@@ -79,7 +79,7 @@ dropboxKey = OAuth2 { oauthClientId = "xxx"
 
 oktaKey :: OAuth2
 oktaKey = OAuth2 { oauthClientId = "xxx"
-                 , oauthClientSecret = "xxx"
+                 , oauthClientSecret = Just "xxx"
                  , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
                  , oauthOAuthorizeEndpoint = [uri|https://dev-148986.oktapreview.com/oauth2/v1/authorize|]
                  , oauthAccessTokenEndpoint = [uri|https://dev-148986.oktapreview.com/oauth2/v1/token|]
@@ -87,7 +87,7 @@ oktaKey = OAuth2 { oauthClientId = "xxx"
 
 azureADKey :: OAuth2
 azureADKey = OAuth2 { oauthClientId = "xxx"
-                    , oauthClientSecret = "xxx"
+                    , oauthClientSecret = Just "xxx"
                     , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
                     , oauthOAuthorizeEndpoint = [uri|https://login.windows.net/common/oauth2/authorize|]
                     , oauthAccessTokenEndpoint = [uri|https://login.windows.net/common/oauth2/token|]
@@ -95,7 +95,7 @@ azureADKey = OAuth2 { oauthClientId = "xxx"
 
 zohoKey :: OAuth2
 zohoKey = OAuth2 { oauthClientId = "xxx"
-                    , oauthClientSecret = "xxx"
+                    , oauthClientSecret = Just "xxx"
                     , oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|]
                     , oauthOAuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|]
                     , oauthAccessTokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]

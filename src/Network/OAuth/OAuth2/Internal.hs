@@ -37,7 +37,7 @@ import           URI.ByteString.Aeson ()
 -- | Query Parameter Representation
 data OAuth2 = OAuth2 {
       oauthClientId            :: Text
-    , oauthClientSecret        :: Text
+    , oauthClientSecret        :: Maybe Text
     , oauthOAuthorizeEndpoint  :: URI
     , oauthAccessTokenEndpoint :: URI
     , oauthCallback            :: Maybe URI
