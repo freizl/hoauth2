@@ -8,6 +8,8 @@ module Network.OAuth.OAuth2.HttpClient (
 -- * Token management
   fetchAccessToken,
   fetchAccessToken2,
+  fetchAccessTokenBSL,
+  fetchAccessTokenBSL2,
   refreshAccessToken,
   refreshAccessToken2,
 -- * AUTH requests
@@ -55,6 +57,8 @@ fetchAccessToken :: Manager                                   -- ^ HTTP connecti
 fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
+
+
 -- | Please read the docs of `fetchAccessToken`.
 --
 fetchAccessToken2 :: Manager                                   -- ^ HTTP connection manager
@@ -66,6 +70,27 @@ fetchAccessToken2 mgr oa code = do
   let secret x = [("client_secret", T.encodeUtf8 x)]
   let extraBody = ("client_id", T.encodeUtf8 $ oauthClientId oa) : maybe [] secret (oauthClientSecret oa)
   doJSONPostRequest mgr oa url (extraBody ++ body1)
+
+-- | A version of `fetchAccessToken` that does not decode the `OAuth2Token`.
+-- Useful in cases where the structure of the token in not standard.
+fetchAccessTokenBSL :: Manager                                   -- ^ HTTP connection manager
+                   -> OAuth2                                     -- ^ OAuth Data
+                   -> ExchangeToken                              -- ^ OAuth2 Code
+                   -> IO (OAuth2Result TR.Errors BSL.ByteString) -- ^ Access Token
+fetchAccessTokenBSL manager oa code = doSimplePostRequest manager oa uri body
+                           where (uri, body) = accessTokenUrl oa code
+
+-- | A version of `fetchAccessToken2` that does not decode the `OAuth2Token`.
+-- Useful in cases where the structure of the token in not standard.
+fetchAccessTokenBSL2 :: Manager                                  -- ^ HTTP connection manager
+                   -> OAuth2                                     -- ^ OAuth Data
+                   -> ExchangeToken                              -- ^ OAuth 2 Tokens
+                   -> IO (OAuth2Result TR.Errors BSL.ByteString) -- ^ Access Token
+fetchAccessTokenBSL2 mgr oa code = do
+  let (url, body1) = accessTokenUrl oa code
+  let secret x = [("client_secret", T.encodeUtf8 x)]
+  let extraBody = ("client_id", T.encodeUtf8 $ oauthClientId oa) : maybe [] secret (oauthClientSecret oa)
+  doSimplePostRequest mgr oa url (extraBody ++ body1)
 
 -- | Fetch a new AccessToken with the Refresh Token with authentication in request header.
 -- OAuth2 spec allows `client_id` and `client_secret` to
