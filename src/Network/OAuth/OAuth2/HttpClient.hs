@@ -56,8 +56,6 @@ fetchAccessToken :: Manager                                   -- ^ HTTP connecti
 fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
                            where (uri, body) = accessTokenUrl oa code
 
-
-
 -- | Please read the docs of `fetchAccessToken`.
 --
 fetchAccessToken2 :: Manager                                   -- ^ HTTP connection manager
