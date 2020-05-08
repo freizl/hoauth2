@@ -195,7 +195,7 @@ uriToRequest uri = do
         path = view pathL uri
       }
     req2 = (over hostLens . maybe id const . preview hostL) uri req
-    req3 = (over portLens . maybe (const defaultPort) const . preview portL) uri req2
+    req3 = (over portLens . (const . fromMaybe defaultPort). preview portL) uri req2
   return req3
 
 requestToUri :: Request -> URI
