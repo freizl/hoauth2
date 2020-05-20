@@ -36,7 +36,7 @@ hlint:
 doc: build
 	cabal v2-haddock
 
-dist: build
+dist: rebuild
 	cabal v2-sdist
 
 ## Maybe use hpack?
