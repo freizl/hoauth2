@@ -1,4 +1,3 @@
-
 default: build
 
 clean:
@@ -10,14 +9,18 @@ create-keys:
 build:
 	cabal v2-build --flag=test
 
-## ghcid --command="cabal v2-repl demo-server"
-## use `cabal v2-repl demo-server` is really handy
-##      :l example/main.hs
+## install ghcid globally: `cabal install ghcid`
 watch:
-	find src example -name '*.hs' | entr -s 'make build'
+	ghcid --command="cabal v2-repl ."
+
+watch-demo:
+	ghcid --command="cabal v2-repl --flag=test demo-server"
 
 build-demo:
 	cabal v2-build --flag=test demo-server
+
+repl-demo:
+	cabal v2-repl --flag=test demo-server
 
 start-demo:
 	cabal v2-exec --flag=test demo-server
