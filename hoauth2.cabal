@@ -1,7 +1,7 @@
 Cabal-version: 2.4
 Name:                hoauth2
 -- http://wiki.haskell.org/Package_versioning_policy
-Version:             1.13.0
+Version:             1.14.0
 
 Synopsis:            Haskell OAuth2 authentication client
 
