@@ -8,7 +8,6 @@
 module App (app, waiApp) where
 
 import           Control.Monad
-import           Control.Monad.Error.Class
 import           Control.Monad.IO.Class        (MonadIO, liftIO)
 import           Data.Bifunctor
 import           Data.Maybe
@@ -27,7 +26,6 @@ import           Types
 import           Utils
 import           Views
 import           Web.Scotty
-import           Web.Scotty.Internal.Types
 
 ------------------------------
 -- App
@@ -64,9 +62,6 @@ debug = True
 redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
 
-errorM :: Text -> ActionM ()
-errorM = throwError . ActionError
-
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status401 >> html t
 
@@ -83,13 +78,13 @@ refreshH c = do
   case eitherIdpApp of
     Right (IDPApp idp) -> do
       maybeIdpData <- lookIdp c idp
-      when (isNothing maybeIdpData) (errorM "refreshH: cannot find idp data from cache")
+      when (isNothing maybeIdpData) (raise "refreshH: cannot find idp data from cache")
       let idpData = fromJust maybeIdpData
       re <- liftIO $ doRefreshToken idp idpData
       case re of
         Right newToken -> liftIO (print newToken) >> redirectToHomeM -- TODO: update access token in the store
-        Left e         -> errorM (TL.pack e)
-    Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
+        Left e         -> raise (TL.pack e)
+    Left e       -> raise ("logout: unknown IDP " `TL.append` e)
 
 doRefreshToken :: HasTokenRefreshReq a =>
                   a -> IDPData -> IO (Either String OAuth2Token)
@@ -110,7 +105,7 @@ logoutH c = do
   -- let eitherIdpApp = parseIDP (head idpP)
   case eitherIdpApp of
     Right (IDPApp idp) -> liftIO (removeKey c (idpLabel idp)) >> redirectToHomeM
-    Left e       -> errorM ("logout: unknown IDP " `TL.append` e)
+    Left e       -> raise ("logout: unknown IDP " `TL.append` e)
 
 indexH :: CacheStore -> ActionM ()
 indexH c = liftIO (allValues c) >>= overviewTpl
@@ -120,14 +115,14 @@ callbackH c = do
   pas <- params
   let codeP = paramValue "code" pas
   let stateP = paramValue "state" pas
-  when (null codeP) (errorM "callbackH: no code from callback request")
-  when (null stateP) (errorM "callbackH: no state from callback request")
+  when (null codeP) (raise "callbackH: no code from callback request")
+  when (null stateP) (raise "callbackH: no state from callback request")
   let eitherIdpApp = parseIDP (TL.takeWhile (/= '.') (head stateP))
   -- TODO: looks like `state` shall be passed when fetching access token
   --       turns out no IDP enforce this yet
   case eitherIdpApp of
     Right (IDPApp idp) -> fetchTokenAndUser c (head codeP) idp
-    Left e   -> errorM ("callbackH: cannot find IDP name from text " `TL.append` e)
+    Left e   -> raise ("callbackH: cannot find IDP name from text " `TL.append` e)
 
 fetchTokenAndUser :: (HasTokenReq a, HasUserReq a, HasLabel a)
                   => CacheStore
@@ -136,13 +131,13 @@ fetchTokenAndUser :: (HasTokenReq a, HasUserReq a, HasLabel a)
                   -> ActionM ()
 fetchTokenAndUser c code idp = do
   maybeIdpData <- lookIdp c idp
-  when (isNothing maybeIdpData) (errorM "fetchTokenAndUser: cannot find idp data from cache")
+  when (isNothing maybeIdpData) (raise "fetchTokenAndUser: cannot find idp data from cache")
 
   let idpData = fromJust maybeIdpData
   result <- liftIO $ fetchTokenAndUser' c code idp idpData
   case result of
     Right _  -> redirectToHomeM
-    Left err -> errorM err
+    Left err -> raise err
 
 fetchTokenAndUser' :: (HasTokenReq a, HasUserReq a) =>
                       CacheStore -> Text -> a -> IDPData -> IO (Either Text ())
