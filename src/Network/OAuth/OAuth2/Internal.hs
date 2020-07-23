@@ -73,7 +73,7 @@ instance FromJSON OAuth2Token where
         <$> v .: "access_token"
         <*> v .:? "refresh_token"
         <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
-        <*> v .:? "token_type"
+        <*> v .: "token_type"
         <*> v .:? "id_token"
 instance ToJSON OAuth2Token where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
