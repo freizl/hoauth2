@@ -30,6 +30,15 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
+    - name: Add Path
+      run: |
+        echo "::add-path::~/.cabal/bin"
+
+    - name: Run Lint
+      run: |
+        cabal new-install hlint
+        cabal new-run hlint . --report
+
     - name: Install dependencies
       run: |
         cabal update
@@ -39,7 +48,3 @@ jobs:
     - name: Build
       run: make build
       
-    - name: Run Lint
-      run: |
-        cabal new-install hlint
-        cabal new-run hlint . --report
