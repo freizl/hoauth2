@@ -37,7 +37,7 @@ jobs:
     - name: Run Lint
       run: |
         cabal new-install hlint
-        cabal new-run hlint . --report
+        make hlint
 
     - name: Install dependencies
       run: |
