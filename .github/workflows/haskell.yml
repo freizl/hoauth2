@@ -30,14 +30,6 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
-    - name: Add Path
-      run: |
-        echo "::add-path::~/.cabal/bin"
-
-    - name: Run Lint
-      run: |
-        cabal new-install hlint
-        make hlint
 
     - name: Install dependencies
       run: |
@@ -48,3 +40,34 @@ jobs:
     - name: Build
       run: make build
       
+  lint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-haskell@v1
+      with:
+        ghc-version: '8.6.5'
+        cabal-version: '3.2'
+
+    - name: Cache
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-cabal
+      with:
+        path: ~/.cabal
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Add Path
+      run: |
+        echo "::add-path::$HOME/.cabal/bin"
+
+    - name: Run Lint
+      run: |
+        cabal new-install hlint
+        make hlint
