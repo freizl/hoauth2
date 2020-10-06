@@ -131,7 +131,7 @@ Executable demo-server
                        microlens            >= 0.4.0 && < 0.5,
                        unordered-containers >= 0.2.5,
                        wai-extra >= 3.0.21.0 && < 3.2,
-                       wai-middleware-static >= 0.8.1 && < 0.8.4,
+                       wai-middleware-static >= 0.8.1 && < 0.10.0,
                        mustache >= 2.2.3 && < 2.4.0,
                        mtl >= 2.2.1 && < 2.3,
                        scotty >= 0.10.0 && < 0.13,
