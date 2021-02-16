@@ -3,7 +3,7 @@
 
 # Introduction
 
-A lightweight oauth2 haskell binding.
+A lightweight OAuth2 Haskell binding.
 
 # Build example app
 
