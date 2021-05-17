@@ -6,7 +6,7 @@ module IDP.Okta where
 import           Data.Aeson
 import           Data.Bifunctor
 import           Data.Hashable
-import           Data.Text.Lazy       (Text)
+import           Data.Text.Lazy                 ( Text )
 import           GHC.Generics
 import           Keys
 import           Network.OAuth.OAuth2
@@ -15,7 +15,8 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Okta = Okta deriving (Show, Generic)
+data Okta = Okta
+  deriving (Show, Generic)
 
 instance Hashable Okta
 
@@ -35,19 +36,26 @@ instance HasUserReq Okta where
     return (second toLoginUser re)
 
 instance HasAuthUri Okta where
-  authUri _ = createCodeUri oktaKey [ ("state", "Okta.test-state-123")
-                                    , ("scope", "openid profile offline_access")
-                                    ]
+  authUri _ = createCodeUri
+    oktaKey
+    [ ("state", "Okta.test-state-123")
+    , ( "scope"
+      , "openid profile offline_access okta.users.read.self okta.users.read"
+      )
+    ]
 
-data OktaUser = OktaUser { name              :: Text
-                         , preferredUsername :: Text
-                         } deriving (Show, Generic)
+data OktaUser = OktaUser
+  { name              :: Text
+  , preferredUsername :: Text
+  }
+  deriving (Show, Generic)
 
 instance FromJSON OktaUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 userInfoUri :: URI
-userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
 
 toLoginUser :: OktaUser -> LoginUser
 toLoginUser ouser = LoginUser { loginUserName = name ouser }
