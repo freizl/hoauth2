@@ -2,72 +2,41 @@ name: Haskell CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-haskell@v1
-      with:
-        ghc-version: '8.6.5'
-        cabal-version: '3.2'
+      - uses: actions/checkout@v2
+      - uses: actions/setup-haskell@v1
+        with:
+          ghc-version: "8.10.4"
+          cabal-version: "3.2"
 
-    - name: Cache
-      uses: actions/cache@v1
-      env:
-        cache-name: cache-cabal
-      with:
-        path: ~/.cabal
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+      - uses: actions/cache@v2.1.3
+        name: Caching
+        with:
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            dist-newstyle
+          key: ${{ runner.os }}-build-${{ hashFiles('**/*.cabal') }}
 
+      - name: Install dependencies
+        run: |
+          cabal update
+          make create-keys
+          cabal new-build --only-dependencies --enable-tests
 
-    - name: Install dependencies
-      run: |
-        cabal update
-        make create-keys
-        cabal new-build --only-dependencies --enable-tests
+      - name: Build
+        run: make build
 
-    - name: Build
-      run: make build
-      
-  lint:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-haskell@v1
-      with:
-        ghc-version: '8.6.5'
-        cabal-version: '3.2'
-
-    - name: Cache
-      uses: actions/cache@v1
-      env:
-        cache-name: cache-cabal
-      with:
-        path: ~/.cabal
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-
-    - name: Add Path
-      run: |
-        echo "::add-path::$HOME/.cabal/bin"
-
-    - name: Run Lint
-      run: |
-        cabal new-install hlint
-        make hlint
+      - name: Lint
+        run: |
+          echo "$HOME/.cabal/bin" >> $GITHUB_PATH
+          cabal new-install hlint
+          make hlint
