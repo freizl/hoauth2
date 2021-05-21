@@ -55,7 +55,7 @@ instance FromJSON OktaUser where
     genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 userInfoUri :: URI
-userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+userInfoUri = [uri|http://rain.okta1.com:1802/oauth2/v1/userinfo|]
 
 toLoginUser :: OktaUser -> LoginUser
 toLoginUser ouser = LoginUser { loginUserName = name ouser }

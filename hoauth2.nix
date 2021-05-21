@@ -17,9 +17,9 @@ mkDerivation {
     uri-bytestring-aeson
   ];
   executableHaskellDepends = [
-    aeson base binary bytestring containers hashable http-conduit
-    http-types microlens mtl mustache parsec scotty text
-    unordered-containers uri-bytestring wai wai-extra
+    aeson base binary bytestring hashable http-conduit
+    http-types microlens mustache parsec scotty text
+    unordered-containers uri-bytestring wai
     wai-middleware-static warp
   ];
   homepage = "https://github.com/freizl/hoauth2";
