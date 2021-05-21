@@ -37,8 +37,5 @@ jobs:
 
       - name: Lint
         run: |
-          echo "$HOME"
-          echo "$HOME/.cabal/bin" >> $GITHUB_PATH
-          echo "$GITHUB_PATH"
           cabal new-install hlint
-          hlint .
+          $HOME/.cabal/bin/hlint .
