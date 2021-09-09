@@ -27,9 +27,6 @@ start-demo:
 
 rebuild: clean build
 
-stylish:
-	find src example -name '*.hs' | xargs stylish-haskell -i
-
 hlint:
 	hlint . --report
 
@@ -39,7 +36,6 @@ doc: build
 dist: rebuild
 	cabal v2-sdist
 
-## Maybe use hpack?
 cabal2nix:
 	cabal2nix -ftest . > hoauth2.nix
 
