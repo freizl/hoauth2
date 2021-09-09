@@ -5,12 +5,13 @@
 
 A lightweight OAuth2 Haskell binding.
 
-# Build example app
+# Build the sample App
 
+- Make sure `ghc-8.10` and `cabal-3.x` installed.
 - `make create-keys`
 - check the `example/Keys.hs` to make sure it's config correctly for the IdP you're going to test. (client id, client secret, oauth Urls etc)
 - `make build`
-- `make demo`
+- `make start-demo`
 - open <http://localhost:9988>
 
 ## Nix
