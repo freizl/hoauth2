@@ -1,0 +1,84 @@
+* Notes
+
+- OAuth2 spec only supports Access Token and Refresh Token
+- OIDC spec adds ID Token
+- Better to make distinguish.
+
+* To consider
+
+1. auto generate state if it's missing? NO. let client manage state.
+2. shall verify access token response header
+   #+begin_src
+   Cache-Control: no-store
+   Pragma: no-cache
+   #+end_src
+3. maybe an AuthFlow data type which would determine ResponseType and GrantType
+
+* Pseudo code
+
+#+begin_src haskell
+data ResponseType = Code | Token (maybe not support) | ...
+newtype State = ...
+newtype AuthorizationCode = ...
+type Scope = [Text]
+
+data AuthorizationCodeRequest = AuthorizationCodeReq
+{ responseType :: ResponseType
+, clientId :: Text
+, redirectUri :: Maybe Text
+, scope :: Scope
+, state :: Maybe State
+}
+
+data AuthorizationCodeSuccessResponse = AuthorizationCodeSuccessResponse
+{ code :: AuthorizationCode
+, state :: Maybe state
+}
+
+data AuthorizationCodeErrorCode = invalid_request | unauthorized_client | ...
+
+data AuthorizationCodeErrorResponse = AuthorizationCodeErrorResponse
+{ error :: AuthorizationCodeErrorCode
+, errorDescription :: Maybe Text
+, errorUri :: Maybe URI
+, state :: Maybe State
+}
+
+type AuthorizationCodeResponse = Either AuthorizationCodeErrorResponse AuthorizationCodeSuccessResponse
+
+data GrantType = authorization_code | password | refresh_token
+
+data AccessTokenRequest = AccessTokenRequest
+{ grantType :: GrantType
+, code :: AuthorizationCode
+, redirectUri :: URI
+, clientId :: Text
+}
+
+data AccessTokenSuccessResponse = AccessTokenSuccessResponse
+{ accessToken :: AccessToken
+, tokenType :: Text?
+, expiresIn :: Number
+, refreshToken :: RefreshToken
+, example_parameter :: ????
+}
+
+data AccessTokenErrorResponeErrorCode = invalid_request | invalid_client | ...
+
+data AccessTokenErrorResponse = AccessTokenErrorResponse
+{ error :: AccessTokenErrorResponeErrorCode
+, errorDescription :: Maybe Text
+, errorUri :: Maybe URI
+}
+
+type AccessTokenResponse = Either AccessTokenErrorResponse AccessTokenSuccessResponse
+
+data RefreshTokenRequest = RefreshTokenRequest
+{ grantType :: GrantType
+, refreshToken :: RefreshToken
+, scope :: Scope
+}
+
+??? RefreshTokenRequest Success / Error Response
+
+#+end_src
