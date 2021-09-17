@@ -46,6 +46,7 @@ Extra-source-files: README.md
                     example/IDP/Fitbit.hs
                     example/IDP/Douban.hs
                     example/IDP/Linkedin.hs
+                    example/IDP/Auth0.hs
                     example/IDP.hs
                     example/App.hs
                     example/Session.hs
@@ -106,6 +107,7 @@ Executable demo-server
                        IDP.Fitbit
                        IDP.Github
                        IDP.Google
+                       IDP.Auth0
                        IDP.Okta
                        IDP.StackExchange
                        IDP.Weibo
