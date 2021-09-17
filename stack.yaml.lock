@@ -3,17 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: uri-bytestring-aeson-0.1.0.6@sha256:1eb894a87c8dc0fdcf45ad0c1f5caf5f7d87de115faba554b6f1c54550723e6f,1104
-    pantry-tree:
-      size: 330
-      sha256: ae0765da14651ac3af531c81dedc6ebb870f2523fbb22f469e66864cf3daa032
-  original:
-    hackage: uri-bytestring-aeson-0.1.0.6
+packages: []
 snapshots:
 - completed:
-    size: 504771
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/12/14.yaml
-    sha256: 3cbd6c83316dd5e2bbc756dc7a2a4e31a31859c3f8b5c720efb6850b08e42649
-  original: lts-12.14
+    size: 587113
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/6.yaml
+    sha256: f74c482d7c93739ecf3abfbc0f2dea1c20a2dfb2462c689846ed55a9653b66f7
+  original: lts-18.6

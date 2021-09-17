@@ -1,8 +1,0 @@
-flags:
-  hoauth2:
-    test: true
-
-packages:
-  - .
-
-resolver: nightly-2018-11-21
