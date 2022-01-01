@@ -6,7 +6,7 @@
 }:
 mkDerivation {
   pname = "hoauth2";
-  version = "1.16.0";
+  version = "1.16.1";
   src = ./.;
   configureFlags = [ "-ftest" ];
   isLibrary = true;
