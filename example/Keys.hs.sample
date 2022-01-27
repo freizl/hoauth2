@@ -127,3 +127,15 @@ auth0Key = OAuth2
   , oauthOAuthorizeEndpoint  = [uri|https://foo.auth0.com/authorize|]
   , oauthAccessTokenEndpoint = [uri|https://foo.auth0.com/oauth/token|]
   }
+
+-- https://api.slack.com/authentication/sign-in-with-slack
+-- https://slack.com/.well-known/openid-configuration
+slackKey :: OAuth2
+slackKey =
+  OAuth2
+    { oauthClientId = "",
+      oauthClientSecret = Just ""
+      oauthCallback = Just [uri|http://localhost:9988/oauth2/callback|],
+      oauthOAuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|],
+      oauthAccessTokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
+    }

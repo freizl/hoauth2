@@ -8,7 +8,7 @@
         <section class="login-with">
 
             {{^isLogin}}
-            <a href="{{codeFlowUri}}">Login {{name}}</a>
+            <a href="{{codeFlowUri}}">Sign in with {{name}}</a>
             {{/isLogin}}
 
             {{#isLogin}}
@@ -25,6 +25,7 @@
         <h2>Notes</h2>
         <ol>
             <li>for StackExchange, the callback domain is localhost, have manually add port 9988.</li>
+            <li>for Slack, the callback url has to be https and without any port hence need manual intervention. (TODO: add tls to the server)</li>
         </ol>
         </p>
     </body>

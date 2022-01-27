@@ -13,6 +13,7 @@ import qualified IDP.Google as IGoogle
 import qualified IDP.Okta as IOkta
 import qualified IDP.StackExchange as IStackExchange
 import qualified IDP.Weibo as IWeibo
+import qualified IDP.Slack as ISlack
 import qualified IDP.ZOHO as IZOHO
 import Session
 import Types
@@ -32,6 +33,7 @@ idps =
     IDPApp IStackExchange.StackExchange,
     IDPApp IWeibo.Weibo,
     IDPApp IAuth0.Auth0,
+    IDPApp ISlack.Slack,
     IDPApp IZOHO.ZOHO
   ]
 

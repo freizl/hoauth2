@@ -18,6 +18,9 @@
 
   - <https://developer.linkedin.com>
 
+* TODO
+- [ ] Split ~Key.hs~ to each IDP and read ~.env~ file if exists for override
+
 * NOTES
 - classes in Types.hs takes a (`IDP`) as first parameter but it is actually not used. bad pattern. how to fix it??
 - refactor: `App.hs` is messy!
