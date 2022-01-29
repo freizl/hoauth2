@@ -1,8 +1,7 @@
-{ mkDerivation, aeson, base, binary, bytestring, containers
-, exceptions, hashable, http-conduit, http-types, microlens, mtl
-, mustache, parsec, scotty, stdenv, text, unordered-containers
-, uri-bytestring, uri-bytestring-aeson, wai, wai-extra
-, wai-middleware-static, warp
+{ mkDerivation, aeson, base, binary, bytestring, exceptions
+, hashable, http-conduit, http-types, lib, microlens, mustache
+, parsec, scotty, text, unordered-containers, uri-bytestring
+, uri-bytestring-aeson, wai, wai-middleware-static, warp
 }:
 mkDerivation {
   pname = "hoauth2";
@@ -17,12 +16,11 @@ mkDerivation {
     uri-bytestring-aeson
   ];
   executableHaskellDepends = [
-    aeson base binary bytestring hashable http-conduit
-    http-types microlens mustache parsec scotty text
-    unordered-containers uri-bytestring wai
-    wai-middleware-static warp
+    aeson base binary bytestring hashable http-conduit http-types
+    microlens mustache parsec scotty text unordered-containers
+    uri-bytestring wai wai-middleware-static warp
   ];
   homepage = "https://github.com/freizl/hoauth2";
   description = "Haskell OAuth2 authentication client";
-  license = stdenv.lib.licenses.bsd3;
+  license = lib.licenses.bsd3;
 }
