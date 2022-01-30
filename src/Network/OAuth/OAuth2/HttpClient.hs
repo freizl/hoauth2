@@ -65,7 +65,7 @@ fetchAccessToken2 :: Manager                                   -- ^ HTTP connect
 fetchAccessToken2 mgr oa code = do
   let (url, body1) = accessTokenUrl oa code
   let secret x = [("client_secret", T.encodeUtf8 x)]
-  let extraBody = ("client_id", T.encodeUtf8 $ oauthClientId oa) : maybe [] secret (oauthClientSecret oa)
+  let extraBody = ("client_id", T.encodeUtf8 $ oauth2ClientId oa) : maybe [] secret (oauth2ClientSecret oa)
   doJSONPostRequest mgr oa url (extraBody ++ body1)
 
 -- | Fetch a new AccessToken with the Refresh Token with authentication in request header.
@@ -92,7 +92,7 @@ refreshAccessToken2 :: Manager                         -- ^ HTTP connection mana
 refreshAccessToken2 manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
   let secret x = [("client_secret", T.encodeUtf8 x)]
-  let extraBody = ("client_id", T.encodeUtf8 $ oauthClientId oa) : maybe [] secret (oauthClientSecret oa)
+  let extraBody = ("client_id", T.encodeUtf8 $ oauth2ClientId oa) : maybe [] secret (oauth2ClientSecret oa)
   doJSONPostRequest manager oa uri (extraBody ++ body)
 
 -- | Conduct post request and return response as JSON.
@@ -113,8 +113,8 @@ doSimplePostRequest :: FromJSON err => Manager                 -- ^ HTTP connect
 doSimplePostRequest manager oa url body = fmap handleOAuth2TokenResponse go
                                   where go = do
                                              req <- uriToRequest url
-                                             let addBasicAuth = case oauthClientSecret oa of
-                                                   (Just secret) -> applyBasicAuth (T.encodeUtf8 $ oauthClientId oa) (T.encodeUtf8 secret)
+                                             let addBasicAuth = case oauth2ClientSecret oa of
+                                                   (Just secret) -> applyBasicAuth (T.encodeUtf8 $ oauth2ClientId oa) (T.encodeUtf8 secret)
                                                    Nothing -> id
                                                  req' = (addBasicAuth . updateRequestHeaders Nothing) req
                                              httpLbs (urlEncodedBody body req') manager
