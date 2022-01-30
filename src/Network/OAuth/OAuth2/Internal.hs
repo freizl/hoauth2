@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_HADDOCK -ignore-exports #-}
 
 -- | A simple OAuth2 Haskell binding.  (This is supposed to be
@@ -19,13 +20,14 @@ import qualified Data.ByteString.Lazy as BSL
 import Data.Maybe
 import Data.Text (Text, pack, unpack)
 import Data.Text.Encoding
-import GHC.Generics
 import Lens.Micro
 import Lens.Micro.Extras
 import Network.HTTP.Conduit as C
 import qualified Network.HTTP.Types as H
 import URI.ByteString
 import URI.ByteString.Aeson ()
+import Data.Hashable
+import GHC.Generics
 
 --------------------------------------------------
 
@@ -34,14 +36,26 @@ import URI.ByteString.Aeson ()
 --------------------------------------------------
 
 -- | Query Parameter Representation
+-- TODO: fix typo in OAuthorizeEndpoint
+-- rename AccessToken to TokenEndpoint
+-- rename callback to redirectUri
+
 data OAuth2 = OAuth2
   { oauthClientId :: Text,
     oauthClientSecret :: Maybe Text,
-    oauthOAuthorizeEndpoint :: URI,
-    oauthAccessTokenEndpoint :: URI,
-    oauthCallback :: Maybe URI
+    oauthOAuthorizeEndpoint :: URIRef Absolute,
+    oauthAccessTokenEndpoint :: URIRef Absolute,
+    oauthCallback :: Maybe ( URIRef Absolute )
   }
   deriving (Show, Eq)
+
+instance Hashable OAuth2 where
+  hashWithSalt salt OAuth2{..} = salt
+    `hashWithSalt` hash oauthClientId
+    `hashWithSalt` hash oauthClientSecret
+    `hashWithSalt` hash (show oauthOAuthorizeEndpoint)
+    `hashWithSalt` hash (show oauthAccessTokenEndpoint)
+    `hashWithSalt` hash (show oauthCallback)
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
 
