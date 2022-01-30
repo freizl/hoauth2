@@ -41,21 +41,21 @@ import GHC.Generics
 -- rename callback to redirectUri
 
 data OAuth2 = OAuth2
-  { oauthClientId :: Text,
-    oauthClientSecret :: Maybe Text,
-    oauthOAuthorizeEndpoint :: URIRef Absolute,
-    oauthAccessTokenEndpoint :: URIRef Absolute,
-    oauthCallback :: Maybe ( URIRef Absolute )
+  { oauth2ClientId :: Text,
+    oauth2ClientSecret :: Maybe Text,
+    oauth2AuthorizeEndpoint :: URIRef Absolute,
+    oauth2TokenEndpoint :: URIRef Absolute,
+    oauth2RedirectUri :: Maybe ( URIRef Absolute )
   }
   deriving (Show, Eq)
 
 instance Hashable OAuth2 where
   hashWithSalt salt OAuth2{..} = salt
-    `hashWithSalt` hash oauthClientId
-    `hashWithSalt` hash oauthClientSecret
-    `hashWithSalt` hash (show oauthOAuthorizeEndpoint)
-    `hashWithSalt` hash (show oauthAccessTokenEndpoint)
-    `hashWithSalt` hash (show oauthCallback)
+    `hashWithSalt` hash oauth2ClientId
+    `hashWithSalt` hash oauth2ClientSecret
+    `hashWithSalt` hash (show oauth2AuthorizeEndpoint)
+    `hashWithSalt` hash (show oauth2TokenEndpoint)
+    `hashWithSalt` hash (show oauth2RedirectUri)
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
 
@@ -152,13 +152,13 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 -- | Prepare the authorization URL.  Redirect to this URL
 -- asking for user interactive authentication.
 authorizationUrl :: OAuth2 -> URI
-authorizationUrl oa = over (queryL . queryPairsL) (++ queryParts) (oauthOAuthorizeEndpoint oa)
+authorizationUrl oa = over (queryL . queryPairsL) (++ queryParts) (oauth2AuthorizeEndpoint oa)
   where
     queryParts =
       catMaybes
-        [ Just ("client_id", encodeUtf8 $ oauthClientId oa),
+        [ Just ("client_id", encodeUtf8 $ oauth2ClientId oa),
           Just ("response_type", "code"),
-          fmap (("redirect_uri",) . serializeURIRef') (oauthCallback oa)
+          fmap (("redirect_uri",) . serializeURIRef') (oauth2RedirectUri oa)
         ]
 
 -- | Prepare the URL and the request body query for fetching an access token.
@@ -182,11 +182,11 @@ accessTokenUrl' ::
   (URI, PostBody)
 accessTokenUrl' oa code gt = (uri, body)
   where
-    uri = oauthAccessTokenEndpoint oa
+    uri = oauth2TokenEndpoint oa
     body =
       catMaybes
         [ Just ("code", encodeUtf8 $ extoken code),
-          ("redirect_uri",) . serializeURIRef' <$> oauthCallback oa,
+          ("redirect_uri",) . serializeURIRef' <$> oauth2RedirectUri oa,
           fmap (("grant_type",) . encodeUtf8) gt
         ]
 
@@ -200,7 +200,7 @@ refreshAccessTokenUrl ::
   (URI, PostBody)
 refreshAccessTokenUrl oa token = (uri, body)
   where
-    uri = oauthAccessTokenEndpoint oa
+    uri = oauth2TokenEndpoint oa
     body =
       [ ("grant_type", "refresh_token"),
         ("refresh_token", encodeUtf8 $ rtoken token)
