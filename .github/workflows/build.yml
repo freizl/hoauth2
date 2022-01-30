@@ -1,4 +1,4 @@
-name: Haskell CI
+name: Build
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-haskell@v1.1
+      - uses: haskell/actions/setup@v1
         with:
           ghc-version: "8.10.7"
           cabal-version: "3.6"
@@ -28,14 +28,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cabal update
+          cabal v2-update
           make create-keys
-          cabal new-build --only-dependencies --enable-tests
+          cabal v2-build --only-dependencies --enable-tests
 
       - name: Build
         run: make build
 
-      - name: Lint
-        run: |
-          cabal new-install hlint
-          $HOME/.cabal/bin/hlint .
