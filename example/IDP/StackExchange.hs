@@ -15,7 +15,6 @@ import           Data.Hashable
 import           Data.Text.Lazy             (Text)
 import qualified Data.Text.Lazy             as TL
 import           GHC.Generics
-import           Keys
 import           Lens.Micro
 import           Network.OAuth.OAuth2
 import           Types
@@ -23,7 +22,12 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data StackExchange = StackExchange deriving (Show, Generic, Eq)
+userInfoUri :: URI
+userInfoUri = [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
+
+type AppKey = ByteString
+
+data StackExchange = StackExchange OAuth2 AppKey deriving (Show, Generic, Eq)
 
 instance Hashable StackExchange
 
@@ -32,20 +36,19 @@ instance IDP StackExchange
 instance HasLabel StackExchange
 
 instance HasTokenReq StackExchange where
-  tokenReq _ mgr = fetchAccessToken2 mgr stackexchangeKey
+  tokenReq (StackExchange key _) mgr = fetchAccessToken2 mgr key
 
 instance HasTokenRefreshReq StackExchange where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr stackexchangeKey
+  tokenRefreshReq (StackExchange key _) mgr = refreshAccessToken mgr key
 
 instance HasUserReq StackExchange where
-  userReq _ mgr token = do
+  userReq (StackExchange _ appKey) mgr token = do
     re <- authGetBS2 mgr token
-              (userInfoUri `appendStackExchangeAppKey` stackexchangeAppKey)
+              (userInfoUri `appendStackExchangeAppKey` appKey)
     return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
 
 instance HasAuthUri StackExchange where
-  authUri _ = createCodeUri stackexchangeKey [ ("state", "StackExchange.test-state-123")
-                                          ]
+  authUri (StackExchange key _) = createCodeUri key [("state", "StackExchange.test-state-123")]
 
 data StackExchangeResp = StackExchangeResp { hasMore :: Bool
                                            , quotaMax :: Integer
@@ -62,9 +65,6 @@ instance FromJSON StackExchangeResp where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 instance FromJSON StackExchangeUser where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
-
-userInfoUri :: URI
-userInfoUri = [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
 
 toLoginUser :: StackExchangeResp -> LoginUser
 toLoginUser StackExchangeResp {..} =

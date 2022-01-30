@@ -9,14 +9,13 @@ import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Keys
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Auth0 = Auth0
+data Auth0 = Auth0 OAuth2
   deriving (Show, Generic, Eq)
 
 instance Hashable Auth0
@@ -26,10 +25,10 @@ instance IDP Auth0
 instance HasLabel Auth0
 
 instance HasTokenReq Auth0 where
-  tokenReq _ mgr = fetchAccessToken mgr auth0Key
+  tokenReq (Auth0 key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Auth0 where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr auth0Key
+  tokenRefreshReq (Auth0 key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Auth0 where
   userReq _ mgr at = do
@@ -37,9 +36,9 @@ instance HasUserReq Auth0 where
     return (second toLoginUser re)
 
 instance HasAuthUri Auth0 where
-  authUri _ =
+  authUri (Auth0 key) =
     createCodeUri
-      auth0Key
+      key
       [ ("state", "Auth0.test-state-123"),
         ( "scope",
           "openid profile email offline_access"

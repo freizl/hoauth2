@@ -37,7 +37,6 @@ Stability:           Beta
 Tested-With:         GHC <= 8.10.7
 
 Extra-source-files: README.md
-                    example/Keys.hs.sample
                     example/IDP/AzureAD.hs
                     example/IDP/Google.hs
                     example/IDP/Weibo.hs
@@ -48,6 +47,7 @@ Extra-source-files: README.md
                     example/IDP/Linkedin.hs
                     example/IDP/Slack.hs
                     example/IDP/Auth0.hs
+                    example/Keys.hs
                     example/IDP.hs
                     example/App.hs
                     example/Session.hs
@@ -62,10 +62,6 @@ Extra-source-files: README.md
 Source-Repository head
   Type:     git
   Location: git://github.com/freizl/hoauth2.git
-
-Flag test
-  Description: Build the executables
-  Default: False
 
 Library
   hs-source-dirs:   src
@@ -94,11 +90,6 @@ Library
                -fno-warn-unused-do-bind
 
 Executable demo-server
-  if flag(test)
-    Buildable: True
-  else
-    Buildable: False
-
   main-is:             main.hs
   other-modules:       IDP,
                        App

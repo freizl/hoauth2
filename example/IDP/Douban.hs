@@ -8,14 +8,13 @@ import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Douban = Douban deriving (Show, Generic, Eq)
+data Douban = Douban OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Douban
 
@@ -24,10 +23,10 @@ instance IDP Douban
 instance HasLabel Douban
 
 instance HasTokenRefreshReq Douban where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr doubanKey
+  tokenRefreshReq (Douban key) mgr = refreshAccessToken mgr key
 
 instance HasTokenReq Douban where
-  tokenReq _ mgr = fetchAccessToken2 mgr doubanKey
+  tokenReq (Douban key) mgr = fetchAccessToken2 mgr key
 
 instance HasUserReq Douban where
   userReq _ mgr at = do
@@ -35,7 +34,7 @@ instance HasUserReq Douban where
     return (second toLoginUser re)
 
 instance HasAuthUri Douban where
-  authUri _ = createCodeUri doubanKey [ ("state", "Douban.test-state-123")
+  authUri (Douban key) = createCodeUri key [ ("state", "Douban.test-state-123")
                                         ]
 
 data DoubanUser = DoubanUser { name :: Text

@@ -9,14 +9,13 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Hashable
 import           Data.Text.Lazy             (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Dropbox = Dropbox deriving (Show, Generic, Eq)
+data Dropbox = Dropbox OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Dropbox
 
@@ -25,10 +24,10 @@ instance IDP Dropbox
 instance HasLabel Dropbox
 
 instance HasTokenReq Dropbox where
-  tokenReq _ mgr = fetchAccessToken mgr dropboxKey
+  tokenReq (Dropbox key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Dropbox where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr dropboxKey
+  tokenRefreshReq (Dropbox key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Dropbox where
   userReq _ mgr at = do
@@ -37,7 +36,7 @@ instance HasUserReq Dropbox where
 
 
 instance HasAuthUri Dropbox where
-  authUri _ = createCodeUri dropboxKey [ ("state", "Dropbox.test-state-123")
+  authUri (Dropbox key) = createCodeUri key [ ("state", "Dropbox.test-state-123")
                                         ]
 
 newtype DropboxName = DropboxName { displayName :: Text }

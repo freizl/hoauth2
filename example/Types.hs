@@ -28,13 +28,16 @@ type CacheStore = MVar (Map.HashMap IDPLabel IDPData)
 
 -- * type class for defining a IDP
 
---
 class (Hashable a, Show a) => IDP a
 
 class (IDP a) => HasLabel a where
   idpLabel :: a -> IDPLabel
   idpLabel = TL.pack . show
 
+-- TODO: the `a` in following classes are not actually not used as value
+-- but more of a indicator. Wonder if type level programming
+-- or other solution would simplify the logic.?
+--
 class (IDP a) => HasAuthUri a where
   authUri :: a -> Text
 

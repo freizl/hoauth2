@@ -8,14 +8,14 @@ import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Github = Github deriving (Show, Generic, Eq)
+
+data Github = Github OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Github
 
@@ -24,10 +24,10 @@ instance IDP Github
 instance HasLabel Github
 
 instance HasTokenReq Github where
-  tokenReq _ mgr = fetchAccessToken mgr githubKey
+  tokenReq (Github key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Github where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr githubKey
+  tokenRefreshReq (Github key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Github where
   userReq _ mgr at = do
@@ -35,7 +35,7 @@ instance HasUserReq Github where
     return (second toLoginUser re)
 
 instance HasAuthUri Github where
-  authUri _ = createCodeUri githubKey [("state", "Github.test-state-123")]
+  authUri (Github key) = createCodeUri key [("state", "Github.test-state-123")]
 
 data GithubUser = GithubUser { name :: Text
                              , id   :: Integer

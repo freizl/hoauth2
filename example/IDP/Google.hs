@@ -8,14 +8,13 @@ import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Google = Google deriving (Show, Generic, Eq)
+data Google = Google OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Google
 
@@ -24,10 +23,10 @@ instance IDP Google
 instance HasLabel Google
 
 instance HasTokenReq Google where
-  tokenReq _ mgr = fetchAccessToken mgr googleKey
+  tokenReq (Google key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Google where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr googleKey
+  tokenRefreshReq (Google key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Google where
   userReq _ mgr at = do
@@ -35,7 +34,7 @@ instance HasUserReq Google where
     return (second toLoginUser re)
 
 instance HasAuthUri Google where
-  authUri _ = createCodeUri googleKey [ ("state", "Google.test-state-123")
+  authUri (Google key) = createCodeUri key [ ("state", "Google.test-state-123")
                                       , ("scope", "https://www.googleapis.com/auth/userinfo.email")
                                         ]
 

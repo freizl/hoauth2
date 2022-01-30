@@ -11,34 +11,37 @@ import qualified IDP.Fitbit as IFitbit
 import qualified IDP.Github as IGithub
 import qualified IDP.Google as IGoogle
 import qualified IDP.Okta as IOkta
+import qualified IDP.Slack as ISlack
 import qualified IDP.StackExchange as IStackExchange
 import qualified IDP.Weibo as IWeibo
-import qualified IDP.Slack as ISlack
 import qualified IDP.ZOHO as IZOHO
+import Keys
 import Session
 import Types
 
 -- TODO: make this generic to discover any IDPs from idp directory.
 --
-idps :: [IDPApp]
-idps =
-  [ IDPApp IAzureAD.AzureAD,
-    IDPApp IDouban.Douban,
-    IDPApp IDropbox.Dropbox,
-    IDPApp IFacebook.Facebook,
-    IDPApp IFitbit.Fitbit,
-    IDPApp IGithub.Github,
-    IDPApp IGoogle.Google,
-    IDPApp IOkta.Okta,
-    IDPApp IStackExchange.StackExchange,
-    IDPApp IWeibo.Weibo,
-    IDPApp IAuth0.Auth0,
-    IDPApp ISlack.Slack,
-    IDPApp IZOHO.ZOHO
+createIDPs :: IO [IDPApp]
+createIDPs =
+  return [ IDPApp (IAzureAD.AzureAD azureADKey),
+    IDPApp (IDouban.Douban doubanKey),
+    IDPApp (IDropbox.Dropbox dropboxKey),
+    IDPApp (IFacebook.Facebook facebookKey),
+    IDPApp (IFitbit.Fitbit fitbitKey),
+    IDPApp (IGithub.Github githubKey),
+    IDPApp (IGoogle.Google googleKey),
+    IDPApp (IOkta.Okta oktaKey),
+    IDPApp (IStackExchange.StackExchange stackexchangeKey stackexchangeAppKey),
+    IDPApp (IWeibo.Weibo weiboKey),
+    IDPApp (IAuth0.Auth0 auth0Key),
+    IDPApp (ISlack.Slack slackKey),
+    IDPApp (IZOHO.ZOHO zohoKey)
   ]
 
 initIdps :: CacheStore -> IO ()
-initIdps c = mapM_ (insertIDPData c) (fmap mkIDPData idps)
+initIdps c = do
+  idps <- createIDPs
+  mapM_ (insertIDPData c) (fmap mkIDPData idps)
 
 idpsMap :: Map.HashMap Text IDPApp
 idpsMap = Map.fromList $ fmap (\x@(IDPApp idp) -> (idpLabel idp, x)) idps

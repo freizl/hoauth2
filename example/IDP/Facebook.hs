@@ -8,14 +8,13 @@ import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Facebook = Facebook deriving (Show, Generic, Eq)
+data Facebook = Facebook OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Facebook
 
@@ -24,10 +23,10 @@ instance IDP Facebook
 instance HasLabel Facebook
 
 instance HasTokenReq Facebook where
-  tokenReq _ mgr = fetchAccessToken2 mgr facebookKey
+  tokenReq (Facebook key) mgr = fetchAccessToken2 mgr key
 
 instance HasTokenRefreshReq Facebook where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr facebookKey
+  tokenRefreshReq (Facebook key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Facebook where
   userReq _ mgr at = do
@@ -35,7 +34,7 @@ instance HasUserReq Facebook where
     return (second toLoginUser re)
 
 instance HasAuthUri Facebook where
-  authUri _ = createCodeUri facebookKey [ ("state", "Facebook.test-state-123")
+  authUri (Facebook key) = createCodeUri key [ ("state", "Facebook.test-state-123")
                                         , ("scope", "user_about_me,email")
                                         ]
 

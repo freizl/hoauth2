@@ -11,14 +11,14 @@ import Data.Hashable
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
-import Keys
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Weibo = Weibo deriving (Show, Generic, Eq)
+
+newtype Weibo = Weibo OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Weibo
 
@@ -27,10 +27,10 @@ instance IDP Weibo
 instance HasLabel Weibo
 
 instance HasTokenRefreshReq Weibo where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr weiboKey
+  tokenRefreshReq (Weibo key) mgr = refreshAccessToken mgr key
 
 instance HasTokenReq Weibo where
-  tokenReq _ mgr = fetchAccessToken mgr weiboKey
+  tokenReq (Weibo key) mgr = fetchAccessToken mgr key
 
 -- fetch user info via
 -- GET
@@ -41,9 +41,9 @@ instance HasUserReq Weibo where
     return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
 
 instance HasAuthUri Weibo where
-  authUri _ =
+  authUri (Weibo key) =
     createCodeUri
-      weiboKey
+      key
       [ ("state", "Weibo.test-state-123")
       ]
 
