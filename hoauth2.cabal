@@ -54,7 +54,7 @@ Extra-source-files: README.md
                     example/Utils.hs
                     example/Views.hs
                     example/main.hs
-                    example/README.md
+                    example/README.org
                     example/templates/index.mustache
                     example/assets/main.css
 
