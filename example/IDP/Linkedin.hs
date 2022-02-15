@@ -19,7 +19,7 @@ import           URI.ByteString.QQ
 
 data LinkedinUser = LinkedinUser { firstName :: Text
                                  , lastName  :: Text
-                                 } deriving (Show, Generic)
+                                 } deriving (Show, Generic, Eq)
 
 instance FromJSON LinkedinUser where
     parseJSON = genericParseJSON defaultOptions

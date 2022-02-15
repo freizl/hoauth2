@@ -15,7 +15,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Github = Github deriving (Show, Generic)
+data Github = Github deriving (Show, Generic, Eq)
 
 instance Hashable Github
 

@@ -15,7 +15,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Douban = Douban deriving (Show, Generic)
+data Douban = Douban deriving (Show, Generic, Eq)
 
 instance Hashable Douban
 

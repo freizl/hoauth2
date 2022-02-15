@@ -16,7 +16,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Dropbox = Dropbox deriving (Show, Generic)
+data Dropbox = Dropbox deriving (Show, Generic, Eq)
 
 instance Hashable Dropbox
 
