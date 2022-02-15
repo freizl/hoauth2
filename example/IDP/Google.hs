@@ -15,7 +15,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Google = Google deriving (Show, Generic)
+data Google = Google deriving (Show, Generic, Eq)
 
 instance Hashable Google
 

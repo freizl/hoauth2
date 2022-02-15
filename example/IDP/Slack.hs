@@ -17,7 +17,7 @@ import URI.ByteString.QQ
 import Utils
 
 data Slack = Slack
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance Hashable Slack
 

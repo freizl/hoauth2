@@ -15,7 +15,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data AzureAD = AzureAD deriving (Show, Generic)
+data AzureAD = AzureAD deriving (Show, Generic, Eq)
 
 instance Hashable AzureAD
 

@@ -17,7 +17,7 @@ import URI.ByteString.QQ
 import Utils
 
 data Okta = Okta
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance Hashable Okta
 

@@ -18,7 +18,7 @@ import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Weibo = Weibo deriving (Show, Generic)
+data Weibo = Weibo deriving (Show, Generic, Eq)
 
 instance Hashable Weibo
 

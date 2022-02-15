@@ -17,7 +17,7 @@ import           URI.ByteString.QQ
 import           Utils
 
 
-data Fitbit = Fitbit deriving (Show, Generic)
+data Fitbit = Fitbit deriving (Show, Generic, Eq)
 
 instance Hashable Fitbit
 

@@ -17,7 +17,7 @@ import URI.ByteString.QQ
 import Utils
 
 data Auth0 = Auth0
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance Hashable Auth0
 

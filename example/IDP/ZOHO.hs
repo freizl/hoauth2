@@ -15,7 +15,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data ZOHO = ZOHO deriving (Show, Generic)
+data ZOHO = ZOHO deriving (Show, Generic, Eq)
 
 instance Hashable ZOHO
 

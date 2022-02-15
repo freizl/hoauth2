@@ -23,7 +23,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data StackExchange = StackExchange deriving (Show, Generic)
+data StackExchange = StackExchange deriving (Show, Generic, Eq)
 
 instance Hashable StackExchange
 
