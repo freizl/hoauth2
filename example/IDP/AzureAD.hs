@@ -1,8 +1,9 @@
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.AzureAD where
+
 import           Data.Aeson
 import           Data.Bifunctor
 import           Data.Hashable
@@ -14,13 +15,14 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data AzureAD = AzureAD OAuth2 deriving (Show, Generic, Eq)
+newtype AzureAD = AzureAD OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable AzureAD
 
 instance IDP AzureAD
 
-instance HasLabel AzureAD
+instance HasLabel AzureAD where
+    idpLabel = const "AzureAD"
 
 instance HasTokenRefreshReq AzureAD where
   tokenRefreshReq (AzureAD key) mgr = refreshAccessToken mgr key

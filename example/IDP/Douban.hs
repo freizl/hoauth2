@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
@@ -14,13 +15,14 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Douban = Douban OAuth2 deriving (Show, Generic, Eq)
+newtype Douban = Douban OAuth2 deriving (Generic, Eq, Show)
 
 instance Hashable Douban
 
 instance IDP Douban
 
-instance HasLabel Douban
+instance HasLabel Douban where
+  idpLabel = const "Douban"
 
 instance HasTokenRefreshReq Douban where
   tokenRefreshReq (Douban key) mgr = refreshAccessToken mgr key

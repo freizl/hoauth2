@@ -24,7 +24,8 @@ instance Hashable Weibo
 
 instance IDP Weibo
 
-instance HasLabel Weibo
+instance HasLabel Weibo where
+  idpLabel = const "Weibo"
 
 instance HasTokenRefreshReq Weibo where
   tokenRefreshReq (Weibo key) mgr = refreshAccessToken mgr key

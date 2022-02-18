@@ -22,7 +22,8 @@ instance Hashable Slack
 
 instance IDP Slack
 
-instance HasLabel Slack
+instance HasLabel Slack where
+  idpLabel = const "Slack"
 
 instance HasTokenReq Slack where
   tokenReq (Slack key) mgr = fetchAccessToken mgr key

@@ -33,7 +33,8 @@ instance Hashable StackExchange
 
 instance IDP StackExchange
 
-instance HasLabel StackExchange
+instance HasLabel StackExchange where
+  idpLabel = const "StackExchange"
 
 instance HasTokenReq StackExchange where
   tokenReq (StackExchange key _) mgr = fetchAccessToken2 mgr key

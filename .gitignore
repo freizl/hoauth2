@@ -15,3 +15,5 @@ cabal.project.local
 cabal.project.local~
 result
 report.html
+
+.env.json

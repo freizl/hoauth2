@@ -21,13 +21,14 @@ userInfoUri = [uri|https://www.zohoapis.com/crm/v2/users|]
 -- `oauth/user/info` url does not work and find answer from
 -- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
 
-data ZOHO = ZOHO OAuth2 deriving (Show, Generic, Eq)
+newtype ZOHO = ZOHO OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable ZOHO
 
 instance IDP ZOHO
 
-instance HasLabel ZOHO
+instance HasLabel ZOHO where
+  idpLabel = const "ZOHO"
 
 instance HasTokenReq ZOHO where
   tokenReq (ZOHO key) mgr = fetchAccessToken2 mgr key

@@ -15,7 +15,7 @@ import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Okta = Okta OAuth2
+newtype Okta = Okta OAuth2
   deriving (Show, Generic, Eq)
 
 userInfoUri :: URI
@@ -26,7 +26,8 @@ instance Hashable Okta
 
 instance IDP Okta
 
-instance HasLabel Okta
+instance HasLabel Okta where
+  idpLabel = const "Okta"
 
 instance HasTokenReq Okta where
   tokenReq (Okta key) mgr = fetchAccessToken mgr key

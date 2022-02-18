@@ -25,7 +25,8 @@ instance Hashable Fitbit
 
 instance IDP Fitbit
 
-instance HasLabel Fitbit
+instance HasLabel Fitbit where
+  idpLabel = const "Fitbit"
 
 instance HasTokenReq Fitbit where
   tokenReq (Fitbit key) mgr = fetchAccessToken mgr key

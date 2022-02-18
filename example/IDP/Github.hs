@@ -21,7 +21,8 @@ instance Hashable Github
 
 instance IDP Github
 
-instance HasLabel Github
+instance HasLabel Github where
+  idpLabel = const "Github"
 
 instance HasTokenReq Github where
   tokenReq (Github key) mgr = fetchAccessToken mgr key

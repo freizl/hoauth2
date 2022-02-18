@@ -21,7 +21,8 @@ instance Hashable Dropbox
 
 instance IDP Dropbox
 
-instance HasLabel Dropbox
+instance HasLabel Dropbox where
+  idpLabel = const "Dropbox"
 
 instance HasTokenReq Dropbox where
   tokenReq (Dropbox key) mgr = fetchAccessToken mgr key

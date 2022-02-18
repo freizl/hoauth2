@@ -20,7 +20,8 @@ instance Hashable Google
 
 instance IDP Google
 
-instance HasLabel Google
+instance HasLabel Google where
+  idpLabel = const "Google"
 
 instance HasTokenReq Google where
   tokenReq (Google key) mgr = fetchAccessToken mgr key

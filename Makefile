@@ -22,7 +22,7 @@ build-demo:
 repl-demo:
 	cabal v2-repl --flag=test demo-server
 
-start-demo:
+start-demo: build-demo
 	cabal v2-exec --flag=test demo-server
 
 rebuild: clean build

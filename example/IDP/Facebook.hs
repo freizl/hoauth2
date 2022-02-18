@@ -20,7 +20,8 @@ instance Hashable Facebook
 
 instance IDP Facebook
 
-instance HasLabel Facebook
+instance HasLabel Facebook where
+  idpLabel = const "Facebook"
 
 instance HasTokenReq Facebook where
   tokenReq (Facebook key) mgr = fetchAccessToken2 mgr key

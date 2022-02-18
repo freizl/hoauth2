@@ -15,14 +15,15 @@ import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Auth0 = Auth0 OAuth2
-  deriving (Show, Generic, Eq)
+newtype Auth0 = Auth0 OAuth2
+  deriving (Generic, Show, Eq)
 
 instance Hashable Auth0
 
 instance IDP Auth0
 
-instance HasLabel Auth0
+instance HasLabel Auth0 where
+  idpLabel = const "Auth0"
 
 instance HasTokenReq Auth0 where
   tokenReq (Auth0 key) mgr = fetchAccessToken mgr key
@@ -41,7 +42,8 @@ instance HasAuthUri Auth0 where
       key
       [ ("state", "Auth0.test-state-123"),
         ( "scope",
-          "openid profile email offline_access"
+          "openid profile email"
+          -- "openid profile email offline_access"
         )
       ]
 
