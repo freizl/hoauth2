@@ -1,19 +1,19 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module IDP.Github where
-import           Data.Aeson
-import           Data.Bifunctor
-import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import           GHC.Generics
-import           Network.OAuth.OAuth2
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Utils
 
+import Data.Aeson
+import Data.Bifunctor
+import Data.Hashable
+import Data.Text.Lazy (Text)
+import GHC.Generics
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString
+import URI.ByteString.QQ
+import Utils
 
 newtype Github = Github OAuth2 deriving (Show, Generic, Eq)
 
@@ -36,17 +36,23 @@ instance HasUserReq Github where
     return (second toLoginUser re)
 
 instance HasAuthUri Github where
-  authUri (Github key) = createCodeUri key [("state", "Github.test-state-123")]
+  authUri (Github key) =
+    createCodeUri
+      key
+      [ ("state", "Github.test-state-123")
+      ]
 
-data GithubUser = GithubUser { name :: Text
-                             , id   :: Integer
-                             } deriving (Show, Generic)
+data GithubUser = GithubUser
+  { name :: Text,
+    id :: Integer
+  }
+  deriving (Show, Generic)
 
 instance FromJSON GithubUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
 userInfoUri :: URI
 userInfoUri = [uri|https://api.github.com/user|]
 
 toLoginUser :: GithubUser -> LoginUser
-toLoginUser guser = LoginUser { loginUserName = name guser }
+toLoginUser guser = LoginUser {loginUserName = name guser}

@@ -77,7 +77,7 @@ readEnvFile = do
 initIdps :: CacheStore -> IO ()
 initIdps c = do
   idps <- createIDPs
-  mapM_ (insertIDPData c) (fmap mkIDPData idps)
+  mapM_ (upsertIDPData c) (fmap mkIDPData idps)
 
 mkIDPData :: IDPApp -> IDPData
 mkIDPData ia = IDPData ia Nothing Nothing
