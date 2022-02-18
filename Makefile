@@ -25,7 +25,7 @@ start-demo: build-demo
 rebuild: clean build
 
 hlint:
-	hlint . --report
+	hlint src example --report
 
 doc: build
 	cabal v2-haddock
