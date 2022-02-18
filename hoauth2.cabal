@@ -37,6 +37,7 @@ Stability:           Beta
 Tested-With:         GHC <= 8.10.7
 
 Extra-source-files: README.md
+                    sample.env.json
                     example/IDP/AzureAD.hs
                     example/IDP/Google.hs
                     example/IDP/Weibo.hs
