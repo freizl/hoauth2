@@ -19,5 +19,5 @@ jobs:
     - name: 'Run HLint'
       uses: haskell/actions/hlint-run@v1
       with:
-        path: '["src/", "example/"]'
+        path: '["hoauth2/src/", "hoauth2-example/src/"]'
         fail-on: warning
