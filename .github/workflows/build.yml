@@ -29,7 +29,6 @@ jobs:
       - name: Install dependencies
         run: |
           cabal v2-update
-          make create-keys
           cabal v2-build --only-dependencies --enable-tests
 
       - name: Build

@@ -3,9 +3,6 @@ default: build
 clean:
 	cabal v2-clean
 
-create-keys:
-	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
-
 build:
 	cabal v2-build
 
@@ -36,14 +33,14 @@ doc: build
 dist: rebuild
 	cabal v2-sdist
 
+####################
+### CI - nix build
+####################
+
 cabal2nix:
 	cabal2nix -ftest . > hoauth2.nix
 
-####################
-### CI
-####################
-
-ci-build: create-keys
+ci-build:
 	nix-build
 
 ci-lint:
