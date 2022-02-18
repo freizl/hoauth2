@@ -1,33 +1,34 @@
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes       #-}
 
 module IDP.AzureAD where
+
 import           Data.Aeson
 import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data AzureAD = AzureAD deriving (Show, Generic, Eq)
+newtype AzureAD = AzureAD OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable AzureAD
 
 instance IDP AzureAD
 
-instance HasLabel AzureAD
+instance HasLabel AzureAD where
+    idpLabel = const "AzureAD"
 
 instance HasTokenRefreshReq AzureAD where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr azureADKey
+  tokenRefreshReq (AzureAD key) mgr = refreshAccessToken mgr key
 
 instance HasTokenReq AzureAD where
-  tokenReq _ mgr = fetchAccessToken mgr azureADKey
+  tokenReq (AzureAD key) mgr = fetchAccessToken mgr key
 
 instance HasUserReq AzureAD where
   userReq _ mgr at = do
@@ -35,7 +36,7 @@ instance HasUserReq AzureAD where
     return (second toLoginUser re)
 
 instance HasAuthUri AzureAD where
-  authUri _ = createCodeUri azureADKey [ ("state", "AzureAD.test-state-123")
+  authUri (AzureAD key) = createCodeUri key [ ("state", "AzureAD.test-state-123")
                                        , ("scope", "openid,profile")
                                        , ("resource", "https://graph.microsoft.com")
                                        ]

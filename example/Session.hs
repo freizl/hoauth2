@@ -26,13 +26,13 @@ removeKey store idpKey = do
 
 lookupKey :: CacheStore
           -> IDPLabel
-          -> IO (Maybe IDPData)
+          -> IO (Either IDPLabel IDPData)
 lookupKey store idpKey = do
   m1 <- tryReadMVar store
-  return (Map.lookup idpKey =<< m1)
+  return $ maybe (Left idpKey) Right (Map.lookup idpKey =<< m1)
 
 insertIDPData :: CacheStore -> IDPData -> IO ()
 insertIDPData store val = do
   m1 <- takeMVar store
-  let m2 = Map.insert (idpDisplayLabel val) val m1
+  let m2 = Map.insert (toLabel val) val m1
   putMVar store m2

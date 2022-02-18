@@ -36,10 +36,6 @@ import GHC.Generics
 --------------------------------------------------
 
 -- | Query Parameter Representation
--- TODO: fix typo in OAuthorizeEndpoint
--- rename AccessToken to TokenEndpoint
--- rename callback to redirectUri
-
 data OAuth2 = OAuth2
   { oauth2ClientId :: Text,
     oauth2ClientSecret :: Maybe Text,

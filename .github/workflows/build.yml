@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
@@ -29,7 +29,6 @@ jobs:
       - name: Install dependencies
         run: |
           cabal v2-update
-          make create-keys
           cabal v2-build --only-dependencies --enable-tests
 
       - name: Build

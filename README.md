@@ -10,13 +10,11 @@ A lightweight OAuth2 Haskell binding.
 # Build the sample App
 
 - Make sure `ghc-8.10` and `cabal-3.x` installed.
-- `make create-keys`
-- check the `example/Keys.hs` to make sure it's config correctly for the IdP you're going to test. (client id, client secret, oauth Urls etc)
-- `make build`
+- copy `sample.env.json` to `.env.json` and modify the clientId and clientSecret
 - `make start-demo`
 - open <http://localhost:9988>
 
-## Nix
+## Nix (WIP)
 
 - assume `cabal-install` has been install (either globally or in nix store)
 - `nix-shell` then could do `cabal v2-` build

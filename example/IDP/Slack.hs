@@ -9,27 +9,27 @@ import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Keys
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Slack = Slack
+newtype Slack = Slack OAuth2
   deriving (Show, Generic, Eq)
 
 instance Hashable Slack
 
 instance IDP Slack
 
-instance HasLabel Slack
+instance HasLabel Slack where
+  idpLabel = const "Slack"
 
 instance HasTokenReq Slack where
-  tokenReq _ mgr = fetchAccessToken mgr slackKey
+  tokenReq (Slack key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Slack where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr slackKey
+  tokenRefreshReq (Slack key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Slack where
   userReq _ mgr at = do
@@ -37,9 +37,9 @@ instance HasUserReq Slack where
     return (second toLoginUser re)
 
 instance HasAuthUri Slack where
-  authUri _ =
+  authUri (Slack key) =
     createCodeUri
-      slackKey
+      key
       [ ("state", "Slack.test-state-123"),
         ( "scope",
           "openid profile email"

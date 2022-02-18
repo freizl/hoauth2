@@ -9,27 +9,30 @@ import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
-import           Keys
 import           Network.OAuth.OAuth2
 import           Types
 import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
+userInfoUri :: URI
+userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
-data Fitbit = Fitbit deriving (Show, Generic, Eq)
+
+newtype Fitbit = Fitbit OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Fitbit
 
 instance IDP Fitbit
 
-instance HasLabel Fitbit
+instance HasLabel Fitbit where
+  idpLabel = const "Fitbit"
 
 instance HasTokenReq Fitbit where
-  tokenReq _ mgr = fetchAccessToken mgr fitbitKey
+  tokenReq (Fitbit key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Fitbit where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr fitbitKey
+  tokenRefreshReq (Fitbit key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Fitbit where
   userReq _ mgr at = do
@@ -37,7 +40,7 @@ instance HasUserReq Fitbit where
     return (second toLoginUser re)
 
 instance HasAuthUri Fitbit where
-  authUri _ = createCodeUri fitbitKey [ ("state", "Fitbit.test-state-123")
+  authUri (Fitbit key) = createCodeUri key [ ("state", "Fitbit.test-state-123")
                                         , ("scope", "profile")
                                         ]
 
@@ -55,9 +58,6 @@ instance FromJSON FitbitUser where
         <*> ((o .: "user") >>= (.: "age"))
     parseJSON _ = mzero
 
-
-userInfoUri :: URI
-userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
 toLoginUser :: FitbitUser -> LoginUser
 toLoginUser ouser = LoginUser { loginUserName = userName ouser }

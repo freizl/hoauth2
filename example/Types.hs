@@ -9,10 +9,12 @@ module Types where
 
 import Control.Concurrent.MVar
 import Data.Aeson
+import Data.Aeson.KeyMap
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.HashMap.Strict as Map
 import Data.Hashable
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Text.Lazy
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
@@ -26,15 +28,29 @@ type IDPLabel = Text
 
 type CacheStore = MVar (Map.HashMap IDPLabel IDPData)
 
+-- TODO: how to allow override domain (auth0, okta) ?
+--
+data EnvConfigCreds = EnvConfigCreds
+  { clientId :: T.Text,
+    clientSecret :: T.Text
+  }
+  deriving (Generic)
+
+instance FromJSON EnvConfigCreds
+
+type EnvConfig = KeyMap EnvConfigCreds
+
 -- * type class for defining a IDP
 
---
 class (Hashable a, Show a) => IDP a
 
-class (IDP a) => HasLabel a where
+class HasLabel a where
   idpLabel :: a -> IDPLabel
-  idpLabel = TL.pack . show
 
+-- TODO: the `a` in following classes are not actually not used as value
+-- but more of a indicator. Wonder if type level programming
+-- or other solution would simplify the logic.?
+--
 class (IDP a) => HasAuthUri a where
   authUri :: a -> Text
 
@@ -75,18 +91,20 @@ newtype LoginUser = LoginUser
   deriving (Eq, Show)
 
 data IDPData = IDPData
-  { codeFlowUri :: Text,
+  { idpApp :: IDPApp,
     loginUser :: Maybe LoginUser,
-    oauth2Token :: Maybe OAuth2Token,
-    idpDisplayLabel :: IDPLabel
+    oauth2Token :: Maybe OAuth2Token
   }
+
+toLabel :: IDPData -> IDPLabel
+toLabel (IDPData (IDPApp a) _ _) = idpLabel a
 
 -- simplify use case to only allow one idp instance for now.
 instance Eq IDPData where
-  a == b = idpDisplayLabel a == idpDisplayLabel b
+  a == b = toLabel a == toLabel b
 
 instance Ord IDPData where
-  a `compare` b = idpDisplayLabel a `compare` idpDisplayLabel b
+  a `compare` b = toLabel a `compare` toLabel b
 
 newtype TemplateData = TemplateData
   { idpTemplateData :: [IDPData]
@@ -96,12 +114,12 @@ newtype TemplateData = TemplateData
 -- * Mustache instances
 
 instance ToMustache IDPData where
-  toMustache t' =
+  toMustache (IDPData (IDPApp a) lu _) =
     M.object
-      [ "codeFlowUri" ~> codeFlowUri t',
-        "isLogin" ~> isJust (loginUser t'),
-        "user" ~> loginUser t',
-        "name" ~> TL.unpack (idpDisplayLabel t')
+      [ "codeFlowUri" ~> authUri a,
+        "isLogin" ~> isJust lu,
+        "user" ~> lu,
+        "name" ~> TL.unpack (idpLabel a)
       ]
 
 instance ToMustache LoginUser where

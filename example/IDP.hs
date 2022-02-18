@@ -1,7 +1,9 @@
 module IDP where
 
-import qualified Data.HashMap.Strict as Map
-import Data.Text.Lazy (Text)
+import qualified Data.ByteString as BS
+import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.Key as Aeson
+import qualified Data.Aeson.KeyMap as Aeson
 import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
 import qualified IDP.Douban as IDouban
@@ -11,40 +13,71 @@ import qualified IDP.Fitbit as IFitbit
 import qualified IDP.Github as IGithub
 import qualified IDP.Google as IGoogle
 import qualified IDP.Okta as IOkta
+import qualified IDP.Slack as ISlack
 import qualified IDP.StackExchange as IStackExchange
 import qualified IDP.Weibo as IWeibo
-import qualified IDP.Slack as ISlack
 import qualified IDP.ZOHO as IZOHO
+import Keys
+import Network.OAuth.OAuth2
 import Session
+import System.Directory
 import Types
 
--- TODO: make this generic to discover any IDPs from idp directory.
---
-idps :: [IDPApp]
-idps =
-  [ IDPApp IAzureAD.AzureAD,
-    IDPApp IDouban.Douban,
-    IDPApp IDropbox.Dropbox,
-    IDPApp IFacebook.Facebook,
-    IDPApp IFitbit.Fitbit,
-    IDPApp IGithub.Github,
-    IDPApp IGoogle.Google,
-    IDPApp IOkta.Okta,
-    IDPApp IStackExchange.StackExchange,
-    IDPApp IWeibo.Weibo,
-    IDPApp IAuth0.Auth0,
-    IDPApp ISlack.Slack,
-    IDPApp IZOHO.ZOHO
-  ]
+-- TODO:
+-- 1. make this generic to discover any IDPs from idp directory.
+-- 2. and discover `.env` for override?
+
+createIDPs :: IO [IDPApp]
+createIDPs = do
+  configCreds <- readEnvFile
+  let initKey preConfigOAuth envKey =
+        case Aeson.lookup (Aeson.fromString envKey) configCreds of
+          Nothing -> preConfigOAuth
+          Just config ->
+            preConfigOAuth
+              { oauth2ClientId = clientId config,
+                oauth2ClientSecret = Just (clientSecret config)
+              }
+
+  return
+    [ IDPApp (IAzureAD.AzureAD (initKey azureADKey "azure")),
+      IDPApp (IDouban.Douban (initKey doubanKey "douban")),
+      IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
+      IDPApp (IFacebook.Facebook (initKey facebookKey "facebook")),
+      IDPApp (IFitbit.Fitbit (initKey fitbitKey "fitbit")),
+      IDPApp (IGithub.Github (initKey githubKey "github")),
+      IDPApp (IGoogle.Google (initKey googleKey "google")),
+      IDPApp (IOkta.Okta (initKey oktaKey "okta")),
+      IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
+      IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
+      IDPApp (ISlack.Slack (initKey slackKey "slack")),
+      IDPApp (IZOHO.ZOHO (initKey zohoKey "zoho")),
+      IDPApp
+        ( IStackExchange.StackExchange
+            (initKey stackexchangeKey "stackExchange")
+            stackexchangeAppKey
+        )
+    ]
+
+envFilePath :: String
+envFilePath = ".env.json"
+
+readEnvFile :: IO EnvConfig
+readEnvFile = do
+  envFileE <- doesFileExist envFilePath
+  if envFileE then do
+    print "Found .env.json"
+    fileContent <- BS.readFile envFilePath
+    case Aeson.eitherDecodeStrict fileContent of
+      Left err -> print err >> return Aeson.empty
+      Right ec -> return ec
+  else return Aeson.empty
+
 
 initIdps :: CacheStore -> IO ()
-initIdps c = mapM_ (insertIDPData c) (fmap mkIDPData idps)
-
-idpsMap :: Map.HashMap Text IDPApp
-idpsMap = Map.fromList $ fmap (\x@(IDPApp idp) -> (idpLabel idp, x)) idps
-
-parseIDP :: Text -> Either Text IDPApp
-parseIDP s = maybe (Left s) Right (Map.lookup s idpsMap)
+initIdps c = do
+  idps <- createIDPs
+  mapM_ (insertIDPData c) (fmap mkIDPData idps)
 
 mkIDPData :: IDPApp -> IDPData
-mkIDPData (IDPApp idp) = IDPData (authUri idp) Nothing Nothing (idpLabel idp)
+mkIDPData ia = IDPData ia Nothing Nothing

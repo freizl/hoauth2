@@ -9,27 +9,31 @@ import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Keys
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Okta = Okta
+newtype Okta = Okta OAuth2
   deriving (Show, Generic, Eq)
+
+userInfoUri :: URI
+userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+-- userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
 
 instance Hashable Okta
 
 instance IDP Okta
 
-instance HasLabel Okta
+instance HasLabel Okta where
+  idpLabel = const "Okta"
 
 instance HasTokenReq Okta where
-  tokenReq _ mgr = fetchAccessToken mgr oktaKey
+  tokenReq (Okta key) mgr = fetchAccessToken mgr key
 
 instance HasTokenRefreshReq Okta where
-  tokenRefreshReq _ mgr = refreshAccessToken mgr oktaKey
+  tokenRefreshReq (Okta key) mgr = refreshAccessToken mgr key
 
 instance HasUserReq Okta where
   userReq _ mgr at = do
@@ -41,9 +45,9 @@ instance HasUserReq Okta where
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
 --
 instance HasAuthUri Okta where
-  authUri _ =
+  authUri (Okta key) =
     createCodeUri
-      oktaKey
+      key
       [ ("state", "Okta.test-state-123"),
         ( "scope",
           "openid profile"
@@ -61,11 +65,6 @@ data OktaUser = OktaUser
 instance FromJSON OktaUser where
   parseJSON =
     genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-userInfoUri :: URI
-userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
-
--- userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
 
 toLoginUser :: OktaUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = name ouser}
