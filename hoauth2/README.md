@@ -1,6 +1,6 @@
 [![Build](https://github.com/freizl/hoauth2/actions/workflows/build.yml/badge.svg)](https://github.com/freizl/hoauth2/actions/workflows/build.yml)
 [![lint](https://github.com/freizl/hoauth2/actions/workflows/lint.yml/badge.svg)](https://github.com/freizl/hoauth2/actions/workflows/lint.yml)
-[![Travis Status](https://app.travis-ci.com/freizl/hoauth2.svg?branch=master)](http://app.travis-ci.com/github/freizl/hoauth2)
+[![Travis Status](https://secure.travis-ci.org/freizl/hoauth2.svg?branch=master)](http://travis-ci.org/freizl/hoauth2)
 [![Hackage](https://img.shields.io/hackage/v/hoauth2.svg)](https://hackage.haskell.org/package/hoauth2)
 
 # Introduction

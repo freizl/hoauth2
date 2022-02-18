@@ -4,7 +4,7 @@ clean:
 	cabal v2-clean
 
 build:
-	cabal v2-build
+	cabal v2-build all
 
 ## install ghcid globally: `cabal install ghcid`
 watch:
@@ -13,19 +13,16 @@ watch:
 watch-demo:
 	ghcid --command="cabal v2-repl demo-server"
 
-build-demo:
-	cabal v2-build demo-server
-
 repl-demo:
 	cabal v2-repl demo-server
 
-start-demo: build-demo
-	cabal v2-exec demo-server
+start-demo:
+	cabal v2-run demo-server
 
 rebuild: clean build
 
 hlint:
-	hlint src example --report
+	hlint hoauth2/src hoauth2-example/src --report
 
 doc: build
 	cabal v2-haddock

@@ -1,29 +1,22 @@
 Cabal-version: 2.4
-Name:                hoauth2
--- http://wiki.haskell.org/Package_versioning_policy
-Version:             2.1.0
+Name:                hoauth2-example
+Version:             1.0.0
 
-Synopsis:            Haskell OAuth2 authentication client
+Synopsis:            OAuth2 example
 
-Description: Haskell OAuth2 authentication client. Tested with the following services:
-             .
+Description: Tested with the following services:
+             * Auth0
              * AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
-             .
-             * Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
-             .
-             * Github: <http://developer.github.com/v3/oauth/>
-             .
-             * Facebook: <http://developers.facebook.com/docs/facebook-login/>
-             .
-             * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
-             .
-             * StackExchange: <https://api.stackexchange.com/docs/authentication>
-             .
-             * DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
-             .
-             * Weibo: <http://open.weibo.com/wiki/Oauth2>
-             .
              * Douban: <http://developers.douban.com/wiki/?title=oauth2>
+             * DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
+             * Facebook: <http://developers.facebook.com/docs/facebook-login/>
+             * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
+             * Github: <http://developer.github.com/v3/oauth/>
+             * Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
+             * Okta
+             * Slack
+             * StackExchange: <https://api.stackexchange.com/docs/authentication>
+             * Weibo: <http://open.weibo.com/wiki/Oauth2>
 
 Homepage:            https://github.com/freizl/hoauth2
 License:             BSD-3-Clause
@@ -36,59 +29,36 @@ Build-type:          Simple
 Stability:           Beta
 Tested-With:         GHC <= 8.10.7
 
-Extra-source-files: README.md
-                    sample.env.json
-                    example/IDP/AzureAD.hs
-                    example/IDP/Google.hs
-                    example/IDP/Weibo.hs
-                    example/IDP/Github.hs
-                    example/IDP/Facebook.hs
-                    example/IDP/Fitbit.hs
-                    example/IDP/Douban.hs
-                    example/IDP/Linkedin.hs
-                    example/IDP/Slack.hs
-                    example/IDP/Auth0.hs
-                    example/Keys.hs
-                    example/IDP.hs
-                    example/App.hs
-                    example/Session.hs
-                    example/Types.hs
-                    example/Utils.hs
-                    example/Views.hs
-                    example/main.hs
-                    example/README.org
-                    example/templates/index.mustache
-                    example/assets/main.css
+Extra-source-files: sample.env.json
+                    README.org
+                    -- src/IDP/Auth0.hs
+                    -- src/IDP/AzureAD.hs
+                    -- src/IDP/Douban.hs
+                    -- src/IDP/Dropbox.hs
+                    -- src/IDP/Facebook.hs
+                    -- src/IDP/Fitbit.hs
+                    -- src/IDP/Github.hs
+                    -- src/IDP/Google.hs
+                    -- src/IDP/Linkedin.hs
+                    -- src/IDP/Slack.hs
+                    -- src/IDP/Weibo.hs
+                    -- src/Keys.hs
+                    -- src/IDP.hs
+                    -- src/App.hs
+                    -- src/Session.hs
+                    -- src/Types.hs
+                    -- src/Utils.hs
+                    -- src/Views.hs
+                    -- src/main.hs
+                    -- src/templates/index.mustache
+                    -- src/assets/main.css
+Data-Files:
+        public/assets/main.css
+        public/templates/index.mustache
 
 Source-Repository head
   Type:     git
   Location: git://github.com/freizl/hoauth2.git
-
-Library
-  hs-source-dirs:   src
-  default-language: Haskell2010
-  Exposed-modules: Network.OAuth.OAuth2.HttpClient
-                   Network.OAuth.OAuth2.Internal
-                   Network.OAuth.OAuth2
-                   Network.OAuth.OAuth2.TokenRequest
-                   Network.OAuth.OAuth2.AuthorizationRequest
-
-  Build-Depends: base                 >= 4     && < 5,
-                 binary               >= 0.8.3.0 && < 0.8.9,
-                 text                 >= 0.11  && < 1.3,
-                 bytestring           >= 0.9   && < 0.11,
-                 http-conduit         >= 2.1   && < 2.4,
-                 http-types           >= 0.11   && < 0.13,
-                 aeson                >= 2.0 && < 2.1,
-                 unordered-containers >= 0.2.5,
-                 uri-bytestring       >= 0.2.3.1 && < 0.4,
-                 uri-bytestring-aeson >= 0.1   && < 0.2,
-                 microlens            >= 0.4.0 && < 0.5,
-                 hashable >= 1.2.6 && < 1.5.0,
-                 exceptions           >= 0.8.3 && < 0.11
-
-  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-               -fno-warn-unused-do-bind
 
 Executable demo-server
   main-is:             main.hs
@@ -113,7 +83,8 @@ Executable demo-server
                        Types
                        Utils
                        Views
-  hs-source-dirs:      example
+                       Paths_hoauth2_example
+  hs-source-dirs:      src
   default-language:    Haskell2010
   build-depends:       base              >= 4.5    && < 5,
                        directory >= 1.3 && < 1.4,
