@@ -14,7 +14,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Google = Google OAuth2 deriving (Show, Generic, Eq)
+newtype Google = Google OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Google
 

@@ -14,7 +14,7 @@ import           URI.ByteString
 import           URI.ByteString.QQ
 import           Utils
 
-data Facebook = Facebook OAuth2 deriving (Show, Generic, Eq)
+newtype Facebook = Facebook OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Facebook
 

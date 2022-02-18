@@ -15,7 +15,7 @@ import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data Slack = Slack OAuth2
+newtype Slack = Slack OAuth2
   deriving (Show, Generic, Eq)
 
 instance Hashable Slack

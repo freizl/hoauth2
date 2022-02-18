@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module IDP where
 
 import qualified Data.ByteString as BS

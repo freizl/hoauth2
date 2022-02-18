@@ -19,7 +19,7 @@ userInfoUri :: URI
 userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
 
-data Fitbit = Fitbit OAuth2 deriving (Show, Generic, Eq)
+newtype Fitbit = Fitbit OAuth2 deriving (Show, Generic, Eq)
 
 instance Hashable Fitbit
 
