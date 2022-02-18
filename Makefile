@@ -7,23 +7,23 @@ create-keys:
 	test -e example/Keys.hs || cp example/Keys.hs.sample example/Keys.hs
 
 build:
-	cabal v2-build --flag=test
+	cabal v2-build
 
 ## install ghcid globally: `cabal install ghcid`
 watch:
 	ghcid --command="cabal v2-repl ."
 
 watch-demo:
-	ghcid --command="cabal v2-repl --flag=test demo-server"
+	ghcid --command="cabal v2-repl demo-server"
 
 build-demo:
-	cabal v2-build --flag=test demo-server
+	cabal v2-build demo-server
 
 repl-demo:
-	cabal v2-repl --flag=test demo-server
+	cabal v2-repl demo-server
 
 start-demo: build-demo
-	cabal v2-exec --flag=test demo-server
+	cabal v2-exec demo-server
 
 rebuild: clean build
 
