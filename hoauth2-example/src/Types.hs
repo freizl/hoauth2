@@ -54,6 +54,7 @@ class HasLabel a where
 class (IDP a) => HasAuthUri a where
   authUri :: a -> Text
 
+-- TODO: consider to convert to ExceptT?
 class (IDP a) => HasTokenReq a where
   tokenReq :: a -> Manager -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
 

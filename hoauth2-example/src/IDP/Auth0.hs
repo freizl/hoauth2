@@ -42,8 +42,7 @@ instance HasAuthUri Auth0 where
       key
       [ ("state", "Auth0.test-state-123"),
         ( "scope",
-          "openid profile email"
-          -- "openid profile email offline_access"
+          "openid profile email offline_access"
         )
       ]
 

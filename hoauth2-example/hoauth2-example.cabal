@@ -97,6 +97,7 @@ Executable demo-server
                        warp              >= 3.2    && < 3.4,
                        aeson             >= 2.0 && < 2.1,
                        microlens            >= 0.4.0 && < 0.5,
+                       transformers >= 0.5 && < 0.6,
                        unordered-containers >= 0.2.5,
                        wai-middleware-static >= 0.8.1 && < 0.10.0,
                        mustache >= 2.2.3 && < 2.5.0,

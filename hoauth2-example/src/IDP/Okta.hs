@@ -50,7 +50,7 @@ instance HasAuthUri Okta where
       key
       [ ("state", "Okta.test-state-123"),
         ( "scope",
-          "openid profile"
+          "openid profile offline_access"
           -- , "openid profile offline_access okta.users.read.self okta.users.read"
         ),
         ("prompt", "login consent")
