@@ -1,3 +1,4 @@
+*
 * Notes
 
 - OAuth2 spec only supports Access Token and Refresh Token
@@ -6,13 +7,14 @@
 
 * To consider
 
-1. auto generate state if it's missing? NO. let client manage state.
-2. shall verify access token response header
+1. [X] auto generate state if it's missing? NO. let client manage state.
+2. [ ] shall verify access token response header?
    #+begin_src
    Cache-Control: no-store
    Pragma: no-cache
    #+end_src
-3. maybe an AuthFlow data type which would determine ResponseType and GrantType
+3. [ ] maybe an AuthFlow data type which would determine ResponseType and GrantType
+4. [ ] character restriction for error fields.
 
 * Pseudo code
 
@@ -35,7 +37,14 @@ data AuthorizationCodeSuccessResponse = AuthorizationCodeSuccessResponse
 , state :: Maybe state
 }
 
-data AuthorizationCodeErrorCode = invalid_request | unauthorized_client | ...
+data AuthorizationCodeErrorCode = INVALID_REQUEST
+                                | UNAUTHORIZED_CLIENT
+                                | ACCESS_DENIED
+                                | UNSUPPORTED_RESPONSE_TYPE
+                                | INVALID_SCOPE
+                                | SERVER_ERROR
+                                | TEMPORARILY_UNAVAILABLE
+                                deriving (Show, Eq, Generic)
 
 data AuthorizationCodeErrorResponse = AuthorizationCodeErrorResponse
 { error :: AuthorizationCodeErrorCode
@@ -47,6 +56,48 @@ data AuthorizationCodeErrorResponse = AuthorizationCodeErrorResponse
 type AuthorizationCodeResponse = Either AuthorizationCodeErrorResponse AuthorizationCodeSuccessResponse
 
 data GrantType = authorization_code | password | refresh_token
+data GrantType = AUTHORIZATION_CODE
+               | PASSWORD
+               | REFRESH_TOKEN
+               deriving (Show, Eq, Generic)
+> -- | Enum type for each flow and type class function to
+> --   'convert' to auth code request parameters, body
+> --                access token request parameters, body
+> --
+> -- 4.1 Auth code flow
+> data AuthFlowAccessTokenRequest = AuthFlowAccessTokenRequest
+> { grantType :: GrantType
+> , code :: AuthorizationCode
+> , redirectUri :: URI
+> , clientId :: Text
+> } deriving (Show, Eq, Generic)
+>
+> -- 4.2 Implicit flow
+> data ImplicitFlowAccessTokenRequest = ImplicitFlowAccessTokenRequest
+> { grantType :: GrantType
+> , code :: AuthorizationCode
+> , redirectUri :: URI
+> , clientId :: Text
+> } deriving (Show, Eq, Generic)
+>
+
+> -- 4.3 resource owner password credentials flow
+> data AccessTokenRequest = AccessTokenRequest
+> { grantType :: GrantType
+> , username :: Text
+> , password :: Text
+> , scope :: Scope
+> } deriving (Show, Eq, Generic)
+>
+> -- 4.4 Client Credentials Grant
+> data AccessTokenRequest = AccessTokenRequest
+> { grantType :: GrantType
+> , scope :: Scope
+> } deriving (Show, Eq, Generic)
+>
+> -- | https://tools.ietf.org/html/rfc6749#section-7.1
+> data TokenType = TOKEN_TYPE_BEARER | TOKEN_TYPE_MAC deriving (Show, Eq, Generic)
+
 
 data AccessTokenRequest = AccessTokenRequest
 { grantType :: GrantType
@@ -64,6 +115,13 @@ data AccessTokenSuccessResponse = AccessTokenSuccessResponse
 }
 
 data AccessTokenErrorResponeErrorCode = invalid_request | invalid_client | ...
+> data AccessTokenErrorResponeErrorCode = INVALID_REQUEST
+>                                       | INVALID_CLIENT
+>                                       | INVALID_GRANT
+>                                       | UNAUTHORIZED_CLIENT
+>                                       | UNSUPPORTED_GRANT_TYPE
+>                                       | INVALID_SCOPE
+>                                       deriving (Show, Eq, Generic)
 
 data AccessTokenErrorResponse = AccessTokenErrorResponse
 { error :: AccessTokenErrorResponeErrorCode
@@ -80,5 +138,10 @@ data RefreshTokenRequest = RefreshTokenRequest
 }
 
 ??? RefreshTokenRequest Success / Error Response
+> data RefreshTokenRequest = RefreshTokenRequest
+> { grantType :: GrantType
+> , refreshToken :: RefreshToken
+> , scope :: Scope
+> } deriving (Show, Eq, Generic)
 
 #+end_src
