@@ -97,6 +97,9 @@ data IDPData = IDPData
     oauth2Token :: Maybe OAuth2Token
   }
 
+instance Show IDPData where
+  show = TL.unpack . toLabel
+
 toLabel :: IDPData -> IDPLabel
 toLabel (IDPData (IDPApp a) _ _) = idpLabel a
 

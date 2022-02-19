@@ -8,7 +8,6 @@ module Session where
 import Control.Concurrent.MVar
 import Control.Monad.Trans.Except
 import qualified Data.HashMap.Strict as Map
-import Data.Text
 import Types
 
 initCacheStore :: IO CacheStore

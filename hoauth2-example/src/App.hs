@@ -51,7 +51,7 @@ waiApp = do
   initIdps cache
   scottyApp $ do
     middleware $ staticPolicy (addBase "public/assets")
-    defaultHandler globalErrorHandler
+    -- defaultHandler globalErrorHandler
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
@@ -111,7 +111,7 @@ callbackH c = do
 
 --------------------------------------------------
 
-exceptToActionM :: ExceptT Text IO a -> ActionM a
+exceptToActionM :: Show a => ExceptT Text IO a -> ActionM a
 exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
@@ -133,7 +133,7 @@ fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
   token <- withExceptT oauth2ErrorToText $
     ExceptT $ do
       tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
-  liftIO $ print token
+  -- liftIO $ print token
   (luser, at) <- tryFetchUser mgr token idp
   liftIO $ updateIdp c idpData luser at
   where
