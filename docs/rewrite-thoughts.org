@@ -1,4 +1,10 @@
-*
+* Reference
+1. [[https://datatracker.ietf.org/doc/html/rfc6749][The OAuth 2.0 Authorization Framework]]
+2. [[https://datatracker.ietf.org/doc/html/rfc7636][PKCE]]
+3. OIDC
+4. JWT
+5. Service provider
+
 * Notes
 
 - OAuth2 spec only supports Access Token and Refresh Token
