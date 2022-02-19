@@ -1,13 +1,15 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 
 {- mimic server side session store -}
 
 module Session where
 
-import           Control.Concurrent.MVar
-import qualified Data.HashMap.Strict     as Map
-
-import           Types
+import Control.Concurrent.MVar
+import Control.Monad.Trans.Except
+import qualified Data.HashMap.Strict as Map
+import Data.Text
+import Types
 
 initCacheStore :: IO CacheStore
 initCacheStore = newMVar Map.empty
@@ -22,19 +24,22 @@ removeKey store idpKey = do
   m1 <- takeMVar store
   let m2 = Map.update updateIdpData idpKey m1
   putMVar store m2
-  where updateIdpData idpD = Just $ idpD { loginUser = Nothing }
+  where
+    updateIdpData idpD = Just $ idpD {loginUser = Nothing}
 
-lookupKey :: CacheStore
-          -> IDPLabel
-          -> IO (Either IDPLabel IDPData)
-lookupKey store idpKey = do
+lookupKey ::
+  CacheStore ->
+  IDPLabel ->
+  ExceptT IDPLabel IO IDPData
+lookupKey store idpKey = ExceptT $ do
   m1 <- tryReadMVar store
-  return $ maybe (Left idpKey) Right (Map.lookup idpKey =<< m1)
+  return $ maybe (Left ("unknown IDP " <> idpKey)) Right (Map.lookup idpKey =<< m1)
 
 upsertIDPData :: CacheStore -> IDPData -> IO ()
 upsertIDPData store val = do
   m1 <- takeMVar store
-  let m2 = if Map.member (toLabel val) m1
-             then Map.adjust (const val) (toLabel val) m1
-             else Map.insert (toLabel val) val m1
+  let m2 =
+        if Map.member (toLabel val) m1
+          then Map.adjust (const val) (toLabel val) m1
+          else Map.insert (toLabel val) val m1
   putMVar store m2
