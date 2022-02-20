@@ -138,6 +138,19 @@ fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
   where
     (uri, body) = accessTokenUrl oa code
 
+fetchAccessToken2 ::
+  -- | HTTP connection manager
+  Manager ->
+  -- | OAuth Data
+  OAuth2 ->
+  -- | OAuth 2 Tokens
+  ExchangeToken ->
+  -- | Access Token
+  ExceptT (OAuth2Error Errors) IO OAuth2Token
+fetchAccessToken2 = fetchAccessTokenClientCredInBoth
+{-# DEPRECATED fetchAccessToken2 "renamed to fetchAccessTokenClientCredInBoth" #-}
+
+
 -- | Fetch OAuth2 Token with authenticate in both request header and body.
 -- Please read the docs of `fetchAccessToken`.
 fetchAccessTokenClientCredInBoth ::
@@ -173,6 +186,17 @@ refreshAccessToken ::
 refreshAccessToken manager oa token = doJSONPostRequest manager oa uri body
   where
     (uri, body) = refreshAccessTokenUrl oa token
+
+refreshAccessToken2 ::
+  -- | HTTP connection manager.
+  Manager ->
+  -- | OAuth context
+  OAuth2 ->
+  -- | refresh token gained after authorization
+  RefreshToken ->
+  ExceptT (OAuth2Error Errors) IO OAuth2Token
+refreshAccessToken2 = refreshAccessTokenClientCredInBoth
+{-# DEPRECATED refreshAccessToken2 "renamed to fetchAccessTokenClientCredInBoth" #-}
 
 -- | Fetch a new AccessToken with the Refresh Token with authentication in request header and request body.
 -- Please read the docs of `refreshAccessToken`.
