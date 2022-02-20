@@ -4,7 +4,6 @@
 
 module IDP.Google where
 import           Data.Aeson
-import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
@@ -32,7 +31,7 @@ instance HasTokenRefreshReq Google where
 instance HasUserReq Google where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Google where
   authUri (Google key) = createCodeUri key [ ("state", "Google.test-state-123")

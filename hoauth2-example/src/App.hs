@@ -133,7 +133,6 @@ fetchTokenAndUser ::
 fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
   mgr <- liftIO $ newManager tlsManagerSettings
   token <- withExceptT oauth2ErrorToText $
-    ExceptT $ do
       tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
   -- liftIO $ print token
   (luser, at) <- tryFetchUser mgr token idp
@@ -154,7 +153,7 @@ tryFetchUser ::
   a ->
   ExceptT Text IO (LoginUser, OAuth2Token)
 tryFetchUser mgr at idp = do
-  user <- withExceptT bslToText $ ExceptT $ userReq idp mgr (accessToken at)
+  user <- withExceptT bslToText $ userReq idp mgr (accessToken at)
   return (user, at)
 
 doRefreshToken :: IDPData -> ExceptT Text IO OAuth2Token
@@ -163,7 +162,6 @@ doRefreshToken (IDPData (IDPApp idp) _ token) = do
     Nothing -> throwE "no token found for idp"
     Just at -> case refreshToken at of
       Nothing -> throwE "no refresh token presents. did you add 'offline_access' scope?"
-      Just rt -> withExceptT (TL.pack . show) $
-        ExceptT $ do
-          mgr <- newManager tlsManagerSettings
+      Just rt -> withExceptT (TL.pack . show) $ do
+          mgr <- liftIO $ newManager tlsManagerSettings
           tokenRefreshReq idp mgr rt

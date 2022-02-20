@@ -5,7 +5,6 @@
 module IDP.ZOHO where
 
 import Data.Aeson
-import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
@@ -39,7 +38,7 @@ instance HasTokenRefreshReq ZOHO where
 instance HasUserReq ZOHO where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri ZOHO where
   authUri (ZOHO key) =

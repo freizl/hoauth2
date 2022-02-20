@@ -7,6 +7,7 @@
 
 module Types where
 
+import Control.Monad.Trans.Except
 import Control.Concurrent.MVar
 import Data.Aeson
 import Data.Aeson.KeyMap
@@ -56,13 +57,16 @@ class (IDP a) => HasAuthUri a where
 
 -- TODO: consider to convert to ExceptT?
 class (IDP a) => HasTokenReq a where
-  tokenReq :: a -> Manager -> ExchangeToken -> IO (OAuth2Result TR.Errors OAuth2Token)
+  tokenReq :: a -> Manager -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
 
 class (IDP a) => HasTokenRefreshReq a where
-  tokenRefreshReq :: a -> Manager -> RefreshToken -> IO (OAuth2Result TR.Errors OAuth2Token)
+  tokenRefreshReq :: a -> Manager -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
 
+-- | TODO: associates userInfo uri and toLoginUser method
+-- so that can have default implementation for userReq
+--
 class (IDP a) => HasUserReq a where
-  userReq :: a -> Manager -> AccessToken -> IO (Either BSL.ByteString LoginUser)
+  userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
 
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections

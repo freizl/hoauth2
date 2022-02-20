@@ -7,8 +7,9 @@
   NOTES: stackexchange API spec and its document just sucks!
 -}
 module IDP.StackExchange where
+
+import Control.Monad.Trans.Except
 import           Data.Aeson
-import           Data.Bifunctor
 import           Data.ByteString            (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Hashable
@@ -46,7 +47,9 @@ instance HasUserReq StackExchange where
   userReq (StackExchange _ appKey) mgr token = do
     re <- authGetBS2 mgr token
               (userInfoUri `appendStackExchangeAppKey` appKey)
-    return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
+    case eitherDecode re of
+      Right obj -> return (toLoginUser obj)
+      Left e -> throwE (BSL.pack e)
 
 instance HasAuthUri StackExchange where
   authUri (StackExchange key _) = createCodeUri key [("state", "StackExchange.test-state-123")]

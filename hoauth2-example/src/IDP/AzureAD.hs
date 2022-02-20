@@ -5,7 +5,6 @@
 module IDP.AzureAD where
 
 import           Data.Aeson
-import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
@@ -33,7 +32,7 @@ instance HasTokenReq AzureAD where
 instance HasUserReq AzureAD where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri AzureAD where
   authUri (AzureAD key) = createCodeUri key [ ("state", "AzureAD.test-state-123")
