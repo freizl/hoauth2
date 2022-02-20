@@ -1,46 +1,72 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 {-
-  disabled since it's not yet working. error:
-  - serviceErrorCode:100
-  - message:Not enough permissions to access /me GET
+https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS
 -}
 module IDP.Linkedin where
-import           Data.Aeson
-import           Data.Text.Lazy    (Text)
-import qualified Data.Text.Lazy    as TL
-import           GHC.Generics
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
 
-data LinkedinUser = LinkedinUser { firstName :: Text
-                                 , lastName  :: Text
-                                 } deriving (Show, Generic, Eq)
+import Data.Aeson
+import Data.Bifunctor
+import Data.Hashable
+import Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy as TL
+import GHC.Generics
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString
+import URI.ByteString.QQ
+import Utils
+
+linkedinLabel :: Text
+linkedinLabel = "LinkedIn"
+
+newtype Linkedin = Linkedin OAuth2
+  deriving (Generic, Show, Eq)
+
+instance Hashable Linkedin
+
+instance IDP Linkedin
+
+instance HasLabel Linkedin where
+  idpLabel = const linkedinLabel
+
+instance HasTokenReq Linkedin where
+  tokenReq (Linkedin key) mgr = fetchAccessToken mgr key
+
+-- | TODO: didn't find the right scope to obtain RefreshToken
+instance HasTokenRefreshReq Linkedin where
+  tokenRefreshReq (Linkedin key) mgr = refreshAccessToken mgr key
+
+instance HasUserReq Linkedin where
+  userReq _ mgr at = do
+    re <- authGetJSON mgr at userInfoUri
+    return (second toLoginUser re)
+
+instance HasAuthUri Linkedin where
+  authUri (Linkedin key) =
+    createCodeUri
+      key
+      [ ("state", tlToBS linkedinLabel <> ".test-state-123"),
+        ("scope", "r_liteprofile")
+      ]
+
+data LinkedinUser = LinkedinUser
+  { localizedFirstName :: Text,
+    localizedLastName :: Text
+  }
+  deriving (Show, Generic, Eq)
 
 instance FromJSON LinkedinUser where
-    parseJSON = genericParseJSON defaultOptions
+  parseJSON = genericParseJSON defaultOptions
 
 userInfoUri :: URI
 userInfoUri = [uri|https://api.linkedin.com/v2/me|]
 
-
 toLoginUser :: LinkedinUser -> LoginUser
-toLoginUser LinkedinUser {..} = LoginUser { loginUserName = firstName `TL.append` " " `TL.append` lastName }
-
-{-
-mkIDPData Linkedin =
-  let userUri = createCodeUri linkedinKey [("state", "linkedin.test-state-123")]
-  in
-  IDPData { codeFlowUri = userUri
-          , loginUser = Nothing
-          , idpName = Linkedin
-          , oauth2Key = linkedinKey
-          , toFetchAccessToken = postAT
-          , userApiUri = ILinkedin.userInfoUri
-          , toLoginUser = ILinkedin.toLoginUser
-          }
--}
+toLoginUser LinkedinUser {..} =
+  LoginUser
+    { loginUserName = localizedFirstName <> " " <> localizedLastName
+    }

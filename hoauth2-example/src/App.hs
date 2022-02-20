@@ -95,6 +95,8 @@ callbackH c = do
   pas <- params
   let codeP = paramValue "code" pas
   let stateP = paramValue "state" pas
+  -- TODO: when no code, it's like to have error
+  --  display error properly in the page
   when (null codeP) (raise "callbackH: no code from callback request")
   when (null stateP) (raise "callbackH: no state from callback request")
   exceptToActionM $ do

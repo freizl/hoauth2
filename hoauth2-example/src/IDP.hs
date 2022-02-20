@@ -1,9 +1,9 @@
 module IDP where
 
-import qualified Data.ByteString as BS
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
+import qualified Data.ByteString as BS
 import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
 import qualified IDP.Douban as IDouban
@@ -12,6 +12,7 @@ import qualified IDP.Facebook as IFacebook
 import qualified IDP.Fitbit as IFitbit
 import qualified IDP.Github as IGithub
 import qualified IDP.Google as IGoogle
+import qualified IDP.Linkedin as ILinkedin
 import qualified IDP.Okta as IOkta
 import qualified IDP.Slack as ISlack
 import qualified IDP.StackExchange as IStackExchange
@@ -41,16 +42,17 @@ createIDPs = do
 
   return
     [ IDPApp (IAzureAD.AzureAD (initKey azureADKey "azure")),
+      IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
       IDPApp (IDouban.Douban (initKey doubanKey "douban")),
       IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
       IDPApp (IFacebook.Facebook (initKey facebookKey "facebook")),
       IDPApp (IFitbit.Fitbit (initKey fitbitKey "fitbit")),
       IDPApp (IGithub.Github (initKey githubKey "github")),
       IDPApp (IGoogle.Google (initKey googleKey "google")),
+      IDPApp (ILinkedin.Linkedin (initKey linkedinKey "linkedin")),
       IDPApp (IOkta.Okta (initKey oktaKey "okta")),
-      IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
-      IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
       IDPApp (ISlack.Slack (initKey slackKey "slack")),
+      IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
       IDPApp (IZOHO.ZOHO (initKey zohoKey "zoho")),
       IDPApp
         ( IStackExchange.StackExchange
@@ -65,14 +67,14 @@ envFilePath = ".env.json"
 readEnvFile :: IO EnvConfig
 readEnvFile = do
   envFileE <- doesFileExist envFilePath
-  if envFileE then do
-    print "Found .env.json"
-    fileContent <- BS.readFile envFilePath
-    case Aeson.eitherDecodeStrict fileContent of
-      Left err -> print err >> return Aeson.empty
-      Right ec -> return ec
-  else return Aeson.empty
-
+  if envFileE
+    then do
+      print "Found .env.json"
+      fileContent <- BS.readFile envFilePath
+      case Aeson.eitherDecodeStrict fileContent of
+        Left err -> print err >> return Aeson.empty
+        Right ec -> return ec
+    else return Aeson.empty
 
 initIdps :: CacheStore -> IO ()
 initIdps c = do

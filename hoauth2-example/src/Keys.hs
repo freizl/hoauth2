@@ -152,3 +152,13 @@ slackKey =
       oauth2AuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|],
       oauth2TokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
     }
+
+linkedinKey :: OAuth2
+linkedinKey =
+  OAuth2
+    { oauth2ClientId = "",
+      oauth2ClientSecret = Just "",
+      oauth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|],
+      oauth2AuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|],
+      oauth2TokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
+    }
