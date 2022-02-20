@@ -19,6 +19,7 @@ newtype Okta = Okta OAuth2
 
 userInfoUri :: URI
 userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+
 -- userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
 
 instance Hashable Okta
@@ -42,7 +43,6 @@ instance HasUserReq Okta where
 -- | https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
---
 instance HasAuthUri Okta where
   authUri (Okta key) =
     createCodeUri

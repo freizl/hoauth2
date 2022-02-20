@@ -33,7 +33,7 @@ instance HasTokenRefreshReq Dropbox where
 
 instance HasUserReq Dropbox where
   userReq _ mgr at = do
-    re <- authPostBS3 mgr at userInfoUri
+    re <- authPostBS mgr at userInfoUri
     case eitherDecode re of
       Right obj -> return (toLoginUser obj)
       Left e -> throwE (BSL.pack e)

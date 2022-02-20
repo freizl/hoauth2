@@ -45,7 +45,7 @@ instance HasTokenRefreshReq StackExchange where
 
 instance HasUserReq StackExchange where
   userReq (StackExchange _ appKey) mgr token = do
-    re <- authGetBS2 mgr token
+    re <- authGetBS [AuthInRequestQuery] mgr token
               (userInfoUri `appendStackExchangeAppKey` appKey)
     case eitherDecode re of
       Right obj -> return (toLoginUser obj)

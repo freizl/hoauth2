@@ -126,10 +126,10 @@ mkDecodeOAuth2Error response err =
     (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
     Nothing
 
-data ClientAuthenticationMethod =
-  ClientSecretBasic -- ^ Provides in Authorization header
-  | ClientSecretPost -- ^ Provides in request body
-  | ClientSecretGet -- ^ Provides in request query parameter
+data APIAuthenticationMethod =
+  AuthInRequestHeader -- ^ Provides in Authorization header
+  | AuthInRequestBody -- ^ Provides in request body
+  | AuthInRequestQuery -- ^ Provides in request query parameter
   deriving (Eq)
 
 --------------------------------------------------
