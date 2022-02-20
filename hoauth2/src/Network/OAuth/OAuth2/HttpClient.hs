@@ -90,7 +90,7 @@ authGetBSInternal ::
 authGetBSInternal authTypes manager token url = do
   let appendToUrl = ClientSecretGet `elem` authTypes
   let appendToHeader = ClientSecretBasic `elem` authTypes
-  let uri = if appendToUrl then (url `appendAccessToken` token) else url
+  let uri = if appendToUrl then url `appendAccessToken` token else url
   let upReq = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.GET
   req <- liftIO $ uriToRequest uri
   authRequest req upReq manager
@@ -173,7 +173,7 @@ authPostBSInternal ::
 authPostBSInternal authTypes manager token url body = do
   let appendToBody = ClientSecretPost `elem` authTypes
   let appendToHeader = ClientSecretBasic `elem` authTypes
-  let reqBody = if appendToBody then (body ++ accessTokenToParam token) else body
+  let reqBody = if appendToBody then body ++ accessTokenToParam token else body
   let upBody = urlEncodedBody reqBody
   let upHeaders = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.POST
   let upReq = upHeaders . upBody

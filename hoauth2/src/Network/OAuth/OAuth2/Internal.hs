@@ -2,7 +2,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_HADDOCK -ignore-exports #-}
 
 -- | A simple OAuth2 Haskell binding.  (This is supposed to be
