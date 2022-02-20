@@ -37,7 +37,7 @@ instance HasTokenReq Weibo where
 -- access token in query param only
 instance HasUserReq Weibo where
   userReq _ mgr at = do
-    re <- authGetBS2 mgr at userInfoUri
+    re <- authGetBSInternal [AuthInRequestQuery] mgr at userInfoUri
     case eitherDecode re of
       Right obj -> return (toLoginUser obj)
       Left e -> throwE (BSL.pack e)

@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_HADDOCK -ignore-exports #-}
 
@@ -17,17 +16,18 @@ import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
 import Data.Binary (Binary)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.Hashable
 import Data.Maybe
 import Data.Text (Text, pack, unpack)
 import Data.Text.Encoding
+import GHC.Generics
 import Lens.Micro
 import Lens.Micro.Extras
 import Network.HTTP.Conduit as C
 import qualified Network.HTTP.Types as H
+import qualified Network.HTTP.Types as HT
 import URI.ByteString
 import URI.ByteString.Aeson ()
-import Data.Hashable
-import GHC.Generics
 
 --------------------------------------------------
 
@@ -41,17 +41,18 @@ data OAuth2 = OAuth2
     oauth2ClientSecret :: Text,
     oauth2AuthorizeEndpoint :: URIRef Absolute,
     oauth2TokenEndpoint :: URIRef Absolute,
-    oauth2RedirectUri :: Maybe ( URIRef Absolute )
+    oauth2RedirectUri :: Maybe (URIRef Absolute)
   }
   deriving (Show, Eq)
 
 instance Hashable OAuth2 where
-  hashWithSalt salt OAuth2{..} = salt
-    `hashWithSalt` hash oauth2ClientId
-    `hashWithSalt` hash oauth2ClientSecret
-    `hashWithSalt` hash (show oauth2AuthorizeEndpoint)
-    `hashWithSalt` hash (show oauth2TokenEndpoint)
-    `hashWithSalt` hash (show oauth2RedirectUri)
+  hashWithSalt salt OAuth2 {..} =
+    salt
+      `hashWithSalt` hash oauth2ClientId
+      `hashWithSalt` hash oauth2ClientSecret
+      `hashWithSalt` hash (show oauth2AuthorizeEndpoint)
+      `hashWithSalt` hash (show oauth2TokenEndpoint)
+      `hashWithSalt` hash (show oauth2RedirectUri)
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
 
@@ -125,6 +126,16 @@ mkDecodeOAuth2Error response err =
     (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
     Nothing
 
+data APIAuthenticationMethod =
+  AuthInRequestHeader -- ^ Provides in Authorization header
+  | AuthInRequestBody -- ^ Provides in request body
+  | AuthInRequestQuery -- ^ Provides in request query parameter
+  deriving (Eq)
+
+data ClientAuthenticationMethod =
+  ClientSecretBasic
+  | ClientSecretPost
+  deriving (Eq)
 --------------------------------------------------
 
 -- * Types Synonym
@@ -138,80 +149,15 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 
 --------------------------------------------------
 
--- * URLs
+-- * Utilies
 
 --------------------------------------------------
 
--- | Prepare the authorization URL.  Redirect to this URL
--- asking for user interactive authentication.
-authorizationUrl :: OAuth2 -> URI
-authorizationUrl oa = over (queryL . queryPairsL) (++ queryParts) (oauth2AuthorizeEndpoint oa)
-  where
-    queryParts =
-      catMaybes
-        [ Just ("client_id", encodeUtf8 $ oauth2ClientId oa),
-          Just ("response_type", "code"),
-          fmap (("redirect_uri",) . serializeURIRef') (oauth2RedirectUri oa)
-        ]
-
--- | Prepare the URL and the request body query for fetching an access token.
-accessTokenUrl ::
-  OAuth2 ->
-  -- | access code gained via authorization URL
-  ExchangeToken ->
-  -- | access token request URL plus the request body.
-  (URI, PostBody)
-accessTokenUrl oa code = accessTokenUrl' oa code (Just "authorization_code")
-
--- | Prepare the URL and the request body query for fetching an access token, with
--- optional grant type.
-accessTokenUrl' ::
-  OAuth2 ->
-  -- | access code gained via authorization URL
-  ExchangeToken ->
-  -- | Grant Type
-  Maybe Text ->
-  -- | access token request URL plus the request body.
-  (URI, PostBody)
-accessTokenUrl' oa code gt = (uri, body)
-  where
-    uri = oauth2TokenEndpoint oa
-    body =
-      catMaybes
-        [ Just ("code", encodeUtf8 $ extoken code),
-          ("redirect_uri",) . serializeURIRef' <$> oauth2RedirectUri oa,
-          fmap (("grant_type",) . encodeUtf8) gt
-        ]
-
--- | Using a Refresh Token.  Obtain a new access token by
--- sending a refresh token to the Authorization server.
-refreshAccessTokenUrl ::
-  OAuth2 ->
-  -- | refresh token gained via authorization URL
-  RefreshToken ->
-  -- | refresh token request URL plus the request body.
-  (URI, PostBody)
-refreshAccessTokenUrl oa token = (uri, body)
-  where
-    uri = oauth2TokenEndpoint oa
-    body =
-      [ ("grant_type", "refresh_token"),
-        ("refresh_token", encodeUtf8 $ rtoken token)
-      ]
-
--- | For `GET` method API.
-appendAccessToken ::
-  -- | Base URI
-  URIRef a ->
-  -- | Authorized Access Token
-  AccessToken ->
-  -- | Combined Result
-  URIRef a
-appendAccessToken uri t = over (queryL . queryPairsL) (\query -> query ++ accessTokenToParam t) uri
-
--- | Create 'QueryParams' with given access token value.
-accessTokenToParam :: AccessToken -> [(BS.ByteString, BS.ByteString)]
-accessTokenToParam t = [("access_token", encodeUtf8 $ atoken t)]
+defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
+defaultRequestHeaders =
+  [ (HT.hUserAgent, "hoauth2"),
+    (HT.hAccept, "application/json")
+  ]
 
 appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
 appendQueryParams params =
