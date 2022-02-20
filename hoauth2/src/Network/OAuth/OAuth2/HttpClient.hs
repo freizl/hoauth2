@@ -8,11 +8,12 @@ module Network.OAuth.OAuth2.HttpClient
     authGetJSON,
     authGetBS,
     authGetBS2,
+    authGetBSInternal,
     authPostJSON,
     authPostBS,
     authPostBS2,
     authPostBS3,
-    authRequest,
+    authPostBSInternal,
   )
 where
 
@@ -62,11 +63,7 @@ authGetBS ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS manager token url = do
-  req <- uriToRequest url
-  authRequest req upReq manager
-  where
-    upReq = updateRequestHeaders (Just token) . setMethod HT.GET
+authGetBS = authGetBSInternal [ClientSecretBasic]
 
 -- | Same to 'authGetBS' but set access token to query parameter rather than header
 authGetBS2 ::
@@ -76,11 +73,26 @@ authGetBS2 ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS2 manager token url = do
-  req <- liftIO $ uriToRequest (url `appendAccessToken` token)
+authGetBS2 = authGetBSInternal [ClientSecretGet]
+{-# DEPRECATED authGetBS2 "use authGetBSInternal" #-}
+
+-- |
+authGetBSInternal ::
+  -- |
+  [ClientAuthenticationMethod] ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO BSL.ByteString
+authGetBSInternal authTypes manager token url = do
+  let appendToUrl = ClientSecretGet `elem` authTypes
+  let appendToHeader = ClientSecretBasic `elem` authTypes
+  let uri = if appendToUrl then (url `appendAccessToken` token) else url
+  let upReq = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.GET
+  req <- liftIO $ uriToRequest uri
   authRequest req upReq manager
-  where
-    upReq = updateRequestHeaders Nothing . setMethod HT.GET
 
 -- | Conduct POST request and return response as JSON.
 --   Inject Access Token to Authorization Header and request body.
@@ -100,7 +112,7 @@ authPostJSON manager t uri pb = do
     Left e -> throwE $ BSL.pack e
 
 -- | Conduct POST request.
---   Inject Access Token to http header (Authorization) and request body.
+--   Inject Access Token to both http header (Authorization) and request body.
 authPostBS ::
   -- | HTTP connection manager.
   Manager ->
@@ -109,13 +121,7 @@ authPostBS ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS manager token url pb = do
-  req <- uriToRequest url
-  authRequest req upReq manager
-  where
-    upBody = urlEncodedBody (pb ++ accessTokenToParam token)
-    upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
-    upReq = upHeaders . upBody
+authPostBS = authPostBSInternal [ClientSecretPost, ClientSecretBasic]
 
 -- | Conduct POST request with access token only in the request body but header.
 authPostBS2 ::
@@ -126,13 +132,8 @@ authPostBS2 ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS2 manager token url pb = do
-  req <- uriToRequest url
-  authRequest req upReq manager
-  where
-    upBody = urlEncodedBody (pb ++ accessTokenToParam token)
-    upHeaders = updateRequestHeaders Nothing . setMethod HT.POST
-    upReq = upHeaders . upBody
+authPostBS2 = authPostBSInternal [ClientSecretPost]
+{-# DEPRECATED authPostBS2 "use authPostBSInternal" #-}
 
 -- | Conduct POST request with access token only in the header and not in body
 authPostBS3 ::
@@ -140,15 +141,31 @@ authPostBS3 ::
   Manager ->
   AccessToken ->
   URI ->
+  PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS3 manager token url = do
+authPostBS3 = authPostBSInternal [ClientSecretBasic]
+{-# DEPRECATED authPostBS3 "use authPostBSInternal" #-}
+
+authPostBSInternal ::
+  [ClientAuthenticationMethod] ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  PostBody ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO BSL.ByteString
+authPostBSInternal authTypes manager token url body = do
+  let appendToBody = ClientSecretPost `elem` authTypes
+  let appendToHeader = ClientSecretBasic `elem` authTypes
+  let reqBody = if appendToBody then (body ++ accessTokenToParam token) else body
+  let upBody = urlEncodedBody reqBody
+  let upHeaders = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.POST
+  let upReq = upHeaders . upBody
+
   req <- uriToRequest url
   authRequest req upReq manager
-  where
-    upBody req = req {requestBody = "null"}
-    upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
-    upReq = upHeaders . upBody
 
 --------------------------------------------------
 
