@@ -30,10 +30,10 @@ instance HasLabel ZOHO where
   idpLabel = const "ZOHO"
 
 instance HasTokenReq ZOHO where
-  tokenReq (ZOHO key) mgr = fetchAccessToken2 mgr key
+  tokenReq (ZOHO key) mgr = fetchAccessTokenClientCredInBoth mgr key
 
 instance HasTokenRefreshReq ZOHO where
-  tokenRefreshReq (ZOHO key) mgr = refreshAccessToken2 mgr key
+  tokenRefreshReq (ZOHO key) mgr = refreshAccessTokenClientCredInBoth mgr key
 
 instance HasUserReq ZOHO where
   userReq _ mgr at = do

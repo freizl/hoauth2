@@ -23,10 +23,10 @@ instance HasLabel Facebook where
   idpLabel = const "Facebook"
 
 instance HasTokenReq Facebook where
-  tokenReq (Facebook key) mgr = fetchAccessToken2 mgr key
+  tokenReq (Facebook key) mgr = fetchAccessTokenClientCredInBoth mgr key
 
 instance HasTokenRefreshReq Facebook where
-  tokenRefreshReq (Facebook key) mgr = refreshAccessToken mgr key
+  tokenRefreshReq (Facebook key) mgr = refreshAccessTokenClientCredInBoth mgr key
 
 instance HasUserReq Facebook where
   userReq _ mgr at = do

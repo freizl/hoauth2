@@ -38,10 +38,10 @@ instance HasLabel StackExchange where
   idpLabel = const "StackExchange"
 
 instance HasTokenReq StackExchange where
-  tokenReq (StackExchange key _) mgr = fetchAccessToken2 mgr key
+  tokenReq (StackExchange key _) mgr = fetchAccessTokenClientCredInBoth mgr key
 
 instance HasTokenRefreshReq StackExchange where
-  tokenRefreshReq (StackExchange key _) mgr = refreshAccessToken mgr key
+  tokenRefreshReq (StackExchange key _) mgr = refreshAccessTokenClientCredInBoth mgr key
 
 instance HasUserReq StackExchange where
   userReq (StackExchange _ appKey) mgr token = do
