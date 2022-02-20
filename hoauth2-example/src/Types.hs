@@ -62,6 +62,9 @@ class (IDP a) => HasTokenReq a where
 class (IDP a) => HasTokenRefreshReq a where
   tokenRefreshReq :: a -> Manager -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
 
+-- | TODO: associates userInfo uri and toLoginUser method
+-- so that can have default implementation for userReq
+--
 class (IDP a) => HasUserReq a where
   userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
 
