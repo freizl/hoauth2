@@ -1,6 +1,6 @@
 Cabal-version: 2.4
 Name:                hoauth2-example
-Version:             1.0.0
+Version:             1.1.0
 
 Synopsis:            OAuth2 example
 
@@ -31,27 +31,6 @@ Tested-With:         GHC <= 8.10.7
 
 Extra-source-files: sample.env.json
                     README.org
-                    -- src/IDP/Auth0.hs
-                    -- src/IDP/AzureAD.hs
-                    -- src/IDP/Douban.hs
-                    -- src/IDP/Dropbox.hs
-                    -- src/IDP/Facebook.hs
-                    -- src/IDP/Fitbit.hs
-                    -- src/IDP/Github.hs
-                    -- src/IDP/Google.hs
-                    -- src/IDP/Linkedin.hs
-                    -- src/IDP/Slack.hs
-                    -- src/IDP/Weibo.hs
-                    -- src/Keys.hs
-                    -- src/IDP.hs
-                    -- src/App.hs
-                    -- src/Session.hs
-                    -- src/Types.hs
-                    -- src/Utils.hs
-                    -- src/Views.hs
-                    -- src/main.hs
-                    -- src/templates/index.mustache
-                    -- src/assets/main.css
 Data-Files:
         public/assets/main.css
         public/templates/index.mustache
