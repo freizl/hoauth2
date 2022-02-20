@@ -7,8 +7,8 @@
 
 module Types where
 
-import Control.Monad.Trans.Except
 import Control.Concurrent.MVar
+import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Aeson.KeyMap
 import qualified Data.ByteString.Lazy.Char8 as BSL
@@ -43,7 +43,12 @@ type EnvConfig = KeyMap EnvConfigCreds
 
 -- * type class for defining a IDP
 
-class (Hashable a, Show a) => IDP a
+-- data IDP = IDP
+--   { name :: T.Text,
+--     oauth2Config :: OAuth2,
+--     userInfoUri :: URI
+--   }
+--   deriving (Show, Eq)
 
 class HasLabel a where
   idpLabel :: a -> IDPLabel
@@ -52,20 +57,18 @@ class HasLabel a where
 -- but more of a indicator. Wonder if type level programming
 -- or other solution would simplify the logic.?
 --
-class (IDP a) => HasAuthUri a where
+class HasAuthUri a where
   authUri :: a -> Text
 
--- TODO: consider to convert to ExceptT?
-class (IDP a) => HasTokenReq a where
+class HasTokenReq a where
   tokenReq :: a -> Manager -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
 
-class (IDP a) => HasTokenRefreshReq a where
+class HasTokenRefreshReq a where
   tokenRefreshReq :: a -> Manager -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
 
 -- | TODO: associates userInfo uri and toLoginUser method
 -- so that can have default implementation for userReq
---
-class (IDP a) => HasUserReq a where
+class HasUserReq a where
   userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
 
 -- Heterogenous collections

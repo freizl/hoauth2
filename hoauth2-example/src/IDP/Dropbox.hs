@@ -7,7 +7,6 @@ module IDP.Dropbox where
 import Control.Monad.Trans.Except
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -17,10 +16,6 @@ import URI.ByteString.QQ
 import Utils
 
 newtype Dropbox = Dropbox OAuth2 deriving (Show, Generic, Eq)
-
-instance Hashable Dropbox
-
-instance IDP Dropbox
 
 instance HasLabel Dropbox where
   idpLabel = const "Dropbox"

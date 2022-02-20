@@ -9,7 +9,6 @@ https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-co
 module IDP.Linkedin where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -23,10 +22,6 @@ linkedinLabel = "LinkedIn"
 
 newtype Linkedin = Linkedin OAuth2
   deriving (Generic, Show, Eq)
-
-instance Hashable Linkedin
-
-instance IDP Linkedin
 
 instance HasLabel Linkedin where
   idpLabel = const linkedinLabel

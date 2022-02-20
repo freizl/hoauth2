@@ -12,7 +12,6 @@ import Control.Monad.Trans.Except
 import           Data.Aeson
 import           Data.ByteString            (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import           Data.Hashable
 import           Data.Text.Lazy             (Text)
 import qualified Data.Text.Lazy             as TL
 import           GHC.Generics
@@ -29,10 +28,6 @@ userInfoUri = [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
 type AppKey = ByteString
 
 data StackExchange = StackExchange OAuth2 AppKey deriving (Show, Generic, Eq)
-
-instance Hashable StackExchange
-
-instance IDP StackExchange
 
 instance HasLabel StackExchange where
   idpLabel = const "StackExchange"

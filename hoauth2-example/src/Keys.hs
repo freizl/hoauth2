@@ -97,29 +97,29 @@ dropboxKey =
       oauth2TokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
     }
 
-oktaKey :: OAuth2
-oktaKey =
-  OAuth2
-    { oauth2ClientId = "",
-      oauth2ClientSecret = "",
-      oauth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|],
-      oauth2AuthorizeEndpoint =
-        [uri|https://hw2.trexcloud.com/oauth2/v1/authorize|],
-      oauth2TokenEndpoint =
-        [uri|https://hw2.trexcloud.com/oauth2/v1/token|]
-    }
+-- oktaKey :: OAuth2
+-- oktaKey =
+--   OAuth2
+--     { oauth2ClientId = "",
+--       oauth2ClientSecret = "",
+--       oauth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|],
+--       oauth2AuthorizeEndpoint =
+--         [uri|https://hw2.trexcloud.com/oauth2/v1/authorize|],
+--       oauth2TokenEndpoint =
+--         [uri|https://hw2.trexcloud.com/oauth2/v1/token|]
+--     }
 
-azureADKey :: OAuth2
-azureADKey =
-  OAuth2
-    { oauth2ClientId = "",
-      oauth2ClientSecret = "",
-      oauth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|],
-      oauth2AuthorizeEndpoint =
-        [uri|https://login.windows.net/common/oauth2/authorize|],
-      oauth2TokenEndpoint =
-        [uri|https://login.windows.net/common/oauth2/token|]
-    }
+-- azureADKey :: OAuth2
+-- azureADKey =
+--   OAuth2
+--     { oauth2ClientId = "",
+--       oauth2ClientSecret = "",
+--       oauth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|],
+--       oauth2AuthorizeEndpoint =
+--         [uri|https://login.windows.net/common/oauth2/authorize|],
+--       oauth2TokenEndpoint =
+--         [uri|https://login.windows.net/common/oauth2/token|]
+--     }
 
 zohoKey :: OAuth2
 zohoKey =

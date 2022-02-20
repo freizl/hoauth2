@@ -51,6 +51,7 @@ waiApp = do
   initIdps cache
   scottyApp $ do
     middleware $ staticPolicy (addBase "public/assets")
+    -- TODO: display error properly.
     -- defaultHandler globalErrorHandler
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache

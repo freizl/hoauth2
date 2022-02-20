@@ -20,10 +20,6 @@ userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
 
 newtype Fitbit = Fitbit OAuth2 deriving (Show, Generic, Eq)
 
-instance Hashable Fitbit
-
-instance IDP Fitbit
-
 instance HasLabel Fitbit where
   idpLabel = const "Fitbit"
 

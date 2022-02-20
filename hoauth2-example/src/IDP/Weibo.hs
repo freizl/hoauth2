@@ -7,7 +7,6 @@ module IDP.Weibo where
 import Control.Monad.Trans.Except
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
@@ -18,10 +17,6 @@ import URI.ByteString.QQ
 import Utils
 
 newtype Weibo = Weibo OAuth2 deriving (Show, Generic, Eq)
-
-instance Hashable Weibo
-
-instance IDP Weibo
 
 instance HasLabel Weibo where
   idpLabel = const "Weibo"

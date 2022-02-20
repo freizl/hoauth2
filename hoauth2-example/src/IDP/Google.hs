@@ -5,7 +5,6 @@
 module IDP.Google where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -15,10 +14,6 @@ import URI.ByteString.QQ
 import Utils
 
 newtype Google = Google OAuth2 deriving (Show, Generic, Eq)
-
-instance Hashable Google
-
-instance IDP Google
 
 instance HasLabel Google where
   idpLabel = const "Google"

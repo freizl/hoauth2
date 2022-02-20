@@ -5,7 +5,6 @@
 module IDP.ZOHO where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -21,10 +20,6 @@ userInfoUri = [uri|https://www.zohoapis.com/crm/v2/users|]
 -- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
 
 newtype ZOHO = ZOHO OAuth2 deriving (Show, Generic, Eq)
-
-instance Hashable ZOHO
-
-instance IDP ZOHO
 
 instance HasLabel ZOHO where
   idpLabel = const "ZOHO"

@@ -5,7 +5,6 @@
 
 module IDP.Douban where
 import           Data.Aeson
-import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
 import           Network.OAuth.OAuth2
@@ -15,10 +14,6 @@ import           URI.ByteString.QQ
 import           Utils
 
 newtype Douban = Douban OAuth2 deriving (Generic, Eq, Show)
-
-instance Hashable Douban
-
-instance IDP Douban
 
 instance HasLabel Douban where
   idpLabel = const "Douban"

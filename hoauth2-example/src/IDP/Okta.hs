@@ -1,11 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Okta where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -13,30 +13,43 @@ import Types
 import URI.ByteString
 import URI.ByteString.QQ
 import Utils
+import Data.Default
 
-newtype Okta = Okta OAuth2
+data Okta = Okta
+  { oauth2 :: OAuth2,
+    userInfoUri :: URI
+  }
   deriving (Show, Generic, Eq)
 
-userInfoUri :: URI
-userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+oktaKey :: OAuth2
+oktaKey =
+  def
+    { oauth2AuthorizeEndpoint =
+        [uri|https://hw2.trexcloud.com/oauth2/v1/authorize|],
+      oauth2TokenEndpoint =
+        [uri|https://hw2.trexcloud.com/oauth2/v1/token|]
+    }
 
--- userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
-
-instance Hashable Okta
-
-instance IDP Okta
+-- | TODO: be able to take root domain and generate other uris
+--
+init :: OAuth2 -> Okta
+init key =
+  Okta
+    { oauth2 = key,
+      userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+    }
 
 instance HasLabel Okta where
   idpLabel = const "Okta"
 
 instance HasTokenReq Okta where
-  tokenReq (Okta key) mgr = fetchAccessToken mgr key
+  tokenReq Okta {..} mgr = fetchAccessToken mgr oauth2
 
 instance HasTokenRefreshReq Okta where
-  tokenRefreshReq (Okta key) mgr = refreshAccessToken mgr key
+  tokenRefreshReq Okta {..} mgr = refreshAccessToken mgr oauth2
 
 instance HasUserReq Okta where
-  userReq _ mgr at = do
+  userReq Okta {..} mgr at = do
     re <- authGetJSON mgr at userInfoUri
     return (toLoginUser re)
 
@@ -44,9 +57,9 @@ instance HasUserReq Okta where
 -- Okta Org AS doesn't support consent
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
 instance HasAuthUri Okta where
-  authUri (Okta key) =
+  authUri Okta {..} =
     createCodeUri
-      key
+      oauth2
       [ ("state", "Okta.test-state-123"),
         ( "scope",
           "openid profile offline_access"

@@ -1,10 +1,14 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module IDP where
 
+import URI.ByteString
+import URI.ByteString.QQ
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
 import qualified Data.ByteString as BS
-import qualified IDP.Auth0 as IAuth0
+-- import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
 import qualified IDP.Douban as IDouban
 import qualified IDP.Dropbox as IDropbox
@@ -32,34 +36,38 @@ createIDPs :: IO [IDPApp]
 createIDPs = do
   configCreds <- readEnvFile
   let initKey preConfigOAuth envKey =
-        case Aeson.lookup (Aeson.fromString envKey) configCreds of
-          Nothing -> preConfigOAuth
-          Just config ->
-            preConfigOAuth
-              { oauth2ClientId = clientId config,
-                oauth2ClientSecret = clientSecret config
-              }
+        let oauthKey = case Aeson.lookup (Aeson.fromString envKey) configCreds of
+              Nothing -> preConfigOAuth
+              Just config ->
+                preConfigOAuth
+                  { oauth2ClientId = clientId config,
+                    oauth2ClientSecret = clientSecret config
+                  }
+         in oauthKey {oauth2RedirectUri = defaultOAuth2RedirectUri}
 
   return
-    [ IDPApp (IAzureAD.AzureAD (initKey azureADKey "azure")),
-      IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
-      IDPApp (IDouban.Douban (initKey doubanKey "douban")),
-      IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
-      IDPApp (IFacebook.Facebook (initKey facebookKey "facebook")),
-      IDPApp (IFitbit.Fitbit (initKey fitbitKey "fitbit")),
-      IDPApp (IGithub.Github (initKey githubKey "github")),
-      IDPApp (IGoogle.Google (initKey googleKey "google")),
-      IDPApp (ILinkedin.Linkedin (initKey linkedinKey "linkedin")),
-      IDPApp (IOkta.Okta (initKey oktaKey "okta")),
-      IDPApp (ISlack.Slack (initKey slackKey "slack")),
-      IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
-      IDPApp (IZOHO.ZOHO (initKey zohoKey "zoho")),
-      IDPApp
-        ( IStackExchange.StackExchange
-            (initKey stackexchangeKey "stackExchange")
-            stackexchangeAppKey
-        )
+    [ IDPApp (IAzureAD.init (initKey IAzureAD.azureADKey "azure")),
+      IDPApp (IOkta.init (initKey IOkta.oktaKey "okta"))
+      -- IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
+      -- IDPApp (IDouban.Douban (initKey doubanKey "douban")),
+      -- IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
+      -- IDPApp (IFacebook.Facebook (initKey facebookKey "facebook")),
+      -- IDPApp (IFitbit.Fitbit (initKey fitbitKey "fitbit")),
+      -- IDPApp (IGithub.Github (initKey githubKey "github")),
+      -- IDPApp (IGoogle.Google (initKey googleKey "google")),
+      -- IDPApp (ILinkedin.Linkedin (initKey linkedinKey "linkedin")),
+      -- IDPApp (ISlack.Slack (initKey slackKey "slack")),
+      -- IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
+      -- IDPApp (IZOHO.ZOHO (initKey zohoKey "zoho")),
+      -- IDPApp
+      --   ( IStackExchange.StackExchange
+      --       (initKey stackexchangeKey "stackExchange")
+      --       stackexchangeAppKey
+      --   )
     ]
+
+defaultOAuth2RedirectUri :: Maybe URI
+defaultOAuth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|]
 
 envFilePath :: String
 envFilePath = ".env.json"

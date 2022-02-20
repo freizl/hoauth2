@@ -5,7 +5,6 @@
 module IDP.Github where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -15,10 +14,6 @@ import URI.ByteString.QQ
 import Utils
 
 newtype Github = Github OAuth2 deriving (Show, Generic, Eq)
-
-instance Hashable Github
-
-instance IDP Github
 
 instance HasLabel Github where
   idpLabel = const "Github"

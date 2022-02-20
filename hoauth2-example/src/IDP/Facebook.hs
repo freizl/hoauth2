@@ -4,7 +4,6 @@
 
 module IDP.Facebook where
 import           Data.Aeson
-import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
 import           Network.OAuth.OAuth2
@@ -14,10 +13,6 @@ import           URI.ByteString.QQ
 import           Utils
 
 newtype Facebook = Facebook OAuth2 deriving (Show, Generic, Eq)
-
-instance Hashable Facebook
-
-instance IDP Facebook
 
 instance HasLabel Facebook where
   idpLabel = const "Facebook"

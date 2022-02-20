@@ -5,7 +5,6 @@
 module IDP.Slack where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -16,10 +15,6 @@ import Utils
 
 newtype Slack = Slack OAuth2
   deriving (Show, Generic, Eq)
-
-instance Hashable Slack
-
-instance IDP Slack
 
 instance HasLabel Slack where
   idpLabel = const "Slack"

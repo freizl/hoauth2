@@ -5,7 +5,6 @@
 module IDP.Auth0 where
 
 import Data.Aeson
-import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
@@ -16,10 +15,6 @@ import Utils
 
 newtype Auth0 = Auth0 OAuth2
   deriving (Generic, Show, Eq)
-
-instance Hashable Auth0
-
-instance IDP Auth0
 
 instance HasLabel Auth0 where
   idpLabel = const "Auth0"
