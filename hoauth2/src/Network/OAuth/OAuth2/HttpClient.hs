@@ -109,7 +109,6 @@ doJSONPostRequest :: (FromJSON err, FromJSON a)
                   -> PostBody                            -- ^ request body
                   -> ExceptT (OAuth2Error err) IO a -- ^ Response as JSON
 doJSONPostRequest manager oa uri body = do
-  -- fmap parseResponseFlexible
   resp <- doSimplePostRequest manager oa uri body
   case parseResponseFlexible resp of
     Right obj -> return obj
@@ -166,6 +165,8 @@ parseResponseString b = case parseQuery $ BSL.toStrict b of
 --------------------------------------------------
 
 -- | Conduct an authorized GET request and return response as JSON.
+--   Inject Access Token to Authorization Header.
+--
 authGetJSON :: (FromJSON b)
                  => Manager                 -- ^ HTTP connection manager.
                  -> AccessToken
@@ -178,6 +179,8 @@ authGetJSON manager t uri = do
     Left e -> throwE $ BSL.pack e
 
 -- | Conduct an authorized GET request.
+--   Inject Access Token to Authorization Header.
+--
 authGetBS :: Manager                 -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
@@ -187,7 +190,8 @@ authGetBS manager token url = do
   authRequest req upReq manager
   where upReq = updateRequestHeaders (Just token) . setMethod HT.GET
 
--- | same to 'authGetBS' but set access token to query parameter rather than header
+-- | Same to 'authGetBS' but set access token to query parameter rather than header
+--
 authGetBS2 :: Manager                -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
@@ -198,6 +202,8 @@ authGetBS2 manager token url = do
   where upReq = updateRequestHeaders Nothing . setMethod HT.GET
 
 -- | Conduct POST request and return response as JSON.
+--   Inject Access Token to Authorization Header and request body.
+--
 authPostJSON :: (FromJSON b)
                  => Manager                 -- ^ HTTP connection manager.
                  -> AccessToken
@@ -211,6 +217,8 @@ authPostJSON manager t uri pb = do
     Left e -> throwE $ BSL.pack e
 
 -- | Conduct POST request.
+--   Inject Access Token to http header (Authorization) and request body.
+--
 authPostBS :: Manager                -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
@@ -223,7 +231,8 @@ authPostBS manager token url pb = do
         upHeaders = updateRequestHeaders (Just token) . setMethod HT.POST
         upReq = upHeaders . upBody
 
--- | Conduct POST request with access token in the request body rather header
+-- | Conduct POST request with access token only in the request body but header.
+--
 authPostBS2 :: Manager               -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
@@ -236,7 +245,7 @@ authPostBS2 manager token url pb = do
         upHeaders = updateRequestHeaders Nothing . setMethod HT.POST
         upReq = upHeaders . upBody
 
--- | Conduct POST request with access token in the header and null in body
+-- | Conduct POST request with access token only in the header and not in body
 authPostBS3 :: Manager               -- ^ HTTP connection manager.
              -> AccessToken
              -> URI
