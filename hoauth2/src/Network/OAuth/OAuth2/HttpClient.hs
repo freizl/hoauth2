@@ -11,6 +11,7 @@ module Network.OAuth.OAuth2.HttpClient
     authGetBSInternal,
     authPostJSON,
     authPostBS,
+    authPostBS1,
     authPostBS2,
     authPostBS3,
     authPostBSInternal,
@@ -112,7 +113,7 @@ authPostJSON manager t uri pb = do
     Left e -> throwE $ BSL.pack e
 
 -- | Conduct POST request.
---   Inject Access Token to both http header (Authorization) and request body.
+--   Inject Access Token to http header (Authorization)
 authPostBS ::
   -- | HTTP connection manager.
   Manager ->
@@ -121,7 +122,20 @@ authPostBS ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS = authPostBSInternal [ClientSecretPost, ClientSecretBasic]
+authPostBS = authPostBSInternal [ClientSecretBasic]
+
+-- | Conduct POST request.
+--   Inject Access Token to both http header (Authorization) and request body.
+authPostBS1 ::
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  PostBody ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO BSL.ByteString
+authPostBS1 = authPostBSInternal [ClientSecretPost, ClientSecretBasic]
+{-# DEPRECATED authPostBS1 "use authPostBSInternal" #-}
 
 -- | Conduct POST request with access token only in the request body but header.
 authPostBS2 ::
