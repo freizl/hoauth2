@@ -37,7 +37,7 @@ createIDPs = do
           Just config ->
             preConfigOAuth
               { oauth2ClientId = clientId config,
-                oauth2ClientSecret = Just (clientSecret config)
+                oauth2ClientSecret = clientSecret config
               }
 
   return

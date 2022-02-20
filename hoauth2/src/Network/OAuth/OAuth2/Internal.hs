@@ -38,7 +38,7 @@ import GHC.Generics
 -- | Query Parameter Representation
 data OAuth2 = OAuth2
   { oauth2ClientId :: Text,
-    oauth2ClientSecret :: Maybe Text,
+    oauth2ClientSecret :: Text,
     oauth2AuthorizeEndpoint :: URIRef Absolute,
     oauth2TokenEndpoint :: URIRef Absolute,
     oauth2RedirectUri :: Maybe ( URIRef Absolute )

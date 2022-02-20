@@ -65,8 +65,10 @@ fetchAccessToken2 :: Manager                                   -- ^ HTTP connect
                    -> IO (OAuth2Result TR.Errors OAuth2Token) -- ^ Access Token
 fetchAccessToken2 mgr oa code = do
   let (url, body1) = accessTokenUrl oa code
-  let secret x = [("client_secret", T.encodeUtf8 x)]
-  let extraBody = ("client_id", T.encodeUtf8 $ oauth2ClientId oa) : maybe [] secret (oauth2ClientSecret oa)
+  let extraBody = [
+        ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
+        ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
+        ]
   doJSONPostRequest mgr oa url (extraBody ++ body1)
 
 -- | Fetch a new AccessToken with the Refresh Token with authentication in request header.
@@ -92,8 +94,10 @@ refreshAccessToken2 :: Manager                         -- ^ HTTP connection mana
                      -> IO (OAuth2Result TR.Errors OAuth2Token)
 refreshAccessToken2 manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
-  let secret x = [("client_secret", T.encodeUtf8 x)]
-  let extraBody = ("client_id", T.encodeUtf8 $ oauth2ClientId oa) : maybe [] secret (oauth2ClientSecret oa)
+  let extraBody = [
+        ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
+        ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
+        ]
   doJSONPostRequest manager oa uri (extraBody ++ body)
 
 -- | Conduct post request and return response as JSON.
@@ -111,14 +115,14 @@ doSimplePostRequest :: FromJSON err => Manager                 -- ^ HTTP connect
                        -> URI                                  -- ^ URL
                        -> PostBody                             -- ^ Request body.
                        -> IO (OAuth2Result err BSL.ByteString) -- ^ Response as ByteString
-doSimplePostRequest manager oa url body = fmap handleOAuth2TokenResponse go
-                                  where go = do
-                                             req <- uriToRequest url
-                                             let addBasicAuth = case oauth2ClientSecret oa of
-                                                   (Just secret) -> applyBasicAuth (T.encodeUtf8 $ oauth2ClientId oa) (T.encodeUtf8 secret)
-                                                   Nothing -> id
-                                                 req' = (addBasicAuth . updateRequestHeaders Nothing) req
-                                             httpLbs (urlEncodedBody body req') manager
+doSimplePostRequest manager oa url body =
+  fmap handleOAuth2TokenResponse go
+  where
+    addBasicAuth = applyBasicAuth (T.encodeUtf8 $ oauth2ClientId oa) (T.encodeUtf8 $ oauth2ClientSecret oa)
+    go = do
+          req <- uriToRequest url
+          let req' = (addBasicAuth . updateRequestHeaders Nothing) req
+          httpLbs (urlEncodedBody body req') manager
 
 -- | Parses a @Response@ to to @OAuth2Result@
 handleOAuth2TokenResponse :: FromJSON err => Response BSL.ByteString -> OAuth2Result err BSL.ByteString

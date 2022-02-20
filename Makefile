@@ -22,7 +22,7 @@ start-demo:
 rebuild: clean build
 
 hlint:
-	hlint hoauth2/src hoauth2-example/src --report
+	hlint hoauth2/src hoauth2-example/src
 
 doc: build
 	cabal v2-haddock
