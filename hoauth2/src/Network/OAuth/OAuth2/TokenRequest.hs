@@ -10,7 +10,6 @@ import qualified Data.Aeson.Key as Key
 import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Maybe
-import Data.Text (Text)
 import qualified Data.Text.Encoding as T
 import GHC.Generics
 import Network.HTTP.Conduit
@@ -54,7 +53,15 @@ accessTokenUrl ::
   ExchangeToken ->
   -- | access token request URL plus the request body.
   (URI, PostBody)
-accessTokenUrl oa code = accessTokenUrl' oa code (Just "authorization_code")
+accessTokenUrl oa code =
+  let uri = oauth2TokenEndpoint oa
+      body =
+        catMaybes
+          [ Just ("code", T.encodeUtf8 $ extoken code),
+            ("redirect_uri",) . serializeURIRef' <$> oauth2RedirectUri oa,
+            Just ("grant_type", "authorization_code")
+          ]
+   in (uri, body)
 
 -- | Prepare the URL and the request body query for fetching an access token.
 -- also include client_id and client_secret in the post body
@@ -71,26 +78,6 @@ accessTokenUrlClientCredInBody oa code =
           ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
         ]
    in (uri, body ++ creds)
-
--- | Prepare the URL and the request body query for fetching an access token, with
--- optional grant type.
-accessTokenUrl' ::
-  OAuth2 ->
-  -- | access code gained via authorization URL
-  ExchangeToken ->
-  -- | Grant Type
-  Maybe Text ->
-  -- | access token request URL plus the request body.
-  (URI, PostBody)
-accessTokenUrl' oa code gt = (uri, body)
-  where
-    uri = oauth2TokenEndpoint oa
-    body =
-      catMaybes
-        [ Just ("code", T.encodeUtf8 $ extoken code),
-          ("redirect_uri",) . serializeURIRef' <$> oauth2RedirectUri oa,
-          fmap (("grant_type",) . T.encodeUtf8) gt
-        ]
 
 -- | Using a Refresh Token.  Obtain a new access token by
 -- sending a refresh token to the Authorization server.
@@ -189,7 +176,6 @@ refreshAccessToken manager oa token = doJSONPostRequest manager oa uri body
 
 -- | Fetch a new AccessToken with the Refresh Token with authentication in request header and request body.
 -- Please read the docs of `refreshAccessToken`.
---
 refreshAccessTokenClientCredInBoth ::
   -- | HTTP connection manager.
   Manager ->
