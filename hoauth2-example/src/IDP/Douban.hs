@@ -24,10 +24,10 @@ instance HasLabel Douban where
   idpLabel = const "Douban"
 
 instance HasTokenReq Douban where
-  tokenReq (Douban key) mgr = fetchAccessTokenClientCredInBoth mgr key
+  tokenReq (Douban key) mgr = fetchAccessTokenInternal ClientSecretPost mgr key
 
 instance HasTokenRefreshReq Douban where
-  tokenRefreshReq (Douban key) mgr = refreshAccessTokenClientCredInBoth mgr key
+  tokenRefreshReq (Douban key) mgr = refreshAccessTokenInternal ClientSecretPost mgr key
 
 instance HasUserReq Douban where
   userReq _ mgr at = do

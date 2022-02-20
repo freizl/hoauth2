@@ -132,6 +132,10 @@ data APIAuthenticationMethod =
   | AuthInRequestQuery -- ^ Provides in request query parameter
   deriving (Eq)
 
+data ClientAuthenticationMethod =
+  ClientSecretBasic
+  | ClientSecretPost
+  deriving (Eq)
 --------------------------------------------------
 
 -- * Types Synonym

@@ -63,22 +63,6 @@ accessTokenUrl oa code =
           ]
    in (uri, body)
 
--- | Prepare the URL and the request body query for fetching an access token.
--- also include client_id and client_secret in the post body
-accessTokenUrlClientCredInBody ::
-  OAuth2 ->
-  -- | access code gained via authorization URL
-  ExchangeToken ->
-  -- | access token request URL plus the request body.
-  (URI, PostBody)
-accessTokenUrlClientCredInBody oa code =
-  let (uri, body) = accessTokenUrl oa code
-      creds =
-        [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-          ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
-        ]
-   in (uri, body ++ creds)
-
 -- | Using a Refresh Token.  Obtain a new access token by
 -- sending a refresh token to the Authorization server.
 refreshAccessTokenUrl ::
@@ -95,19 +79,11 @@ refreshAccessTokenUrl oa token = (uri, body)
         ("refresh_token", T.encodeUtf8 $ rtoken token)
       ]
 
-refreshAccessTokenUrlClientCredInBody ::
-  OAuth2 ->
-  -- | refresh token gained via authorization URL
-  RefreshToken ->
-  -- | refresh token request URL plus the request body.
-  (URI, PostBody)
-refreshAccessTokenUrlClientCredInBody oa token =
-  let (uri, body) = refreshAccessTokenUrl oa token
-      creds =
-        [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-          ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
-        ]
-   in (uri, body ++ creds)
+clientSecretPost :: OAuth2 -> PostBody
+clientSecretPost oa =
+  [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
+    ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
+  ]
 
 --------------------------------------------------
 
@@ -134,9 +110,7 @@ fetchAccessToken ::
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-fetchAccessToken manager oa code = doJSONPostRequest manager oa uri body
-  where
-    (uri, body) = accessTokenUrl oa code
+fetchAccessToken = fetchAccessTokenInternal ClientSecretBasic
 
 fetchAccessToken2 ::
   -- | HTTP connection manager
@@ -147,13 +121,11 @@ fetchAccessToken2 ::
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-fetchAccessToken2 = fetchAccessTokenClientCredInBoth
-{-# DEPRECATED fetchAccessToken2 "renamed to fetchAccessTokenClientCredInBoth" #-}
+fetchAccessToken2 = fetchAccessTokenInternal ClientSecretPost
+{-# DEPRECATED fetchAccessToken2 "renamed to fetchAccessTokenInternal" #-}
 
-
--- | Fetch OAuth2 Token with authenticate in both request header and body.
--- Please read the docs of `fetchAccessToken`.
-fetchAccessTokenClientCredInBoth ::
+fetchAccessTokenInternal ::
+  ClientAuthenticationMethod ->
   -- | HTTP connection manager
   Manager ->
   -- | OAuth Data
@@ -162,9 +134,13 @@ fetchAccessTokenClientCredInBoth ::
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-fetchAccessTokenClientCredInBoth manager oa code = doJSONPostRequest manager oa uri body
-  where
-    (uri, body) = accessTokenUrlClientCredInBody oa code
+fetchAccessTokenInternal authMethod manager oa code = do
+  let (uri, body) = accessTokenUrl oa code
+  let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
+  doJSONPostRequest manager oa uri (body ++ extraBody)
+
+-- doJSONPostRequest append client secret to header which is needed for both
+-- client_secret_post and client_secret_basic
 
 -- | Fetch a new AccessToken with the Refresh Token with authentication in request header.
 --
@@ -183,9 +159,7 @@ refreshAccessToken ::
   -- | refresh token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-refreshAccessToken manager oa token = doJSONPostRequest manager oa uri body
-  where
-    (uri, body) = refreshAccessTokenUrl oa token
+refreshAccessToken = refreshAccessTokenInternal ClientSecretBasic
 
 refreshAccessToken2 ::
   -- | HTTP connection manager.
@@ -195,12 +169,11 @@ refreshAccessToken2 ::
   -- | refresh token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-refreshAccessToken2 = refreshAccessTokenClientCredInBoth
-{-# DEPRECATED refreshAccessToken2 "renamed to fetchAccessTokenClientCredInBoth" #-}
+refreshAccessToken2 = refreshAccessTokenInternal ClientSecretPost
+{-# DEPRECATED refreshAccessToken2 "renamed to fetchAccessTokenInternal" #-}
 
--- | Fetch a new AccessToken with the Refresh Token with authentication in request header and request body.
--- Please read the docs of `refreshAccessToken`.
-refreshAccessTokenClientCredInBoth ::
+refreshAccessTokenInternal ::
+  ClientAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth context
@@ -208,9 +181,10 @@ refreshAccessTokenClientCredInBoth ::
   -- | refresh token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-refreshAccessTokenClientCredInBoth manager oa token = doJSONPostRequest manager oa uri body
-  where
-    (uri, body) = refreshAccessTokenUrlClientCredInBody oa token
+refreshAccessTokenInternal authMethod manager oa token = do
+  let (uri, body) = refreshAccessTokenUrl oa token
+  let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
+  doJSONPostRequest manager oa uri (body ++ extraBody)
 
 --------------------------------------------------
 
