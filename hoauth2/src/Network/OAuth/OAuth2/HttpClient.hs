@@ -74,7 +74,7 @@ authGetBS2 ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS2 = authGetBSInternal [ClientSecretGet]
+authGetBS2 = authGetBSInternal [AuthInRequestQuery]
 {-# DEPRECATED authGetBS2 "use authGetBSInternal" #-}
 
 -- |
