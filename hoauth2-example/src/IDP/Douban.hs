@@ -5,7 +5,6 @@
 
 module IDP.Douban where
 import           Data.Aeson
-import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
@@ -33,7 +32,7 @@ instance HasTokenReq Douban where
 instance HasUserReq Douban where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Douban where
   authUri (Douban key) = createCodeUri key [ ("state", "Douban.test-state-123")

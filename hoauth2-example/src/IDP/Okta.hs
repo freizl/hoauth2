@@ -5,7 +5,6 @@
 module IDP.Okta where
 
 import Data.Aeson
-import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
@@ -38,7 +37,7 @@ instance HasTokenRefreshReq Okta where
 instance HasUserReq Okta where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 -- | https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent

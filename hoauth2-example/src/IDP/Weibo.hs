@@ -4,8 +4,8 @@
 
 module IDP.Weibo where
 
+import Control.Monad.Trans.Except
 import Data.Aeson
-import Data.Bifunctor
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Hashable
 import Data.Text.Lazy (Text)
@@ -16,7 +16,6 @@ import Types
 import URI.ByteString
 import URI.ByteString.QQ
 import Utils
-
 
 newtype Weibo = Weibo OAuth2 deriving (Show, Generic, Eq)
 
@@ -39,7 +38,9 @@ instance HasTokenReq Weibo where
 instance HasUserReq Weibo where
   userReq _ mgr at = do
     re <- authGetBS2 mgr at userInfoUri
-    return (re >>= (bimap BSL.pack toLoginUser . eitherDecode))
+    case eitherDecode re of
+      Right obj -> return (toLoginUser obj)
+      Left e -> throwE (BSL.pack e)
 
 instance HasAuthUri Weibo where
   authUri (Weibo key) =

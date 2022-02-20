@@ -5,7 +5,6 @@
 module IDP.Slack where
 
 import Data.Aeson
-import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
@@ -34,7 +33,7 @@ instance HasTokenRefreshReq Slack where
 instance HasUserReq Slack where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Slack where
   authUri (Slack key) =

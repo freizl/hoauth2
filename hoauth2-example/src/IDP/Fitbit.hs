@@ -5,7 +5,6 @@
 module IDP.Fitbit where
 import           Control.Monad        (mzero)
 import           Data.Aeson
-import           Data.Bifunctor
 import           Data.Hashable
 import           Data.Text.Lazy       (Text)
 import           GHC.Generics
@@ -37,7 +36,7 @@ instance HasTokenRefreshReq Fitbit where
 instance HasUserReq Fitbit where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Fitbit where
   authUri (Fitbit key) = createCodeUri key [ ("state", "Fitbit.test-state-123")

@@ -5,7 +5,6 @@
 module IDP.Github where
 
 import Data.Aeson
-import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
@@ -33,7 +32,7 @@ instance HasTokenRefreshReq Github where
 instance HasUserReq Github where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Github where
   authUri (Github key) =

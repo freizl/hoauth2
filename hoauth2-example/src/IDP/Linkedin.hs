@@ -9,10 +9,8 @@ https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-co
 module IDP.Linkedin where
 
 import Data.Aeson
-import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as TL
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
@@ -43,7 +41,7 @@ instance HasTokenRefreshReq Linkedin where
 instance HasUserReq Linkedin where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Linkedin where
   authUri (Linkedin key) =

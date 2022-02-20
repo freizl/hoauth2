@@ -131,9 +131,6 @@ mkDecodeOAuth2Error response err =
 
 --------------------------------------------------
 
--- | Is either 'Left' containing an error or 'Right' containg a result
-type OAuth2Result err a = Either (OAuth2Error err) a
-
 -- | type synonym of post body content
 type PostBody = [(BS.ByteString, BS.ByteString)]
 

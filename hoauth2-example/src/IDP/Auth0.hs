@@ -5,7 +5,6 @@
 module IDP.Auth0 where
 
 import Data.Aeson
-import Data.Bifunctor
 import Data.Hashable
 import Data.Text.Lazy (Text)
 import GHC.Generics
@@ -34,7 +33,7 @@ instance HasTokenRefreshReq Auth0 where
 instance HasUserReq Auth0 where
   userReq _ mgr at = do
     re <- authGetJSON mgr at userInfoUri
-    return (second toLoginUser re)
+    return (toLoginUser re)
 
 instance HasAuthUri Auth0 where
   authUri (Auth0 key) =
