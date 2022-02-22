@@ -1,44 +1,42 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Auth0 where
 
 import Data.Aeson
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
-newtype Auth0 = Auth0 OAuth2
-  deriving (Generic, Show, Eq)
+newtype Auth0 = Auth0 IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
 
-instance HasLabel Auth0 where
-  idpLabel = const "Auth0"
+auth0Idp :: IDP
+auth0Idp =
+  IDP
+    { idpName = "auth0",
+      oauth2Config = auth0Key,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://freizl.auth0.com/userinfo|]
+    }
 
-instance HasTokenReq Auth0 where
-  tokenReq (Auth0 key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Auth0 where
-  tokenRefreshReq (Auth0 key) mgr = refreshAccessToken mgr key
+auth0Key :: OAuth2
+auth0Key =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|],
+      oauth2TokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
+    }
 
 instance HasUserReq Auth0 where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+  userReq (Auth0 IDP {..}) mgr at = do
+    re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
-
-instance HasAuthUri Auth0 where
-  authUri (Auth0 key) =
-    createCodeUri
-      key
-      [ ("state", "Auth0.test-state-123"),
-        ( "scope",
-          "openid profile email offline_access"
-        )
-      ]
 
 data Auth0User = Auth0User
   { name :: Text,
@@ -49,9 +47,6 @@ data Auth0User = Auth0User
 instance FromJSON Auth0User where
   parseJSON =
     genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-userInfoUri :: URI
-userInfoUri = [uri|https://freizl.auth0.com/userinfo|]
 
 toLoginUser :: Auth0User -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = name ouser}

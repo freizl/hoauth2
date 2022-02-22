@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -9,42 +10,40 @@ https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-co
 module IDP.Linkedin where
 
 import Data.Aeson
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
 linkedinLabel :: Text
 linkedinLabel = "LinkedIn"
 
-newtype Linkedin = Linkedin OAuth2
-  deriving (Generic, Show, Eq)
-
-instance HasLabel Linkedin where
-  idpLabel = const linkedinLabel
-
-instance HasTokenReq Linkedin where
-  tokenReq (Linkedin key) mgr = fetchAccessToken mgr key
-
 -- | TODO: didn't find the right scope to obtain RefreshToken
-instance HasTokenRefreshReq Linkedin where
-  tokenRefreshReq (Linkedin key) mgr = refreshAccessToken mgr key
+newtype Linkedin = Linkedin IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+
+linkedinIdp :: IDP
+linkedinIdp =
+  IDP
+    { idpName = "linkedin",
+      oauth2Config = linkedinKey,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://api.linkedin.com/v2/me|]
+    }
+
+linkedinKey :: OAuth2
+linkedinKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|],
+      oauth2TokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
+    }
 
 instance HasUserReq Linkedin where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+  userReq (Linkedin IDP {..}) mgr at = do
+    re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
-
-instance HasAuthUri Linkedin where
-  authUri (Linkedin key) =
-    createCodeUri
-      key
-      [ ("state", tlToBS linkedinLabel <> ".test-state-123"),
-        ("scope", "r_liteprofile")
-      ]
 
 data LinkedinUser = LinkedinUser
   { localizedFirstName :: Text,
@@ -55,8 +54,7 @@ data LinkedinUser = LinkedinUser
 instance FromJSON LinkedinUser where
   parseJSON = genericParseJSON defaultOptions
 
-userInfoUri :: URI
-userInfoUri = [uri|https://api.linkedin.com/v2/me|]
+
 
 toLoginUser :: LinkedinUser -> LoginUser
 toLoginUser LinkedinUser {..} =

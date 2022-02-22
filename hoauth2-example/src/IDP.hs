@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module IDP where
@@ -5,6 +6,7 @@ module IDP where
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
+import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import Data.Maybe
 import qualified Data.Text.Lazy as TL
@@ -22,16 +24,13 @@ import qualified IDP.Slack as ISlack
 import qualified IDP.StackExchange as IStackExchange
 import qualified IDP.Weibo as IWeibo
 import qualified IDP.ZOHO as IZOHO
-import Keys
 import Network.OAuth.OAuth2
 import Session
 import System.Directory
 import Types
-import URI.ByteString
-import URI.ByteString.QQ
 
 -- TODO:
--- 1. make this generic to discover any IDPs from idp directory.
+-- 1. make this generic with discover any IDPs from idp directory.
 -- 2. and discover `.env` for override?
 
 createIDPs :: IO [IDPApp]
@@ -52,25 +51,31 @@ createIDPs = do
               }
 
   return
-    [ IDPApp (IAzureAD.AzureAD $ initIdp IAzureAD.azureIdp "azure"),
-      IDPApp (IOkta.Okta $ initIdp IOkta.oktaIdp "okta")
-      -- IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
-      -- IDPApp (IDouban.Douban (initKey doubanKey "douban")),
-      -- IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
-      -- IDPApp (IFacebook.Facebook (initKey facebookKey "facebook")),
-      -- IDPApp (IFitbit.Fitbit (initKey fitbitKey "fitbit")),
-      -- IDPApp (IGithub.Github (initKey githubKey "github")),
-      -- IDPApp (IGoogle.Google (initKey googleKey "google")),
-      -- IDPApp (ILinkedin.Linkedin (initKey linkedinKey "linkedin")),
-      -- IDPApp (ISlack.Slack (initKey slackKey "slack")),
-      -- IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
-      -- IDPApp (IZOHO.ZOHO (initKey zohoKey "zoho")),
-      -- IDPApp
-      --   ( IStackExchange.StackExchange
-      --       (initKey stackexchangeKey "stackExchange")
-      --       stackexchangeAppKey
-      --   )
+    [ IDPApp (IAzureAD.AzureAD (initIdp IAzureAD.azureIdp "azure")),
+      IDPApp (IOkta.Okta (initIdp IOkta.oktaIdp "okta")),
+      IDPApp
+        (IAuth0.Auth0 (initIdp IAuth0.auth0Idp "auth0")),
+      IDPApp
+        (IDouban.Douban (initIdp IDouban.doubanIdp "douban")),
+      IDPApp (IDropbox.Dropbox (initIdp IDropbox.dropboxIdp "dropbox")),
+      IDPApp (IFacebook.Facebook (initIdp IFacebook.facebookIdp "facebook")),
+      IDPApp (IFitbit.Fitbit (initIdp IFitbit.fitbitIdp "fitbit")),
+      IDPApp (IGithub.Github (initIdp IGithub.githubIdp "github")),
+      IDPApp (IGoogle.Google (initIdp IGoogle.googleIdp "google")),
+      IDPApp (ILinkedin.Linkedin (initIdp ILinkedin.linkedinIdp "linkedin")),
+      IDPApp (ISlack.Slack (initIdp ISlack.slackIdp "slack")),
+      IDPApp (IWeibo.Weibo (initIdp IWeibo.weiboIdp "weibo")),
+      IDPApp (IZOHO.ZOHO (initIdp IZOHO.zohoIdp "zoho")),
+      IDPApp
+        ( IStackExchange.StackExchange
+            (initIdp IStackExchange.stackexchangeIdp "stackExchange")
+            stackexchangeAppKey
+        )
     ]
+
+-- TODO: read from config file
+stackexchangeAppKey :: ByteString
+stackexchangeAppKey = ""
 
 envFilePath :: String
 envFilePath = ".env.json"
@@ -80,7 +85,7 @@ readEnvFile = do
   envFileE <- doesFileExist envFilePath
   if envFileE
     then do
-      print "Found .env.json"
+      putStrLn "Found .env.json"
       fileContent <- BS.readFile envFilePath
       case Aeson.eitherDecodeStrict fileContent of
         Left err -> print err >> return Aeson.empty
@@ -93,4 +98,4 @@ initIdps c = do
   mapM_ (upsertIDPData c) (fmap mkIDPData idps)
 
 mkIDPData :: IDPApp -> IDPData
-mkIDPData idpApp = IDPData idpApp Nothing Nothing
+mkIDPData ia = IDPData ia Nothing Nothing

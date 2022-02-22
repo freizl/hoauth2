@@ -19,13 +19,10 @@ import Data.Aeson.KeyMap
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.HashMap.Strict as Map
-import Data.Hashable
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
--- import Data.Text.Lazy
 import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TL
 import GHC.Generics
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2
@@ -86,7 +83,7 @@ instance HasTokenRefreshReq IDP where
   tokenRefreshReq IDP {..} mgr = refreshAccessToken mgr oauth2Config
 
 
--- createAuthorizeUri :: IDP -> URI
+createAuthorizeUri :: IDP -> TL.Text
 createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config (defaultAuthorizeParam idp)
 
 createCodeUri ::
@@ -100,6 +97,7 @@ createCodeUri key params =
         appendQueryParams params $
           authorizationUrl key
 
+defaultAuthorizeParam :: IDP -> [(BS.ByteString, BS.ByteString)]
 defaultAuthorizeParam IDP {..} =
   [ ("state", tlToBS $ idpName <> ".test-state-123"),
     ("scope", tlToBS $ TL.intercalate " " oauth2Scopes)

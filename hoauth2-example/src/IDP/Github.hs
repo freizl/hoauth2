@@ -1,40 +1,44 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Github where
 
 import Data.Aeson
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
-newtype Github = Github OAuth2 deriving (Show, Generic, Eq)
+-- | http://developer.github.com/v3/oauth/
+newtype Github = Github IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
 
-instance HasLabel Github where
-  idpLabel = const "Github"
+githubIdp :: IDP
+githubIdp =
+  IDP
+    { idpName = "github",
+      oauth2Config = githubKey,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://api.github.com/user|]
+    }
 
-instance HasTokenReq Github where
-  tokenReq (Github key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Github where
-  tokenRefreshReq (Github key) mgr = refreshAccessToken mgr key
+githubKey :: OAuth2
+githubKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|],
+      oauth2TokenEndpoint =
+        [uri|https://github.com/login/oauth/access_token|]
+    }
 
 instance HasUserReq Github where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+  userReq (Github IDP {..}) mgr at = do
+    re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
-
-instance HasAuthUri Github where
-  authUri (Github key) =
-    createCodeUri
-      key
-      [ ("state", "Github.test-state-123")
-      ]
 
 data GithubUser = GithubUser
   { name :: Text,
@@ -44,9 +48,6 @@ data GithubUser = GithubUser
 
 instance FromJSON GithubUser where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-userInfoUri :: URI
-userInfoUri = [uri|https://api.github.com/user|]
 
 toLoginUser :: GithubUser -> LoginUser
 toLoginUser guser = LoginUser {loginUserName = name guser}

@@ -1,45 +1,42 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Dropbox where
 
-import Control.Monad.Trans.Except
+import Data.Default
 import Data.Aeson
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
-newtype Dropbox = Dropbox OAuth2 deriving (Show, Generic, Eq)
+newtype Dropbox = Dropbox IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
 
-instance HasLabel Dropbox where
-  idpLabel = const "Dropbox"
+dropboxIdp :: IDP
+dropboxIdp =
+  IDP
+    { idpName = "dropbox",
+      oauth2Config = dropboxKey,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
+    }
 
-instance HasTokenReq Dropbox where
-  tokenReq (Dropbox key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Dropbox where
-  tokenRefreshReq (Dropbox key) mgr = refreshAccessToken mgr key
+dropboxKey :: OAuth2
+dropboxKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|],
+      oauth2TokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
+    }
 
 instance HasUserReq Dropbox where
-  userReq _ mgr at = do
-    -- TODO: can we use authPostJSON??
-    re <- authPostBS mgr at userInfoUri []
-    case eitherDecode re of
-      Right obj -> return (toLoginUser obj)
-      Left e -> throwE (BSL.pack e)
-
-instance HasAuthUri Dropbox where
-  authUri (Dropbox key) =
-    createCodeUri
-      key
-      [ ("state", "Dropbox.test-state-123")
-      ]
+  userReq (Dropbox IDP{..}) mgr at = do
+    re <- authPostJSON mgr at oauth2UserInfoUri []
+    return (toLoginUser re)
 
 newtype DropboxName = DropboxName {displayName :: Text}
   deriving (Show, Generic)
@@ -55,9 +52,6 @@ instance FromJSON DropboxName where
 
 instance FromJSON DropboxUser where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-userInfoUri :: URI
-userInfoUri = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
 
 toLoginUser :: DropboxUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = displayName $ name ouser}

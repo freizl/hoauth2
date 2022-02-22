@@ -1,5 +1,5 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -12,20 +12,19 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
 newtype AzureAD = AzureAD IDP
   deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
 
 azureIdp :: IDP
-azureIdp = IDP {
-  idpName = "azure",
-  oauth2Config = azureADKey,
-  oauth2Scopes = ["openid", "profile", "offline_scope"],
-  oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
-}
+azureIdp =
+  IDP
+    { idpName = "azure",
+      oauth2Config = azureADKey,
+      oauth2Scopes = ["openid", "profile", "offline_scope"],
+      oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
+    }
 
 azureADKey :: OAuth2
 azureADKey =

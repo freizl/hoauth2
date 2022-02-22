@@ -1,48 +1,50 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Weibo where
 
 import Control.Monad.Trans.Except
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import Data.Default
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
-newtype Weibo = Weibo OAuth2 deriving (Show, Generic, Eq)
+newtype Weibo = Weibo IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
 
-instance HasLabel Weibo where
-  idpLabel = const "Weibo"
+weiboIdp :: IDP
+weiboIdp =
+  IDP
+    { idpName = "weibo",
+      oauth2Config = weiboKey,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://api.weibo.com/2/account/get_uid.json|]
+    }
 
-instance HasTokenRefreshReq Weibo where
-  tokenRefreshReq (Weibo key) mgr = refreshAccessToken mgr key
-
-instance HasTokenReq Weibo where
-  tokenReq (Weibo key) mgr = fetchAccessToken mgr key
+weiboKey :: OAuth2
+weiboKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|],
+      oauth2TokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
+    }
 
 -- fetch user info via
 -- GET
 -- access token in query param only
 instance HasUserReq Weibo where
-  userReq _ mgr at = do
-    re <- authGetBSInternal [AuthInRequestQuery] mgr at userInfoUri
+  userReq (Weibo IDP {..}) mgr at = do
+    re <- authGetBSInternal [AuthInRequestQuery] mgr at oauth2UserInfoUri
     case eitherDecode re of
       Right obj -> return (toLoginUser obj)
       Left e -> throwE (BSL.pack e)
-
-instance HasAuthUri Weibo where
-  authUri (Weibo key) =
-    createCodeUri
-      key
-      [ ("state", "Weibo.test-state-123")
-      ]
 
 -- | UserInfor API: http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser
@@ -60,9 +62,6 @@ instance FromJSON WeiboUID where
 
 instance FromJSON WeiboUser where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-userInfoUri :: URI
-userInfoUri = [uri|https://api.weibo.com/2/account/get_uid.json|]
 
 toLoginUser :: WeiboUID -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = TL.pack $ show $ uid ouser}

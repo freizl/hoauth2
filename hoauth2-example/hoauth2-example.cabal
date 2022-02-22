@@ -57,7 +57,6 @@ Executable demo-server
                        IDP.Weibo
                        IDP.Linkedin
                        IDP.ZOHO
-                       Keys
                        Session
                        Types
                        Utils
@@ -82,10 +81,8 @@ Executable demo-server
                        wai-middleware-static >= 0.8.1 && < 0.10.0,
                        mustache >= 2.2.3 && < 2.5.0,
                        scotty >= 0.10.0 && < 0.13,
-                       binary >= 0.8.3.0 && < 0.8.9,
-                       parsec >= 3.1.11 && < 3.2.0 ,
-                       hashable >= 1.2.6 && < 1.5.0,
+                       parsec >= 3.1.11 && < 3.2.0,
                        hoauth2
 
-  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
+  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -Wunused-packages
                -fno-warn-unused-do-bind -fno-warn-orphans

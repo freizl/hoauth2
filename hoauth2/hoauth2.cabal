@@ -60,7 +60,6 @@ Library
                  http-types           >= 0.11  && < 0.13,
                  aeson                >= 2.0   && < 2.1,
                  transformers         >= 0.5   && < 0.6,
-                 unordered-containers >= 0.2.5 && < 0.3,
                  uri-bytestring       >= 0.2.3 && < 0.4,
                  uri-bytestring-aeson >= 0.1   && < 0.2,
                  microlens            >= 0.4.0 && < 0.5,
@@ -68,5 +67,4 @@ Library
                  exceptions           >= 0.8.3 && < 0.11
 
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields
-               -fno-warn-unused-do-bind
-
+               -fno-warn-unused-do-bind -Wunused-packages

@@ -7,8 +7,6 @@ import qualified Data.Text.Encoding         as TE
 import           Data.Text.Lazy             (Text)
 import qualified Data.Text.Lazy             as TL
 
-import           Network.OAuth.OAuth2
-import           URI.ByteString
 import           Web.Scotty.Internal.Types
 
 tlToBS :: TL.Text -> ByteString

@@ -9,14 +9,10 @@ module IDP.Okta where
 import Data.Aeson
 import Data.Default
 import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TL
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
 newtype Okta = Okta IDP
   deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
@@ -25,7 +21,7 @@ oktaIdp :: IDP
 oktaIdp = IDP
       { idpName = "okta",
         oauth2Config = oktaKey,
-        oauth2Scopes = ["openid", "profile", "offline_scope"],
+        oauth2Scopes = [],
         oauth2UserInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
       }
 

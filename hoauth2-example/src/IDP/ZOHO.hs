@@ -1,49 +1,67 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.ZOHO where
 
 import Data.Aeson
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
-
-userInfoUri :: URI
-userInfoUri = [uri|https://www.zohoapis.com/crm/v2/users|]
 
 -- `oauth/user/info` url does not work and find answer from
 -- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
 
-newtype ZOHO = ZOHO OAuth2 deriving (Show, Generic, Eq)
+newtype ZOHO = ZOHO IDP
+  deriving (HasLabel, HasAuthUri)
 
-instance HasLabel ZOHO where
-  idpLabel = const "ZOHO"
+zohoIdp :: IDP
+zohoIdp =
+  IDP
+    { idpName = "zoho",
+      oauth2Config = zohoKey,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://www.zohoapis.com/crm/v2/users|]
+    }
+
+zohoKey :: OAuth2
+zohoKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|],
+      oauth2TokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]
+    }
 
 instance HasTokenReq ZOHO where
-  tokenReq (ZOHO key) mgr = fetchAccessTokenInternal ClientSecretPost mgr key
+  tokenReq (ZOHO IDP{..}) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
 
 instance HasTokenRefreshReq ZOHO where
-  tokenRefreshReq (ZOHO key) mgr = refreshAccessTokenInternal ClientSecretPost mgr key
+  tokenRefreshReq (ZOHO IDP{..}) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
 
 instance HasUserReq ZOHO where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+  userReq (ZOHO IDP {..}) mgr at = do
+    re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
 
-instance HasAuthUri ZOHO where
-  authUri (ZOHO key) =
-    createCodeUri
-      key
-      [ ("state", "ZOHO.test-state-123"),
-        ("scope", "ZohoCRM.users.READ"),
-        ("access_type", "offline"),
-        ("prompt", "consent")
-      ]
+instance HasAuthorizeExtraParam ZOHO where
+  authorizeParam _ =
+    [ ("access_type", "offline"),
+      ("prompt", "consent")
+    ]
+
+-- instance HasAuthUri ZOHO where
+--   authUri (ZOHO key) =
+--     createCodeUri
+--       key
+--       [ ("state", "ZOHO.test-state-123"),
+--         ("scope", "ZohoCRM.users.READ"),
+--         ("access_type", "offline"),
+--         ("prompt", "consent")
+--       ]
 
 data ZOHOUser = ZOHOUser
   { email :: Text,

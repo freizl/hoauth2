@@ -1,58 +1,65 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Fitbit where
-import           Control.Monad        (mzero)
-import           Data.Aeson
-import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import           GHC.Generics
-import           Network.OAuth.OAuth2
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Utils
 
-userInfoUri :: URI
-userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
+import Control.Monad (mzero)
+import Data.Default
+import Data.Aeson
+import Data.Text.Lazy (Text)
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString.QQ
 
+newtype Fitbit = Fitbit IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
 
-newtype Fitbit = Fitbit OAuth2 deriving (Show, Generic, Eq)
+fitbitIdp :: IDP
+fitbitIdp =
+  IDP
+    { idpName = "fitbit",
+      oauth2Config = fitbitKey,
+      oauth2Scopes = [],
+      oauth2UserInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
+    }
 
-instance HasLabel Fitbit where
-  idpLabel = const "Fitbit"
-
-instance HasTokenReq Fitbit where
-  tokenReq (Fitbit key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Fitbit where
-  tokenRefreshReq (Fitbit key) mgr = refreshAccessToken mgr key
+fitbitKey :: OAuth2
+fitbitKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|],
+      oauth2TokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
+    }
 
 instance HasUserReq Fitbit where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+  userReq (Fitbit IDP{..}) mgr at = do
+    re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
 
-instance HasAuthUri Fitbit where
-  authUri (Fitbit key) = createCodeUri key [ ("state", "Fitbit.test-state-123")
-                                        , ("scope", "profile")
-                                        ]
+-- instance HasAuthUri Fitbit where
+--   authUri (Fitbit key) =
+--     createCodeUri
+--       key
+--       [ ("state", "Fitbit.test-state-123"),
+--         ("scope", "profile")
+--       ]
 
 data FitbitUser = FitbitUser
-    { userId   :: Text
-    , userName :: Text
-    , userAge  :: Int
-    } deriving (Show, Eq)
+  { userId :: Text,
+    userName :: Text,
+    userAge :: Int
+  }
+  deriving (Show, Eq)
 
 instance FromJSON FitbitUser where
-    parseJSON (Object o) =
-        FitbitUser
-        <$> ((o .: "user") >>= (.: "encodedId"))
-        <*> ((o .: "user") >>= (.: "fullName"))
-        <*> ((o .: "user") >>= (.: "age"))
-    parseJSON _ = mzero
-
+  parseJSON (Object o) =
+    FitbitUser
+      <$> ((o .: "user") >>= (.: "encodedId"))
+      <*> ((o .: "user") >>= (.: "fullName"))
+      <*> ((o .: "user") >>= (.: "age"))
+  parseJSON _ = mzero
 
 toLoginUser :: FitbitUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = userName ouser }
+toLoginUser ouser = LoginUser {loginUserName = userName ouser}
