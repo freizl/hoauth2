@@ -1,23 +1,23 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ConstrainedClassMethods #-}
 
 module Types where
 
-import Data.Default
 import Control.Concurrent.MVar
 import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Aeson.KeyMap
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import Data.Default
 import qualified Data.HashMap.Strict as Map
 import Data.Maybe
 import qualified Data.Text as T
@@ -47,11 +47,12 @@ data EnvConfigAuthParams = EnvConfigAuthParams
   deriving (Generic)
 
 instance Default EnvConfigAuthParams where
-  def = EnvConfigAuthParams
-    { clientId = "",
-      clientSecret = "",
-      scopes = Just []
-    }
+  def =
+    EnvConfigAuthParams
+      { clientId = "",
+        clientSecret = "",
+        scopes = Just []
+      }
 
 instance FromJSON EnvConfigAuthParams
 
@@ -81,7 +82,6 @@ instance HasTokenReq IDP where
 
 instance HasTokenRefreshReq IDP where
   tokenRefreshReq IDP {..} mgr = refreshAccessToken mgr oauth2Config
-
 
 createAuthorizeUri :: IDP -> TL.Text
 createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config (defaultAuthorizeParam idp)
