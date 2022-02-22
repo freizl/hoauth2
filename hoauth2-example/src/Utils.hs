@@ -29,9 +29,3 @@ parseValue (Just a) = case Aeson.fromJSON a of
   Aeson.Error _   -> Nothing
   Aeson.Success b -> Just b
 
-createCodeUri :: OAuth2
-  -> [(ByteString, ByteString)]
-  -> Text
-createCodeUri key params = TL.fromStrict $ TE.decodeUtf8 $ serializeURIRef'
-  $ appendQueryParams params
-  $ authorizationUrl key

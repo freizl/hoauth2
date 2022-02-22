@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -15,11 +16,16 @@ import URI.ByteString
 import URI.ByteString.QQ
 import Utils
 
-data AzureAD = AzureAD
-  { oauth2 :: OAuth2,
-    userInfoUri :: URI
-  }
-  deriving (Show, Generic, Eq)
+newtype AzureAD = AzureAD IDP
+  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+
+azureIdp :: IDP
+azureIdp = IDP {
+  idpName = "azure",
+  oauth2Config = azureADKey,
+  oauth2Scopes = ["openid", "profile", "offline_scope"],
+  oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
+}
 
 azureADKey :: OAuth2
 azureADKey =
@@ -30,35 +36,13 @@ azureADKey =
         [uri|https://login.windows.net/common/oauth2/token|]
     }
 
-init :: OAuth2 -> AzureAD
-init key =
-  AzureAD
-    { oauth2 = key,
-      userInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
-    }
-
-instance HasLabel AzureAD where
-  idpLabel = const "AzureAD"
-
-instance HasTokenRefreshReq AzureAD where
-  tokenRefreshReq (AzureAD {..}) mgr = refreshAccessToken mgr oauth2
-
-instance HasTokenReq AzureAD where
-  tokenReq (AzureAD {..}) mgr = fetchAccessToken mgr oauth2
-
 instance HasUserReq AzureAD where
-  userReq (AzureAD {..}) mgr at = do
-    re <- authGetJSON mgr at userInfoUri
+  userReq (AzureAD IDP {..}) mgr at = do
+    re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
 
-instance HasAuthUri AzureAD where
-  authUri (AzureAD {..}) =
-    createCodeUri
-      oauth2
-      [ ("state", "AzureAD.test-state-123"),
-        ("scope", "openid,profile"),
-        ("resource", "https://graph.microsoft.com")
-      ]
+instance HasAuthorizeExtraParam AzureAD where
+  authorizeParam _ = [("resource", "https://graph.microsoft.com")]
 
 newtype AzureADUser = AzureADUser {mail :: Text} deriving (Show, Generic)
 

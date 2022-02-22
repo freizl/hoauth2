@@ -2,13 +2,13 @@
 
 module IDP where
 
-import URI.ByteString
-import URI.ByteString.QQ
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
 import qualified Data.ByteString as BS
--- import qualified IDP.Auth0 as IAuth0
+import Data.Maybe
+import qualified Data.Text.Lazy as TL
+import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
 import qualified IDP.Douban as IDouban
 import qualified IDP.Dropbox as IDropbox
@@ -27,6 +27,8 @@ import Network.OAuth.OAuth2
 import Session
 import System.Directory
 import Types
+import URI.ByteString
+import URI.ByteString.QQ
 
 -- TODO:
 -- 1. make this generic to discover any IDPs from idp directory.
@@ -34,20 +36,24 @@ import Types
 
 createIDPs :: IO [IDPApp]
 createIDPs = do
-  configCreds <- readEnvFile
-  let initKey preConfigOAuth envKey =
-        let oauthKey = case Aeson.lookup (Aeson.fromString envKey) configCreds of
-              Nothing -> preConfigOAuth
-              Just config ->
-                preConfigOAuth
-                  { oauth2ClientId = clientId config,
-                    oauth2ClientSecret = clientSecret config
-                  }
-         in oauthKey {oauth2RedirectUri = defaultOAuth2RedirectUri}
+  configParams <- readEnvFile
+  let initIdp idp propKey =
+        case Aeson.lookup (Aeson.fromString propKey) configParams of
+          Nothing -> idp
+          Just config ->
+            idp
+              { oauth2Config =
+                  (oauth2Config idp)
+                    { oauth2ClientId = clientId config,
+                      oauth2ClientSecret = clientSecret config,
+                      oauth2RedirectUri = defaultOAuth2RedirectUri
+                    },
+                oauth2Scopes = map TL.fromStrict (fromMaybe [] $ scopes config)
+              }
 
   return
-    [ IDPApp (IAzureAD.init (initKey IAzureAD.azureADKey "azure")),
-      IDPApp (IOkta.init (initKey IOkta.oktaKey "okta"))
+    [ IDPApp (IAzureAD.AzureAD $ initIdp IAzureAD.azureIdp "azure"),
+      IDPApp (IOkta.Okta $ initIdp IOkta.oktaIdp "okta")
       -- IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
       -- IDPApp (IDouban.Douban (initKey doubanKey "douban")),
       -- IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
@@ -65,9 +71,6 @@ createIDPs = do
       --       stackexchangeAppKey
       --   )
     ]
-
-defaultOAuth2RedirectUri :: Maybe URI
-defaultOAuth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|]
 
 envFilePath :: String
 envFilePath = ".env.json"
@@ -90,4 +93,4 @@ initIdps c = do
   mapM_ (upsertIDPData c) (fmap mkIDPData idps)
 
 mkIDPData :: IDPApp -> IDPData
-mkIDPData ia = IDPData ia Nothing Nothing
+mkIDPData idpApp = IDPData idpApp Nothing Nothing

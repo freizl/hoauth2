@@ -28,6 +28,7 @@ instance HasTokenRefreshReq Dropbox where
 
 instance HasUserReq Dropbox where
   userReq _ mgr at = do
+    -- TODO: can we use authPostJSON??
     re <- authPostBS mgr at userInfoUri []
     case eitherDecode re of
       Right obj -> return (toLoginUser obj)
