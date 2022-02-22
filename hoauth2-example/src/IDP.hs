@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module IDP where
 
 import qualified Data.Aeson as Aeson
@@ -47,7 +45,7 @@ createIDPs = do
                       oauth2ClientSecret = clientSecret config,
                       oauth2RedirectUri = defaultOAuth2RedirectUri
                     },
-                oauth2Scopes = map TL.fromStrict (fromMaybe [] $ scopes config)
+                oauth2Scopes = maybe [] (map TL.fromStrict) (scopes config)
               }
 
   return
