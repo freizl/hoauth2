@@ -181,12 +181,12 @@ appendQueryParams params =
   over (queryL . queryPairsL) (params ++)
 
 uriToRequest :: MonadThrow m => URI -> m Request
-uriToRequest uri = do
-  ssl <- case view (uriSchemeL . schemeBSL) uri of
+uriToRequest auri = do
+  ssl <- case view (uriSchemeL . schemeBSL) auri of
     "http" -> return False
     "https" -> return True
-    s -> throwM $ InvalidUrlException (show uri) ("Invalid scheme: " ++ show s)
-  let query = fmap (second Just) (view (queryL . queryPairsL) uri)
+    s -> throwM $ InvalidUrlException (show auri) ("Invalid scheme: " ++ show s)
+  let query = fmap (second Just) (view (queryL . queryPairsL) auri)
       hostL = authorityL . _Just . authorityHostL . hostBSL
       portL = authorityL . _Just . authorityPortL . _Just . portNumberL
       defaultPort = (if ssl then 443 else 80) :: Int
@@ -195,10 +195,10 @@ uriToRequest uri = do
         setQueryString query $
           defaultRequest
             { secure = ssl,
-              path = view pathL uri
+              path = view pathL auri
             }
-      req2 = (over hostLens . maybe id const . preview hostL) uri req
-      req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) uri req2
+      req2 = (over hostLens . maybe id const . preview hostL) auri req
+      req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) auri req2
   return req3
 
 requestToUri :: Request -> URI

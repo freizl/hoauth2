@@ -6,7 +6,6 @@ import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
-import Data.Maybe
 import qualified Data.Text.Lazy as TL
 import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
