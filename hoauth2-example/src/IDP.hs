@@ -5,7 +5,6 @@ module IDP where
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
-import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.Text.Lazy as TL
 import qualified IDP.Auth0 as IAuth0
@@ -67,13 +66,8 @@ createIDPs = do
       IDPApp
         ( IStackExchange.StackExchange
             (initIdp IStackExchange.stackexchangeIdp "stackExchange")
-            stackexchangeAppKey
         )
     ]
-
--- TODO: read from config file
-stackexchangeAppKey :: ByteString
-stackexchangeAppKey = ""
 
 envFilePath :: String
 envFilePath = ".env.json"

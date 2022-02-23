@@ -9,10 +9,8 @@
 -}
 module IDP.StackExchange where
 
-import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Default
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
@@ -25,9 +23,11 @@ import URI.ByteString.QQ
 
 -- fix key from your application edit page
 -- https://stackapps.com/apps/oauth
-type AppKey = ByteString
+stackexchangeAppKey :: ByteString
+stackexchangeAppKey = ""
 
-data StackExchange = StackExchange IDP AppKey
+newtype StackExchange = StackExchange IDP
+  deriving (HasLabel, HasAuthUri)
 
 stackexchangeIdp :: IDP
 stackexchangeIdp =
@@ -35,7 +35,16 @@ stackexchangeIdp =
     { idpName = "stackexchange",
       oauth2Config = stackexchangeKey,
       oauth2Scopes = [],
-      oauth2UserInfoUri = [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
+      --
+      -- Only StackExchange has such specical app key which has to be append in userinfo uri.
+      -- I feel it's not worth to invent a way to read from config
+      -- file which would break the generic of IDP data type.
+      -- Until discover a easier way, hard code for now.
+      --
+      oauth2UserInfoUri =
+        appendStackExchangeAppKey
+          [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
+          stackexchangeAppKey
     }
 
 stackexchangeKey :: OAuth2
@@ -46,26 +55,20 @@ stackexchangeKey =
         [uri|https://stackexchange.com/oauth/access_token|]
     }
 
-instance HasLabel StackExchange where
-  idpLabel = const "StackExchange"
-
-instance HasAuthUri StackExchange where
-  authUri (StackExchange idp _) = createAuthorizeUri idp
-
 instance HasTokenReq StackExchange where
-  tokenReq (StackExchange (IDP {..}) _) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
+  tokenReq (StackExchange (IDP {..})) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
 
 instance HasTokenRefreshReq StackExchange where
-  tokenRefreshReq (StackExchange (IDP {..}) _) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
+  tokenRefreshReq (StackExchange (IDP {..})) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
 
 instance HasUserReq StackExchange where
-  userReq (StackExchange (IDP {..}) appKey) mgr token = do
+  userReq (StackExchange (IDP {..})) mgr token = do
     re <-
       authGetJSONInternal
         [AuthInRequestQuery]
         mgr
         token
-        (oauth2UserInfoUri `appendStackExchangeAppKey` appKey)
+        oauth2UserInfoUri
     (return . toLoginUser) re
 
 data StackExchangeResp = StackExchangeResp
