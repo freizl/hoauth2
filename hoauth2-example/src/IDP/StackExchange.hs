@@ -32,7 +32,7 @@ newtype StackExchange = StackExchange IDP
 stackexchangeIdp :: IDP
 stackexchangeIdp =
   IDP
-    { idpName = "stackexchange",
+    { idpName = "stackExchange",
       oauth2Config = stackexchangeKey,
       oauth2Scopes = [],
       --

@@ -53,16 +53,6 @@ instance HasAuthorizeExtraParam ZOHO where
       ("prompt", "consent")
     ]
 
--- instance HasAuthUri ZOHO where
---   authUri (ZOHO key) =
---     createCodeUri
---       key
---       [ ("state", "ZOHO.test-state-123"),
---         ("scope", "ZohoCRM.users.READ"),
---         ("access_type", "offline"),
---         ("prompt", "consent")
---       ]
-
 data ZOHOUser = ZOHOUser
   { email :: Text,
     fullName :: Text

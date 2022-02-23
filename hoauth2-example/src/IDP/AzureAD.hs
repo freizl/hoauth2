@@ -22,7 +22,7 @@ azureIdp =
   IDP
     { idpName = "azure",
       oauth2Config = azureADKey,
-      oauth2Scopes = ["openid", "profile", "offline_scope"],
+      oauth2Scopes = [],
       oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
     }
 

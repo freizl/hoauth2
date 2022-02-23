@@ -33,8 +33,8 @@ import Types
 createIDPs :: IO [IDPApp]
 createIDPs = do
   configParams <- readEnvFile
-  let initIdp idp propKey =
-        case Aeson.lookup (Aeson.fromString propKey) configParams of
+  let initIdp idp =
+        case Aeson.lookup (Aeson.fromString $ TL.unpack $ idpName idp) configParams of
           Nothing -> idp
           Just config ->
             idp
@@ -48,24 +48,24 @@ createIDPs = do
               }
 
   return
-    [ IDPApp (IAzureAD.AzureAD (initIdp IAzureAD.azureIdp "azure")),
-      IDPApp (IOkta.Okta (initIdp IOkta.oktaIdp "okta")),
+    [ IDPApp (IAzureAD.AzureAD (initIdp IAzureAD.azureIdp)),
+      IDPApp (IOkta.Okta (initIdp IOkta.oktaIdp)),
       IDPApp
-        (IAuth0.Auth0 (initIdp IAuth0.auth0Idp "auth0")),
+        (IAuth0.Auth0 (initIdp IAuth0.auth0Idp)),
       IDPApp
-        (IDouban.Douban (initIdp IDouban.doubanIdp "douban")),
-      IDPApp (IDropbox.Dropbox (initIdp IDropbox.dropboxIdp "dropbox")),
-      IDPApp (IFacebook.Facebook (initIdp IFacebook.facebookIdp "facebook")),
-      IDPApp (IFitbit.Fitbit (initIdp IFitbit.fitbitIdp "fitbit")),
-      IDPApp (IGithub.Github (initIdp IGithub.githubIdp "github")),
-      IDPApp (IGoogle.Google (initIdp IGoogle.googleIdp "google")),
-      IDPApp (ILinkedin.Linkedin (initIdp ILinkedin.linkedinIdp "linkedin")),
-      IDPApp (ISlack.Slack (initIdp ISlack.slackIdp "slack")),
-      IDPApp (IWeibo.Weibo (initIdp IWeibo.weiboIdp "weibo")),
-      IDPApp (IZOHO.ZOHO (initIdp IZOHO.zohoIdp "zoho")),
+        (IDouban.Douban (initIdp IDouban.doubanIdp)),
+      IDPApp (IDropbox.Dropbox (initIdp IDropbox.dropboxIdp)),
+      IDPApp (IFacebook.Facebook (initIdp IFacebook.facebookIdp)),
+      IDPApp (IFitbit.Fitbit (initIdp IFitbit.fitbitIdp)),
+      IDPApp (IGithub.Github (initIdp IGithub.githubIdp)),
+      IDPApp (IGoogle.Google (initIdp IGoogle.googleIdp)),
+      IDPApp (ILinkedin.Linkedin (initIdp ILinkedin.linkedinIdp)),
+      IDPApp (ISlack.Slack (initIdp ISlack.slackIdp)),
+      IDPApp (IWeibo.Weibo (initIdp IWeibo.weiboIdp)),
+      IDPApp (IZOHO.ZOHO (initIdp IZOHO.zohoIdp)),
       IDPApp
         ( IStackExchange.StackExchange
-            (initIdp IStackExchange.stackexchangeIdp "stackExchange")
+            (initIdp IStackExchange.stackexchangeIdp)
         )
     ]
 
