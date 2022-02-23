@@ -47,7 +47,7 @@ data GithubUser = GithubUser
   deriving (Show, Generic)
 
 instance FromJSON GithubUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: GithubUser -> LoginUser
 toLoginUser guser = LoginUser {loginUserName = name guser}

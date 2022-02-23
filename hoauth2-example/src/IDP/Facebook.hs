@@ -53,7 +53,7 @@ data FacebookUser = FacebookUser
   deriving (Show, Generic)
 
 instance FromJSON FacebookUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: FacebookUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = name ouser}

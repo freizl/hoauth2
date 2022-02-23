@@ -51,7 +51,7 @@ instance FromJSON DropboxName where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
 instance FromJSON DropboxUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: DropboxUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = displayName $ name ouser}

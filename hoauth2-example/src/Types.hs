@@ -99,6 +99,11 @@ fetchUserInfoViaGet i2 mgr at = authGetJSON mgr at (oauth2UserInfoUri2 i2)
 fetchUserInfoViaPost :: FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b
 fetchUserInfoViaPost i2 mgr at = authPostJSON mgr at (oauth2UserInfoUri2 i2) []
 
+test :: (FromJSON (IDPUserInfo a)) => IDP2 a -> ExceptT BSL.ByteString IO LoginUser
+test idp2@IDP2{..} = do
+  resp <- oauth2FetchUserInfo idp2 undefined undefined
+  return (convertUserInfoToLoginUser resp)
+
 instance Eq IDP where
   x == y = idpName x == idpName y
 

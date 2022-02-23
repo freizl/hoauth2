@@ -20,8 +20,7 @@ newtype Auth0 = Auth0 IDP
 
 type instance IDPUserInfo IDP_Auth0 = Auth0User
 
-data IDP_Auth0 = IDP_Auth0
-  deriving (Show)
+data IDP_Auth0
 
 idp2 :: IDP2 IDP_Auth0
 idp2 =
@@ -61,7 +60,7 @@ data Auth0User = Auth0User
 
 instance FromJSON Auth0User where
   parseJSON =
-    genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+    genericParseJSON defaultOptions
 
 toLoginUser :: Auth0User -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = name ouser}

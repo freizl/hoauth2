@@ -52,7 +52,7 @@ data DoubanUser = DoubanUser
   deriving (Show, Generic)
 
 instance FromJSON DoubanUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: DoubanUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = name ouser}

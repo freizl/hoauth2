@@ -46,7 +46,7 @@ data GoogleUser = GoogleUser
   deriving (Show, Generic)
 
 instance FromJSON GoogleUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: GoogleUser -> LoginUser
 toLoginUser guser = LoginUser {loginUserName = name guser}

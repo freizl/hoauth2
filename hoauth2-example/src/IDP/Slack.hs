@@ -48,7 +48,7 @@ data SlackUser = SlackUser
 
 instance FromJSON SlackUser where
   parseJSON =
-    genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+    genericParseJSON defaultOptions
 
 toLoginUser :: SlackUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = name ouser}

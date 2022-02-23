@@ -54,8 +54,6 @@ data LinkedinUser = LinkedinUser
 instance FromJSON LinkedinUser where
   parseJSON = genericParseJSON defaultOptions
 
-
-
 toLoginUser :: LinkedinUser -> LoginUser
 toLoginUser LinkedinUser {..} =
   LoginUser

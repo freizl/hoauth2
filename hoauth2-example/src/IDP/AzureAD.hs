@@ -46,7 +46,7 @@ instance HasAuthorizeExtraParam AzureAD where
 newtype AzureADUser = AzureADUser {mail :: Text} deriving (Show, Generic)
 
 instance FromJSON AzureADUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: AzureADUser -> LoginUser
 toLoginUser ouser = LoginUser {loginUserName = mail ouser}

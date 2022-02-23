@@ -37,10 +37,10 @@ zohoKey =
     }
 
 instance HasTokenReq ZOHO where
-  tokenReq (ZOHO IDP{..}) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
+  tokenReq (ZOHO IDP {..}) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
 
 instance HasTokenRefreshReq ZOHO where
-  tokenRefreshReq (ZOHO IDP{..}) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
+  tokenRefreshReq (ZOHO IDP {..}) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
 
 instance HasUserReq ZOHO where
   userReq (ZOHO IDP {..}) mgr at = do
@@ -63,7 +63,7 @@ newtype ZOHOUserResp = ZOHOUserResp {users :: [ZOHOUser]}
   deriving (Show, Generic)
 
 instance FromJSON ZOHOUserResp where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = genericParseJSON defaultOptions
 
 instance FromJSON ZOHOUser where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
@@ -72,5 +72,5 @@ toLoginUser :: ZOHOUserResp -> LoginUser
 toLoginUser resp =
   let us = users resp
    in case us of
-        [] -> LoginUser {loginUserName = "no user found"}
+        [] -> LoginUser {loginUserName = "ZOHO: no user found"}
         (a : _) -> LoginUser {loginUserName = fullName a}

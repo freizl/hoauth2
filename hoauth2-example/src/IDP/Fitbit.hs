@@ -38,14 +38,6 @@ instance HasUserReq Fitbit where
     re <- authGetJSON mgr at oauth2UserInfoUri
     return (toLoginUser re)
 
--- instance HasAuthUri Fitbit where
---   authUri (Fitbit key) =
---     createCodeUri
---       key
---       [ ("state", "Fitbit.test-state-123"),
---         ("scope", "profile")
---       ]
-
 data FitbitUser = FitbitUser
   { userId :: Text,
     userName :: Text,
