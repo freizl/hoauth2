@@ -6,9 +6,7 @@
 
 module IDP.Weibo where
 
-import Control.Monad.Trans.Except
 import Data.Aeson
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Default
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
@@ -41,10 +39,8 @@ weiboKey =
 -- access token in query param only
 instance HasUserReq Weibo where
   userReq (Weibo IDP {..}) mgr at = do
-    re <- authGetBSInternal [AuthInRequestQuery] mgr at oauth2UserInfoUri
-    case eitherDecode re of
-      Right obj -> return (toLoginUser obj)
-      Left e -> throwE (BSL.pack e)
+    re <- authGetJSONInternal [AuthInRequestQuery] mgr at oauth2UserInfoUri
+    return (toLoginUser re)
 
 -- | UserInfor API: http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser

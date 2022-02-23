@@ -67,7 +67,38 @@ data IDP = IDP
     oauth2UserInfoUri :: URI
   }
 
--- TODO: deriving via?
+type family IDPUserInfo a
+
+data IDP2 a = IDP2
+  { idpName2 :: TL.Text,
+    oauth2Config2 :: OAuth2,
+    oauth2Scopes2 :: [TL.Text],
+    oauth2UserInfoUri2 :: URI,
+    oauth2FetchAccessToken :: Manager -> OAuth2 -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token,
+    oauth2RefreshAccessToken :: Manager -> OAuth2 -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token,
+    oauth2FetchUserInfo :: forall b. FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b,
+    convertUserInfoToLoginUser :: IDPUserInfo a -> LoginUser
+  }
+
+instance Default (IDP2 a) where
+  def =
+    IDP2
+      { idpName2 = "",
+        oauth2Config2 = def,
+        oauth2Scopes2 = [],
+        oauth2UserInfoUri2 = [uri|https://example.com|],
+        oauth2FetchAccessToken = fetchAccessToken,
+        oauth2RefreshAccessToken = refreshAccessToken,
+        oauth2FetchUserInfo = fetchUserInfoViaGet,
+        convertUserInfoToLoginUser = const (LoginUser "")
+      }
+
+fetchUserInfoViaGet :: FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b
+fetchUserInfoViaGet i2 mgr at = authGetJSON mgr at (oauth2UserInfoUri2 i2)
+
+fetchUserInfoViaPost :: FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b
+fetchUserInfoViaPost i2 mgr at = authPostJSON mgr at (oauth2UserInfoUri2 i2) []
+
 instance Eq IDP where
   x == y = idpName x == idpName y
 
@@ -85,17 +116,13 @@ instance HasTokenRefreshReq IDP where
 
 createAuthorizeUri :: IDP -> TL.Text
 createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config (defaultAuthorizeParam idp)
-
-createCodeUri ::
-  OAuth2 ->
-  [(BS.ByteString, BS.ByteString)] ->
-  TL.Text
-createCodeUri key params =
-  TL.fromStrict $
-    T.decodeUtf8 $
-      serializeURIRef' $
-        appendQueryParams params $
-          authorizationUrl key
+  where
+    createCodeUri key params =
+      TL.fromStrict $
+        T.decodeUtf8 $
+          serializeURIRef' $
+            appendQueryParams params $
+              authorizationUrl key
 
 defaultAuthorizeParam :: IDP -> [(BS.ByteString, BS.ByteString)]
 defaultAuthorizeParam IDP {..} =
@@ -126,10 +153,6 @@ class HasTokenRefreshReq a where
 -- so that can have default implementation for userReq
 class HasUserReq a where
   userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
-
-class IsIDP a
-
-instance IsIDP IDP
 
 -- data IDPApp = IDPApp IDP
 

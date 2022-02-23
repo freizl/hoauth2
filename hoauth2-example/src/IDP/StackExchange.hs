@@ -50,7 +50,7 @@ instance HasLabel StackExchange where
   idpLabel = const "StackExchange"
 
 instance HasAuthUri StackExchange where
-  authUri (StackExchange (IDP {..}) _) = createCodeUri oauth2Config [("state", "StackExchange.test-state-123")]
+  authUri (StackExchange idp _) = createAuthorizeUri idp
 
 instance HasTokenReq StackExchange where
   tokenReq (StackExchange (IDP {..}) _) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
@@ -61,14 +61,12 @@ instance HasTokenRefreshReq StackExchange where
 instance HasUserReq StackExchange where
   userReq (StackExchange (IDP {..}) appKey) mgr token = do
     re <-
-      authGetBSInternal
+      authGetJSONInternal
         [AuthInRequestQuery]
         mgr
         token
         (oauth2UserInfoUri `appendStackExchangeAppKey` appKey)
-    case eitherDecode re of
-      Right obj -> return (toLoginUser obj)
-      Left e -> throwE (BSL.pack e)
+    (return . toLoginUser) re
 
 data StackExchangeResp = StackExchangeResp
   { hasMore :: Bool,

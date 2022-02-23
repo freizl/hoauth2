@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Auth0 where
 
@@ -16,6 +17,20 @@ import URI.ByteString.QQ
 
 newtype Auth0 = Auth0 IDP
   deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+
+type instance IDPUserInfo IDP_Auth0 = Auth0User
+
+data IDP_Auth0 = IDP_Auth0
+  deriving (Show)
+
+idp2 :: IDP2 IDP_Auth0
+idp2 =
+  def
+    { idpName2 = "auth0",
+      oauth2Config2 = auth0Key,
+      oauth2UserInfoUri2 = [uri|https://freizl.auth0.com/userinfo|],
+      convertUserInfoToLoginUser = toLoginUser
+    }
 
 auth0Idp :: IDP
 auth0Idp =

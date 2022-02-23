@@ -77,7 +77,7 @@ refreshH c = do
     newToken <- doRefreshToken idpData
     liftIO $ do
       putStrLn "got new token"
-      print newToken
+      -- print newToken
       upsertIDPData c (idpData {oauth2Token = Just newToken})
   -- TODO: double check: shall only return to home when no error.
   redirectToHomeM
