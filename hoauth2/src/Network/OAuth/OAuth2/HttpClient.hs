@@ -8,12 +8,14 @@ module Network.OAuth.OAuth2.HttpClient
     authGetJSON,
     authGetBS,
     authGetBS2,
+    authGetJSONInternal,
     authGetBSInternal,
     authPostJSON,
     authPostBS,
     authPostBS1,
     authPostBS2,
     authPostBS3,
+    authPostJSONInternal,
     authPostBSInternal,
   )
 where
@@ -49,11 +51,21 @@ authGetJSON ::
   URI ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authGetJSON manager t uri = do
-  resp <- authGetBS manager t uri
-  case eitherDecode resp of
-    Right obj -> return obj
-    Left e -> throwE $ BSL.pack e
+authGetJSON = authGetJSONInternal [AuthInRequestHeader]
+{-# DEPRECATED authGetJSON "use authGetJSONInternal" #-}
+
+authGetJSONInternal ::
+  (FromJSON b) =>
+  [APIAuthenticationMethod] ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  -- | Response as JSON
+  ExceptT BSL.ByteString IO b
+authGetJSONInternal authTypes manager t uri = do
+  resp <- authGetBSInternal authTypes manager t uri
+  either (throwE . BSL.pack) return (eitherDecode resp)
 
 -- | Conduct an authorized GET request.
 --   Inject Access Token to Authorization Header.
@@ -111,6 +123,21 @@ authPostJSON manager t uri pb = do
   case eitherDecode resp of
     Right obj -> return obj
     Left e -> throwE $ BSL.pack e
+{-# DEPRECATED authPostJSON "use authPostJSONInternal" #-}
+
+authPostJSONInternal ::
+  FromJSON a =>
+  [APIAuthenticationMethod] ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  PostBody ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO a
+authPostJSONInternal authTypes manager token url body = do
+  resp <- authPostBSInternal authTypes manager token url body
+  either (throwE . BSL.pack) return (eitherDecode resp)
 
 -- | Conduct POST request.
 --   Inject Access Token to http header (Authorization)
