@@ -44,7 +44,7 @@ app =
     >> waiApp
     >>= run myServerPort
 
--- TODO: how to add either Monad or a middleware to do session?
+-- TODO: how to add either Monad or a middleware to do server side session?
 waiApp :: IO WAI.Application
 waiApp = do
   cache <- initCacheStore
@@ -94,8 +94,6 @@ callbackH c = do
   pas <- params
   let stateP = paramValue "state" pas
   when (null stateP) (raise "callbackH: no state from callback request")
-  -- TODO: when no code, it's like to have error
-  --  display error properly in the page
   let codeP = paramValue "code" pas
   when (null codeP) (raise "callbackH: no code from callback request")
   exceptToActionM $ do
@@ -103,7 +101,7 @@ callbackH c = do
     fetchTokenAndUser c (head codeP) idpData
   redirectToHomeM
 
--- TODO: looks like `state` shall be passed when fetching access token
+-- NOTE: looks like `state` shall be passed when fetching access token
 --       turns out no IDP enforce this yet
 
 --------------------------------------------------

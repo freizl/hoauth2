@@ -28,9 +28,7 @@ import Session
 import System.Directory
 import Types
 
--- TODO:
--- 1. make this generic with discover any IDPs from idp directory.
--- 2. and discover `.env` for override?
+-- TODO: auto discovery IDPs
 
 createIDPs :: IO [IDPApp]
 createIDPs = do
