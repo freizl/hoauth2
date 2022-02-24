@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 
 module Network.OAuth.OAuth2.TokenRequest where
 
@@ -9,7 +8,6 @@ import Data.Aeson
 import qualified Data.Aeson.Key as Key
 import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Maybe
 import qualified Data.Text.Encoding as T
 import GHC.Generics
 import Network.HTTP.Conduit
@@ -56,11 +54,10 @@ accessTokenUrl ::
 accessTokenUrl oa code =
   let uri = oauth2TokenEndpoint oa
       body =
-        catMaybes
-          [ Just ("code", T.encodeUtf8 $ extoken code),
-            ("redirect_uri",) . serializeURIRef' <$> oauth2RedirectUri oa,
-            Just ("grant_type", "authorization_code")
-          ]
+        [ ("code", T.encodeUtf8 $ extoken code),
+          ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa),
+          ("grant_type", "authorization_code")
+        ]
    in (uri, body)
 
 -- | Using a Refresh Token.  Obtain a new access token by
