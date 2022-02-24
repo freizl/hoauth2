@@ -1,60 +1,45 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Okta where
 
 import Data.Aeson
-import Data.Hashable
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
-newtype Okta = Okta OAuth2
-  deriving (Show, Generic, Eq)
+data Okta = Okta deriving (Eq, Show)
 
-userInfoUri :: URI
-userInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+type instance IDPUserInfo Okta = OktaUser
+type instance IDPName Okta = Okta
 
--- userInfoUri = [uri|https://dev-148986.oktapreview.com/oauth2/v1/userinfo|]
+oktaIdp :: IDP Okta
+oktaIdp =
+  def
+    { idpName = Okta,
+      oauth2Config = oktaKey,
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2UserInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+    }
 
-instance Hashable Okta
-
-instance IDP Okta
-
-instance HasLabel Okta where
-  idpLabel = const "Okta"
-
-instance HasTokenReq Okta where
-  tokenReq (Okta key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Okta where
-  tokenRefreshReq (Okta key) mgr = refreshAccessToken mgr key
-
-instance HasUserReq Okta where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
-    return (toLoginUser re)
+oktaKey :: OAuth2
+oktaKey =
+  def
+    { oauth2AuthorizeEndpoint =
+        [uri|https://hw2.trexcloud.com/oauth2/v1/authorize|],
+      oauth2TokenEndpoint =
+        [uri|https://hw2.trexcloud.com/oauth2/v1/token|]
+    }
 
 -- | https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
-instance HasAuthUri Okta where
-  authUri (Okta key) =
-    createCodeUri
-      key
-      [ ("state", "Okta.test-state-123"),
-        ( "scope",
-          "openid profile offline_access"
-          -- , "openid profile offline_access okta.users.read.self okta.users.read"
-        ),
-        ("prompt", "login consent")
-      ]
-
 data OktaUser = OktaUser
   { name :: Text,
     preferredUsername :: Text

@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_HADDOCK -ignore-exports #-}
 
@@ -16,6 +17,7 @@ import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
 import Data.Binary (Binary)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.Default
 import Data.Hashable
 import Data.Maybe
 import Data.Text (Text, pack, unpack)
@@ -28,6 +30,7 @@ import qualified Network.HTTP.Types as H
 import qualified Network.HTTP.Types as HT
 import URI.ByteString
 import URI.ByteString.Aeson ()
+import URI.ByteString.QQ
 
 --------------------------------------------------
 
@@ -44,6 +47,16 @@ data OAuth2 = OAuth2
     oauth2RedirectUri :: Maybe (URIRef Absolute)
   }
   deriving (Show, Eq)
+
+instance Default OAuth2 where
+  def =
+    OAuth2
+      { oauth2ClientId = "",
+        oauth2ClientSecret = "",
+        oauth2AuthorizeEndpoint = [uri|https://www.example.com/|],
+        oauth2TokenEndpoint = [uri|https://www.example.com/|],
+        oauth2RedirectUri = Nothing
+      }
 
 instance Hashable OAuth2 where
   hashWithSalt salt OAuth2 {..} =
@@ -107,8 +120,8 @@ instance FromJSON err => FromJSON (OAuth2Error err) where
     do
       err <- (a .: "error") >>= (\str -> Right <$> parseJSON str <|> Left <$> parseJSON str)
       desc <- a .:? "error_description"
-      uri <- a .:? "error_uri"
-      return $ OAuth2Error err desc uri
+      errorUri <- a .:? "error_uri"
+      return $ OAuth2Error err desc errorUri
   parseJSON _ = fail "Expected an object"
 
 instance ToJSON err => ToJSON (OAuth2Error err) where
@@ -126,16 +139,20 @@ mkDecodeOAuth2Error response err =
     (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
     Nothing
 
-data APIAuthenticationMethod =
-  AuthInRequestHeader -- ^ Provides in Authorization header
-  | AuthInRequestBody -- ^ Provides in request body
-  | AuthInRequestQuery -- ^ Provides in request query parameter
-  deriving (Eq)
+data APIAuthenticationMethod
+  = -- | Provides in Authorization header
+    AuthInRequestHeader
+  | -- | Provides in request body
+    AuthInRequestBody
+  | -- | Provides in request query parameter
+    AuthInRequestQuery
+  deriving (Eq, Ord)
 
-data ClientAuthenticationMethod =
-  ClientSecretBasic
+data ClientAuthenticationMethod
+  = ClientSecretBasic
   | ClientSecretPost
-  deriving (Eq)
+  deriving (Eq, Ord)
+
 --------------------------------------------------
 
 -- * Types Synonym
@@ -164,12 +181,12 @@ appendQueryParams params =
   over (queryL . queryPairsL) (params ++)
 
 uriToRequest :: MonadThrow m => URI -> m Request
-uriToRequest uri = do
-  ssl <- case view (uriSchemeL . schemeBSL) uri of
+uriToRequest auri = do
+  ssl <- case view (uriSchemeL . schemeBSL) auri of
     "http" -> return False
     "https" -> return True
-    s -> throwM $ InvalidUrlException (show uri) ("Invalid scheme: " ++ show s)
-  let query = fmap (second Just) (view (queryL . queryPairsL) uri)
+    s -> throwM $ InvalidUrlException (show auri) ("Invalid scheme: " ++ show s)
+  let query = fmap (second Just) (view (queryL . queryPairsL) auri)
       hostL = authorityL . _Just . authorityHostL . hostBSL
       portL = authorityL . _Just . authorityPortL . _Just . portNumberL
       defaultPort = (if ssl then 443 else 80) :: Int
@@ -178,10 +195,10 @@ uriToRequest uri = do
         setQueryString query $
           defaultRequest
             { secure = ssl,
-              path = view pathL uri
+              path = view pathL auri
             }
-      req2 = (over hostLens . maybe id const . preview hostL) uri req
-      req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) uri req2
+      req2 = (over hostLens . maybe id const . preview hostL) auri req
+      req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) auri req2
   return req3
 
 requestToUri :: Request -> URI
