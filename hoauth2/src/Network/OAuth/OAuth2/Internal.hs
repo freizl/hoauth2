@@ -18,7 +18,6 @@ import Data.Binary (Binary)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.Default
-import Data.Hashable
 import Data.Maybe
 import Data.Text (Text, pack, unpack)
 import Data.Text.Encoding
@@ -57,15 +56,6 @@ instance Default OAuth2 where
         oauth2TokenEndpoint = [uri|https://www.example.com/|],
         oauth2RedirectUri = Nothing
       }
-
-instance Hashable OAuth2 where
-  hashWithSalt salt OAuth2 {..} =
-    salt
-      `hashWithSalt` hash oauth2ClientId
-      `hashWithSalt` hash oauth2ClientSecret
-      `hashWithSalt` hash (show oauth2AuthorizeEndpoint)
-      `hashWithSalt` hash (show oauth2TokenEndpoint)
-      `hashWithSalt` hash (show oauth2RedirectUri)
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
 
