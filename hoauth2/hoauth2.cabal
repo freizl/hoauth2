@@ -36,7 +36,7 @@ Build-type:          Simple
 Stability:           Beta
 Tested-With:         GHC <= 8.10.7
 
-Extra-source-files: README.md
+Extra-source-files: README.org
 
 Source-Repository head
   Type:     git
