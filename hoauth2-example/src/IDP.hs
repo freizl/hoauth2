@@ -1,9 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module IDP where
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Key as Aeson
 import qualified Data.Aeson.KeyMap as Aeson
 import qualified Data.ByteString as BS
+import qualified Data.Text.Lazy as TL
 import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
 import qualified IDP.Douban as IDouban
@@ -18,47 +22,50 @@ import qualified IDP.Slack as ISlack
 import qualified IDP.StackExchange as IStackExchange
 import qualified IDP.Weibo as IWeibo
 import qualified IDP.ZOHO as IZOHO
-import Keys
 import Network.OAuth.OAuth2
 import Session
 import System.Directory
 import Types
 
--- TODO:
--- 1. make this generic to discover any IDPs from idp directory.
--- 2. and discover `.env` for override?
+-- TODO: auto discovery IDPs
 
 createIDPs :: IO [IDPApp]
 createIDPs = do
-  configCreds <- readEnvFile
-  let initKey preConfigOAuth envKey =
-        case Aeson.lookup (Aeson.fromString envKey) configCreds of
-          Nothing -> preConfigOAuth
+  configParams <- readEnvFile
+  let initIdp idp =
+        case Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower $ getIdpName idp) configParams of
+          Nothing -> idp
           Just config ->
-            preConfigOAuth
-              { oauth2ClientId = clientId config,
-                oauth2ClientSecret = clientSecret config
+            idp
+              { oauth2Config =
+                  (oauth2Config idp)
+                    { oauth2ClientId = clientId config,
+                      oauth2ClientSecret = clientSecret config,
+                      oauth2RedirectUri = defaultOAuth2RedirectUri
+                    },
+                oauth2Scopes = maybe [] (map TL.fromStrict) (scopes config)
               }
 
   return
-    [ IDPApp (IAzureAD.AzureAD (initKey azureADKey "azure")),
-      IDPApp (IAuth0.Auth0 (initKey auth0Key "auth0")),
-      IDPApp (IDouban.Douban (initKey doubanKey "douban")),
-      IDPApp (IDropbox.Dropbox (initKey dropboxKey "dropbox")),
-      IDPApp (IFacebook.Facebook (initKey facebookKey "facebook")),
-      IDPApp (IFitbit.Fitbit (initKey fitbitKey "fitbit")),
-      IDPApp (IGithub.Github (initKey githubKey "github")),
-      IDPApp (IGoogle.Google (initKey googleKey "google")),
-      IDPApp (ILinkedin.Linkedin (initKey linkedinKey "linkedin")),
-      IDPApp (IOkta.Okta (initKey oktaKey "okta")),
-      IDPApp (ISlack.Slack (initKey slackKey "slack")),
-      IDPApp (IWeibo.Weibo (initKey weiboKey "weibo")),
-      IDPApp (IZOHO.ZOHO (initKey zohoKey "zoho")),
+    [ IDPApp (initIdp IAzureAD.azureIdp),
       IDPApp
-        ( IStackExchange.StackExchange
-            (initKey stackexchangeKey "stackExchange")
-            stackexchangeAppKey
-        )
+        (initIdp IAuth0.auth0Idp),
+      IDPApp
+        (initIdp IDouban.doubanIdp),
+      IDPApp (initIdp IDropbox.dropboxIdp),
+      IDPApp (initIdp IFacebook.facebookIdp),
+      IDPApp (initIdp IFitbit.fitbitIdp),
+      IDPApp (initIdp IGithub.githubIdp),
+      IDPApp (initIdp IGoogle.googleIdp),
+      IDPApp (initIdp ILinkedin.linkedinIdp),
+      IDPApp
+        (initIdp IOkta.oktaIdp),
+      IDPApp
+        (initIdp ISlack.slackIdp),
+      IDPApp (initIdp IWeibo.weiboIdp),
+      IDPApp (initIdp IZOHO.zohoIdp),
+      IDPApp
+        (initIdp IStackExchange.stackexchangeIdp)
     ]
 
 envFilePath :: String
@@ -69,7 +76,7 @@ readEnvFile = do
   envFileE <- doesFileExist envFilePath
   if envFileE
     then do
-      print "Found .env.json"
+      putStrLn "Found .env.json"
       fileContent <- BS.readFile envFilePath
       case Aeson.eitherDecodeStrict fileContent of
         Left err -> print err >> return Aeson.empty

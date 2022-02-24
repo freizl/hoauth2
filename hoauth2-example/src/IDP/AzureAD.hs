@@ -1,52 +1,49 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.AzureAD where
 
-import           Data.Aeson
-import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import           GHC.Generics
-import           Network.OAuth.OAuth2
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Utils
+import Data.Aeson
+import Data.Default
+import Data.Text.Lazy (Text)
+import GHC.Generics
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString.QQ
 
-newtype AzureAD = AzureAD OAuth2 deriving (Show, Generic, Eq)
+data AzureAD = AzureAD deriving (Eq, Show)
 
-instance Hashable AzureAD
+type instance IDPUserInfo AzureAD = AzureADUser
 
-instance IDP AzureAD
+type instance IDPName AzureAD = AzureAD
 
-instance HasLabel AzureAD where
-    idpLabel = const "AzureAD"
+azureIdp :: IDP AzureAD
+azureIdp =
+  def
+    { idpName = AzureAD,
+      oauth2Config = azureADKey,
+      oauth2AuthorizeParams = [("resource", "https://graph.microsoft.com")],
+      oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|],
+      convertUserInfoToLoginUser = toLoginUser
+    }
 
-instance HasTokenRefreshReq AzureAD where
-  tokenRefreshReq (AzureAD key) mgr = refreshAccessToken mgr key
+azureADKey :: OAuth2
+azureADKey =
+  def
+    { oauth2AuthorizeEndpoint =
+        [uri|https://login.windows.net/common/oauth2/authorize|],
+      oauth2TokenEndpoint =
+        [uri|https://login.windows.net/common/oauth2/token|]
+    }
 
-instance HasTokenReq AzureAD where
-  tokenReq (AzureAD key) mgr = fetchAccessToken mgr key
-
-instance HasUserReq AzureAD where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
-    return (toLoginUser re)
-
-instance HasAuthUri AzureAD where
-  authUri (AzureAD key) = createCodeUri key [ ("state", "AzureAD.test-state-123")
-                                       , ("scope", "openid,profile")
-                                       , ("resource", "https://graph.microsoft.com")
-                                       ]
-
-newtype AzureADUser = AzureADUser { mail :: Text } deriving (Show, Generic)
+newtype AzureADUser = AzureADUser {mail :: Text} deriving (Show, Generic)
 
 instance FromJSON AzureADUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
-
-userInfoUri :: URI
-userInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: AzureADUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = mail ouser }
+toLoginUser ouser = LoginUser {loginUserName = mail ouser}

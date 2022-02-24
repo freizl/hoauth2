@@ -1,53 +1,53 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Facebook where
-import           Data.Aeson
-import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import           GHC.Generics
-import           Network.OAuth.OAuth2
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Utils
 
-newtype Facebook = Facebook OAuth2 deriving (Show, Generic, Eq)
+import Data.Aeson
+import Data.Default
+import Data.Text.Lazy (Text)
+import GHC.Generics
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString.QQ
 
-instance Hashable Facebook
+data Facebook = Facebook deriving (Eq, Show)
 
-instance IDP Facebook
+type instance IDPUserInfo Facebook = FacebookUser
 
-instance HasLabel Facebook where
-  idpLabel = const "Facebook"
+type instance IDPName Facebook = Facebook
 
-instance HasTokenReq Facebook where
-  tokenReq (Facebook key) mgr = fetchAccessTokenInternal ClientSecretPost mgr key
+facebookIdp :: IDP Facebook
+facebookIdp =
+  def
+    { idpName = Facebook,
+      oauth2Config = facebookKey,
+      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2UserInfoUri = [uri|https://graph.facebook.com/me?fields=id,name,email|]
+    }
 
-instance HasTokenRefreshReq Facebook where
-  tokenRefreshReq (Facebook key) mgr = refreshAccessTokenInternal ClientSecretPost mgr key
+facebookKey :: OAuth2
+facebookKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://www.facebook.com/dialog/oauth|],
+      oauth2TokenEndpoint =
+        [uri|https://graph.facebook.com/v2.3/oauth/access_token|]
+    }
 
-instance HasUserReq Facebook where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
-    return (toLoginUser re)
-
-instance HasAuthUri Facebook where
-  authUri (Facebook key) = createCodeUri key [ ("state", "Facebook.test-state-123")
-                                        , ("scope", "user_about_me,email")
-                                        ]
-
-data FacebookUser = FacebookUser { id    :: Text
-                                 , name  :: Text
-                                 , email :: Text
-                                 } deriving (Show, Generic)
+data FacebookUser = FacebookUser
+  { id :: Text,
+    name :: Text,
+    email :: Text
+  }
+  deriving (Show, Generic)
 
 instance FromJSON FacebookUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
-
-userInfoUri :: URI
-userInfoUri = [uri|https://graph.facebook.com/me?fields=id,name,email|]
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: FacebookUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = name ouser }
+toLoginUser ouser = LoginUser {loginUserName = name ouser}

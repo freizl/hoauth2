@@ -1,46 +1,42 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP.Google where
 
 import Data.Aeson
-import Data.Hashable
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
-import URI.ByteString
 import URI.ByteString.QQ
-import Utils
 
-newtype Google = Google OAuth2 deriving (Show, Generic, Eq)
+-- | Test at google playground
+-- oauthCallback = Just "https://developers.google.com/oauthplayground"
+--
+data Google = Google deriving (Eq,Show)
+type instance IDPUserInfo Google = GoogleUser
+type instance IDPName Google = Google
 
-instance Hashable Google
+googleIdp :: IDP Google
+googleIdp =
+  def
+    { idpName = Google,
+      oauth2Config = googleKey,
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2UserInfoUri = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
+    }
 
-instance IDP Google
+googleKey :: OAuth2
+googleKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/auth|],
+      oauth2TokenEndpoint = [uri|https://www.googleapis.com/oauth2/v3/token|]
+    }
 
-instance HasLabel Google where
-  idpLabel = const "Google"
-
-instance HasTokenReq Google where
-  tokenReq (Google key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Google where
-  tokenRefreshReq (Google key) mgr = refreshAccessToken mgr key
-
-instance HasUserReq Google where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
-    return (toLoginUser re)
-
-instance HasAuthUri Google where
-  authUri (Google key) =
-    createCodeUri
-      key
-      [ ("state", "Google.test-state-123"),
-        ("scope", "https://www.googleapis.com/auth/userinfo.email")
-      ]
 
 data GoogleUser = GoogleUser
   { name :: Text,
@@ -49,10 +45,7 @@ data GoogleUser = GoogleUser
   deriving (Show, Generic)
 
 instance FromJSON GoogleUser where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-userInfoUri :: URI
-userInfoUri = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: GoogleUser -> LoginUser
 toLoginUser guser = LoginUser {loginUserName = name guser}

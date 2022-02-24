@@ -1,62 +1,55 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Fitbit where
-import           Control.Monad        (mzero)
-import           Data.Aeson
-import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import           GHC.Generics
-import           Network.OAuth.OAuth2
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Utils
 
-userInfoUri :: URI
-userInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
+import Control.Monad (mzero)
+import Data.Aeson
+import Data.Default
+import Data.Text.Lazy (Text)
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString.QQ
 
+data Fitbit = Fitbit deriving (Eq, Show)
 
-newtype Fitbit = Fitbit OAuth2 deriving (Show, Generic, Eq)
+type instance IDPUserInfo Fitbit = FitbitUser
 
-instance Hashable Fitbit
+type instance IDPName Fitbit = Fitbit
 
-instance IDP Fitbit
+fitbitIdp :: IDP Fitbit
+fitbitIdp =
+  def
+    { idpName = Fitbit,
+      oauth2Config = fitbitKey,
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2UserInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
+    }
 
-instance HasLabel Fitbit where
-  idpLabel = const "Fitbit"
-
-instance HasTokenReq Fitbit where
-  tokenReq (Fitbit key) mgr = fetchAccessToken mgr key
-
-instance HasTokenRefreshReq Fitbit where
-  tokenRefreshReq (Fitbit key) mgr = refreshAccessToken mgr key
-
-instance HasUserReq Fitbit where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
-    return (toLoginUser re)
-
-instance HasAuthUri Fitbit where
-  authUri (Fitbit key) = createCodeUri key [ ("state", "Fitbit.test-state-123")
-                                        , ("scope", "profile")
-                                        ]
+fitbitKey :: OAuth2
+fitbitKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|],
+      oauth2TokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
+    }
 
 data FitbitUser = FitbitUser
-    { userId   :: Text
-    , userName :: Text
-    , userAge  :: Int
-    } deriving (Show, Eq)
+  { userId :: Text,
+    userName :: Text,
+    userAge :: Int
+  }
+  deriving (Show, Eq)
 
 instance FromJSON FitbitUser where
-    parseJSON (Object o) =
-        FitbitUser
-        <$> ((o .: "user") >>= (.: "encodedId"))
-        <*> ((o .: "user") >>= (.: "fullName"))
-        <*> ((o .: "user") >>= (.: "age"))
-    parseJSON _ = mzero
-
+  parseJSON (Object o) =
+    FitbitUser
+      <$> ((o .: "user") >>= (.: "encodedId"))
+      <*> ((o .: "user") >>= (.: "fullName"))
+      <*> ((o .: "user") >>= (.: "age"))
+  parseJSON _ = mzero
 
 toLoginUser :: FitbitUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = userName ouser }
+toLoginUser ouser = LoginUser {loginUserName = userName ouser}
