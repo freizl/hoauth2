@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.AzureAD where
 
@@ -14,16 +15,20 @@ import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-newtype AzureAD = AzureAD IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data AzureAD = AzureAD deriving (Eq, Show)
 
-azureIdp :: IDP
+type instance IDPUserInfo AzureAD = AzureADUser
+
+type instance IDPName AzureAD = AzureAD
+
+azureIdp :: IDP AzureAD
 azureIdp =
-  IDP
-    { idpName = "azure",
+  def
+    { idpName = AzureAD,
       oauth2Config = azureADKey,
-      oauth2Scopes = [],
-      oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|]
+      oauth2AuthorizeParams = [("resource", "https://graph.microsoft.com")],
+      oauth2UserInfoUri = [uri|https://graph.microsoft.com/v1.0/me|],
+      convertUserInfoToLoginUser = toLoginUser
     }
 
 azureADKey :: OAuth2
@@ -34,14 +39,6 @@ azureADKey =
       oauth2TokenEndpoint =
         [uri|https://login.windows.net/common/oauth2/token|]
     }
-
-instance HasUserReq AzureAD where
-  userReq (AzureAD IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
-
-instance HasAuthorizeExtraParam AzureAD where
-  authorizeParam _ = [("resource", "https://graph.microsoft.com")]
 
 newtype AzureADUser = AzureADUser {mail :: Text} deriving (Show, Generic)
 

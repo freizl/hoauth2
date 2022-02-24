@@ -1,28 +1,32 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Dropbox where
 
-import Data.Default
 import Data.Aeson
+import Data.Default
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-newtype Dropbox = Dropbox IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data Dropbox = Dropbox deriving (Eq, Show)
 
-dropboxIdp :: IDP
+type instance IDPUserInfo Dropbox = DropboxUser
+
+type instance IDPName Dropbox = Dropbox
+
+dropboxIdp :: IDP Dropbox
 dropboxIdp =
-  IDP
-    { idpName = "dropbox",
+  def
+    { idpName = Dropbox,
       oauth2Config = dropboxKey,
-      oauth2Scopes = [],
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2FetchUserInfo = fetchUserInfoViaPost,
       oauth2UserInfoUri = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
     }
 
@@ -32,11 +36,6 @@ dropboxKey =
     { oauth2AuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|],
       oauth2TokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
     }
-
-instance HasUserReq Dropbox where
-  userReq (Dropbox IDP{..}) mgr at = do
-    re <- authPostJSON mgr at oauth2UserInfoUri []
-    return (toLoginUser re)
 
 newtype DropboxName = DropboxName {displayName :: Text}
   deriving (Show, Generic)

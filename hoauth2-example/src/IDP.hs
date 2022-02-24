@@ -1,4 +1,6 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module IDP where
 
@@ -34,7 +36,7 @@ createIDPs :: IO [IDPApp]
 createIDPs = do
   configParams <- readEnvFile
   let initIdp idp =
-        case Aeson.lookup (Aeson.fromString $ TL.unpack $ idpName idp) configParams of
+        case Aeson.lookup (Aeson.fromString $ TL.unpack $ getIdpName idp) configParams of
           Nothing -> idp
           Just config ->
             idp
@@ -48,25 +50,25 @@ createIDPs = do
               }
 
   return
-    [ IDPApp (IAzureAD.AzureAD (initIdp IAzureAD.azureIdp)),
-      IDPApp (IOkta.Okta (initIdp IOkta.oktaIdp)),
+    [ IDPApp (initIdp IAzureAD.azureIdp),
       IDPApp
-        (IAuth0.Auth0 (initIdp IAuth0.auth0Idp)),
+        (initIdp IAuth0.auth0Idp),
       IDPApp
-        (IDouban.Douban (initIdp IDouban.doubanIdp)),
-      IDPApp (IDropbox.Dropbox (initIdp IDropbox.dropboxIdp)),
-      IDPApp (IFacebook.Facebook (initIdp IFacebook.facebookIdp)),
-      IDPApp (IFitbit.Fitbit (initIdp IFitbit.fitbitIdp)),
-      IDPApp (IGithub.Github (initIdp IGithub.githubIdp)),
-      IDPApp (IGoogle.Google (initIdp IGoogle.googleIdp)),
-      IDPApp (ILinkedin.Linkedin (initIdp ILinkedin.linkedinIdp)),
-      IDPApp (ISlack.Slack (initIdp ISlack.slackIdp)),
-      IDPApp (IWeibo.Weibo (initIdp IWeibo.weiboIdp)),
-      IDPApp (IZOHO.ZOHO (initIdp IZOHO.zohoIdp)),
+        (initIdp IDouban.doubanIdp),
+      IDPApp (initIdp IDropbox.dropboxIdp),
+      IDPApp (initIdp IFacebook.facebookIdp),
+      IDPApp (initIdp IFitbit.fitbitIdp),
+      IDPApp (initIdp IGithub.githubIdp),
+      IDPApp (initIdp IGoogle.googleIdp),
+      IDPApp (initIdp ILinkedin.linkedinIdp),
       IDPApp
-        ( IStackExchange.StackExchange
-            (initIdp IStackExchange.stackexchangeIdp)
-        )
+        (initIdp IOkta.oktaIdp),
+      IDPApp
+        (initIdp ISlack.slackIdp),
+      IDPApp (initIdp IWeibo.weiboIdp),
+      IDPApp (initIdp IZOHO.zohoIdp),
+      IDPApp
+        (initIdp IStackExchange.stackexchangeIdp)
     ]
 
 envFilePath :: String

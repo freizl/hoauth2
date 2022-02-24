@@ -1,21 +1,24 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {-
   NOTES: stackexchange API spec and its document just sucks!
 -}
 module IDP.StackExchange where
 
+import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Default
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
 import Lens.Micro
+import Network.HTTP.Conduit
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString
@@ -26,15 +29,21 @@ import URI.ByteString.QQ
 stackexchangeAppKey :: ByteString
 stackexchangeAppKey = ""
 
-newtype StackExchange = StackExchange IDP
-  deriving (HasLabel, HasAuthUri)
+data StackExchange = StackExchange deriving (Eq, Show)
 
-stackexchangeIdp :: IDP
+type instance IDPUserInfo StackExchange = StackExchangeResp
+
+type instance IDPName StackExchange = StackExchange
+
+stackexchangeIdp :: IDP StackExchange
 stackexchangeIdp =
-  IDP
-    { idpName = "stackExchange",
+  def
+    { idpName = StackExchange,
       oauth2Config = stackexchangeKey,
-      oauth2Scopes = [],
+      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2FetchUserInfo = fetchUserInfo,
       --
       -- Only StackExchange has such specical app key which has to be append in userinfo uri.
       -- I feel it's not worth to invent a way to read from config
@@ -47,6 +56,22 @@ stackexchangeIdp =
           stackexchangeAppKey
     }
 
+fetchUserInfo ::
+  FromJSON b =>
+  IDP a ->
+  Manager ->
+  AccessToken ->
+  ExceptT
+    BSL.ByteString
+    IO
+    b
+fetchUserInfo IDP {..} mgr accessToken =
+  authGetJSONInternal
+    [AuthInRequestQuery]
+    mgr
+    accessToken
+    oauth2UserInfoUri
+
 stackexchangeKey :: OAuth2
 stackexchangeKey =
   def
@@ -54,22 +79,6 @@ stackexchangeKey =
       oauth2TokenEndpoint =
         [uri|https://stackexchange.com/oauth/access_token|]
     }
-
-instance HasTokenReq StackExchange where
-  tokenReq (StackExchange (IDP {..})) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
-
-instance HasTokenRefreshReq StackExchange where
-  tokenRefreshReq (StackExchange (IDP {..})) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
-
-instance HasUserReq StackExchange where
-  userReq (StackExchange (IDP {..})) mgr token = do
-    re <-
-      authGetJSONInternal
-        [AuthInRequestQuery]
-        mgr
-        token
-        oauth2UserInfoUri
-    (return . toLoginUser) re
 
 data StackExchangeResp = StackExchangeResp
   { hasMore :: Bool,

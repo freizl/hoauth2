@@ -1,28 +1,31 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Fitbit where
 
 import Control.Monad (mzero)
-import Data.Default
 import Data.Aeson
+import Data.Default
 import Data.Text.Lazy (Text)
 import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-newtype Fitbit = Fitbit IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data Fitbit = Fitbit deriving (Eq, Show)
 
-fitbitIdp :: IDP
+type instance IDPUserInfo Fitbit = FitbitUser
+
+type instance IDPName Fitbit = Fitbit
+
+fitbitIdp :: IDP Fitbit
 fitbitIdp =
-  IDP
-    { idpName = "fitbit",
+  def
+    { idpName = Fitbit,
       oauth2Config = fitbitKey,
-      oauth2Scopes = [],
+      convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://api.fitbit.com/1/user/-/profile.json|]
     }
 
@@ -32,11 +35,6 @@ fitbitKey =
     { oauth2AuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|],
       oauth2TokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
     }
-
-instance HasUserReq Fitbit where
-  userReq (Fitbit IDP{..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
 
 data FitbitUser = FitbitUser
   { userId :: Text,

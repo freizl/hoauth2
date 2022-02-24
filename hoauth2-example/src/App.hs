@@ -149,7 +149,7 @@ fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
         (oldIdpData {loginUser = Just luser, oauth2Token = Just token})
 
 tryFetchUser ::
-  HasUserReq a =>
+  IsIDP a =>
   Manager ->
   OAuth2Token ->
   a ->

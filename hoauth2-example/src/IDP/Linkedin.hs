@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {-
 https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS
@@ -17,19 +17,19 @@ import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-linkedinLabel :: Text
-linkedinLabel = "LinkedIn"
-
 -- | TODO: didn't find the right scope to obtain RefreshToken
-newtype Linkedin = Linkedin IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data Linkedin = Linkedin deriving (Eq, Show)
 
-linkedinIdp :: IDP
+type instance IDPUserInfo Linkedin = LinkedinUser
+
+type instance IDPName Linkedin = Linkedin
+
+linkedinIdp :: IDP Linkedin
 linkedinIdp =
-  IDP
-    { idpName = "linkedin",
+  def
+    { idpName = Linkedin,
       oauth2Config = linkedinKey,
-      oauth2Scopes = [],
+      convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://api.linkedin.com/v2/me|]
     }
 
@@ -39,11 +39,6 @@ linkedinKey =
     { oauth2AuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|],
       oauth2TokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
     }
-
-instance HasUserReq Linkedin where
-  userReq (Linkedin IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
 
 data LinkedinUser = LinkedinUser
   { localizedFirstName :: Text,

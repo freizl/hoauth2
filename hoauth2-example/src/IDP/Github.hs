@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Github where
 
@@ -15,15 +15,18 @@ import Types
 import URI.ByteString.QQ
 
 -- | http://developer.github.com/v3/oauth/
-newtype Github = Github IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data Github = Github deriving (Eq, Show)
 
-githubIdp :: IDP
+type instance IDPUserInfo Github = GithubUser
+
+type instance IDPName Github = Github
+
+githubIdp :: IDP Github
 githubIdp =
-  IDP
-    { idpName = "github",
+  def
+    { idpName = Github,
       oauth2Config = githubKey,
-      oauth2Scopes = [],
+      convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://api.github.com/user|]
     }
 
@@ -34,11 +37,6 @@ githubKey =
       oauth2TokenEndpoint =
         [uri|https://github.com/login/oauth/access_token|]
     }
-
-instance HasUserReq Github where
-  userReq (Github IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
 
 data GithubUser = GithubUser
   { name :: Text,

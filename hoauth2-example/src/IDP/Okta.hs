@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Okta where
 
@@ -14,16 +14,19 @@ import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-newtype Okta = Okta IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data Okta = Okta deriving (Eq, Show)
 
-oktaIdp :: IDP
-oktaIdp = IDP
-      { idpName = "okta",
-        oauth2Config = oktaKey,
-        oauth2Scopes = [],
-        oauth2UserInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
-      }
+type instance IDPUserInfo Okta = OktaUser
+type instance IDPName Okta = Okta
+
+oktaIdp :: IDP Okta
+oktaIdp =
+  def
+    { idpName = Okta,
+      oauth2Config = oktaKey,
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2UserInfoUri = [uri|https://hw2.trexcloud.com/oauth2/v1/userinfo|]
+    }
 
 oktaKey :: OAuth2
 oktaKey =
@@ -34,15 +37,9 @@ oktaKey =
         [uri|https://hw2.trexcloud.com/oauth2/v1/token|]
     }
 
-instance HasUserReq Okta where
-  userReq (Okta IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
-
 -- | https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
-
 data OktaUser = OktaUser
   { name :: Text,
     preferredUsername :: Text

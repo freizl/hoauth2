@@ -8,6 +8,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Types where
 
@@ -60,67 +61,66 @@ type EnvConfig = KeyMap EnvConfigAuthParams
 
 -- * type class for defining a IDP
 
-data IDP = IDP
-  { idpName :: TL.Text,
-    oauth2Config :: OAuth2,
-    oauth2Scopes :: [TL.Text],
-    oauth2UserInfoUri :: URI
-  }
-
 type family IDPUserInfo a
 
-data IDP2 a = IDP2
-  { idpName2 :: TL.Text,
-    oauth2Config2 :: OAuth2,
-    oauth2Scopes2 :: [TL.Text],
-    oauth2UserInfoUri2 :: URI,
+type family IDPName a
+
+data IDP a = IDP
+  { idpName :: IDPName a,
+    oauth2Config :: OAuth2,
+    oauth2Scopes :: [TL.Text],
+    oauth2AuthorizeParams :: [(BS.ByteString, BS.ByteString)],
+    oauth2UserInfoUri :: URI,
     oauth2FetchAccessToken :: Manager -> OAuth2 -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token,
     oauth2RefreshAccessToken :: Manager -> OAuth2 -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token,
-    oauth2FetchUserInfo :: forall b. FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b,
+    oauth2FetchUserInfo :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a),
     convertUserInfoToLoginUser :: IDPUserInfo a -> LoginUser
   }
 
-instance Default (IDP2 a) where
+instance Default (IDP a) where
   def =
-    IDP2
-      { idpName2 = "",
-        oauth2Config2 = def,
-        oauth2Scopes2 = [],
-        oauth2UserInfoUri2 = [uri|https://example.com|],
+    IDP
+      { idpName = undefined,
+        oauth2Config = def,
+        oauth2Scopes = [],
+        oauth2AuthorizeParams = [],
+        oauth2UserInfoUri = [uri|https://example.com|],
         oauth2FetchAccessToken = fetchAccessToken,
         oauth2RefreshAccessToken = refreshAccessToken,
         oauth2FetchUserInfo = fetchUserInfoViaGet,
         convertUserInfoToLoginUser = const (LoginUser "")
       }
 
-fetchUserInfoViaGet :: FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b
-fetchUserInfoViaGet i2 mgr at = authGetJSON mgr at (oauth2UserInfoUri2 i2)
+instance (Show (IDPName a)) => Eq (IDP a) where
+  x == y = getIdpName x == getIdpName y
 
-fetchUserInfoViaPost :: FromJSON b => IDP2 a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO b
-fetchUserInfoViaPost i2 mgr at = authPostJSON mgr at (oauth2UserInfoUri2 i2) []
+class IsIDP a where
+  idpLabel :: a -> IDPLabel
+  authUri :: a -> TL.Text
+  tokenReq :: a -> Manager -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
+  tokenRefreshReq :: a -> Manager -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
+  userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
 
-test :: (FromJSON (IDPUserInfo a)) => IDP2 a -> ExceptT BSL.ByteString IO LoginUser
-test idp2@IDP2{..} = do
-  resp <- oauth2FetchUserInfo idp2 undefined undefined
-  return (convertUserInfoToLoginUser resp)
-
-instance Eq IDP where
-  x == y = idpName x == idpName y
-
-instance HasLabel IDP where
-  idpLabel = idpName
-
-instance HasAuthUri IDP where
+instance (Show (IDPName a), FromJSON (IDPUserInfo a)) => IsIDP (IDP a) where
+  idpLabel = getIdpName
   authUri = createAuthorizeUri
+  tokenReq IDP {..} mgr = oauth2FetchAccessToken mgr oauth2Config
+  tokenRefreshReq IDP {..} mgr = oauth2RefreshAccessToken mgr oauth2Config
+  userReq idp@IDP {..} mgr at = do
+    resp <- oauth2FetchUserInfo idp mgr at
+    return $ convertUserInfoToLoginUser resp
 
-instance HasTokenReq IDP where
-  tokenReq IDP {..} mgr = fetchAccessToken mgr oauth2Config
+getIdpName :: Show (IDPName a) => IDP a -> TL.Text
+getIdpName = TL.pack . show . idpName
 
-instance HasTokenRefreshReq IDP where
-  tokenRefreshReq IDP {..} mgr = refreshAccessToken mgr oauth2Config
+fetchUserInfoViaGet :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
+fetchUserInfoViaGet i2 mgr at = authGetJSONInternal [AuthInRequestHeader] mgr at (oauth2UserInfoUri i2)
 
-createAuthorizeUri :: IDP -> TL.Text
-createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config (defaultAuthorizeParam idp)
+fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
+fetchUserInfoViaPost i2 mgr at = authPostJSONInternal [AuthInRequestHeader] mgr at (oauth2UserInfoUri i2) []
+
+createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
+createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ (defaultAuthorizeParam idp) ++ oauth2AuthorizeParams
   where
     createCodeUri key params =
       TL.fromStrict $
@@ -129,50 +129,19 @@ createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config (defaultAuthorizePa
             appendQueryParams params $
               authorizationUrl key
 
-defaultAuthorizeParam :: IDP -> [(BS.ByteString, BS.ByteString)]
+defaultAuthorizeParam :: (Show (IDPName a)) => IDP a -> [(BS.ByteString, BS.ByteString)]
 defaultAuthorizeParam IDP {..} =
-  [ ("state", tlToBS $ idpName <> ".test-state-123"),
+  [ ("state", tlToBS $ TL.pack $ show idpName <> ".test-state-123"),
     ("scope", tlToBS $ TL.intercalate " " oauth2Scopes)
   ]
 
 defaultOAuth2RedirectUri :: Maybe URI
 defaultOAuth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|]
 
-class HasLabel a where
-  idpLabel :: a -> IDPLabel
-
-class HasAuthUri a where
-  authUri :: a -> TL.Text
-
-class HasAuthorizeExtraParam a where
-  authorizeParam :: a -> [(BS.ByteString, BS.ByteString)]
-  authorizeParam _ = []
-
-class HasTokenReq a where
-  tokenReq :: a -> Manager -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
-
-class HasTokenRefreshReq a where
-  tokenRefreshReq :: a -> Manager -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
-
--- | TODO: associates userInfo uri and toLoginUser method
--- so that can have default implementation for userReq
-class HasUserReq a where
-  userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
-
--- data IDPApp = IDPApp IDP
-
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections
 --
-data IDPApp
-  = forall a.
-    ( HasTokenRefreshReq a,
-      HasTokenReq a,
-      HasUserReq a,
-      HasAuthUri a,
-      HasLabel a
-    ) =>
-    IDPApp a
+data IDPApp = forall a. IsIDP a => IDPApp a
 
 -- dummy oauth2 request error
 --

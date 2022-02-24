@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.ZOHO where
 
@@ -17,15 +17,21 @@ import URI.ByteString.QQ
 -- `oauth/user/info` url does not work and find answer from
 -- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
 
-newtype ZOHO = ZOHO IDP
-  deriving (HasLabel, HasAuthUri)
+data ZOHO = ZOHO deriving (Eq, Show)
 
-zohoIdp :: IDP
+type instance IDPUserInfo ZOHO = ZOHOUserResp
+
+type instance IDPName ZOHO = ZOHO
+
+zohoIdp :: IDP ZOHO
 zohoIdp =
-  IDP
-    { idpName = "zoho",
+  def
+    { idpName = ZOHO,
       oauth2Config = zohoKey,
-      oauth2Scopes = [],
+      oauth2AuthorizeParams = [("access_type", "offline"), ("prompt", "consent")],
+      convertUserInfoToLoginUser = toLoginUser,
+      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
       oauth2UserInfoUri = [uri|https://www.zohoapis.com/crm/v2/users|]
     }
 
@@ -35,23 +41,6 @@ zohoKey =
     { oauth2AuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|],
       oauth2TokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]
     }
-
-instance HasTokenReq ZOHO where
-  tokenReq (ZOHO IDP {..}) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
-
-instance HasTokenRefreshReq ZOHO where
-  tokenRefreshReq (ZOHO IDP {..}) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
-
-instance HasUserReq ZOHO where
-  userReq (ZOHO IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
-
-instance HasAuthorizeExtraParam ZOHO where
-  authorizeParam _ =
-    [ ("access_type", "offline"),
-      ("prompt", "consent")
-    ]
 
 data ZOHOUser = ZOHOUser
   { email :: Text,

@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Slack where
 
@@ -14,15 +14,18 @@ import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-newtype Slack = Slack IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+data Slack = Slack deriving (Show, Eq)
 
-slackIdp :: IDP
+type instance IDPUserInfo Slack = SlackUser
+
+type instance IDPName Slack = Slack
+
+slackIdp :: IDP Slack
 slackIdp =
-  IDP
-    { idpName = "slack",
+  def
+    { idpName = Slack,
       oauth2Config = slackKey,
-      oauth2Scopes = [],
+      convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://slack.com/api/openid.connect.userInfo|]
     }
 
@@ -34,11 +37,6 @@ slackKey =
     { oauth2AuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|],
       oauth2TokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
     }
-
-instance HasUserReq Slack where
-  userReq (Slack IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
 
 data SlackUser = SlackUser
   { name :: Text,

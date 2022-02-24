@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,16 +14,19 @@ import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
--- | oauthCallback = Just "https://developers.google.com/oauthplayground"
-newtype Google = Google IDP
-  deriving (HasLabel, HasAuthUri, HasTokenRefreshReq, HasTokenReq)
+-- | Test at google playground
+-- oauthCallback = Just "https://developers.google.com/oauthplayground"
+--
+data Google = Google deriving (Eq,Show)
+type instance IDPUserInfo Google = GoogleUser
+type instance IDPName Google = Google
 
-googleIdp :: IDP
+googleIdp :: IDP Google
 googleIdp =
-  IDP
-    { idpName = "google",
+  def
+    { idpName = Google,
       oauth2Config = googleKey,
-      oauth2Scopes = [],
+      convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
     }
 
@@ -34,10 +37,6 @@ googleKey =
       oauth2TokenEndpoint = [uri|https://www.googleapis.com/oauth2/v3/token|]
     }
 
-instance HasUserReq Google where
-  userReq (Google IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
 
 data GoogleUser = GoogleUser
   { name :: Text,

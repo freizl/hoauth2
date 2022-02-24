@@ -1,9 +1,9 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Douban where
 
@@ -15,16 +15,21 @@ import Network.OAuth.OAuth2
 import Types
 import URI.ByteString.QQ
 
-newtype Douban = Douban IDP
-  deriving (HasLabel, HasAuthUri)
+data Douban = Douban deriving (Eq, Show)
 
-doubanIdp :: IDP
+type instance IDPUserInfo Douban = DoubanUser
+
+type instance IDPName Douban = Douban
+
+doubanIdp :: IDP Douban
 doubanIdp =
-  IDP
-    { idpName = "douban",
+  def
+    { idpName = Douban,
       oauth2Config = doubanKey,
-      oauth2Scopes = [],
-      oauth2UserInfoUri = [uri|https://api.douban.com/v2/user/~me|]
+      oauth2UserInfoUri = [uri|https://api.douban.com/v2/user/~me|],
+      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      convertUserInfoToLoginUser = toLoginUser
     }
 
 doubanKey :: OAuth2
@@ -33,17 +38,6 @@ doubanKey =
     { oauth2AuthorizeEndpoint = [uri|https://www.douban.com/service/auth2/auth|],
       oauth2TokenEndpoint = [uri|https://www.douban.com/service/auth2/token|]
     }
-
-instance HasTokenReq Douban where
-  tokenReq (Douban IDP {..}) mgr = fetchAccessTokenInternal ClientSecretPost mgr oauth2Config
-
-instance HasTokenRefreshReq Douban where
-  tokenRefreshReq (Douban IDP {..}) mgr = refreshAccessTokenInternal ClientSecretPost mgr oauth2Config
-
-instance HasUserReq Douban where
-  userReq (Douban IDP {..}) mgr at = do
-    re <- authGetJSON mgr at oauth2UserInfoUri
-    return (toLoginUser re)
 
 data DoubanUser = DoubanUser
   { name :: Text,
