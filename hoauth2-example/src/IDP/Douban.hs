@@ -1,53 +1,52 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module IDP.Douban where
-import           Data.Aeson
-import           Data.Hashable
-import           Data.Text.Lazy       (Text)
-import           GHC.Generics
-import           Network.OAuth.OAuth2
-import           Types
-import           URI.ByteString
-import           URI.ByteString.QQ
-import           Utils
 
-newtype Douban = Douban OAuth2 deriving (Generic, Eq, Show)
+import Data.Aeson
+import Data.Default
+import Data.Text.Lazy (Text)
+import GHC.Generics
+import Network.OAuth.OAuth2
+import Types
+import URI.ByteString.QQ
 
-instance Hashable Douban
+data Douban = Douban deriving (Eq, Show)
 
-instance IDP Douban
+type instance IDPUserInfo Douban = DoubanUser
 
-instance HasLabel Douban where
-  idpLabel = const "Douban"
+type instance IDPName Douban = Douban
 
-instance HasTokenReq Douban where
-  tokenReq (Douban key) mgr = fetchAccessTokenInternal ClientSecretPost mgr key
+doubanIdp :: IDP Douban
+doubanIdp =
+  def
+    { idpName = Douban,
+      oauth2Config = doubanKey,
+      oauth2UserInfoUri = [uri|https://api.douban.com/v2/user/~me|],
+      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      convertUserInfoToLoginUser = toLoginUser
+    }
 
-instance HasTokenRefreshReq Douban where
-  tokenRefreshReq (Douban key) mgr = refreshAccessTokenInternal ClientSecretPost mgr key
+doubanKey :: OAuth2
+doubanKey =
+  def
+    { oauth2AuthorizeEndpoint = [uri|https://www.douban.com/service/auth2/auth|],
+      oauth2TokenEndpoint = [uri|https://www.douban.com/service/auth2/token|]
+    }
 
-instance HasUserReq Douban where
-  userReq _ mgr at = do
-    re <- authGetJSON mgr at userInfoUri
-    return (toLoginUser re)
-
-instance HasAuthUri Douban where
-  authUri (Douban key) = createCodeUri key [ ("state", "Douban.test-state-123")
-                                        ]
-
-data DoubanUser = DoubanUser { name :: Text
-                             , uid  :: Text
-                             } deriving (Show, Generic)
+data DoubanUser = DoubanUser
+  { name :: Text,
+    uid :: Text
+  }
+  deriving (Show, Generic)
 
 instance FromJSON DoubanUser where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
-
-userInfoUri :: URI
-userInfoUri = [uri|https://api.douban.com/v2/user/~me|]
+  parseJSON = genericParseJSON defaultOptions
 
 toLoginUser :: DoubanUser -> LoginUser
-toLoginUser ouser = LoginUser { loginUserName = name ouser }
-
+toLoginUser ouser = LoginUser {loginUserName = name ouser}

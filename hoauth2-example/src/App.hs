@@ -44,14 +44,14 @@ app =
     >> waiApp
     >>= run myServerPort
 
--- TODO: how to add either Monad or a middleware to do session?
+-- TODO: how to add either Monad or a middleware to do server side session?
 waiApp :: IO WAI.Application
 waiApp = do
   cache <- initCacheStore
   initIdps cache
   scottyApp $ do
     middleware $ staticPolicy (addBase "public/assets")
-    -- defaultHandler globalErrorHandler
+    defaultHandler globalErrorHandler
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
@@ -67,7 +67,7 @@ redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
 
 globalErrorHandler :: Text -> ActionM ()
-globalErrorHandler t = status status401 >> html t
+globalErrorHandler t = status status500 >> html t
 
 refreshH :: CacheStore -> ActionM ()
 refreshH c = do
@@ -76,7 +76,6 @@ refreshH c = do
     newToken <- doRefreshToken idpData
     liftIO $ do
       putStrLn "got new token"
-      print newToken
       upsertIDPData c (idpData {oauth2Token = Just newToken})
   -- TODO: double check: shall only return to home when no error.
   redirectToHomeM
@@ -93,18 +92,16 @@ indexH c = liftIO (allValues c) >>= overviewTpl
 callbackH :: CacheStore -> ActionM ()
 callbackH c = do
   pas <- params
-  let codeP = paramValue "code" pas
   let stateP = paramValue "state" pas
-  -- TODO: when no code, it's like to have error
-  --  display error properly in the page
-  when (null codeP) (raise "callbackH: no code from callback request")
   when (null stateP) (raise "callbackH: no state from callback request")
+  let codeP = paramValue "code" pas
+  when (null codeP) (raise "callbackH: no code from callback request")
   exceptToActionM $ do
     idpData <- lookupKey c (TL.takeWhile (/= '.') (head stateP))
     fetchTokenAndUser c (head codeP) idpData
   redirectToHomeM
 
--- TODO: looks like `state` shall be passed when fetching access token
+-- NOTE: looks like `state` shall be passed when fetching access token
 --       turns out no IDP enforce this yet
 
 --------------------------------------------------
@@ -132,7 +129,8 @@ fetchTokenAndUser ::
   ExceptT Text IO ()
 fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
   mgr <- liftIO $ newManager tlsManagerSettings
-  token <- withExceptT oauth2ErrorToText $
+  token <-
+    withExceptT oauth2ErrorToText $
       tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
   -- liftIO $ print token
   (luser, at) <- tryFetchUser mgr token idp
@@ -147,7 +145,7 @@ fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
         (oldIdpData {loginUser = Just luser, oauth2Token = Just token})
 
 tryFetchUser ::
-  HasUserReq a =>
+  IsIDP a =>
   Manager ->
   OAuth2Token ->
   a ->
@@ -163,5 +161,5 @@ doRefreshToken (IDPData (IDPApp idp) _ token) = do
     Just at -> case refreshToken at of
       Nothing -> throwE "no refresh token presents. did you add 'offline_access' scope?"
       Just rt -> withExceptT (TL.pack . show) $ do
-          mgr <- liftIO $ newManager tlsManagerSettings
-          tokenRefreshReq idp mgr rt
+        mgr <- liftIO $ newManager tlsManagerSettings
+        tokenRefreshReq idp mgr rt

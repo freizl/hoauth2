@@ -1,22 +1,29 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Types where
 
-import Control.Monad.Trans.Except
+import qualified Data.Set as Set
 import Control.Concurrent.MVar
+import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Aeson.KeyMap
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import Data.Default
 import qualified Data.HashMap.Strict as Map
-import Data.Hashable
 import Data.Maybe
 import qualified Data.Text as T
-import Data.Text.Lazy
+import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
 import Network.HTTP.Conduit
@@ -24,74 +31,121 @@ import Network.OAuth.OAuth2
 import qualified Network.OAuth.OAuth2.TokenRequest as TR
 import Text.Mustache
 import qualified Text.Mustache as M
+import URI.ByteString
+import URI.ByteString.QQ
+import Utils
 
-type IDPLabel = Text
+type IDPLabel = TL.Text
 
 type CacheStore = MVar (Map.HashMap IDPLabel IDPData)
 
 -- TODO: how to allow override domain (auth0, okta) ?
 --
-data EnvConfigCreds = EnvConfigCreds
+data EnvConfigAuthParams = EnvConfigAuthParams
   { clientId :: T.Text,
-    clientSecret :: T.Text
+    clientSecret :: T.Text,
+    scopes :: Maybe [T.Text]
   }
   deriving (Generic)
 
-instance FromJSON EnvConfigCreds
+instance Default EnvConfigAuthParams where
+  def =
+    EnvConfigAuthParams
+      { clientId = "",
+        clientSecret = "",
+        scopes = Just []
+      }
 
-type EnvConfig = KeyMap EnvConfigCreds
+instance FromJSON EnvConfigAuthParams
+
+type EnvConfig = KeyMap EnvConfigAuthParams
 
 -- * type class for defining a IDP
 
-class (Hashable a, Show a) => IDP a
+type family IDPUserInfo a
 
-class HasLabel a where
+type family IDPName a
+
+data IDP a = IDP
+  { idpName :: IDPName a,
+    oauth2Config :: OAuth2,
+    oauth2Scopes :: [TL.Text],
+    oauth2AuthorizeParams :: [(BS.ByteString, BS.ByteString)],
+    oauth2UserInfoUri :: URI,
+    oauth2FetchAccessToken :: Manager -> OAuth2 -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token,
+    oauth2RefreshAccessToken :: Manager -> OAuth2 -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token,
+    oauth2FetchUserInfo :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a),
+    convertUserInfoToLoginUser :: IDPUserInfo a -> LoginUser
+  }
+
+instance Default (IDP a) where
+  def =
+    IDP
+      { idpName = undefined,
+        oauth2Config = def,
+        oauth2Scopes = [],
+        oauth2AuthorizeParams = [],
+        oauth2UserInfoUri = [uri|https://example.com|],
+        oauth2FetchAccessToken = fetchAccessToken,
+        oauth2RefreshAccessToken = refreshAccessToken,
+        oauth2FetchUserInfo = fetchUserInfoViaGet,
+        convertUserInfoToLoginUser = const (LoginUser "")
+      }
+
+instance (Show (IDPName a)) => Eq (IDP a) where
+  x == y = getIdpName x == getIdpName y
+
+class IsIDP a where
   idpLabel :: a -> IDPLabel
-
--- TODO: the `a` in following classes are not actually not used as value
--- but more of a indicator. Wonder if type level programming
--- or other solution would simplify the logic.?
---
-class (IDP a) => HasAuthUri a where
-  authUri :: a -> Text
-
--- TODO: consider to convert to ExceptT?
-class (IDP a) => HasTokenReq a where
+  authUri :: a -> TL.Text
   tokenReq :: a -> Manager -> ExchangeToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
-
-class (IDP a) => HasTokenRefreshReq a where
   tokenRefreshReq :: a -> Manager -> RefreshToken -> ExceptT (OAuth2Error TR.Errors) IO OAuth2Token
-
--- | TODO: associates userInfo uri and toLoginUser method
--- so that can have default implementation for userReq
---
-class (IDP a) => HasUserReq a where
   userReq :: a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO LoginUser
+
+instance (Show (IDPName a), FromJSON (IDPUserInfo a)) => IsIDP (IDP a) where
+  idpLabel = getIdpName
+  authUri = createAuthorizeUri
+  tokenReq IDP {..} mgr = oauth2FetchAccessToken mgr oauth2Config
+  tokenRefreshReq IDP {..} mgr = oauth2RefreshAccessToken mgr oauth2Config
+  userReq idp@IDP {..} mgr at = do
+    resp <- oauth2FetchUserInfo idp mgr at
+    return $ convertUserInfoToLoginUser resp
+
+getIdpName :: Show (IDPName a) => IDP a -> TL.Text
+getIdpName = TL.pack . show . idpName
+
+fetchUserInfoViaGet :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
+fetchUserInfoViaGet i2 mgr at = authGetJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2)
+
+fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
+fetchUserInfoViaPost i2 mgr at = authPostJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2) []
+
+createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
+createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ defaultAuthorizeParam idp ++ oauth2AuthorizeParams
+  where
+    createCodeUri key params =
+      TL.fromStrict $
+        T.decodeUtf8 $
+          serializeURIRef' $
+            appendQueryParams params $
+              authorizationUrl key
+
+defaultAuthorizeParam :: (Show (IDPName a)) => IDP a -> [(BS.ByteString, BS.ByteString)]
+defaultAuthorizeParam IDP {..} =
+  [ ("state", tlToBS $ TL.pack $ show idpName <> ".test-state-123"),
+    ("scope", tlToBS $ TL.intercalate " " oauth2Scopes)
+  ]
+
+defaultOAuth2RedirectUri :: Maybe URI
+defaultOAuth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|]
 
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections
 --
-data IDPApp
-  = forall a.
-    ( HasTokenRefreshReq a,
-      HasTokenReq a,
-      HasUserReq a,
-      HasLabel a,
-      HasAuthUri a
-    ) =>
-    IDPApp a
-
--- dummy oauth2 request error
---
-data Errors
-  = SomeRandomError
-  deriving (Show, Eq, Generic)
-
-instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
+data IDPApp = forall a. IsIDP a => IDPApp a
 
 newtype LoginUser = LoginUser
-  { loginUserName :: Text
+  { loginUserName :: TL.Text
   }
   deriving (Eq, Show)
 
