@@ -54,6 +54,8 @@ authGetJSON ::
 authGetJSON = authGetJSONInternal [AuthInRequestHeader]
 {-# DEPRECATED authGetJSON "use authGetJSONInternal" #-}
 
+-- | Conduct an authorized GET request and return response as JSON.
+--   Allow to specify how to append AccessToken.
 authGetJSONInternal ::
   (FromJSON b) =>
   [APIAuthenticationMethod] ->
@@ -89,7 +91,8 @@ authGetBS2 ::
 authGetBS2 = authGetBSInternal [AuthInRequestQuery]
 {-# DEPRECATED authGetBS2 "use authGetBSInternal" #-}
 
--- |
+-- | Conduct an authorized GET request and return response as ByteString.
+--   Allow to specify how to append AccessToken.
 authGetBSInternal ::
   -- |
   [APIAuthenticationMethod] ->
@@ -108,7 +111,7 @@ authGetBSInternal authTypes manager token url = do
   authRequest req upReq manager
 
 -- | Conduct POST request and return response as JSON.
---   Inject Access Token to Authorization Header and request body.
+--   Inject Access Token to Authorization Header.
 authPostJSON ::
   (FromJSON b) =>
   -- | HTTP connection manager.
@@ -118,13 +121,11 @@ authPostJSON ::
   PostBody ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authPostJSON manager t uri pb = do
-  resp <- authPostBS manager t uri pb
-  case eitherDecode resp of
-    Right obj -> return obj
-    Left e -> throwE $ BSL.pack e
+authPostJSON = authPostJSONInternal [AuthInRequestHeader]
 {-# DEPRECATED authPostJSON "use authPostJSONInternal" #-}
 
+-- | Conduct POST request and return response as JSON.
+--   Allow to specify how to append AccessToken.
 authPostJSONInternal ::
   FromJSON a =>
   [APIAuthenticationMethod] ->
@@ -188,6 +189,8 @@ authPostBS3 ::
 authPostBS3 = authPostBSInternal [AuthInRequestHeader]
 {-# DEPRECATED authPostBS3 "use authPostBSInternal" #-}
 
+-- | Conduct POST request and return response as ByteString.
+--   Allow to specify how to append AccessToken.
 authPostBSInternal ::
   [APIAuthenticationMethod] ->
   -- | HTTP connection manager.
