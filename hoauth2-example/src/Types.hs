@@ -136,8 +136,8 @@ defaultAuthorizeParam IDP {..} =
     ("scope", tlToBS $ TL.intercalate " " oauth2Scopes)
   ]
 
-defaultOAuth2RedirectUri :: Maybe URI
-defaultOAuth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|]
+defaultOAuth2RedirectUri :: URI
+defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections

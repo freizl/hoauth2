@@ -43,7 +43,7 @@ data OAuth2 = OAuth2
     oauth2ClientSecret :: Text,
     oauth2AuthorizeEndpoint :: URIRef Absolute,
     oauth2TokenEndpoint :: URIRef Absolute,
-    oauth2RedirectUri :: Maybe (URIRef Absolute)
+    oauth2RedirectUri :: URIRef Absolute
   }
   deriving (Show, Eq)
 
@@ -54,7 +54,7 @@ instance Default OAuth2 where
         oauth2ClientSecret = "",
         oauth2AuthorizeEndpoint = [uri|https://www.example.com/|],
         oauth2TokenEndpoint = [uri|https://www.example.com/|],
-        oauth2RedirectUri = Nothing
+        oauth2RedirectUri = [uri|https://www.example.com/|]
       }
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
