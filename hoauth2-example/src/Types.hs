@@ -121,7 +121,7 @@ fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessTo
 fetchUserInfoViaPost i2 mgr at = authPostJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2) []
 
 createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
-createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ (defaultAuthorizeParam idp) ++ oauth2AuthorizeParams
+createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ defaultAuthorizeParam idp ++ oauth2AuthorizeParams
   where
     createCodeUri key params =
       TL.fromStrict $
