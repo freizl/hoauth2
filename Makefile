@@ -25,10 +25,10 @@ hlint:
 	hlint hoauth2/src hoauth2-example/src
 
 doc: build
-	cabal v2-haddock
+	cabal v2-haddock all
 
 dist: rebuild
-	cabal v2-sdist
+	cabal v2-sdist all
 
 ####################
 ### CI - nix build
