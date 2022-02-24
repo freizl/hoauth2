@@ -1,11 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 
 module Network.OAuth.OAuth2.AuthorizationRequest where
 
 import Data.Aeson
-import Data.Maybe
 import qualified Data.Text.Encoding as T
 import GHC.Generics
 import Lens.Micro
@@ -48,8 +46,7 @@ authorizationUrl :: OAuth2 -> URI
 authorizationUrl oa = over (queryL . queryPairsL) (++ queryParts) (oauth2AuthorizeEndpoint oa)
   where
     queryParts =
-      catMaybes
-        [ Just ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-          Just ("response_type", "code"),
-          fmap (("redirect_uri",) . serializeURIRef') (oauth2RedirectUri oa)
-        ]
+      [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
+        ("response_type", "code"),
+        ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
+      ]
