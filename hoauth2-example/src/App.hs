@@ -51,8 +51,7 @@ waiApp = do
   initIdps cache
   scottyApp $ do
     middleware $ staticPolicy (addBase "public/assets")
-    -- TODO: display error properly.
-    -- defaultHandler globalErrorHandler
+    defaultHandler globalErrorHandler
     get "/" $ indexH cache
     get "/oauth2/callback" $ callbackH cache
     get "/logout" $ logoutH cache
@@ -68,7 +67,7 @@ redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
 
 globalErrorHandler :: Text -> ActionM ()
-globalErrorHandler t = status status401 >> html t
+globalErrorHandler t = status status500 >> html t
 
 refreshH :: CacheStore -> ActionM ()
 refreshH c = do
@@ -77,7 +76,6 @@ refreshH c = do
     newToken <- doRefreshToken idpData
     liftIO $ do
       putStrLn "got new token"
-      -- print newToken
       upsertIDPData c (idpData {oauth2Token = Just newToken})
   -- TODO: double check: shall only return to home when no error.
   redirectToHomeM
@@ -94,12 +92,12 @@ indexH c = liftIO (allValues c) >>= overviewTpl
 callbackH :: CacheStore -> ActionM ()
 callbackH c = do
   pas <- params
-  let codeP = paramValue "code" pas
   let stateP = paramValue "state" pas
+  when (null stateP) (raise "callbackH: no state from callback request")
   -- TODO: when no code, it's like to have error
   --  display error properly in the page
+  let codeP = paramValue "code" pas
   when (null codeP) (raise "callbackH: no code from callback request")
-  when (null stateP) (raise "callbackH: no state from callback request")
   exceptToActionM $ do
     idpData <- lookupKey c (TL.takeWhile (/= '.') (head stateP))
     fetchTokenAndUser c (head codeP) idpData

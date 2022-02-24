@@ -12,6 +12,7 @@
 
 module Types where
 
+import qualified Data.Set as Set
 import Control.Concurrent.MVar
 import Control.Monad.Trans.Except
 import Data.Aeson
@@ -114,10 +115,10 @@ getIdpName :: Show (IDPName a) => IDP a -> TL.Text
 getIdpName = TL.pack . show . idpName
 
 fetchUserInfoViaGet :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaGet i2 mgr at = authGetJSONInternal [AuthInRequestHeader] mgr at (oauth2UserInfoUri i2)
+fetchUserInfoViaGet i2 mgr at = authGetJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2)
 
 fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaPost i2 mgr at = authPostJSONInternal [AuthInRequestHeader] mgr at (oauth2UserInfoUri i2) []
+fetchUserInfoViaPost i2 mgr at = authPostJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2) []
 
 createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
 createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ (defaultAuthorizeParam idp) ++ oauth2AuthorizeParams
@@ -142,15 +143,6 @@ defaultOAuth2RedirectUri = Just [uri|http://localhost:9988/oauth2/callback|]
 -- https://wiki.haskell.org/Heterogenous_collections
 --
 data IDPApp = forall a. IsIDP a => IDPApp a
-
--- dummy oauth2 request error
---
-data Errors
-  = SomeRandomError
-  deriving (Show, Eq, Generic)
-
-instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
 
 newtype LoginUser = LoginUser
   { loginUserName :: TL.Text

@@ -146,12 +146,12 @@ data APIAuthenticationMethod
     AuthInRequestBody
   | -- | Provides in request query parameter
     AuthInRequestQuery
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 --------------------------------------------------
 

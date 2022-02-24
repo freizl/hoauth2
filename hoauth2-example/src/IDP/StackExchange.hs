@@ -14,6 +14,7 @@ import Data.Aeson
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Default
+import qualified Data.Set as Set
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
 import GHC.Generics
@@ -67,7 +68,7 @@ fetchUserInfo ::
     b
 fetchUserInfo IDP {..} mgr accessToken =
   authGetJSONInternal
-    [AuthInRequestQuery]
+    (Set.fromList [AuthInRequestQuery])
     mgr
     accessToken
     oauth2UserInfoUri

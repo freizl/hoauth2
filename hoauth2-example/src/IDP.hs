@@ -36,7 +36,7 @@ createIDPs :: IO [IDPApp]
 createIDPs = do
   configParams <- readEnvFile
   let initIdp idp =
-        case Aeson.lookup (Aeson.fromString $ TL.unpack $ getIdpName idp) configParams of
+        case Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower $ getIdpName idp) configParams of
           Nothing -> idp
           Just config ->
             idp
