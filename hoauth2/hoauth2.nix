@@ -4,7 +4,7 @@
 }:
 mkDerivation {
   pname = "hoauth2";
-  version = "2.1.0";
+  version = "2.4.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson base binary bytestring exceptions hashable http-conduit
