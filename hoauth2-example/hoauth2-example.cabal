@@ -75,7 +75,7 @@ Executable demo-server
                        http-types        >= 0.11  && < 0.13,
                        wai               >= 3.2   && < 3.3,
                        warp              >= 3.2   && < 3.4,
-                       aeson             >= 2.0   && < 2.1,
+                       aeson             >= 2.0   && < 2.2,
                        microlens         >= 0.4.0 && < 0.5,
                        transformers      >= 0.5   && < 0.6,
                        unordered-containers >= 0.2.5,
