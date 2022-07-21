@@ -34,9 +34,6 @@ dist: rebuild
 ### CI - nix build
 ####################
 
-cabal2nix:
-	cabal2nix -ftest . > hoauth2.nix
-
 ci-build:
 	nix-build
 
