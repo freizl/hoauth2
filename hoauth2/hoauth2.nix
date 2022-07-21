@@ -1,14 +1,15 @@
-{ mkDerivation, aeson, base, binary, bytestring, exceptions
-, hashable, http-conduit, http-types, lib, microlens, text
-, unordered-containers, uri-bytestring, uri-bytestring-aeson
+{ mkDerivation, aeson, base, binary, bytestring, containers
+, data-default, exceptions, http-conduit, http-types, lib
+, microlens, text, transformers, uri-bytestring
+, uri-bytestring-aeson
 }:
 mkDerivation {
   pname = "hoauth2";
-  version = "2.4.0";
+  version = "2.5.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base binary bytestring exceptions hashable http-conduit
-    http-types microlens text unordered-containers uri-bytestring
+    aeson base binary bytestring containers data-default exceptions
+    http-conduit http-types microlens text transformers uri-bytestring
     uri-bytestring-aeson
   ];
   homepage = "https://github.com/freizl/hoauth2";
