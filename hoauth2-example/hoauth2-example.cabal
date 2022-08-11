@@ -41,7 +41,7 @@ Source-Repository head
 
 Executable demo-server
   main-is:             main.hs
-  other-modules:       IDP,
+  other-modules:       IDP
                        App
                        IDP.AzureAD
                        IDP.Douban
