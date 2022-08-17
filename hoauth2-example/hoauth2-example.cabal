@@ -85,5 +85,9 @@ Executable demo-server
                        parsec            >= 3.1.11 && < 3.2.0,
                        hoauth2
 
-  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -Wunused-packages
-               -fno-warn-unused-do-bind -fno-warn-orphans
+  ghc-options: -Wall
+               -fwarn-tabs
+               -funbox-strict-fields
+               -Wunused-packages
+               -fno-warn-unused-do-bind
+               -fno-warn-orphans

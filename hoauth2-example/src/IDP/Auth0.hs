@@ -40,7 +40,8 @@ auth0Key =
 
 data Auth0User = Auth0User
   { name :: Text,
-    email :: Text
+    email :: Text,
+    sub :: Text
   }
   deriving (Show, Generic)
 
