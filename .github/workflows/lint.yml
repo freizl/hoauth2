@@ -1,6 +1,8 @@
 name: lint
 on:
   pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -9,15 +11,14 @@ jobs:
   hlint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: 'Set up HLint'
-      uses: haskell/actions/hlint-setup@v1
-      with:
-        version: '3.3.6'
+      uses: haskell/actions/hlint-setup@v2
+      # with: version: '3.3.6'
 
     - name: 'Run HLint'
-      uses: haskell/actions/hlint-run@v1
+      uses: haskell/actions/hlint-run@v2
       with:
         path: '["hoauth2/src/", "hoauth2-example/src/"]'
         fail-on: warning
