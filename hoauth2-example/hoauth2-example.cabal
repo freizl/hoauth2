@@ -1,93 +1,92 @@
-Cabal-version: 2.4
-Name:                hoauth2-example
-Version:             1.4.0
+cabal-version:      2.4
+name:               hoauth2-example
+version:            1.4.0
+synopsis:           OAuth2 example
+description:
+  Tested with the following services:
+  * Auth0: <https://auth0.com/docs/api>
+  * AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
+  * Douban: <http://developers.douban.com/wiki/?title=oauth2>
+  * DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
+  * Facebook: <http://developers.facebook.com/docs/facebook-login/>
+  * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
+  * Github: <http://developer.github.com/v3/oauth/>
+  * Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
+  * Okta: <https://developer.okta.com/docs/concepts/oauth-openid/>
+  * Slack: <https://api.slack.com/legacy/oauth>
+  * StackExchange: <https://api.stackexchange.com/docs/authentication>
+  * Weibo: <http://open.weibo.com/wiki/Oauth2>
 
-Synopsis:            OAuth2 example
+homepage:           https://github.com/freizl/hoauth2
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Haisheng Wu
+maintainer:         Haisheng Wu <freizl@gmail.com>
+copyright:          Haisheng Wu
+category:           Network
+build-type:         Simple
+stability:          Beta
+tested-with:        GHC <=9.2.2
+extra-source-files:
+  README.org
+  sample.env.json
 
-Description: Tested with the following services:
-             * Auth0
-             * AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
-             * Douban: <http://developers.douban.com/wiki/?title=oauth2>
-             * DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
-             * Facebook: <http://developers.facebook.com/docs/facebook-login/>
-             * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
-             * Github: <http://developer.github.com/v3/oauth/>
-             * Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
-             * Okta
-             * Slack
-             * StackExchange: <https://api.stackexchange.com/docs/authentication>
-             * Weibo: <http://open.weibo.com/wiki/Oauth2>
+data-files:
+  public/assets/main.css
+  public/templates/index.mustache
 
-Homepage:            https://github.com/freizl/hoauth2
-License:             BSD-3-Clause
-License-file:        LICENSE
-Author:              Haisheng Wu
-Maintainer:          Haisheng Wu <freizl@gmail.com>
-Copyright:           Haisheng Wu
-Category:            Network
-Build-type:          Simple
-Stability:           Beta
-Tested-With:         GHC <= 8.10.7
+source-repository head
+  type:     git
+  location: git://github.com/freizl/hoauth2.git
 
-Extra-source-files: sample.env.json
-                    README.org
-Data-Files:
-        public/assets/main.css
-        public/templates/index.mustache
+executable demo-server
+  main-is:          main.hs
+  other-modules:
+    App
+    IDP
+    IDP.Auth0
+    IDP.AzureAD
+    IDP.Douban
+    IDP.Dropbox
+    IDP.Facebook
+    IDP.Fitbit
+    IDP.Github
+    IDP.Google
+    IDP.Linkedin
+    IDP.Okta
+    IDP.Slack
+    IDP.StackExchange
+    IDP.Weibo
+    IDP.ZOHO
+    Paths_hoauth2_example
+    Session
+    Types
+    Utils
+    Views
 
-Source-Repository head
-  Type:     git
-  Location: git://github.com/freizl/hoauth2.git
+  hs-source-dirs:   src
+  default-language: Haskell2010
+  build-depends:
+    , aeson                  >=2.0    && <2.2
+    , base                   >=4.5    && <5
+    , bytestring             >=0.9    && <0.12
+    , containers             ^>=0.6
+    , data-default           ^>=0.7
+    , directory              ^>=1.3
+    , hoauth2
+    , http-conduit           >=2.1    && <2.4
+    , http-types             >=0.11   && <0.13
+    , microlens              ^>=0.4.0
+    , mustache               >=2.2.3  && <2.5.0
+    , parsec                 >=3.1.11 && <3.2.0
+    , scotty                 >=0.10.0 && <0.13
+    , text                   >=0.11   && <1.3
+    , transformers           ^>=0.5
+    , unordered-containers   >=0.2.5
+    , uri-bytestring         >=0.2.3  && <0.4
+    , wai                    ^>=3.2
+    , wai-middleware-static  >=0.8.1  && <0.10.0
+    , warp                   >=3.2    && <3.4
 
-Executable demo-server
-  main-is:             main.hs
-  other-modules:       IDP
-                       App
-                       IDP.AzureAD
-                       IDP.Douban
-                       IDP.Dropbox
-                       IDP.Facebook
-                       IDP.Fitbit
-                       IDP.Github
-                       IDP.Google
-                       IDP.Slack
-                       IDP.Auth0
-                       IDP.Okta
-                       IDP.StackExchange
-                       IDP.Weibo
-                       IDP.Linkedin
-                       IDP.ZOHO
-                       Session
-                       Types
-                       Utils
-                       Views
-                       Paths_hoauth2_example
-  hs-source-dirs:      src
-  default-language:    Haskell2010
-  build-depends:       base              >= 4.5   && < 5,
-                       directory         >= 1.3   && < 1.4,
-                       data-default      >= 0.7   && < 0.8,
-                       containers        >= 0.6   && < 0.7,
-                       text              >= 0.11  && < 1.3,
-                       bytestring        >= 0.9   && < 0.12,
-                       uri-bytestring    >= 0.2.3 && < 0.4,
-                       http-conduit      >= 2.1   && < 2.4,
-                       http-types        >= 0.11  && < 0.13,
-                       wai               >= 3.2   && < 3.3,
-                       warp              >= 3.2   && < 3.4,
-                       aeson             >= 2.0   && < 2.2,
-                       microlens         >= 0.4.0 && < 0.5,
-                       transformers      >= 0.5   && < 0.6,
-                       unordered-containers >= 0.2.5,
-                       wai-middleware-static >= 0.8.1 && < 0.10.0,
-                       mustache          >= 2.2.3 && < 2.5.0,
-                       scotty            >= 0.10.0 && < 0.13,
-                       parsec            >= 3.1.11 && < 3.2.0,
-                       hoauth2
-
-  ghc-options: -Wall
-               -fwarn-tabs
-               -funbox-strict-fields
-               -Wunused-packages
-               -fno-warn-unused-do-bind
-               -fno-warn-orphans
+  ghc-options:
+    -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
