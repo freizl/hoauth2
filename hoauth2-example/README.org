@@ -9,7 +9,6 @@
 
 - Auth0: <https://auth0.com/docs/authorization/protocols/protocol-oauth2>
 - AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
-- Douban: <http://developers.douban.com/wiki/?title=oauth2>
 - DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
 - Facebook: <http://developers.facebook.com/docs/facebook-login/>
 - Fitbit: <http://dev.fitbit.com/docs/oauth2/>

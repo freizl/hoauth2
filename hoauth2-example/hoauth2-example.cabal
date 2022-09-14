@@ -6,7 +6,6 @@ description:
   Tested with the following services:
   * Auth0: <https://auth0.com/docs/api>
   * AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
-  * Douban: <http://developers.douban.com/wiki/?title=oauth2>
   * DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
   * Facebook: <http://developers.facebook.com/docs/facebook-login/>
   * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
@@ -46,7 +45,6 @@ executable demo-server
     IDP
     IDP.Auth0
     IDP.AzureAD
-    IDP.Douban
     IDP.Dropbox
     IDP.Facebook
     IDP.Fitbit

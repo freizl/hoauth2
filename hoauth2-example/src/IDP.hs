@@ -10,7 +10,6 @@ import qualified Data.ByteString as BS
 import qualified Data.Text.Lazy as TL
 import qualified IDP.Auth0 as IAuth0
 import qualified IDP.AzureAD as IAzureAD
-import qualified IDP.Douban as IDouban
 import qualified IDP.Dropbox as IDropbox
 import qualified IDP.Facebook as IFacebook
 import qualified IDP.Fitbit as IFitbit
@@ -50,8 +49,6 @@ createIDPs = do
     [ IDPApp (initIdp IAzureAD.azureIdp),
       IDPApp
         (initIdp IAuth0.auth0Idp),
-      IDPApp
-        (initIdp IDouban.doubanIdp),
       IDPApp (initIdp IDropbox.dropboxIdp),
       IDPApp (initIdp IFacebook.facebookIdp),
       IDPApp (initIdp IFitbit.fitbitIdp),
