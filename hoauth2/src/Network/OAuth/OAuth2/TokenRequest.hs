@@ -107,7 +107,7 @@ fetchAccessToken ::
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-fetchAccessToken = fetchAccessTokenInternal ClientSecretBasic
+fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
 fetchAccessToken2 ::
   -- | HTTP connection manager
@@ -118,8 +118,8 @@ fetchAccessToken2 ::
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-fetchAccessToken2 = fetchAccessTokenInternal ClientSecretPost
-{-# DEPRECATED fetchAccessToken2 "renamed to fetchAccessTokenInternal" #-}
+fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
+{-# DEPRECATED fetchAccessToken2 "use fetchAccessTokenWithAuthMethod" #-}
 
 fetchAccessTokenInternal ::
   ClientAuthenticationMethod ->
@@ -131,7 +131,20 @@ fetchAccessTokenInternal ::
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-fetchAccessTokenInternal authMethod manager oa code = do
+fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
+{-# DEPRECATED fetchAccessTokenInternal "use fetchAccessTokenWithAuthMethod" #-}
+
+fetchAccessTokenWithAuthMethod ::
+  ClientAuthenticationMethod ->
+  -- | HTTP connection manager
+  Manager ->
+  -- | OAuth Data
+  OAuth2 ->
+  -- | OAuth 2 Tokens
+  ExchangeToken ->
+  -- | Access Token
+  ExceptT (OAuth2Error Errors) IO OAuth2Token
+fetchAccessTokenWithAuthMethod authMethod manager oa code = do
   let (uri, body) = accessTokenUrl oa code
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
   doJSONPostRequest manager oa uri (body ++ extraBody)
@@ -156,7 +169,7 @@ refreshAccessToken ::
   -- | refresh token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-refreshAccessToken = refreshAccessTokenInternal ClientSecretBasic
+refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
 
 refreshAccessToken2 ::
   -- | HTTP connection manager.
@@ -166,8 +179,8 @@ refreshAccessToken2 ::
   -- | refresh token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-refreshAccessToken2 = refreshAccessTokenInternal ClientSecretPost
-{-# DEPRECATED refreshAccessToken2 "renamed to fetchAccessTokenInternal" #-}
+refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
+{-# DEPRECATED refreshAccessToken2 "use fetchAccessTokenWithAuthMethod" #-}
 
 refreshAccessTokenInternal ::
   ClientAuthenticationMethod ->
@@ -178,7 +191,19 @@ refreshAccessTokenInternal ::
   -- | refresh token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
-refreshAccessTokenInternal authMethod manager oa token = do
+refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
+{-# DEPRECATED refreshAccessTokenInternal "use refreshAccessTokenWithAuthMethod" #-}
+
+refreshAccessTokenWithAuthMethod ::
+  ClientAuthenticationMethod ->
+  -- | HTTP connection manager.
+  Manager ->
+  -- | OAuth context
+  OAuth2 ->
+  -- | refresh token gained after authorization
+  RefreshToken ->
+  ExceptT (OAuth2Error Errors) IO OAuth2Token
+refreshAccessTokenWithAuthMethod authMethod manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
   doJSONPostRequest manager oa uri (body ++ extraBody)

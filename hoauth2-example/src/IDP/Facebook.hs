@@ -25,8 +25,8 @@ facebookIdp =
   def
     { idpName = Facebook,
       oauth2Config = facebookKey,
-      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
-      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      oauth2FetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretPost,
       convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://graph.facebook.com/me?fields=id,name,email|]
     }

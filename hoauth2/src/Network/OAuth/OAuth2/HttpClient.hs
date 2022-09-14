@@ -8,14 +8,18 @@ module Network.OAuth.OAuth2.HttpClient
     authGetJSON,
     authGetBS,
     authGetBS2,
+    authGetJSONWithAuthMethod,
     authGetJSONInternal,
+    authGetBSWithAuthMethod,
     authGetBSInternal,
     authPostJSON,
     authPostBS,
     authPostBS1,
     authPostBS2,
     authPostBS3,
+    authPostJSONWithAuthMethod,
     authPostJSONInternal,
+    authPostBSWithAuthMethod,
     authPostBSInternal,
   )
 where
@@ -52,11 +56,8 @@ authGetJSON ::
   URI ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authGetJSON = authGetJSONInternal (Set.fromList [AuthInRequestHeader])
-{-# DEPRECATED authGetJSON "use authGetJSONInternal" #-}
+authGetJSON = authGetJSONWithAuthMethod (Set.fromList [AuthInRequestHeader])
 
--- | Conduct an authorized GET request and return response as JSON.
---   Allow to specify how to append AccessToken.
 authGetJSONInternal ::
   (FromJSON b) =>
   Set.Set APIAuthenticationMethod ->
@@ -66,8 +67,22 @@ authGetJSONInternal ::
   URI ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authGetJSONInternal authTypes manager t uri = do
-  resp <- authGetBSInternal authTypes manager t uri
+authGetJSONInternal = authGetJSONWithAuthMethod
+{-# DEPRECATED authGetJSONInternal "use authGetJSONWithAuthMethod" #-}
+
+-- | Conduct an authorized GET request and return response as JSON.
+--   Allow to specify how to append AccessToken.
+authGetJSONWithAuthMethod ::
+  (FromJSON b) =>
+  Set.Set APIAuthenticationMethod ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  -- | Response as JSON
+  ExceptT BSL.ByteString IO b
+authGetJSONWithAuthMethod authTypes manager t uri = do
+  resp <- authGetBSWithAuthMethod authTypes manager t uri
   either (throwE . BSL.pack) return (eitherDecode resp)
 
 -- | Conduct an authorized GET request.
@@ -79,7 +94,7 @@ authGetBS ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS = authGetBSInternal $ Set.fromList [AuthInRequestHeader]
+authGetBS = authGetBSWithAuthMethod $ Set.fromList [AuthInRequestHeader]
 
 -- | Same to 'authGetBS' but set access token to query parameter rather than header
 authGetBS2 ::
@@ -89,11 +104,9 @@ authGetBS2 ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS2 = authGetBSInternal $ Set.fromList [AuthInRequestQuery]
-{-# DEPRECATED authGetBS2 "use authGetBSInternal" #-}
+authGetBS2 = authGetBSWithAuthMethod $ Set.fromList [AuthInRequestQuery]
+{-# DEPRECATED authGetBS2 "use authGetBSWithAuthMethod" #-}
 
--- | Conduct an authorized GET request and return response as ByteString.
---   Allow to specify how to append AccessToken.
 authGetBSInternal ::
   -- |
   Set.Set APIAuthenticationMethod ->
@@ -103,7 +116,21 @@ authGetBSInternal ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBSInternal authTypes manager token url = do
+authGetBSInternal = authGetBSWithAuthMethod
+{-# DEPRECATED authGetBSInternal "use authGetBSWithAuthMethod" #-}
+
+-- | Conduct an authorized GET request and return response as ByteString.
+--   Allow to specify how to append AccessToken.
+authGetBSWithAuthMethod ::
+  -- |
+  Set.Set APIAuthenticationMethod ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO BSL.ByteString
+authGetBSWithAuthMethod authTypes manager token url = do
   let appendToUrl = AuthInRequestQuery `Set.member` authTypes
   let appendToHeader = AuthInRequestHeader `Set.member` authTypes
   let uri = if appendToUrl then url `appendAccessToken` token else url
@@ -122,11 +149,9 @@ authPostJSON ::
   PostBody ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authPostJSON = authPostJSONInternal $ Set.fromList [AuthInRequestHeader]
-{-# DEPRECATED authPostJSON "use authPostJSONInternal" #-}
+authPostJSON = authPostJSONWithAuthMethod $ Set.fromList [AuthInRequestHeader]
+{-# DEPRECATED authPostJSON "use authPostJSONWithAuthMethod" #-}
 
--- | Conduct POST request and return response as JSON.
---   Allow to specify how to append AccessToken.
 authPostJSONInternal ::
   FromJSON a =>
   Set.Set APIAuthenticationMethod ->
@@ -137,8 +162,23 @@ authPostJSONInternal ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO a
-authPostJSONInternal authTypes manager token url body = do
-  resp <- authPostBSInternal authTypes manager token url body
+authPostJSONInternal = authPostJSONWithAuthMethod
+{-# DEPRECATED authPostJSONInternal "use authPostJSONWithAuthMethod" #-}
+
+-- | Conduct POST request and return response as JSON.
+--   Allow to specify how to append AccessToken.
+authPostJSONWithAuthMethod ::
+  FromJSON a =>
+  Set.Set APIAuthenticationMethod ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  PostBody ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO a
+authPostJSONWithAuthMethod authTypes manager token url body = do
+  resp <- authPostBSWithAuthMethod authTypes manager token url body
   either (throwE . BSL.pack) return (eitherDecode resp)
 
 -- | Conduct POST request.
@@ -151,7 +191,7 @@ authPostBS ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS = authPostBSInternal $ Set.fromList [AuthInRequestHeader]
+authPostBS = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestHeader]
 
 -- | Conduct POST request.
 --   Inject Access Token to both http header (Authorization) and request body.
@@ -163,8 +203,8 @@ authPostBS1 ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS1 = authPostBSInternal $ Set.fromList [AuthInRequestBody, AuthInRequestHeader]
-{-# DEPRECATED authPostBS1 "use authPostBSInternal" #-}
+authPostBS1 = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestBody, AuthInRequestHeader]
+{-# DEPRECATED authPostBS1 "use authPostBSWithAuthMethod" #-}
 
 -- | Conduct POST request with access token only in the request body but header.
 authPostBS2 ::
@@ -175,8 +215,8 @@ authPostBS2 ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS2 = authPostBSInternal $ Set.fromList [AuthInRequestBody]
-{-# DEPRECATED authPostBS2 "use authPostBSInternal" #-}
+authPostBS2 = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestBody]
+{-# DEPRECATED authPostBS2 "use authPostBSWithAuthMethod" #-}
 
 -- | Conduct POST request with access token only in the header and not in body
 authPostBS3 ::
@@ -187,11 +227,9 @@ authPostBS3 ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS3 = authPostBSInternal $ Set.fromList [AuthInRequestHeader]
-{-# DEPRECATED authPostBS3 "use authPostBSInternal" #-}
+authPostBS3 = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestHeader]
+{-# DEPRECATED authPostBS3 "use authPostBSWithAuthMethod" #-}
 
--- | Conduct POST request and return response as ByteString.
---   Allow to specify how to append AccessToken.
 authPostBSInternal ::
   Set.Set APIAuthenticationMethod ->
   -- | HTTP connection manager.
@@ -201,7 +239,20 @@ authPostBSInternal ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBSInternal authTypes manager token url body = do
+authPostBSInternal = authPostBSWithAuthMethod
+
+-- | Conduct POST request and return response as ByteString.
+--   Allow to specify how to append AccessToken.
+authPostBSWithAuthMethod ::
+  Set.Set APIAuthenticationMethod ->
+  -- | HTTP connection manager.
+  Manager ->
+  AccessToken ->
+  URI ->
+  PostBody ->
+  -- | Response as ByteString
+  ExceptT BSL.ByteString IO BSL.ByteString
+authPostBSWithAuthMethod authTypes manager token url body = do
   let appendToBody = AuthInRequestBody `Set.member` authTypes
   let appendToHeader = AuthInRequestHeader `Set.member` authTypes
   let reqBody = if appendToBody then body ++ accessTokenToParam token else body

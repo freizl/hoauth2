@@ -115,10 +115,10 @@ getIdpName :: Show (IDPName a) => IDP a -> TL.Text
 getIdpName = TL.pack . show . idpName
 
 fetchUserInfoViaGet :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaGet i2 mgr at = authGetJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2)
+fetchUserInfoViaGet i2 mgr at = authGetJSONWithAuthMethod (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2)
 
 fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaPost i2 mgr at = authPostJSONInternal (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2) []
+fetchUserInfoViaPost i2 mgr at = authPostJSONWithAuthMethod (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2) []
 
 createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
 createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ defaultAuthorizeParam idp ++ oauth2AuthorizeParams
