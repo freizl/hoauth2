@@ -76,28 +76,14 @@ refreshAccessTokenUrl oa token = (uri, body)
         ("refresh_token", T.encodeUtf8 $ rtoken token)
       ]
 
-clientSecretPost :: OAuth2 -> PostBody
-clientSecretPost oa =
-  [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-    ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
-  ]
-
 --------------------------------------------------
 
 -- * Token management
 
 --------------------------------------------------
 
--- | Fetch OAuth2 Token with authenticate in request header.
+-- | Exchange @code@ for an Access Token with authenticate in request header.
 --
--- OAuth2 spec allows `client_id` and `client_secret` to
--- either be sent in the header (as basic authentication)
--- OR as form/url params.
--- The OAuth server can choose to implement only one, or both.
--- Unfortunately, there is no way for the OAuth client (i.e. this library) to
--- know which method to use.
--- Please take a look at the documentation of the
--- service that you are integrating with and either use `fetchAccessToken` or `fetchAccessToken2`
 fetchAccessToken ::
   -- | HTTP connection manager
   Manager ->
@@ -119,7 +105,7 @@ fetchAccessToken2 ::
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
 fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
-{-# DEPRECATED fetchAccessToken2 "use fetchAccessTokenWithAuthMethod" #-}
+{-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
 
 fetchAccessTokenInternal ::
   ClientAuthenticationMethod ->
@@ -132,8 +118,20 @@ fetchAccessTokenInternal ::
   -- | Access Token
   ExceptT (OAuth2Error Errors) IO OAuth2Token
 fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
-{-# DEPRECATED fetchAccessTokenInternal "use fetchAccessTokenWithAuthMethod" #-}
+{-# DEPRECATED fetchAccessTokenInternal "use 'fetchAccessTokenWithAuthMethod'" #-}
 
+-- | Exchange @code@ for an Access Token
+--
+-- OAuth2 spec allows credential (`client_id`, `client_secret`) to be sent
+-- either in the header (a.k.a 'ClientSecretBasic').
+-- or as form/url params (a.k.a 'ClientSecretPost').
+--
+-- The OAuth provider can choose to implement only one, or both.
+-- Look for API document from the OAuth provider you're dealing with.
+-- If you're uncertain, try 'fetchAccessToken' which sends credential
+-- in authorization http header, which is common case.
+--
+-- @since 2.6.0
 fetchAccessTokenWithAuthMethod ::
   ClientAuthenticationMethod ->
   -- | HTTP connection manager
@@ -149,18 +147,8 @@ fetchAccessTokenWithAuthMethod authMethod manager oa code = do
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
   doJSONPostRequest manager oa uri (body ++ extraBody)
 
--- doJSONPostRequest append client secret to header which is needed for both
--- client_secret_post and client_secret_basic
-
--- | Fetch a new AccessToken with the Refresh Token with authentication in request header.
+-- | Fetch a new AccessToken using the Refresh Token with authentication in request header.
 --
--- OAuth2 spec allows `client_id` and `client_secret` to
--- either be sent in the header (as basic authentication)
--- OR as form/url params.
--- The OAuth server can choose to implement only one, or both.
--- Unfortunately, there is no way for the OAuth client (i.e. this library) to
--- know which method to use. Please take a look at the documentation of the
--- service that you are integrating with and either use `refreshAccessToken` or `refreshAccessToken2`
 refreshAccessToken ::
   -- | HTTP connection manager.
   Manager ->
@@ -180,7 +168,7 @@ refreshAccessToken2 ::
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
 refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
-{-# DEPRECATED refreshAccessToken2 "use fetchAccessTokenWithAuthMethod" #-}
+{-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
 
 refreshAccessTokenInternal ::
   ClientAuthenticationMethod ->
@@ -192,8 +180,20 @@ refreshAccessTokenInternal ::
   RefreshToken ->
   ExceptT (OAuth2Error Errors) IO OAuth2Token
 refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
-{-# DEPRECATED refreshAccessTokenInternal "use refreshAccessTokenWithAuthMethod" #-}
+{-# DEPRECATED refreshAccessTokenInternal "use 'refreshAccessTokenWithAuthMethod'" #-}
 
+-- | Fetch a new AccessToken using the Refresh Token.
+--
+-- OAuth2 spec allows credential (`client_id`, `client_secret`) to be sent
+-- either in the header (a.k.a 'ClientSecretBasic').
+-- or as form/url params (a.k.a 'ClientSecretPost').
+--
+-- The OAuth provider can choose to implement only one, or both.
+-- Look for API document from the OAuth provider you're dealing with.
+-- If you're uncertain, try 'refreshAccessToken' which sends credential
+-- in authorization http header, which is common case.
+--
+-- @since 2.6.0
 refreshAccessTokenWithAuthMethod ::
   ClientAuthenticationMethod ->
   -- | HTTP connection manager.
@@ -293,3 +293,11 @@ addDefaultRequestHeaders :: Request -> Request
 addDefaultRequestHeaders req =
   let headers = defaultRequestHeaders ++ requestHeaders req
    in req {requestHeaders = headers}
+
+-- | Add Credential (client_id, client_secret) to the request post body.
+--
+clientSecretPost :: OAuth2 -> PostBody
+clientSecretPost oa =
+  [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
+    ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
+  ]
