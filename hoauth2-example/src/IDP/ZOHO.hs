@@ -30,8 +30,8 @@ zohoIdp =
       oauth2Config = zohoKey,
       oauth2AuthorizeParams = [("access_type", "offline"), ("prompt", "consent")],
       convertUserInfoToLoginUser = toLoginUser,
-      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
-      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      oauth2FetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretPost,
       oauth2UserInfoUri = [uri|https://www.zohoapis.com/crm/v2/users|]
     }
 

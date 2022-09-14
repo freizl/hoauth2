@@ -41,8 +41,8 @@ stackexchangeIdp =
   def
     { idpName = StackExchange,
       oauth2Config = stackexchangeKey,
-      oauth2FetchAccessToken = fetchAccessTokenInternal ClientSecretPost,
-      oauth2RefreshAccessToken = refreshAccessTokenInternal ClientSecretPost,
+      oauth2FetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretPost,
       convertUserInfoToLoginUser = toLoginUser,
       oauth2FetchUserInfo = fetchUserInfo,
       --
@@ -67,7 +67,7 @@ fetchUserInfo ::
     IO
     b
 fetchUserInfo IDP {..} mgr accessToken =
-  authGetJSONInternal
+  authGetJSONWithAuthMethod
     (Set.fromList [AuthInRequestQuery])
     mgr
     accessToken

@@ -52,7 +52,7 @@ fetchUserInfo ::
     IO
     b
 fetchUserInfo IDP {..} mgr accessToken =
-  authGetJSONInternal
+  authGetJSONWithAuthMethod
     (Set.fromList [AuthInRequestQuery])
     mgr
     accessToken
