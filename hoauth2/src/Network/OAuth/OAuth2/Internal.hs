@@ -80,10 +80,6 @@ data OAuth2Token = OAuth2Token
 
 instance Binary OAuth2Token
 
-parseIntFlexible :: Value -> Parser Int
-parseIntFlexible (String s) = pure . read $ unpack s
-parseIntFlexible v = parseJSON v
-
 -- | Parse JSON data into 'OAuth2Token'
 instance FromJSON OAuth2Token where
   parseJSON = withObject "OAuth2Token" $ \v ->
@@ -93,6 +89,10 @@ instance FromJSON OAuth2Token where
       <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
       <*> v .:? "token_type"
       <*> v .:? "id_token"
+    where
+      parseIntFlexible :: Value -> Parser Int
+      parseIntFlexible (String s) = pure . read $ unpack s
+      parseIntFlexible v = parseJSON v
 
 instance ToJSON OAuth2Token where
   toJSON = genericToJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
