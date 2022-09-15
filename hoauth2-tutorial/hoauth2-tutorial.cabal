@@ -51,7 +51,7 @@ executable hoauth2-tutorial
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
   build-depends:
-    , base              ^>=4.16.1.0
+    , base            >=4.5    && <5
     , hoauth2-tutorial
 
   hs-source-dirs:   app
