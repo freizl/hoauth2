@@ -2,7 +2,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
--- | A simple http client to request OAuth2 tokens and several utils.
+-- | Bindings for The OAuth 2.0 Authorization Framework: Bearer Token Usage
+-- RFC6750 <https://www.rfc-editor.org/rfc/rfc6750>
+--
 module Network.OAuth.OAuth2.HttpClient
   ( -- * AUTH requests
     authGetJSON,
@@ -273,6 +275,22 @@ authPostBSWithAuthMethod authTypes manager token url body = do
 
   req <- uriToRequest url
   authRequest req upReq manager
+
+--------------------------------------------------
+
+-- * Types
+
+--------------------------------------------------
+
+-- | https://www.rfc-editor.org/rfc/rfc6750#section-2
+data APIAuthenticationMethod
+  = -- | Provides in Authorization header
+    AuthInRequestHeader
+  | -- | Provides in request body
+    AuthInRequestBody
+  | -- | Provides in request query parameter
+    AuthInRequestQuery
+  deriving (Eq, Ord)
 
 --------------------------------------------------
 

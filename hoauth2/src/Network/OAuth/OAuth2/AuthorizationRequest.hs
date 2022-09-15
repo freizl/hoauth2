@@ -1,6 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+-- | Bindings Authorization part of The OAuth 2.0 Authorization Framework
+-- RFC6749 <https://www.rfc-editor.org/rfc/rfc6749>
+--
 module Network.OAuth.OAuth2.AuthorizationRequest where
 
 import Data.Aeson

@@ -1,6 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+-- | Bindings Access Token and Refresh Token part of The OAuth 2.0 Authorization Framework
+-- RFC6749 <https://www.rfc-editor.org/rfc/rfc6749>
+--
+
 module Network.OAuth.OAuth2.TokenRequest where
 
 import Control.Monad.Trans.Except

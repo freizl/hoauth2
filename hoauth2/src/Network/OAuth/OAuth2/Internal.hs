@@ -65,15 +65,13 @@ newtype IdToken = IdToken {idtoken :: Text} deriving (Binary, Eq, Show, FromJSON
 
 newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON, ToJSON)
 
--- | The gained Access Token. Use @Data.Aeson.decode@ to
--- decode string to @AccessToken@.  The @refreshToken@ is
--- special in some cases,
--- e.g. <https://developers.google.com/accounts/docs/OAuth2>
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
 data OAuth2Token = OAuth2Token
   { accessToken :: AccessToken,
     refreshToken :: Maybe RefreshToken,
     expiresIn :: Maybe Int,
     tokenType :: Maybe Text,
+    -- This is really not part of RFC6749 but OIDC Spec. A bit hacky.
     idToken :: Maybe IdToken
   }
   deriving (Eq, Show, Generic)
@@ -129,15 +127,7 @@ mkDecodeOAuth2Error response err =
     (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
     Nothing
 
-data APIAuthenticationMethod
-  = -- | Provides in Authorization header
-    AuthInRequestHeader
-  | -- | Provides in request body
-    AuthInRequestBody
-  | -- | Provides in request query parameter
-    AuthInRequestQuery
-  deriving (Eq, Ord)
-
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
 data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost
