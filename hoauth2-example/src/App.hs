@@ -1,6 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -16,12 +17,13 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except
 import Data.Maybe
 import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as TL
+import Data.Text.Lazy qualified as TL
 import IDP
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Network.OAuth.OAuth2
-import qualified Network.Wai as WAI
+import Network.OAuth.OAuth2.TokenRequest qualified as TR
+import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
 import Session
@@ -91,6 +93,8 @@ indexH c = liftIO (allValues c) >>= overviewTpl
 
 callbackH :: CacheStore -> ActionM ()
 callbackH c = do
+  -- https://hackage.haskell.org/package/scotty-0.12/docs/Web-Scotty.html#t:Param
+  -- (Text, Text)
   pas <- params
   let stateP = paramValue "state" pas
   when (null stateP) (raise "callbackH: no state from callback request")
@@ -136,9 +140,9 @@ fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
   (luser, at) <- tryFetchUser mgr token idp
   liftIO $ updateIdp c idpData luser at
   where
-    oauth2ErrorToText e =
-      TL.pack $
-        "tokenReq - cannot fetch asses token. error detail: " ++ show e
+    oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
+    oauth2ErrorToText e = TL.pack $ "tokenReq - cannot fetch asses token. error detail: " ++ show e
+    updateIdp :: CacheStore -> IDPData -> LoginUser -> OAuth2Token -> IO ()
     updateIdp c1 oldIdpData luser token =
       upsertIDPData
         c1

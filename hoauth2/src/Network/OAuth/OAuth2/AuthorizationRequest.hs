@@ -25,7 +25,11 @@ instance ToJSON Errors where
   toEncoding = genericToEncoding defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
 
 -- | Authorization Code Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.1.2.1
--- Implicit Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.2.2.1
+-- I found hard time to figure a way to test the authorization error flow
+-- When anything wrong in @/authorize@ request (redirect to OAuth2 provider),
+-- it will end-up at the Provider page hence no way for this library to parse error response.
+-- In other words, @/authorize@ ends up with 4xx or 5xx.
+-- Revisit this whenever find a case OAuth2 provider redirects back to Relying party with errors.
 data Errors
   = InvalidRequest
   | UnauthorizedClient
@@ -42,13 +46,21 @@ data Errors
 
 --------------------------------------------------
 
+-- | See 'authorizationUrlWithParams'
+authorizationUrl :: OAuth2 -> URI
+authorizationUrl oa = authorizationUrlWithParams [] oa
+
 -- | Prepare the authorization URL.  Redirect to this URL
 -- asking for user interactive authentication.
-authorizationUrl :: OAuth2 -> URI
-authorizationUrl oa = over (queryL . queryPairsL) (++ queryParts) (oauth2AuthorizeEndpoint oa)
+--
+-- @since 2.6.0
+authorizationUrlWithParams :: QueryParams -> OAuth2  -> URI
+authorizationUrlWithParams qs oa = over (queryL . queryPairsL) (++ queryParts) (oauth2AuthorizeEndpoint oa)
   where
     queryParts =
       [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
         ("response_type", "code"),
         ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
       ]
+      ++ qs
+

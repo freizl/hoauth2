@@ -120,14 +120,14 @@ fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessTo
 fetchUserInfoViaPost i2 mgr at = authPostJSONWithAuthMethod AuthInRequestHeader mgr at (oauth2UserInfoUri i2) []
 
 createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
-createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ defaultAuthorizeParam idp ++ oauth2AuthorizeParams
+createAuthorizeUri idp@IDP {..} =
+  createCodeUri (defaultAuthorizeParam idp ++ oauth2AuthorizeParams) oauth2Config
   where
-    createCodeUri key params =
+    createCodeUri allParams key =
       TL.fromStrict $
         T.decodeUtf8 $
           serializeURIRef' $
-            appendQueryParams params $
-              authorizationUrl key
+              authorizationUrlWithParams allParams key
 
 defaultAuthorizeParam :: (Show (IDPName a)) => IDP a -> [(BS.ByteString, BS.ByteString)]
 defaultAuthorizeParam IDP {..} =
