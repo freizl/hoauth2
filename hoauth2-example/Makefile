@@ -1,11 +1,11 @@
-watch-demo:
-	ghcid --command="cabal v2-repl demo-server"
+watch:
+	ghcid --command="cabal repl demo-server"
 
-repl-demo:
-	cabal v2-repl demo-server
+repl:
+	cabal repl demo-server
 
-start-demo:
-	cabal v2-run demo-server
+start:
+	cabal run demo-server
 
 build:
-	cabal v2-build demo-server
+	cabal build demo-server
