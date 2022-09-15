@@ -127,6 +127,12 @@ mkDecodeOAuth2Error response err =
     (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
     Nothing
 
+{-
+TODO: looks like we always put credential to header. Do we still need 'ClientSecretBasic'?
+Double check the spec whether it has to choose one way or another?
+Given the testing experience, seems not.
+-}
+
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
 data ClientAuthenticationMethod
   = ClientSecretBasic

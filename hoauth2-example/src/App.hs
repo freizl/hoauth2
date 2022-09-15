@@ -138,7 +138,7 @@ fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
   where
     oauth2ErrorToText e =
       TL.pack $
-        "tryFetchUser - cannot fetch asses token. error detail: " ++ show e
+        "tokenReq - cannot fetch asses token. error detail: " ++ show e
     updateIdp c1 oldIdpData luser token =
       upsertIDPData
         c1

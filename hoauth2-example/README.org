@@ -20,10 +20,6 @@
 - Weibo: <http://open.weibo.com/wiki/Oauth2>
 - ZOHO: https://www.zoho.com/crm/developer/docs/api/v2/oauth-overview.html
 
-* WIP: Linkedin
-
-  - <https://developer.linkedin.com>
-
 * NOTES
 - classes in Types.hs takes a (`IDP`) as first parameter but it is actually not used. bad pattern. how to fix it??
 - refactor: `App.hs` is messy!

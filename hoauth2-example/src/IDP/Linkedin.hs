@@ -29,6 +29,8 @@ linkedinIdp =
   def
     { idpName = Linkedin,
       oauth2Config = linkedinKey,
+      oauth2FetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretPost,
+      oauth2RefreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretPost,
       convertUserInfoToLoginUser = toLoginUser,
       oauth2UserInfoUri = [uri|https://api.linkedin.com/v2/me|]
     }
