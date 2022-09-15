@@ -2,7 +2,9 @@ cabal-version:      2.4
 name:               hoauth2-demo
 version:            1.4.0
 synopsis:           hoauth2 demo application
-description:        Demo application to test oauth2 flow with many providers using hoauth2
+description:
+  Demo application to test oauth2 flow with many providers using hoauth2
+
 homepage:           https://github.com/freizl/hoauth2
 license:            BSD-3-Clause
 license-file:       LICENSE

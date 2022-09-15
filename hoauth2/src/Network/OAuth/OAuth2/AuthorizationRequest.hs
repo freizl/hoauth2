@@ -48,7 +48,7 @@ data Errors
 
 -- | See 'authorizationUrlWithParams'
 authorizationUrl :: OAuth2 -> URI
-authorizationUrl oa = authorizationUrlWithParams [] oa
+authorizationUrl = authorizationUrlWithParams []
 
 -- | Prepare the authorization URL.  Redirect to this URL
 -- asking for user interactive authentication.

@@ -9,7 +9,7 @@ build:
 rebuild: clean build
 
 hlint:
-	hlint hoauth2/src hoauth2-example/src
+	hlint hoauth2/src hoauth2-demo/src hoauth2-tutorial/src
 
 doc: build
 	cabal haddock all

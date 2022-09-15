@@ -105,14 +105,14 @@ callbackH refUser = do
   let codeP = paramValue "code" pas
   when (null codeP) (raise "callbackH: no code from callback request")
 
-  -- make request to /token endpoint to exchange 'code' for 'access token'
   excepttToActionM $ do
     mgr <- liftIO $ newManager tlsManagerSettings
 
-    let code = (ExchangeToken $ TL.toStrict $ head codeP)
+    -- make request to /token endpoint to exchange 'code' for 'access token'
+    let code = ExchangeToken $ TL.toStrict $ head codeP
     tokenResp <- withExceptT oauth2ErrorToText (fetchAccessToken mgr auth0 code)
 
-    let at = (accessToken tokenResp)
+    let at = accessToken tokenResp
     user <- withExceptT bslToText (authGetJSON mgr at auth0UserInfoUri)
 
     -- Now we need to find way to set authentication status for this application
@@ -169,7 +169,7 @@ indexH refUser = do
             ]
           else ["<a href='/login'>Login</a>"]
 
-  html . mconcat $ ["<h1>hoauth2 Tutorial</h1>"] ++ info
+  html . mconcat $ "<h1>hoauth2 Tutorial</h1>" ++ info
 
 logoutH :: IORef (Maybe Auth0User) -> ActionM ()
 logoutH refUser = do
