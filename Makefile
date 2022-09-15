@@ -7,8 +7,8 @@ build:
 	cabal v2-build all
 
 ## install ghcid globally: `cabal install ghcid`
-watch:
-	ghcid --command="cabal v2-repl ."
+watch-lib:
+	ghcid --command="cabal v2-repl hoauth2"
 
 watch-demo:
 	ghcid --command="cabal v2-repl demo-server"

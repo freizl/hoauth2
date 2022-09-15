@@ -16,17 +16,18 @@ module Network.OAuth.OAuth2.HttpClient
     authGetBSInternal,
     authPostJSON,
     authPostBS,
-    authPostBS1,
     authPostBS2,
     authPostBS3,
     authPostJSONWithAuthMethod,
     authPostJSONInternal,
     authPostBSWithAuthMethod,
     authPostBSInternal,
+
+    -- * Types
+    APIAuthenticationMethod(..)
   )
 where
 
-import qualified Data.Set as Set
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except
 import Data.Aeson
@@ -58,11 +59,11 @@ authGetJSON ::
   URI ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authGetJSON = authGetJSONWithAuthMethod (Set.fromList [AuthInRequestHeader])
+authGetJSON = authGetJSONWithAuthMethod AuthInRequestHeader
 
 authGetJSONInternal ::
   (FromJSON b) =>
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -78,7 +79,7 @@ authGetJSONInternal = authGetJSONWithAuthMethod
 -- @since 2.6.0
 authGetJSONWithAuthMethod ::
   (FromJSON b) =>
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -98,7 +99,7 @@ authGetBS ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS = authGetBSWithAuthMethod $ Set.fromList [AuthInRequestHeader]
+authGetBS = authGetBSWithAuthMethod AuthInRequestHeader
 
 -- | Same to 'authGetBS' but set access token to query parameter rather than header
 authGetBS2 ::
@@ -108,12 +109,12 @@ authGetBS2 ::
   URI ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authGetBS2 = authGetBSWithAuthMethod $ Set.fromList [AuthInRequestQuery]
+authGetBS2 = authGetBSWithAuthMethod AuthInRequestQuery
 {-# DEPRECATED authGetBS2 "use authGetBSWithAuthMethod" #-}
 
 authGetBSInternal ::
   -- |
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -129,7 +130,7 @@ authGetBSInternal = authGetBSWithAuthMethod
 -- @since 2.6.0
 authGetBSWithAuthMethod ::
   -- | Specify the way that how to append the 'AccessToken' in the request
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -137,8 +138,8 @@ authGetBSWithAuthMethod ::
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
 authGetBSWithAuthMethod authTypes manager token url = do
-  let appendToUrl = AuthInRequestQuery `Set.member` authTypes
-  let appendToHeader = AuthInRequestHeader `Set.member` authTypes
+  let appendToUrl = AuthInRequestQuery == authTypes
+  let appendToHeader = AuthInRequestHeader == authTypes
   let uri = if appendToUrl then url `appendAccessToken` token else url
   let upReq = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.GET
   req <- liftIO $ uriToRequest uri
@@ -155,12 +156,12 @@ authPostJSON ::
   PostBody ->
   -- | Response as JSON
   ExceptT BSL.ByteString IO b
-authPostJSON = authPostJSONWithAuthMethod $ Set.fromList [AuthInRequestHeader]
+authPostJSON = authPostJSONWithAuthMethod AuthInRequestHeader
 {-# DEPRECATED authPostJSON "use 'authPostJSONWithAuthMethod'" #-}
 
 authPostJSONInternal ::
   FromJSON a =>
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -177,7 +178,7 @@ authPostJSONInternal = authPostJSONWithAuthMethod
 -- @since 2.6.0
 authPostJSONWithAuthMethod ::
   FromJSON a =>
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -199,20 +200,7 @@ authPostBS ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestHeader]
-
--- | Conduct POST request.
---   Inject Access Token to both http header (Authorization) and request body.
-authPostBS1 ::
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  PostBody ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS1 = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestBody, AuthInRequestHeader]
-{-# DEPRECATED authPostBS1 "use 'authPostBSWithAuthMethod'" #-}
+authPostBS = authPostBSWithAuthMethod AuthInRequestHeader
 
 -- | Conduct POST request with access token only in the request body but header.
 authPostBS2 ::
@@ -223,7 +211,7 @@ authPostBS2 ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS2 = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestBody]
+authPostBS2 = authPostBSWithAuthMethod AuthInRequestBody
 {-# DEPRECATED authPostBS2 "use 'authPostBSWithAuthMethod'" #-}
 
 -- | Conduct POST request with access token only in the header and not in body
@@ -235,11 +223,11 @@ authPostBS3 ::
   PostBody ->
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
-authPostBS3 = authPostBSWithAuthMethod $ Set.fromList [AuthInRequestHeader]
+authPostBS3 = authPostBSWithAuthMethod AuthInRequestHeader
 {-# DEPRECATED authPostBS3 "use 'authPostBSWithAuthMethod'" #-}
 
 authPostBSInternal ::
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -255,7 +243,7 @@ authPostBSInternal = authPostBSWithAuthMethod
 --
 -- @since 2.6.0
 authPostBSWithAuthMethod ::
-  Set.Set APIAuthenticationMethod ->
+  APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -264,8 +252,8 @@ authPostBSWithAuthMethod ::
   -- | Response as ByteString
   ExceptT BSL.ByteString IO BSL.ByteString
 authPostBSWithAuthMethod authTypes manager token url body = do
-  let appendToBody = AuthInRequestBody `Set.member` authTypes
-  let appendToHeader = AuthInRequestHeader `Set.member` authTypes
+  let appendToBody = AuthInRequestBody == authTypes
+  let appendToHeader = AuthInRequestHeader == authTypes
   let reqBody = if appendToBody then body ++ accessTokenToParam token else body
   -- TODO: urlEncodedBody send request as 'application/x-www-form-urlencoded'
   -- seems shall go with application/json which is more common?

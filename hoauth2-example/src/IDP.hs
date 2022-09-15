@@ -65,6 +65,7 @@ createIDPs = do
         (initIdp IStackExchange.stackexchangeIdp)
     ]
 
+-- TODO: use Paths_ module for better to find the file?
 envFilePath :: String
 envFilePath = ".env.json"
 

@@ -12,7 +12,6 @@
 
 module Types where
 
-import qualified Data.Set as Set
 import Control.Concurrent.MVar
 import Control.Monad.Trans.Except
 import Data.Aeson
@@ -115,10 +114,10 @@ getIdpName :: Show (IDPName a) => IDP a -> TL.Text
 getIdpName = TL.pack . show . idpName
 
 fetchUserInfoViaGet :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaGet i2 mgr at = authGetJSONWithAuthMethod (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2)
+fetchUserInfoViaGet i2 mgr at = authGetJSONWithAuthMethod AuthInRequestHeader mgr at (oauth2UserInfoUri i2)
 
 fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaPost i2 mgr at = authPostJSONWithAuthMethod (Set.fromList [AuthInRequestHeader] ) mgr at (oauth2UserInfoUri i2) []
+fetchUserInfoViaPost i2 mgr at = authPostJSONWithAuthMethod AuthInRequestHeader mgr at (oauth2UserInfoUri i2) []
 
 createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
 createAuthorizeUri idp@IDP {..} = createCodeUri oauth2Config $ defaultAuthorizeParam idp ++ oauth2AuthorizeParams
