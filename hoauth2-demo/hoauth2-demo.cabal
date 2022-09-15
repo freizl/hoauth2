@@ -43,7 +43,7 @@ executable demo-server
     IDP.StackExchange
     IDP.Weibo
     IDP.ZOHO
-    Paths_hoauth2_example
+    Paths_hoauth2_demo
     Session
     Types
     Utils
