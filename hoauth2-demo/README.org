@@ -1,8 +1,8 @@
 * Build the sample App
 
-- Make sure `ghc-8.10` and `cabal-3.x` installed.
+- Make sure `ghc-9.2.x` and `cabal-3.x` installed.
 - copy `sample.env.json` to `.env.json` and modify the clientId and clientSecret
-- `make start-demo`
+- `make start`
 - open <http://localhost:9988>
 
 * IDPs
@@ -14,6 +14,7 @@
 - Fitbit: <http://dev.fitbit.com/docs/oauth2/>
 - Github: <http://developer.github.com/v3/oauth/>
 - Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
+- Linkedin: <https://developer.linkedin.com/>
 - Okta: https://developer.okta.com/docs/reference/api/oidc/
 - StackExchange: <https://api.stackexchange.com/docs/authentication>
   - StackExchange Apps page: <https://stackapps.com/apps/oauth>

@@ -1,21 +1,8 @@
 cabal-version:      2.4
-name:               hoauth2-example
+name:               hoauth2-demo
 version:            1.4.0
-synopsis:           OAuth2 example
-description:
-  Tested with the following services:
-  * Auth0: <https://auth0.com/docs/api>
-  * AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
-  * DropBox: <https://www.dropbox.com/developers/reference/oauth-guide>
-  * Facebook: <http://developers.facebook.com/docs/facebook-login/>
-  * Fitbit: <http://dev.fitbit.com/docs/oauth2/>
-  * Github: <http://developer.github.com/v3/oauth/>
-  * Google: <https://developers.google.com/accounts/docs/OAuth2WebServer>
-  * Okta: <https://developer.okta.com/docs/concepts/oauth-openid/>
-  * Slack: <https://api.slack.com/legacy/oauth>
-  * StackExchange: <https://api.stackexchange.com/docs/authentication>
-  * Weibo: <http://open.weibo.com/wiki/Oauth2>
-
+synopsis:           hoauth2 demo application
+description:        Demo application to test oauth2 flow with many providers using hoauth2
 homepage:           https://github.com/freizl/hoauth2
 license:            BSD-3-Clause
 license-file:       LICENSE
