@@ -6,7 +6,6 @@
 -- | hOAuth2 tutorial
 --
 -- TODO: consider literal haskell
-
 module Hoauth2Tutorial where
 
 import Control.Monad
@@ -169,7 +168,7 @@ indexH refUser = do
             ]
           else ["<a href='/login'>Login</a>"]
 
-  html . mconcat $ "<h1>hoauth2 Tutorial</h1>" ++ info
+  html . mconcat $ "<h1>hoauth2 Tutorial</h1>": info
 
 logoutH :: IORef (Maybe Auth0User) -> ActionM ()
 logoutH refUser = do
