@@ -4,7 +4,6 @@
 
 -- | Bindings for The OAuth 2.0 Authorization Framework: Bearer Token Usage
 -- RFC6750 <https://www.rfc-editor.org/rfc/rfc6750>
---
 module Network.OAuth.OAuth2.HttpClient
   ( -- * AUTH requests
     authGetJSON,
@@ -24,22 +23,22 @@ module Network.OAuth.OAuth2.HttpClient
     authPostBSInternal,
 
     -- * Types
-    APIAuthenticationMethod(..)
+    APIAuthenticationMethod (..),
   )
 where
 
-import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Except
-import Data.Aeson
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..), throwE)
+import Data.Aeson (FromJSON, eitherDecode)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Maybe
+import Data.Maybe (fromJust, isJust)
 import qualified Data.Text.Encoding as T
-import Lens.Micro
+import Lens.Micro (over)
 import Network.HTTP.Conduit
 import qualified Network.HTTP.Types as HT
 import Network.OAuth.OAuth2.Internal
-import URI.ByteString
+import URI.ByteString (URI, URIRef, queryL, queryPairsL)
 
 --------------------------------------------------
 
@@ -52,24 +51,24 @@ import URI.ByteString
 -- | Conduct an authorized GET request and return response as JSON.
 --   Inject Access Token to Authorization Header.
 authGetJSON ::
-  (FromJSON b) =>
+  (MonadIO m, FromJSON b) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as JSON
-  ExceptT BSL.ByteString IO b
+  ExceptT BSL.ByteString m b
 authGetJSON = authGetJSONWithAuthMethod AuthInRequestHeader
 
 authGetJSONInternal ::
-  (FromJSON b) =>
+  (MonadIO m, FromJSON b) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as JSON
-  ExceptT BSL.ByteString IO b
+  ExceptT BSL.ByteString m b
 authGetJSONInternal = authGetJSONWithAuthMethod
 {-# DEPRECATED authGetJSONInternal "use authGetJSONWithAuthMethod" #-}
 
@@ -78,14 +77,14 @@ authGetJSONInternal = authGetJSONWithAuthMethod
 --
 -- @since 2.6.0
 authGetJSONWithAuthMethod ::
-  (FromJSON b) =>
+  (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as JSON
-  ExceptT BSL.ByteString IO b
+  ExceptT BSL.ByteString m a
 authGetJSONWithAuthMethod authTypes manager t uri = do
   resp <- authGetBSWithAuthMethod authTypes manager t uri
   either (throwE . BSL.pack) return (eitherDecode resp)
@@ -93,34 +92,36 @@ authGetJSONWithAuthMethod authTypes manager t uri = do
 -- | Conduct an authorized GET request.
 --   Inject Access Token to Authorization Header.
 authGetBS ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authGetBS = authGetBSWithAuthMethod AuthInRequestHeader
 
 -- | Same to 'authGetBS' but set access token to query parameter rather than header
 authGetBS2 ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authGetBS2 = authGetBSWithAuthMethod AuthInRequestQuery
 {-# DEPRECATED authGetBS2 "use authGetBSWithAuthMethod" #-}
 
 authGetBSInternal ::
-  -- |
+  (MonadIO m) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authGetBSInternal = authGetBSWithAuthMethod
 {-# DEPRECATED authGetBSInternal "use authGetBSWithAuthMethod" #-}
 
@@ -129,6 +130,7 @@ authGetBSInternal = authGetBSWithAuthMethod
 --
 -- @since 2.6.0
 authGetBSWithAuthMethod ::
+  (MonadIO m) =>
   -- | Specify the way that how to append the 'AccessToken' in the request
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
@@ -136,7 +138,7 @@ authGetBSWithAuthMethod ::
   AccessToken ->
   URI ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authGetBSWithAuthMethod authTypes manager token url = do
   let appendToUrl = AuthInRequestQuery == authTypes
   let appendToHeader = AuthInRequestHeader == authTypes
@@ -148,19 +150,19 @@ authGetBSWithAuthMethod authTypes manager token url = do
 -- | Conduct POST request and return response as JSON.
 --   Inject Access Token to Authorization Header.
 authPostJSON ::
-  (FromJSON b) =>
+  (MonadIO m, FromJSON a) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   PostBody ->
   -- | Response as JSON
-  ExceptT BSL.ByteString IO b
+  ExceptT BSL.ByteString m a
 authPostJSON = authPostJSONWithAuthMethod AuthInRequestHeader
 {-# DEPRECATED authPostJSON "use 'authPostJSONWithAuthMethod'" #-}
 
 authPostJSONInternal ::
-  FromJSON a =>
+  (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -168,7 +170,7 @@ authPostJSONInternal ::
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO a
+  ExceptT BSL.ByteString m a
 authPostJSONInternal = authPostJSONWithAuthMethod
 {-# DEPRECATED authPostJSONInternal "use 'authPostJSONWithAuthMethod'" #-}
 
@@ -177,7 +179,7 @@ authPostJSONInternal = authPostJSONWithAuthMethod
 --
 -- @since 2.6.0
 authPostJSONWithAuthMethod ::
-  FromJSON a =>
+  (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -185,7 +187,7 @@ authPostJSONWithAuthMethod ::
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO a
+  ExceptT BSL.ByteString m a
 authPostJSONWithAuthMethod authTypes manager token url body = do
   resp <- authPostBSWithAuthMethod authTypes manager token url body
   either (throwE . BSL.pack) return (eitherDecode resp)
@@ -193,40 +195,44 @@ authPostJSONWithAuthMethod authTypes manager token url body = do
 -- | Conduct POST request.
 --   Inject Access Token to http header (Authorization)
 authPostBS ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authPostBS = authPostBSWithAuthMethod AuthInRequestHeader
 
 -- | Conduct POST request with access token only in the request body but header.
 authPostBS2 ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authPostBS2 = authPostBSWithAuthMethod AuthInRequestBody
 {-# DEPRECATED authPostBS2 "use 'authPostBSWithAuthMethod'" #-}
 
 -- | Conduct POST request with access token only in the header and not in body
 authPostBS3 ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authPostBS3 = authPostBSWithAuthMethod AuthInRequestHeader
 {-# DEPRECATED authPostBS3 "use 'authPostBSWithAuthMethod'" #-}
 
 authPostBSInternal ::
+  (MonadIO m) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -234,7 +240,7 @@ authPostBSInternal ::
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authPostBSInternal = authPostBSWithAuthMethod
 {-# DEPRECATED authPostBSInternal "use 'authPostBSWithAuthMethod'" #-}
 
@@ -243,6 +249,7 @@ authPostBSInternal = authPostBSWithAuthMethod
 --
 -- @since 2.6.0
 authPostBSWithAuthMethod ::
+  (MonadIO m) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -250,7 +257,7 @@ authPostBSWithAuthMethod ::
   URI ->
   PostBody ->
   -- | Response as ByteString
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authPostBSWithAuthMethod authTypes manager token url body = do
   let appendToBody = AuthInRequestBody == authTypes
   let appendToHeader = AuthInRequestHeader == authTypes
@@ -261,7 +268,7 @@ authPostBSWithAuthMethod authTypes manager token url body = do
   let upHeaders = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.POST
   let upReq = upHeaders . upBody
 
-  req <- uriToRequest url
+  req <- liftIO $ uriToRequest url
   authRequest req upReq manager
 
 --------------------------------------------------
@@ -288,13 +295,14 @@ data APIAuthenticationMethod
 
 -- | Send an HTTP request.
 authRequest ::
+  (MonadIO m) =>
   -- | Request to perform
   Request ->
   -- | Modify request before sending
   (Request -> Request) ->
   -- | HTTP connection manager.
   Manager ->
-  ExceptT BSL.ByteString IO BSL.ByteString
+  ExceptT BSL.ByteString m BSL.ByteString
 authRequest req upReq manage = ExceptT $ handleResponse <$> httpLbs (upReq req) manage
 
 -- | Parses a @Response@ to to @OAuth2Result@

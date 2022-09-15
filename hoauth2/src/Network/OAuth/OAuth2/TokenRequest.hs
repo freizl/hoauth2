@@ -3,22 +3,21 @@
 
 -- | Bindings Access Token and Refresh Token part of The OAuth 2.0 Authorization Framework
 -- RFC6749 <https://www.rfc-editor.org/rfc/rfc6749>
---
-
 module Network.OAuth.OAuth2.TokenRequest where
 
-import Control.Monad.Trans.Except
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Data.Aeson
 import qualified Data.Aeson.Key as Key
 import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text.Encoding as T
-import GHC.Generics
+import GHC.Generics (Generic)
 import Network.HTTP.Conduit
 import qualified Network.HTTP.Types as HT
 import Network.HTTP.Types.URI (parseQuery)
 import Network.OAuth.OAuth2.Internal
-import URI.ByteString
+import URI.ByteString (URI, serializeURIRef')
 
 --------------------------------------------------
 
@@ -87,8 +86,8 @@ refreshAccessTokenUrl oa token = (uri, body)
 --------------------------------------------------
 
 -- | Exchange @code@ for an Access Token with authenticate in request header.
---
 fetchAccessToken ::
+  (MonadIO m) =>
   -- | HTTP connection manager
   Manager ->
   -- | OAuth Data
@@ -96,10 +95,11 @@ fetchAccessToken ::
   -- | OAuth2 Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
 fetchAccessToken2 ::
+  (MonadIO m) =>
   -- | HTTP connection manager
   Manager ->
   -- | OAuth Data
@@ -107,11 +107,12 @@ fetchAccessToken2 ::
   -- | OAuth 2 Tokens
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
 
 fetchAccessTokenInternal ::
+  (MonadIO m) =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager
   Manager ->
@@ -120,7 +121,7 @@ fetchAccessTokenInternal ::
   -- | OAuth 2 Tokens
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 {-# DEPRECATED fetchAccessTokenInternal "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -137,6 +138,7 @@ fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 --
 -- @since 2.6.0
 fetchAccessTokenWithAuthMethod ::
+  (MonadIO m) =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager
   Manager ->
@@ -145,36 +147,38 @@ fetchAccessTokenWithAuthMethod ::
   -- | OAuth 2 Tokens
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 fetchAccessTokenWithAuthMethod authMethod manager oa code = do
   let (uri, body) = accessTokenUrl oa code
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
   doJSONPostRequest manager oa uri (body ++ extraBody)
 
 -- | Fetch a new AccessToken using the Refresh Token with authentication in request header.
---
 refreshAccessToken ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth context
   OAuth2 ->
   -- | refresh token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
 
 refreshAccessToken2 ::
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth context
   OAuth2 ->
   -- | refresh token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
 
 refreshAccessTokenInternal ::
+  (MonadIO m) =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -182,7 +186,7 @@ refreshAccessTokenInternal ::
   OAuth2 ->
   -- | refresh token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 {-# DEPRECATED refreshAccessTokenInternal "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -199,6 +203,7 @@ refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 --
 -- @since 2.6.0
 refreshAccessTokenWithAuthMethod ::
+  (MonadIO m) =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -206,7 +211,7 @@ refreshAccessTokenWithAuthMethod ::
   OAuth2 ->
   -- | refresh token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) IO OAuth2Token
+  ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessTokenWithAuthMethod authMethod manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
@@ -220,7 +225,7 @@ refreshAccessTokenWithAuthMethod authMethod manager oa token = do
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest ::
-  (FromJSON err, FromJSON a) =>
+  (MonadIO m, FromJSON err, FromJSON a) =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth options
@@ -230,7 +235,7 @@ doJSONPostRequest ::
   -- | request body
   PostBody ->
   -- | Response as JSON
-  ExceptT (OAuth2Error err) IO a
+  ExceptT (OAuth2Error err) m a
 doJSONPostRequest manager oa uri body = do
   resp <- doSimplePostRequest manager oa uri body
   case parseResponseFlexible resp of
@@ -239,7 +244,7 @@ doJSONPostRequest manager oa uri body = do
 
 -- | Conduct post request.
 doSimplePostRequest ::
-  FromJSON err =>
+  (MonadIO m, FromJSON err) =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth options
@@ -249,9 +254,9 @@ doSimplePostRequest ::
   -- | Request body.
   PostBody ->
   -- | Response as ByteString
-  ExceptT (OAuth2Error err) IO BSL.ByteString
+  ExceptT (OAuth2Error err) m BSL.ByteString
 doSimplePostRequest manager oa url body =
-  ExceptT $ fmap handleOAuth2TokenResponse go
+  ExceptT . liftIO $ fmap handleOAuth2TokenResponse go
   where
     addBasicAuth = applyBasicAuth (T.encodeUtf8 $ oauth2ClientId oa) (T.encodeUtf8 $ oauth2ClientSecret oa)
     go = do
@@ -299,7 +304,6 @@ addDefaultRequestHeaders req =
    in req {requestHeaders = headers}
 
 -- | Add Credential (client_id, client_secret) to the request post body.
---
 clientSecretPost :: OAuth2 -> PostBody
 clientSecretPost oa =
   [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),

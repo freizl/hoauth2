@@ -3,10 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# OPTIONS_HADDOCK -ignore-exports #-}
 
--- | A simple OAuth2 Haskell binding.  (This is supposed to be
--- independent of the http client used.)
 module Network.OAuth.OAuth2.Internal where
 
 import Control.Applicative
