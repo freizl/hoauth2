@@ -114,10 +114,10 @@ getIdpName :: Show (IDPName a) => IDP a -> TL.Text
 getIdpName = TL.pack . show . idpName
 
 fetchUserInfoViaGet :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaGet i2 mgr at = authGetJSONWithAuthMethod AuthInRequestHeader mgr at (oauth2UserInfoUri i2)
+fetchUserInfoViaGet i2 mgr at = authGetJSON mgr at (oauth2UserInfoUri i2)
 
 fetchUserInfoViaPost :: FromJSON (IDPUserInfo a) => IDP a -> Manager -> AccessToken -> ExceptT BSL.ByteString IO (IDPUserInfo a)
-fetchUserInfoViaPost i2 mgr at = authPostJSONWithAuthMethod AuthInRequestHeader mgr at (oauth2UserInfoUri i2) []
+fetchUserInfoViaPost i2 mgr at = authPostJSON mgr at (oauth2UserInfoUri i2) []
 
 createAuthorizeUri :: (Show (IDPName a)) => IDP a -> TL.Text
 createAuthorizeUri idp@IDP {..} =

@@ -5,7 +5,7 @@
 , warp
 }:
 mkDerivation {
-  pname = "hoauth2-example";
+  pname = "hoauth2-demo";
   version = "1.4.0";
   src = ./.;
   isLibrary = false;

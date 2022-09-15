@@ -7,7 +7,9 @@ synopsis:           Haskell OAuth2 authentication client
 description:
   Haskell OAuth2 authentication client.
   .
-  See <https://github.com/freizl/hoauth2/tree/main/hoauth2-example/src/IDP> for tested OAuth2 providers.
+  Tutorial <https://github.com/freizl/hoauth2/tree/main/hoauth2-tutorial/>
+  .
+  Demo application <https://github.com/freizl/hoauth2/tree/main/hoauth2-demo/>
 
 homepage:           https://github.com/freizl/hoauth2
 license:            BSD-3-Clause

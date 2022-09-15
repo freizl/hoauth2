@@ -141,7 +141,7 @@ fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
   liftIO $ updateIdp c idpData luser at
   where
     oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
-    oauth2ErrorToText e = TL.pack $ "tokenReq - cannot fetch asses token. error detail: " ++ show e
+    oauth2ErrorToText e = TL.pack $ "tokenReq - cannot fetch access token. error detail: " ++ show e
     updateIdp :: CacheStore -> IDPData -> LoginUser -> OAuth2Token -> IO ()
     updateIdp c1 oldIdpData luser token =
       upsertIDPData

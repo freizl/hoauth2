@@ -159,7 +159,6 @@ authPostJSON ::
   -- | Response as JSON
   ExceptT BSL.ByteString m a
 authPostJSON = authPostJSONWithAuthMethod AuthInRequestHeader
-{-# DEPRECATED authPostJSON "use 'authPostJSONWithAuthMethod'" #-}
 
 authPostJSONInternal ::
   (MonadIO m, FromJSON a) =>
