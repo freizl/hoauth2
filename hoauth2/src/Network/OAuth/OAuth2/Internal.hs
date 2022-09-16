@@ -66,10 +66,12 @@ newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
 data OAuth2Token = OAuth2Token
   { accessToken :: AccessToken,
+    -- | Exists when @offline_access@ scope is in the 'authorizeUrl' and the provider supports Refresh Access Token.
     refreshToken :: Maybe RefreshToken,
     expiresIn :: Maybe Int,
+    -- | See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
     tokenType :: Maybe Text,
-    -- This is really not part of RFC6749 but OIDC Spec. A bit hacky.
+    -- | Exists when @openid@ scope is in the 'authorizeUrl' and the provider supports OpenID.
     idToken :: Maybe IdToken
   }
   deriving (Eq, Show, Generic)
@@ -80,11 +82,15 @@ instance Binary OAuth2Token
 instance FromJSON OAuth2Token where
   parseJSON = withObject "OAuth2Token" $ \v ->
     OAuth2Token
-      <$> v .: "access_token"
-      <*> v .:? "refresh_token"
+      <$> v
+      .: "access_token"
+      <*> v
+      .:? "refresh_token"
       <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
-      <*> v .:? "token_type"
-      <*> v .:? "id_token"
+      <*> v
+      .:? "token_type"
+      <*> v
+      .:? "id_token"
     where
       parseIntFlexible :: Value -> Parser Int
       parseIntFlexible (String s) = pure . read $ unpack s
