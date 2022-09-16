@@ -1,22 +1,3 @@
-* Notes
-- OAuth2 spec only supports Access Token and Refresh Token
-- OIDC spec adds ID Token
-- Better to make distinguish.
-
-* To consider
-
-1. [X] auto generate state if it's missing? NO. let client manage state.
-2. [ ] shall verify access token response header?
-   #+begin_src
-   Cache-Control: no-store
-   Pragma: no-cache
-   #+end_src
-3. [ ] maybe an AuthFlow data type which would determine ResponseType and GrantType
-4. [ ] character restriction for error fields.
-
-* Pseudo code
-
-#+begin_src haskell :tangle RewriteThoughts.hs
 {-# LANGUAGE DuplicateRecordFields #-}
 module RewriteThoughts where
 
@@ -161,17 +142,3 @@ data RefreshTokenRequest = RefreshTokenRequest
 data RefreshTokenErrorResponse
 data RefreshTokenSuccessResponse
 data RefreshTokenResponse = Either RefreshTokenErrorResponse RefreshTokenSuccessResponse
-
-#+end_src
-
-* Reference
-1. [[https://datatracker.ietf.org/doc/html/rfc6749][The OAuth 2.0 Authorization Framework]]
-2. [[https://datatracker.ietf.org/doc/html/rfc7636][PKCE]]
-3. OIDC
-4. JWT
-5. Service provider
-
-* Implementation in other language
-- [[https://cs.opensource.google/go/x/oauth2/+/master:;bpv=1;bpt=0][Go]]
-- [[https://github.com/thephpleague/oauth2-client][PHP]]
-- [[https://docs.spring.io/spring-security/reference/servlet/oauth2/client/index.html][Java Spring]]
