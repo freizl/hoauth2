@@ -60,6 +60,7 @@ newtype RefreshToken = RefreshToken {rtoken :: Text} deriving (Binary, Eq, Show,
 
 newtype IdToken = IdToken {idtoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
 
+-- | Authorization Code
 newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON, ToJSON)
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4

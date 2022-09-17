@@ -63,13 +63,12 @@ accessTokenUrl oa code =
         ]
    in (uri, body)
 
--- | Using a Refresh Token.  Obtain a new access token by
--- sending a refresh token to the Authorization server.
+-- | Obtain a new access token by sending a Refresh Token to the Authorization server.
 refreshAccessTokenUrl ::
   OAuth2 ->
-  -- | refresh token gained via authorization URL
+  -- | Refresh Token gained via authorization URL
   RefreshToken ->
-  -- | refresh token request URL plus the request body.
+  -- | Refresh Token request URL plus the request body.
   (URI, PostBody)
 refreshAccessTokenUrl oa token = (uri, body)
   where
@@ -104,7 +103,7 @@ fetchAccessToken2 ::
   Manager ->
   -- | OAuth Data
   OAuth2 ->
-  -- | OAuth 2 Tokens
+  -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) m OAuth2Token
@@ -118,7 +117,7 @@ fetchAccessTokenInternal ::
   Manager ->
   -- | OAuth Data
   OAuth2 ->
-  -- | OAuth 2 Tokens
+  -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) m OAuth2Token
@@ -144,7 +143,7 @@ fetchAccessTokenWithAuthMethod ::
   Manager ->
   -- | OAuth Data
   OAuth2 ->
-  -- | OAuth 2 Tokens
+  -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
   ExceptT (OAuth2Error Errors) m OAuth2Token
@@ -160,7 +159,7 @@ refreshAccessToken ::
   Manager ->
   -- | OAuth context
   OAuth2 ->
-  -- | refresh token gained after authorization
+  -- | Refresh Token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
@@ -171,7 +170,7 @@ refreshAccessToken2 ::
   Manager ->
   -- | OAuth context
   OAuth2 ->
-  -- | refresh token gained after authorization
+  -- | Refresh Token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
@@ -184,7 +183,7 @@ refreshAccessTokenInternal ::
   Manager ->
   -- | OAuth context
   OAuth2 ->
-  -- | refresh token gained after authorization
+  -- | Refresh Token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
@@ -209,7 +208,7 @@ refreshAccessTokenWithAuthMethod ::
   Manager ->
   -- | OAuth context
   OAuth2 ->
-  -- | refresh token gained after authorization
+  -- | Refresh Token gained after authorization
   RefreshToken ->
   ExceptT (OAuth2Error Errors) m OAuth2Token
 refreshAccessTokenWithAuthMethod authMethod manager oa token = do
