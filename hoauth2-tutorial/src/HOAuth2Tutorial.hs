@@ -27,8 +27,9 @@
 --
 -- OAuth2 starts with [authorization](https://www.rfc-editor.org/rfc/rfc6749#section-4).
 --
--- To generate an authorization URL, call method 'authorizationUrlWithParams' with some query parameters.
--- For instance, @state@, @scope@ etc.
+-- To generate an authorization URL, call method 'authorizationUrl', then call 'appendQueryParams' to
+-- append additional query parameters, e.g. @state@, @scope@ etc.
+--
 -- That method will also automatically append following query parameter to the authorization url.
 --
 -- @
@@ -122,7 +123,7 @@ import GHC.Generics (Generic)
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
 import Network.OAuth.OAuth2.AuthorizationRequest
-  ( authorizationUrlWithParams,
+  ( authorizationUrl,
   )
 import Network.OAuth.OAuth2.HttpClient (authGetJSON)
 import Network.OAuth.OAuth2.Internal
@@ -130,6 +131,7 @@ import Network.OAuth.OAuth2.Internal
     OAuth2 (..),
     OAuth2Error,
     OAuth2Token (accessToken),
+    appendQueryParams,
   )
 import Network.OAuth.OAuth2.TokenRequest (fetchAccessToken)
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
@@ -156,11 +158,11 @@ auth0 =
 
 authorizeUrl :: URI
 authorizeUrl =
-  authorizationUrlWithParams
+  appendQueryParams
     [ ("scope", "openid profile email"),
       ("state", randomStateValue)
     ]
-    auth0
+    $ authorizationUrl auth0
 
 -- | You'll need to find out an better to create @state@
 -- which is recommended in <https://www.rfc-editor.org/rfc/rfc6749#section-10.12>
