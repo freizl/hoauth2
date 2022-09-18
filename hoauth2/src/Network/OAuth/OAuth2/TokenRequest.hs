@@ -263,14 +263,14 @@ doSimplePostRequest manager oa url body =
       let req' = (addBasicAuth . addDefaultRequestHeaders) req
       httpLbs (urlEncodedBody body req') manager
 
--- | Parses a @Response@ to to @OAuth2Result@
+-- | Gets response body from a @Response@ if 200 otherwise assume 'OAuth2Error'
 handleOAuth2TokenResponse :: FromJSON err => Response BSL.ByteString -> Either (OAuth2Error err) BSL.ByteString
 handleOAuth2TokenResponse rsp =
   if HT.statusIsSuccessful (responseStatus rsp)
     then Right $ responseBody rsp
     else Left $ parseOAuth2Error (responseBody rsp)
 
--- | Try 'parseResponseJSON', if failed then parses the @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String.
+-- | Try to parses response as JSON, if failed, try to parse as like query string.
 parseResponseFlexible ::
   (FromJSON err, FromJSON a) =>
   BSL.ByteString ->
@@ -279,7 +279,7 @@ parseResponseFlexible r = case eitherDecode r of
   Left _ -> parseResponseString r
   Right x -> Right x
 
--- | Parses a @OAuth2Result BSL.ByteString@ that contains not JSON but a Query String
+-- | Parses the response that contains not JSON but a Query String
 parseResponseString ::
   (FromJSON err, FromJSON a) =>
   BSL.ByteString ->

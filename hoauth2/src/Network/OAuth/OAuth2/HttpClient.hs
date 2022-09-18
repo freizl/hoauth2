@@ -304,7 +304,7 @@ authRequest ::
   ExceptT BSL.ByteString m BSL.ByteString
 authRequest req upReq manage = ExceptT $ handleResponse <$> httpLbs (upReq req) manage
 
--- | Parses a @Response@ to to @OAuth2Result@
+-- | Get response body out of a @Response@
 handleResponse :: Response BSL.ByteString -> Either BSL.ByteString BSL.ByteString
 handleResponse rsp =
   if HT.statusIsSuccessful (responseStatus rsp)
