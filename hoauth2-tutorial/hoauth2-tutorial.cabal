@@ -22,7 +22,7 @@ source-repository head
 
 library
   hs-source-dirs:   src
-  exposed-modules:  Hoauth2Tutorial
+  exposed-modules:  HOAuth2Tutorial
   build-depends:
     , aeson           >=2.0    && <2.2
     , base            >=4.5    && <5

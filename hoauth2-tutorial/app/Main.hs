@@ -1,6 +1,6 @@
 module Main where
 
-import Hoauth2Tutorial (app)
+import HOAuth2Tutorial (app)
 
 main :: IO ()
 main = app

@@ -1,0 +1,6 @@
+#+title: Readme
+
+* Notes
+** What is replay attacks?
+- [[https://auth0.com/docs/get-started/authentication-and-authorization-flow/mitigate-replay-attacks-when-using-the-implicit-flow][Mitigate Replay Attacks When Using the Implicit Flow]]
+** What is Cross-Site Request Forgery
