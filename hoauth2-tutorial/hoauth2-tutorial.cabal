@@ -1,6 +1,9 @@
 cabal-version: 2.4
 name:          hoauth2-tutorial
 version:       0.1
+synopsis:      Tutorial for using hoauth2
+description:
+  Tutorial to demostrate how to use hoauth2 to implement OAuth2 flow in an web Application.
 homepage:      https://github.com/freizl/hoauth2
 license:       BSD-3-Clause
 license-file:  LICENSE
