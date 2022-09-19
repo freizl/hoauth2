@@ -31,7 +31,6 @@ data AuthorizationCodeRequest = AuthorizationCodeReq
   , redirectUri :: Text
   , scope :: [ Scope ]
   , state :: State
-  , nonce :: Nonce
   }
   deriving (Show, Eq, Generic)
 

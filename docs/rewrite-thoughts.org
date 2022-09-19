@@ -29,6 +29,7 @@ data URI = URI
 
 -- | May not need to support Token
 --
+data GrantType
 data ResponseType = Code | Token | IdToken
   deriving (Show, Eq, Generic)
 newtype State = State Text
@@ -50,7 +51,6 @@ data AuthorizationCodeRequest = AuthorizationCodeReq
   , redirectUri :: Text
   , scope :: [ Scope ]
   , state :: State
-  , nonce :: Nonce
   }
   deriving (Show, Eq, Generic)
 
