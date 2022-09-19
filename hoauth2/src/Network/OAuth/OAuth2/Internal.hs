@@ -132,9 +132,17 @@ mkDecodeOAuth2Error response err =
     Nothing
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
---  According to spec, 'ClientSecrectBasic' is a MUST hence always credential will always be included in header.
--- 'ClientSecretPost' is optional and not recommended.
--- Need to consider an alternative implementation could be accepting Bool in method like 'fetchAccessTokenWithAuthMethod'.
+-- According to spec:
+--
+-- The client MUST NOT use more than one authentication method in each request.
+--
+-- Which means use Authorization header or Post body.
+--
+-- However, in reality, I always have to include authentication in the header.
+--
+-- In other words, 'ClientSecrectBasic' is always assured. 'ClientSecretPost' is optional.
+--
+-- Maybe consider an alternative implementation that boolean kind of data type is good enough.
 data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost

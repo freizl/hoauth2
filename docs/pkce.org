@@ -1,0 +1,39 @@
+#+title: PKCE
+
+* authorize flow
+
+#+begin_example
+
+data CodeChallengeType = S256
+
+-- what does "cryptographically random string" mean??
+codeVerifier = System.Random.gen(...);
+
+codeChallenge = Base64UrlEncode . SHA256 $ codeVerifier
+
+authorizeRequestParam = {
+  oauth2 = OAuth2 { clientId = xxx, clientSecret = xxx },
+  code_challenge = xxx
+  code_challenge_method = CodeChallengeType
+}
+#+end_example
+
+* token flow
+
+#+begin_example
+tokenRequestParam = {
+  oauth2 = OAuth2 { clientId = xxx, clientSecret = xxx },
+  exchangeToken = xxxx ,
+  code_verifier = codeVerifier
+}
+#+end_example
+
+
+* Reference
+- https://www.oauth.com/oauth2-servers/pkce/
+- what is base64 url encoding
+#+begin_quote
+Base64-URL-encoding is a minor variation on the typical Base64 encoding method. It starts with the same Base64-encoding method available in most programming languages, but uses URL-safe characters instead. You can implement a Base64-URL-encoding method by taking a Base64-encoded string and making the following modifications to the string: Take the Base64-encoded string, and change + to -, and / to _, then trim the trailing = from the end.
+#+end_quote
+- [[https://datatracker.ietf.org/doc/html/rfc7636][RFC - PKCE]]
+- [[https://tonyxu-io.github.io/pkce-generator/][PKCE generator (JavaScript)]]

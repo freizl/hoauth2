@@ -21,7 +21,7 @@ tpl f =
 
 tplS ::
   FilePath ->
-  [IDPData] ->
+  [DemoAppEnv] ->
   IO TL.Text
 tplS path xs = do
   template <- tpl path
@@ -34,11 +34,11 @@ tplS path xs = do
 
 tplH ::
   FilePath ->
-  [IDPData] ->
+  [DemoAppEnv] ->
   ActionM ()
 tplH path xs = do
   s <- liftIO (tplS path xs)
   html s
 
-overviewTpl :: [IDPData] -> ActionM ()
+overviewTpl :: [DemoAppEnv] -> ActionM ()
 overviewTpl = tplH "index"

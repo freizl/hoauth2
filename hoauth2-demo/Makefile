@@ -1,5 +1,5 @@
 watch:
-	ghcid --command="cabal repl demo-server"
+	ghcid --command="cabal repl demo-server" --restart=hoauth2-demo.cabal
 
 repl:
 	cabal repl demo-server

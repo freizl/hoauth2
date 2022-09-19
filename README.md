@@ -17,3 +17,8 @@ Lightweight Haskell binding for
 ## Contribute
 
 - Feel free send pull request or submit issue ticket.
+
+## Reference
+
+- <https://www.oauth.com/>
+- <https://developer.okta.com/docs/guides/implement-grant-type/authcode/main/>

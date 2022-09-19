@@ -1,10 +1,3 @@
-* Build the sample App
-
-- Make sure `ghc-9.2.x` and `cabal-3.x` installed.
-- copy `sample.env.json` to `.env.json` and modify the clientId and clientSecret
-- `make start`
-- open <http://localhost:9988>
-
 * IDPs
 
 - Auth0: <https://auth0.com/docs/authorization/protocols/protocol-oauth2>
@@ -21,9 +14,3 @@
 - Weibo: <http://open.weibo.com/wiki/Oauth2>
 - ZOHO: https://www.zoho.com/crm/developer/docs/api/v2/oauth-overview.html
 
-* NOTES
-- classes in Types.hs takes a (`Idp`) as first parameter but it is actually not used. bad pattern. how to fix it??
-- refactor: `App.hs` is messy!
-- It is tedious to add a new Idp (especially support OIDC)
-  a. creates entry in ~Key.hs~
-  b. creates a Idp module which mostly are boilerpate code, needs reference to OAuth2 Key object multiple times

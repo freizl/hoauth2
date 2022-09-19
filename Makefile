@@ -4,12 +4,12 @@ clean:
 	cabal clean
 
 build:
-	cabal build all
+	cabal build -j --run-tests all
 
 rebuild: clean build
 
 hlint:
-	hlint hoauth2/src hoauth2-demo/src hoauth2-tutorial/src
+	hlint hoauth2/src hoauth2-demo/src hoauth2-tutorial/src hoauth2-providers/src hoauth2-providers-tutorial/src
 
 doc: build
 	cabal haddock all

@@ -4,25 +4,28 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module App
-  ( app,
-    waiApp,
-  )
-where
+module App (app) where
 
 import Control.Monad
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
+import Data.Aeson
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import IDP
+import Idp
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
+import Network.OAuth2.Experiment
+import Network.OAuth2.Provider.Auth0 qualified as IAuth0
+import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
@@ -46,18 +49,36 @@ app =
     >> waiApp
     >>= run myServerPort
 
--- TODO: how to add either Monad or a middleware to do server side session?
 waiApp :: IO WAI.Application
 waiApp = do
   cache <- initCacheStore
-  initIdps cache
-  scottyApp $ do
-    middleware $ staticPolicy (addBase "public/assets")
-    defaultHandler globalErrorHandler
-    get "/" $ indexH cache
-    get "/oauth2/callback" $ callbackH cache
-    get "/logout" $ logoutH cache
-    get "/refresh" $ refreshH cache
+  re <- runExceptT $ do
+    myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
+    myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
+    -- For the sake of simplicity for this demo App,
+    -- I store user data in MVar in server side.
+    -- It means user session shared across browsers.
+    -- which simplify my testing cross browsers.
+    -- I am sure you don't want to this for your production services.
+    initIdps cache (myAuth0Idp, myOktaIdp)
+    pure (myAuth0Idp, myOktaIdp)
+  case re of
+    Left e -> Prelude.error $ TL.unpack $ "unable to init cache: " <> e
+    Right r -> do
+      putStrLn "global cache has been initialized."
+      initApp cache r
+
+initApp :: CacheStore -> (Idp IAuth0.Auth0, Idp IOkta.Okta) -> IO WAI.Application
+initApp cache idps = scottyApp $ do
+  middleware $ staticPolicy (addBase "public/assets")
+  defaultHandler globalErrorHandler
+  get "/" $ indexH cache
+  get "/oauth2/callback" $ callbackH cache
+  get "/logout" $ logoutH cache
+  get "/refresh" $ refreshH cache
+
+  get "/login/password-grant" $ testPasswordGrantTypeH idps
+  get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
 
 --------------------------------------------------
 
@@ -73,13 +94,11 @@ globalErrorHandler t = status status500 >> html t
 
 refreshH :: CacheStore -> ActionM ()
 refreshH c = do
-  idpData <- readIdpParam c
+  idpData@(DemoAppEnv idp sData) <- readIdpParam c
   exceptToActionM $ do
     newToken <- doRefreshToken idpData
-    liftIO $ do
-      putStrLn "got new token"
-      upsertIDPData c (idpData {oauth2Token = Just newToken})
-  -- TODO: double check: shall only return to home when no error.
+    liftIO $ putStrLn ">>>>>> got new token"
+    upsertDemoAppEnv c (DemoAppEnv idp (sData {oauth2Token = Just newToken}))
   redirectToHomeM
 
 logoutH :: CacheStore -> ActionM ()
@@ -105,8 +124,58 @@ callbackH c = do
     fetchTokenAndUser c (head codeP) idpData
   redirectToHomeM
 
--- NOTE: looks like `state` shall be passed when fetching access token
---       turns out no IDP enforce this yet
+testPasswordGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
+testPasswordGrantTypeH (auth0, okta) = do
+  idpP <- paramValue "i" <$> params
+  when (null idpP) (raise "testPasswordGrantTypeH: no idp parameter in the password grant type login request")
+  let i = head idpP
+  case i of
+    "auth0" -> testPasswordGrantType (auth0PasswordGrantApp auth0)
+    "okta" -> testPasswordGrantType (oktaPasswordGrantApp okta)
+    _ -> raise $ "unable to find password grant type flow for idp " <> i
+  where
+    testPasswordGrantType ::
+      ( HasTokenRequest a,
+        'ResourceOwnerPassword ~ a,
+        HasDemoLoginUser b,
+        HasUserInfoRequest a,
+        FromJSON (IDPUserInfo b)
+      ) =>
+      IdpApplication a b ->
+      ActionM ()
+    testPasswordGrantType idpApp = do
+      exceptToActionM $ do
+        mgr <- liftIO $ newManager tlsManagerSettings
+        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr
+        user <- tryFetchUser mgr token idpApp
+        liftIO $ print user
+      redirectToHomeM
+
+testClientCredentialGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
+testClientCredentialGrantTypeH (auth0, okta) = do
+  idpP <- paramValue "i" <$> params
+  when (null idpP) (raise "testClientCredentialsGrantTypeH: no idp parameter in the password grant type login request")
+  let i = head idpP
+  case i of
+    "auth0" -> testClientCredentialsGrantType (auth0ClientCredentialsGrantApp auth0)
+    "okta" -> testClientCredentialsGrantType (oktaClientCredentialsGrantApp okta)
+    _ -> raise $ "unable to find password grant type flow for idp " <> i
+
+testClientCredentialsGrantType ::
+  forall a b.
+  ( 'ClientCredentials ~ b
+  ) =>
+  HasTokenRequest b =>
+  IdpApplication b a ->
+  ActionM ()
+testClientCredentialsGrantType testApp = do
+  exceptToActionM $ do
+    mgr <- liftIO $ newManager tlsManagerSettings
+    -- client credentials flow is meant for machine to machine
+    -- hence wont be able to hit /userinfo endpoint
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
+    liftIO $ print tokenResp
+  redirectToHomeM
 
 --------------------------------------------------
 
@@ -119,7 +188,7 @@ exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
 
-readIdpParam :: CacheStore -> ActionM IDPData
+readIdpParam :: CacheStore -> ActionM DemoAppEnv
 readIdpParam c = do
   pas <- params
   let idpP = paramValue "idp" pas
@@ -129,41 +198,48 @@ readIdpParam c = do
 fetchTokenAndUser ::
   CacheStore ->
   Text ->
-  IDPData ->
+  DemoAppEnv ->
   ExceptT Text IO ()
-fetchTokenAndUser c code idpData@(IDPData (IDPApp idp) _ _) = do
+fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
   mgr <- liftIO $ newManager tlsManagerSettings
   token <-
-    withExceptT oauth2ErrorToText $
-      tokenReq idp mgr (ExchangeToken $ TL.toStrict code)
-  -- liftIO $ print token
-  (luser, at) <- tryFetchUser mgr token idp
-  liftIO $ updateIdp c idpData luser at
+    if isSupportPkce idpAppConfig
+      then do
+        when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
+        withExceptT oauth2ErrorToText $
+          conduitPkceTokenRequest
+            idpAppConfig
+            mgr
+            (ExchangeToken $ TL.toStrict exchangeToken, fromJust authorizePkceCodeVerifier)
+      else withExceptT oauth2ErrorToText $ conduitTokenRequest idpAppConfig mgr (ExchangeToken $ TL.toStrict exchangeToken)
+
+  luser <- tryFetchUser mgr token idpAppConfig
+  updateIdp c idpData luser token
   where
-    oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
-    oauth2ErrorToText e = TL.pack $ "tokenReq - cannot fetch access token. error detail: " ++ show e
-    updateIdp :: CacheStore -> IDPData -> LoginUser -> OAuth2Token -> IO ()
-    updateIdp c1 oldIdpData luser token =
-      upsertIDPData
+    updateIdp :: MonadIO m => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
+    updateIdp c1 (DemoAppEnv iApp sData) luser token =
+      upsertDemoAppEnv
         c1
-        (oldIdpData {loginUser = Just luser, oauth2Token = Just token})
+        (DemoAppEnv iApp $ sData {loginUser = Just luser, oauth2Token = Just token})
+
+oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
+oauth2ErrorToText e = TL.pack $ "mkTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::
-  IsIDP a =>
+  forall a b.
+  (HasDemoLoginUser a, HasUserInfoRequest b, FromJSON (IDPUserInfo a)) =>
   Manager ->
   OAuth2Token ->
-  a ->
-  ExceptT Text IO (LoginUser, OAuth2Token)
-tryFetchUser mgr at idp = do
-  user <- withExceptT bslToText $ userReq idp mgr (accessToken at)
-  return (user, at)
+  IdpApplication b a ->
+  ExceptT Text IO DemoLoginUser
+tryFetchUser mgr at idpAppConfig = do
+  user <- withExceptT bslToText $ conduitUserInfoRequest idpAppConfig mgr (accessToken at)
+  pure $ toLoginUser @a user
 
-doRefreshToken :: IDPData -> ExceptT Text IO OAuth2Token
-doRefreshToken (IDPData (IDPApp idp) _ token) = do
-  case token of
-    Nothing -> throwE "no token found for idp"
-    Just at -> case refreshToken at of
-      Nothing -> throwE "no refresh token presents. did you add 'offline_access' scope?"
-      Just rt -> withExceptT (TL.pack . show) $ do
-        mgr <- liftIO $ newManager tlsManagerSettings
-        tokenRefreshReq idp mgr rt
+doRefreshToken :: DemoAppEnv -> ExceptT Text IO OAuth2Token
+doRefreshToken (DemoAppEnv (DemoAuthorizationApp idpAppConfig) (DemoAppPerAppSessionData {..})) = do
+  at <- maybe (throwE "no token response found for idp") pure oauth2Token
+  rt <- maybe (throwE "no refresh token found for idp") pure (OAuth2.refreshToken at)
+  withExceptT (TL.pack . show) $ do
+    mgr <- liftIO $ newManager tlsManagerSettings
+    conduitRefreshTokenRequest idpAppConfig mgr rt
