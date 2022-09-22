@@ -6,9 +6,11 @@
 module Network.OAuth.OAuth2.AuthorizationRequest where
 
 import Data.Aeson
+import Data.Function (on)
+import qualified Data.List as List
 import qualified Data.Text.Encoding as T
-import GHC.Generics
-import Lens.Micro
+import GHC.Generics (Generic)
+import Lens.Micro (over)
 import Network.OAuth.OAuth2.Internal
 import URI.ByteString
 
@@ -54,13 +56,13 @@ authorizationUrl = authorizationUrlWithParams []
 -- asking for user interactive authentication.
 --
 -- @since 2.6.0
-authorizationUrlWithParams :: QueryParams -> OAuth2  -> URI
+authorizationUrlWithParams :: QueryParams -> OAuth2 -> URI
 authorizationUrlWithParams qs oa = over (queryL . queryPairsL) (++ queryParts) (oauth2AuthorizeEndpoint oa)
   where
     queryParts =
-      [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-        ("response_type", "code"),
-        ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
-      ]
-      ++ qs
-
+      List.nubBy ((==) `on` fst) $
+        qs
+          ++ [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
+               ("response_type", "code"),
+               ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
+             ]
