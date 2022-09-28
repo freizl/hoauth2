@@ -51,24 +51,24 @@ import URI.ByteString (URI, URIRef, queryL, queryPairsL)
 -- | Conduct an authorized GET request and return response as JSON.
 --   Inject Access Token to Authorization Header.
 authGetJSON ::
-  (MonadIO m, FromJSON b) =>
+  (FromJSON a, MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as JSON
-  ExceptT BSL.ByteString m b
+  ExceptT BSL.ByteString m a
 authGetJSON = authGetJSONWithAuthMethod AuthInRequestHeader
 
 authGetJSONInternal ::
-  (MonadIO m, FromJSON b) =>
+  (FromJSON a, MonadIO m) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
   URI ->
   -- | Response as JSON
-  ExceptT BSL.ByteString m b
+  ExceptT BSL.ByteString m a
 authGetJSONInternal = authGetJSONWithAuthMethod
 {-# DEPRECATED authGetJSONInternal "use authGetJSONWithAuthMethod" #-}
 
@@ -150,7 +150,7 @@ authGetBSWithAuthMethod authTypes manager token url = do
 -- | Conduct POST request and return response as JSON.
 --   Inject Access Token to Authorization Header.
 authPostJSON ::
-  (MonadIO m, FromJSON a) =>
+  (FromJSON a, MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -161,7 +161,7 @@ authPostJSON ::
 authPostJSON = authPostJSONWithAuthMethod AuthInRequestHeader
 
 authPostJSONInternal ::
-  (MonadIO m, FromJSON a) =>
+  (FromJSON a, MonadIO m) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -178,7 +178,7 @@ authPostJSONInternal = authPostJSONWithAuthMethod
 --
 -- @since 2.6.0
 authPostJSONWithAuthMethod ::
-  (MonadIO m, FromJSON a) =>
+  (FromJSON a, MonadIO m) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
