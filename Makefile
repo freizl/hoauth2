@@ -8,8 +8,12 @@ build:
 
 rebuild: clean build
 
+hlint-only:
+	hlint .
+
+## refactor by default
 hlint:
-	hlint hoauth2/src hoauth2-demo/src hoauth2-tutorial/src hoauth2-providers/src hoauth2-providers-tutorial/src
+	hlint --refactor --refactor-options="--inplace" .
 
 doc: build
 	cabal haddock all
