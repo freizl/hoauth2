@@ -5,14 +5,11 @@
 
 ## Introduction
 
-Lightweight Haskell binding for
-
-- [The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749) 
-    - Supports `Authorization Code Grant (section 4.1)`
-    - TODO: Supports `Client Credentials Grant (section 4.4)`
-    - If the provider does implement [OIDC spec](https://openid.net/specs/openid-connect-core-1_0.html),
-      ID Token would also be included in token response (see `OAuth2Token`).
-- [The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://www.rfc-editor.org/rfc/rfc6750)
+1. [OAuth2 Haskell binding](./hoauth2)
+1. [Tutorial for using the binding](./hoauth2-tutorial)
+1. [OAuth2 IdP providers](./hoauth2-providers)
+1. [Tutorial in terms of how to use those providers](./hoauth2-providers-tutorial)
+1. [Sample Application that plays with all those providers and different grant type flow](./hoauth2-demo)
 
 ## Contribute
 

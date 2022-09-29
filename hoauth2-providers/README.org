@@ -1,4 +1,4 @@
-* IDPs
+* Supported IdP list
 
 - Auth0: <https://auth0.com/docs/authorization/protocols/protocol-oauth2>
 - AzureAD: <https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code>
