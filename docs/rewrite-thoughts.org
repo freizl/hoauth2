@@ -194,3 +194,8 @@ Then could conduit api request (or generate /authorize URI) base on
 - [[https://cs.opensource.google/go/x/oauth2/+/master:;bpv=1;bpt=0][Go]]
 - [[https://github.com/thephpleague/oauth2-client][PHP]]
 - [[https://docs.spring.io/spring-security/reference/servlet/oauth2/client/index.html][Java Spring]]
+
+* Notes
+** What is replay attacks?
+- [[https://auth0.com/docs/get-started/authentication-and-authorization-flow/mitigate-replay-attacks-when-using-the-implicit-flow][Mitigate Replay Attacks When Using the Implicit Flow]]
+** What is Cross-Site Request Forgery

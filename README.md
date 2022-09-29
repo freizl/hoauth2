@@ -11,6 +11,10 @@
 1. [Tutorial in terms of how to use those providers](./hoauth2-providers-tutorial)
 1. [Sample Application that plays with all those providers and different grant type flow](./hoauth2-demo)
 
+## Build
+
+- `make rebuild`
+
 ## Contribute
 
 - Feel free send pull request or submit issue ticket.
