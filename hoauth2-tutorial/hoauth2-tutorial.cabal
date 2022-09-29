@@ -4,6 +4,7 @@ version:       0.1.1
 synopsis:      Tutorial for using hoauth2
 description:
   Tutorial to demostrate how to use hoauth2 to implement OAuth2 flow in an web Application.
+
 homepage:      https://github.com/freizl/hoauth2
 license:       BSD-3-Clause
 license-file:  LICENSE
@@ -30,7 +31,7 @@ library
     , aeson           >=2.0    && <2.2
     , base            >=4.5    && <5
     , bytestring      >=0.9    && <0.12
-    , hoauth2         ^>= 2.5
+    , hoauth2         ^>=2.5
     , http-conduit    >=2.1    && <2.4
     , http-types      >=0.11   && <0.13
     , scotty          >=0.10.0 && <0.13
@@ -54,7 +55,7 @@ executable hoauth2-tutorial
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
   build-depends:
-    , base            >=4.5    && <5
+    , base              >=4.5 && <5
     , hoauth2-tutorial
 
   hs-source-dirs:   app

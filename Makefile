@@ -17,6 +17,13 @@ doc: build
 dist: rebuild
 	cabal sdist all
 
+format-cabal:
+	cabal-fmt -i hoauth2/hoauth2.cabal
+	cabal-fmt -i hoauth2-tutorial/hoauth2-tutorial.cabal
+	cabal-fmt -i hoauth2-providers/hoauth2-providers.cabal
+	cabal-fmt -i hoauth2-providers-tutorial/hoauth2-providers-tutorial.cabal
+	cabal-fmt -i hoauth2-demo/hoauth2-demo.cabal
+
 ## install ghcid globally: `cabal install ghcid`
 watch-lib:
 	ghcid --command="cabal repl hoauth2" --restart=hoauth2/hoauth2.cabal
