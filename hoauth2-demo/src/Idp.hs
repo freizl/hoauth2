@@ -132,7 +132,7 @@ auth0ClientCredentialsGrantApp i =
 isSupportPkce :: forall a i. ('AuthorizationCode ~ a) => IdpApplication a i -> Bool
 isSupportPkce AuthorizationCodeIdpApplication{..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
-   in "auth0.com" `BS.isInfixOf` hostStr || "okta.com" `BS.isInfixOf` hostStr
+   in any (`BS.isInfixOf` hostStr) ["auth0.com", "okta.com", "google.com"]
 
 instance HasDemoLoginUser IAuth0.Auth0 where
   toLoginUser :: IAuth0.Auth0User -> DemoLoginUser
