@@ -52,7 +52,10 @@ library
     , transformers          ^>=0.5
     , uri-bytestring        >=0.2.3 && <0.4
     , uri-bytestring-aeson  ^>=0.1
+    , ghc-specter-plugin
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
     -Wwarnings-deprecations
+    -fwrite-ide-info
+    -fplugin Plugin.GHCSpecter

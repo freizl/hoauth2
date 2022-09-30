@@ -1,1 +1,7 @@
 packages: */*.cabal
+
+source-repository-package
+    type: git
+    location: https://github.com/MercuryTechnologies/ghc-specter
+    tag: 4545a44e345910e77d3db509f29c44c0c4aecd7d
+    subdir: plugin
