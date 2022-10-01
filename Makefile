@@ -9,11 +9,6 @@ build:
 build-ide:
 	cabal build -j --run-tests all --ghc-options="-fwrite-ide-info"
 
-# test:
-# 	hiedb index -D .hiedb
-# 	hiedb ref-graph -D .hiedb
-# 	dot -Tsvg refs.dot > /tmp/hoauth2.svg
-
 rebuild: clean build
 
 hlint-only:
@@ -49,3 +44,15 @@ ci-build:
 
 ci-lint:
 	nix-shell --command 'make hlint'
+
+###############################################################################
+#                                    HIEDB                                    #
+###############################################################################
+#
+# mk-html:
+# 	hiedb -D .hiedb html t:GrantTypeFlow:Network.OAuth2.Experiment.Types:hoauth2-2.5.0-inplace
+#
+# mk-graph:
+# 	hiedb index -D .hiedb
+# 	hiedb ref-graph -D .hiedb
+# 	dot -Tsvg refs.dot > /tmp/hoauth2.svg
