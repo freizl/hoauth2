@@ -11,7 +11,7 @@
 --
 -- This module will become default in future release. (TBD but likely 3.0).
 --
--- The key concept/change is to introduce the 'GrantType', which determines the entire work flow per spec.
+-- The key concept/change is to introduce the 'GrantTypeFlow', which determines the entire work flow per spec.
 --
 -- Each work flow will have slight different request parameters, which often time you'll see
 -- different configuration when creating OAuth2 application in the IdP developer application page.
@@ -42,9 +42,9 @@
 -- googleIdp = Idp Google
 --   Idp
 --     { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google),
---       idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|],
---       idpTokenEndpoint = [uri|https://oauth2.googleapis.com/token|],
---       idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
+--       idpAuthorizeEndpoint = [uri|https:\/\/accounts.google.com\/o\/oauth2\/v2\/auth|],
+--       idpTokenEndpoint = [uri|https:\/\/oauth2.googleapis.com\/token|],
+--       idpUserInfoEndpoint = [uri|https:\/\/www.googleapis.com\/oauth2\/v2\/userinfo|]
 --     }
 --
 -- fooApp :: IdpApplication 'AuthorizationCode Google
@@ -54,12 +54,12 @@
 --       idpAppClientSecret = "xxxxx",
 --       idpAppScope =
 --         Set.fromList
---           [ \"https://www.googleapis.com/auth/userinfo.email\",
---             \"https://www.googleapis.com/auth/userinfo.profile\"
+--           [ \"https:\/\/www.googleapis.com\/auth\/userinfo.email\",
+--             \"https:\/\/www.googleapis.com\/auth\/userinfo.profile\"
 --           ],
 --       idpAppAuthorizeState = \"CHANGE_ME\",
 --       idpAppAuthorizeExtraParams = Map.empty,
---       idpAppRedirectUri = [uri|http://localhost/oauth2/callback|],
+--       idpAppRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
 --       idpAppName = "default-google-App",
 --       idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
 --       idp = googleIdp

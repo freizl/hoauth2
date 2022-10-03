@@ -85,7 +85,7 @@ data GrantTypeValue = GTAuthorizationCode | GTPassword | GTClientCredentials | G
 
 -------------------------------------------------------------------------------
 
--- | TODO: following data type is not ideal as Idp would have lots of 'Custom Text'
+-- TODO: following data type is not ideal as Idp would have lots of 'Custom Text'
 --
 -- @
 -- data Scope = OPENID | PROFILE | EMAIL | OFFLINE_ACCESS | Custom Text
@@ -110,6 +110,8 @@ newtype ClientId = ClientId {unClientId :: Text}
 newtype ClientSecret = ClientSecret {unClientSecret :: Text}
   deriving (Eq, IsString)
 
+-- | In order to reuse some methods from legacy "Network.OAuth.OAuth2".
+-- Will be removed when Experiment module becomes default.
 toOAuth2Key :: ClientId -> ClientSecret -> OAuth2
 toOAuth2Key cid csecret =
   def
