@@ -17,7 +17,7 @@ import Text.Mustache qualified as M
 import Prelude hiding (id)
 
 class HasDemoLoginUser a where
-  toLoginUser :: IDPUserInfo a -> DemoLoginUser
+  toLoginUser :: IdpUserInfo a -> DemoLoginUser
 
 -- | Use for creating list of IDPs
 -- Heterogenous collections
@@ -25,7 +25,7 @@ class HasDemoLoginUser a where
 data DemoAuthorizationApp
   = forall a b.
     ( HasDemoLoginUser b,
-      FromJSON (IDPUserInfo b),
+      FromJSON (IdpUserInfo b),
       'AuthorizationCode ~ a,
       HasPkceAuthorizeRequest a,
       HasPkceTokenRequest a,

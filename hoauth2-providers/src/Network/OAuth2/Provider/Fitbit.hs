@@ -17,7 +17,7 @@ import URI.ByteString.QQ
 
 data Fitbit = Fitbit deriving (Eq, Show)
 
-type instance IDPUserInfo Fitbit = FitbitUser
+type instance IdpUserInfo Fitbit = FitbitUser
 
 defaultFitbitApp :: IdpApplication 'AuthorizationCode Fitbit
 defaultFitbitApp =
@@ -36,7 +36,7 @@ defaultFitbitApp =
 defaultFitbitIdp :: Idp Fitbit
 defaultFitbitIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Fitbit),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Fitbit),
       idpUserInfoEndpoint = [uri|https://api.fitbit.com/1/user/-/profile.json|],
       idpAuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|],
       idpTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]

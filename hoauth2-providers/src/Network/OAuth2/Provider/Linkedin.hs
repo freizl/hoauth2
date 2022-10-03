@@ -22,7 +22,7 @@ import URI.ByteString.QQ
 
 data Linkedin = Linkedin deriving (Eq, Show)
 
-type instance IDPUserInfo Linkedin = LinkedinUser
+type instance IdpUserInfo Linkedin = LinkedinUser
 
 defaultLinkedinApp :: IdpApplication 'AuthorizationCode Linkedin
 defaultLinkedinApp =
@@ -41,7 +41,7 @@ defaultLinkedinApp =
 defaultLinkedinIdp :: Idp Linkedin
 defaultLinkedinIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Linkedin),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Linkedin),
       idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|],
       idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|],
       idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]

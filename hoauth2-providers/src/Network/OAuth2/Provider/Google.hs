@@ -24,7 +24,7 @@ To test at google playground, set redirect uri to "https://developers.google.com
 
 data Google = Google deriving (Eq, Show)
 
-type instance IDPUserInfo Google = GoogleUser
+type instance IdpUserInfo Google = GoogleUser
 
 defaultGoogleApp :: IdpApplication 'AuthorizationCode Google
 defaultGoogleApp =
@@ -47,7 +47,7 @@ defaultGoogleApp =
 defaultGoogleIdp :: Idp Google
 defaultGoogleIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Google),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google),
       idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|],
       idpTokenEndpoint = [uri|https://oauth2.googleapis.com/token|],
       idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]

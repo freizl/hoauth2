@@ -25,7 +25,7 @@ import URI.ByteString.QQ
 data Auth0 = Auth0
   deriving (Show, Eq)
 
-type instance IDPUserInfo Auth0 = Auth0User
+type instance IdpUserInfo Auth0 = Auth0User
 
 defaultAuth0App :: Idp Auth0 -> IdpApplication 'AuthorizationCode Auth0
 defaultAuth0App i =
@@ -44,7 +44,7 @@ defaultAuth0App i =
 defaultAuth0Idp :: Idp Auth0
 defaultAuth0Idp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Auth0),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0),
       --  https://auth0.com/docs/api/authentication#user-profile
       idpUserInfoEndpoint = [uri|https://foo.auth0.com/userinfo|],
       -- https://auth0.com/docs/api/authentication#authorization-code-flow

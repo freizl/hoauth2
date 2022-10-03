@@ -13,7 +13,7 @@ import URI.ByteString.QQ
 
 data AzureAD = AzureAD deriving (Eq, Show)
 
-type instance IDPUserInfo AzureAD = AzureADUser
+type instance IdpUserInfo AzureAD = AzureADUser
 
 defaultAzureADApp :: IdpApplication 'AuthorizationCode AzureAD
 defaultAzureADApp =
@@ -32,7 +32,7 @@ defaultAzureADApp =
 defaultAzureADIdp :: Idp AzureAD
 defaultAzureADIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo AzureAD),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD),
       idpUserInfoEndpoint = [uri|https://graph.microsoft.com/v1.0/me|],
       idpAuthorizeEndpoint = [uri|https://login.windows.net/common/oauth2/authorize|],
       idpTokenEndpoint = [uri|https://login.windows.net/common/oauth2/token|]

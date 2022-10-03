@@ -13,7 +13,7 @@ import URI.ByteString.QQ
 
 data Weibo = Weibo deriving (Eq, Show)
 
-type instance IDPUserInfo Weibo = WeiboUID
+type instance IdpUserInfo Weibo = WeiboUID
 
 defaultWeiboApp :: IdpApplication 'AuthorizationCode Weibo
 defaultWeiboApp =
@@ -32,7 +32,7 @@ defaultWeiboApp =
 defaultWeiboIdp :: Idp Weibo
 defaultWeiboIdp =
   Idp
-    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IDPUserInfo Weibo) AuthInRequestQuery,
+    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo Weibo) AuthInRequestQuery,
       idpUserInfoEndpoint = [uri|https://api.weibo.com/2/account/get_uid.json|],
       idpAuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|],
       idpTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]

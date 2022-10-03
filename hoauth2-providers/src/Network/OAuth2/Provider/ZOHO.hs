@@ -20,7 +20,7 @@ import URI.ByteString.QQ
 
 data ZOHO = ZOHO deriving (Eq, Show)
 
-type instance IDPUserInfo ZOHO = ZOHOUserResp
+type instance IdpUserInfo ZOHO = ZOHOUserResp
 
 defaultZohoApp :: IdpApplication 'AuthorizationCode ZOHO
 defaultZohoApp =
@@ -39,7 +39,7 @@ defaultZohoApp =
 defaultZohoIdp :: Idp ZOHO
 defaultZohoIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo ZOHO),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo ZOHO),
       idpUserInfoEndpoint = [uri|https://www.zohoapis.com/crm/v2/users|],
       idpAuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|],
       idpTokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]

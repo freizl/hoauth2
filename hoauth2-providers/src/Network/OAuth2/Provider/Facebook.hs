@@ -18,7 +18,7 @@ import URI.ByteString.QQ
 -- | TODO: rename to Meta
 data Facebook = Facebook deriving (Eq, Show)
 
-type instance IDPUserInfo Facebook = FacebookUser
+type instance IdpUserInfo Facebook = FacebookUser
 
 defaultFacebookApp :: IdpApplication 'AuthorizationCode Facebook
 defaultFacebookApp =
@@ -37,7 +37,7 @@ defaultFacebookApp =
 defaultFacebookIdp :: Idp Facebook
 defaultFacebookIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Facebook),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Facebook),
       idpUserInfoEndpoint = [uri|https://graph.facebook.com/me?fields=id,name,email|],
       idpAuthorizeEndpoint = [uri|https://www.facebook.com/dialog/oauth|],
       idpTokenEndpoint = [uri|https://graph.facebook.com/v2.3/oauth/access_token|]

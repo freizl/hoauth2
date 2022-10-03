@@ -17,7 +17,7 @@ import URI.ByteString.QQ
 
 data Slack = Slack deriving (Show, Eq)
 
-type instance IDPUserInfo Slack = SlackUser
+type instance IdpUserInfo Slack = SlackUser
 
 defaultSlackApp :: IdpApplication 'AuthorizationCode Slack
 defaultSlackApp =
@@ -38,7 +38,7 @@ defaultSlackApp =
 defaultSlackIdp :: Idp Slack
 defaultSlackIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Slack),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Slack),
       idpUserInfoEndpoint = [uri|https://slack.com/api/openid.connect.userInfo|],
       idpAuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|],
       idpTokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]

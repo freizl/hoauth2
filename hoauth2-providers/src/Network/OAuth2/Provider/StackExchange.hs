@@ -27,7 +27,7 @@ stackexchangeAppKey = ""
 
 data StackExchange = StackExchange deriving (Eq, Show)
 
-type instance IDPUserInfo StackExchange = StackExchangeResp
+type instance IdpUserInfo StackExchange = StackExchangeResp
 
 defaultStackExchangeApp :: IdpApplication 'AuthorizationCode StackExchange
 defaultStackExchangeApp =
@@ -46,7 +46,7 @@ defaultStackExchangeApp =
 defaultStackexchangeIdp :: Idp StackExchange
 defaultStackexchangeIdp =
   Idp
-    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IDPUserInfo StackExchange) AuthInRequestQuery,
+    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo StackExchange) AuthInRequestQuery,
       -- Only StackExchange has such specical app key which has to be append in userinfo uri.
       -- I feel it's not worth to invent a way to read from config
       -- file which would break the generic of Idp data type.

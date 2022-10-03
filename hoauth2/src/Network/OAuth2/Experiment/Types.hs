@@ -278,15 +278,15 @@ class HasRefreshTokenRequest (a :: GrantTypeFlow) where
 
 -------------------------------------------------------------------------------
 
-type family IDPUserInfo a
+type family IdpUserInfo a
 
 class HasUserInfoRequest (a :: GrantTypeFlow) where
   conduitUserInfoRequest ::
-    FromJSON (IDPUserInfo i) =>
+    FromJSON (IdpUserInfo i) =>
     IdpApplication a i ->
     Manager ->
     AccessToken ->
-    ExceptT BSL.ByteString IO (IDPUserInfo i)
+    ExceptT BSL.ByteString IO (IdpUserInfo i)
 
 -------------------------------------------------------------------------------
 
@@ -303,11 +303,11 @@ data Idp a = Idp
     idpTokenEndpoint :: URI,
     idpFetchUserInfo ::
       forall m.
-      (FromJSON (IDPUserInfo a), MonadIO m) =>
+      (FromJSON (IdpUserInfo a), MonadIO m) =>
       Manager ->
       AccessToken ->
       URI ->
-      ExceptT BSL.ByteString m (IDPUserInfo a)
+      ExceptT BSL.ByteString m (IdpUserInfo a)
   }
 
 -------------------------------------------------------------------------------
@@ -492,11 +492,11 @@ instance HasRefreshTokenRequest 'AuthorizationCode where
 
 instance HasUserInfoRequest 'AuthorizationCode where
   conduitUserInfoRequest ::
-    FromJSON (IDPUserInfo i) =>
+    FromJSON (IdpUserInfo i) =>
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     AccessToken ->
-    ExceptT BSL.ByteString IO (IDPUserInfo i)
+    ExceptT BSL.ByteString IO (IdpUserInfo i)
   conduitUserInfoRequest AuthorizationCodeIdpApplication {..} mgr at = do
     idpFetchUserInfo idp mgr at (idpUserInfoEndpoint idp)
 

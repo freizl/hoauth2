@@ -17,7 +17,7 @@ import URI.ByteString.QQ
 
 data Dropbox = Dropbox deriving (Eq, Show)
 
-type instance IDPUserInfo Dropbox = DropboxUser
+type instance IdpUserInfo Dropbox = DropboxUser
 
 defaultDropboxApp :: IdpApplication 'AuthorizationCode Dropbox
 defaultDropboxApp =
@@ -36,7 +36,7 @@ defaultDropboxApp =
 defaultDropboxIdp :: Idp Dropbox
 defaultDropboxIdp =
   Idp
-    { idpFetchUserInfo = \mgr at url -> authPostJSON @(IDPUserInfo Dropbox) mgr at url [],
+    { idpFetchUserInfo = \mgr at url -> authPostJSON @(IdpUserInfo Dropbox) mgr at url [],
       idpAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|],
       idpTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|],
       idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]

@@ -139,7 +139,7 @@ testPasswordGrantTypeH (auth0, okta) = do
         'ResourceOwnerPassword ~ a,
         HasDemoLoginUser b,
         HasUserInfoRequest a,
-        FromJSON (IDPUserInfo b)
+        FromJSON (IdpUserInfo b)
       ) =>
       IdpApplication a b ->
       ActionM ()
@@ -227,7 +227,7 @@ oauth2ErrorToText e = TL.pack $ "mkTokenRequest - cannot fetch access token. err
 
 tryFetchUser ::
   forall a b.
-  (HasDemoLoginUser a, HasUserInfoRequest b, FromJSON (IDPUserInfo a)) =>
+  (HasDemoLoginUser a, HasUserInfoRequest b, FromJSON (IdpUserInfo a)) =>
   Manager ->
   OAuth2Token ->
   IdpApplication b a ->

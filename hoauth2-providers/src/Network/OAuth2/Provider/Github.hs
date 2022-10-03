@@ -18,7 +18,7 @@ import URI.ByteString.QQ
 -- | http://developer.github.com/v3/oauth/
 data Github = Github deriving (Eq, Show)
 
-type instance IDPUserInfo Github = GithubUser
+type instance IdpUserInfo Github = GithubUser
 
 defaultGithubApp :: IdpApplication 'AuthorizationCode Github
 defaultGithubApp =
@@ -37,7 +37,7 @@ defaultGithubApp =
 defaultGithubIdp :: Idp Github
 defaultGithubIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Github),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Github),
       idpUserInfoEndpoint = [uri|https://api.github.com/user|],
       idpAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|],
       idpTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]

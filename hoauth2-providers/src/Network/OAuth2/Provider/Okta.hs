@@ -21,7 +21,7 @@ import URI.ByteString.QQ
 
 data Okta = Okta deriving (Eq, Show)
 
-type instance IDPUserInfo Okta = OktaUser
+type instance IdpUserInfo Okta = OktaUser
 
 defaultOktaApp :: Idp Okta -> IdpApplication 'AuthorizationCode Okta
 defaultOktaApp i =
@@ -40,7 +40,7 @@ defaultOktaApp i =
 defaultOktaIdp :: Idp Okta
 defaultOktaIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IDPUserInfo Okta),
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta),
       idpUserInfoEndpoint = [uri|https://foo.okta.com/oauth2/v1/userinfo|],
       idpAuthorizeEndpoint =
         [uri|https://foo.okta.com/oauth2/v1/authorize|],
