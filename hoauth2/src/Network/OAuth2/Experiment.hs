@@ -12,11 +12,10 @@
 -- This module will become default in future release. (TBD but likely 3.0).
 --
 -- The key concept/change is to introduce the 'GrantTypeFlow', which determines the entire work flow per spec.
---
 -- Each work flow will have slight different request parameters, which often time you'll see
 -- different configuration when creating OAuth2 application in the IdP developer application page.
 --
--- In a nutshell
+-- Here are supported flows
 --
 -- 1. Authorization Code. This flow requires authorize call to obtain an authorize code,
 -- then exchange the code for tokens.
@@ -28,12 +27,12 @@
 -- Client credentials flow does not involve an end user hence you won't be able to hit userinfo endpoint
 -- with access token obtained.
 --
--- 4. Implicit flow. This is more for SPA (single page app) and more or less obsolete by
--- Authorization Code flow with PKCE hence no intent to support it.
---
 -- 5. PKCE (rfc7636). This is enhancement on top of authorization code flow.
 --
--- Here is quick sample for how to use vocabulary from this new module.
+-- Implicit flow is not supported because it is more for SPA (single page app)
+-- and more or less obsolete by Authorization Code flow with PKCE.
+--
+-- Here is quick sample for how to use vocabularies from this new module.
 --
 -- Firstly, initialize your IdP (use google as example) and the application.
 --
