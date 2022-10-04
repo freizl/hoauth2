@@ -14,8 +14,10 @@ rebuild: clean build
 hlint-only:
 	hlint .
 
-## refactor by default
 hlint:
+	hlint .
+
+hlint-fix:
 	hlint --refactor --refactor-options="--inplace" .
 
 doc: build
@@ -34,6 +36,9 @@ format-cabal:
 ## install ghcid globally: `cabal install ghcid`
 watch-lib:
 	ghcid --command="cabal repl hoauth2" --restart=hoauth2/hoauth2.cabal
+
+publish:
+	cabal upload $(echo ./dist-newstyle/sdist/*.tar.gz)
 
 ####################
 ### CI - nix build
