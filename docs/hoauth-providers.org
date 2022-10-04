@@ -1,0 +1,22 @@
+#+title: Hoauth Providers
+
+#+begin_src haskell
+-- surprisingly this is not required now given using `Idp a` in the function
+
+class IsIDP a where
+  getAuthorizeEndpoint :: Idp a -> URI
+  getTokenEndpoint :: Idp a -> URI
+  getUserInfoEndpoint :: Idp a -> URI
+
+instance IsIDP a where
+  getAuthorizeEndpoint :: Idp a -> URI
+  getAuthorizeEndpoint = idpAuthorizeEndpoint
+
+  getTokenEndpoint :: Idp a -> URI
+  getTokenEndpoint = idpTokenEndpoint
+
+  getUserInfoEndpoint :: Idp a -> URI
+  getUserInfoEndpoint = idpUserInfoEndpoint
+
+
+#+end_src

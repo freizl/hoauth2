@@ -1,3 +1,8 @@
 * Introduction
 
-A mixed Haskell binding of [OAuth2 spec](https://datatracker.ietf.org/doc/html/rfc6749) and a little bit [OIDC spec](https://openid.net/specs/openid-connect-core-1_0.html).
+Lightweight Haskell binding for
+
+- [The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749)
+  - If the provider does implement [OIDC spec](https://openid.net/specs/openid-connect-core-1_0.html),
+    ID Token would also be included in token response (see `OAuth2Token`).
+- [The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://www.rfc-editor.org/rfc/rfc6750)

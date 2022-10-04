@@ -109,11 +109,7 @@ module HOAuth2Tutorial where
 import Control.Monad (void)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except
-import Data.Aeson
-  ( FromJSON (parseJSON),
-    defaultOptions,
-    genericParseJSON,
-  )
+import Data.Aeson (FromJSON)
 import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
@@ -164,7 +160,7 @@ authorizeUrl =
     ]
     $ authorizationUrl auth0
 
--- | You'll need to find out an better to create @state@
+-- | You'll need to find out an better way to create @state@
 -- which is recommended in <https://www.rfc-editor.org/rfc/rfc6749#section-10.12>
 randomStateValue :: BS.ByteString
 randomStateValue = "random-state-to-prevent-csrf"
@@ -182,8 +178,7 @@ data Auth0User = Auth0User
   }
   deriving (Show, Generic)
 
-instance FromJSON Auth0User where
-  parseJSON = genericParseJSON defaultOptions
+instance FromJSON Auth0User
 
 ------------------------------
 

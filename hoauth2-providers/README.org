@@ -1,0 +1,15 @@
+* Supported IdP list
+
+- [[https://auth0.com/docs/authorization/protocols/protocol-oauth2][Auth0]]
+- [[https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code][AzureAD]]
+- [[https://www.dropbox.com/developers/reference/oauth-guide][DropBox]]
+- [[http://developers.facebook.com/docs/facebook-login/][Facebook]]
+- [[http://dev.fitbit.com/docs/oauth2/][Fitbit]]
+- [[http://developer.github.com/v3/oauth/][Github]]
+- [[https://developers.google.com/identity/protocols/oauth2/web-server][Google]]
+- [[https://developer.linkedin.com/][Linkedin]]
+- [[https://developer.okta.com/docs/reference/api/oidc/][Okta]]
+- [[https://api.stackexchange.com/docs/authentication][StackExchange]]
+  - [[https://stackapps.com/apps/oauth][StackExchange Apps page]]
+- [[http://open.weibo.com/wiki/Oauth2][Weibo]]
+- [[https://www.zoho.com/crm/developer/docs/api/v2/oauth-overview.html][ZOHO]]

@@ -164,6 +164,25 @@ data RefreshTokenResponse = Either RefreshTokenErrorResponse RefreshTokenSuccess
 
 #+end_src
 
+#+begin_example
+IdpApplication a
+IdpApplication 'Authorization                 -> AuthorizationRequest 'Authorization
+IdpApplication 'Authorization + AuthCode      -> TokenRequest 'Authorization
+IdpApplication 'Authorization + RefreshToken  -> RefreshTokenRequest 'Authorization
+IdpApplication 'Password                      -> TokenRequest 'Password
+IdpApplication 'ClientCred                    -> TokenRequest 'ClientCred
+  - is it possible to create one method does the conversion??
+
+AuthorizationRequest a   -> Map Text Text
+TokenRequestRequest a    -> Map Text Text
+RefreshTokenRequest a    -> Map Text Text
+  - how to create one method toQueryParam does the conversion??
+
+Then could conduit api request (or generate /authorize URI) base on
+  - endpoint from Idp a
+  - toQueryParam ++ extra parameter
+#+end_example
+
 * Reference
 1. [[https://datatracker.ietf.org/doc/html/rfc6749][The OAuth 2.0 Authorization Framework]]
 2. [[https://datatracker.ietf.org/doc/html/rfc7636][PKCE]]
@@ -175,3 +194,8 @@ data RefreshTokenResponse = Either RefreshTokenErrorResponse RefreshTokenSuccess
 - [[https://cs.opensource.google/go/x/oauth2/+/master:;bpv=1;bpt=0][Go]]
 - [[https://github.com/thephpleague/oauth2-client][PHP]]
 - [[https://docs.spring.io/spring-security/reference/servlet/oauth2/client/index.html][Java Spring]]
+
+* Notes
+** What is replay attacks?
+- [[https://auth0.com/docs/get-started/authentication-and-authorization-flow/mitigate-replay-attacks-when-using-the-implicit-flow][Mitigate Replay Attacks When Using the Implicit Flow]]
+** What is Cross-Site Request Forgery

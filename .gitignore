@@ -17,3 +17,6 @@ result
 report.html
 
 .env.json
+dev.org
+refs.dot
+.hiedb

@@ -28,31 +28,29 @@ source-repository head
   location: git://github.com/freizl/hoauth2.git
 
 executable demo-server
-  main-is:          main.hs
+  main-is:            main.hs
   other-modules:
     App
-    IDP
-    IDP.Auth0
-    IDP.AzureAD
-    IDP.Dropbox
-    IDP.Facebook
-    IDP.Fitbit
-    IDP.Github
-    IDP.Google
-    IDP.Linkedin
-    IDP.Okta
-    IDP.Slack
-    IDP.StackExchange
-    IDP.Weibo
-    IDP.ZOHO
+    Env
+    Idp
     Paths_hoauth2_demo
     Session
     Types
     Utils
     Views
 
-  hs-source-dirs:   src
-  default-language: Haskell2010
+  default-extensions:
+    DataKinds
+    DeriveGeneric
+    GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    RecordWildCards
+    TypeApplications
+    TypeFamilies
+
+  hs-source-dirs:     src
+  default-language:   Haskell2010
   build-depends:
     , aeson                  >=2.0    && <2.2
     , base                   >=4.5    && <5
@@ -60,7 +58,8 @@ executable demo-server
     , containers             ^>=0.6
     , data-default           ^>=0.7
     , directory              ^>=1.3
-    , hoauth2
+    , hoauth2                ^>=2.5
+    , hoauth2-providers
     , http-conduit           >=2.1    && <2.4
     , http-types             >=0.11   && <0.13
     , microlens              ^>=0.4.0
