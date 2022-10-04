@@ -12,7 +12,7 @@ description:
   Demo application <https://github.com/freizl/hoauth2/tree/main/hoauth2-demo/>
 
 homepage:           https://github.com/freizl/hoauth2
-license:            BSD-3-Clause
+license:            MIT
 license-file:       LICENSE
 author:             Haisheng Wu
 maintainer:         Haisheng Wu <freizl@gmail.com>
