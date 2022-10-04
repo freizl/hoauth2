@@ -47,7 +47,7 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-data GrantTypeFlow = AuthorizationCode | ResourceOwnerPassword | ClientCredentials
+data GrantTypeFlow = AuthorizationCode | AuthorizationCodePkce | ResourceOwnerPassword | ClientCredentials
 
 -------------------------------------------------------------------------------
 
@@ -228,8 +228,8 @@ class HasIdpAppName (a :: GrantTypeFlow) where
 class HasAuthorizeRequest (a :: GrantTypeFlow) where
   data AuthorizationRequest a
   type MkAuthorizationRequestResponse a
-  mkAuthorizeRequestParameter :: IdpApplication a i -> AuthorizationRequest a
-  mkAuthorizeRequest :: IdpApplication a i -> MkAuthorizationRequestResponse a
+  mkAuthorizeRequestParameter :: MonadIO m => IdpApplication a i -> m (AuthorizationRequest a)
+  mkAuthorizeRequest :: MonadIO m => IdpApplication a i -> m (MkAuthorizationRequestResponse a)
 
 class HasTokenRequest (a :: GrantTypeFlow) where
   -- | Each GrantTypeFlow has slightly different request parameter to /token endpoint.
@@ -251,16 +251,16 @@ class HasTokenRequest (a :: GrantTypeFlow) where
     Manager ->
     WithExchangeToken a (ExceptT (OAuth2Error TR.Errors) m OAuth2Token)
 
-class HasPkceAuthorizeRequest (a :: GrantTypeFlow) where
-  mkPkceAuthorizeRequest :: MonadIO m => IdpApplication a i -> m (TL.Text, CodeVerifier)
+-- class HasPkceAuthorizeRequest (a :: GrantTypeFlow) where
+--   mkPkceAuthorizeRequest :: MonadIO m => IdpApplication a i -> m (TL.Text, CodeVerifier)
 
-class HasPkceTokenRequest (b :: GrantTypeFlow) where
-  conduitPkceTokenRequest ::
-    (MonadIO m) =>
-    IdpApplication b i ->
-    Manager ->
-    (ExchangeToken, CodeVerifier) ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+-- class HasPkceTokenRequest (b :: GrantTypeFlow) where
+--   conduitPkceTokenRequest ::
+--     (MonadIO m) =>
+--     IdpApplication b i ->
+--     Manager ->
+--     (ExchangeToken, CodeVerifier) ->
+--     ExceptT (OAuth2Error TR.Errors) m OAuth2Token
 
 class HasRefreshTokenRequest (a :: GrantTypeFlow) where
   -- | https://www.rfc-editor.org/rfc/rfc6749#page-47
@@ -340,6 +340,21 @@ data instance IdpApplication 'AuthorizationCode i = AuthorizationCodeIdpApplicat
     idp :: Idp i
   }
 
+-- FIXME: this is identical to IdpApplication 'AuthorizationCode
+-- Any better approach?
+data instance IdpApplication 'AuthorizationCodePkce i = AuthorizationCodePkceIdpApplication
+  { idpAppName :: Text,
+    idpAppClientId :: ClientId,
+    idpAppClientSecret :: ClientSecret,
+    idpAppScope :: Set Scope,
+    idpAppRedirectUri :: URI,
+    idpAppAuthorizeState :: AuthorizeState,
+    -- | Though technically one key can have multiple value in query, but who actually does it?!
+    idpAppAuthorizeExtraParams :: Map Text Text,
+    idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod,
+    idp :: Idp i
+  }
+
 -- NOTE: maybe add function for parase authorization response
 -- though seems overkill. https://github.com/freizl/hoauth2/issues/149
 -- parseAuthorizationResponse :: String -> AuthorizationResponse
@@ -359,27 +374,79 @@ instance HasAuthorizeRequest 'AuthorizationCode where
     }
   type MkAuthorizationRequestResponse 'AuthorizationCode = Text
 
-  mkAuthorizeRequestParameter :: IdpApplication 'AuthorizationCode i -> AuthorizationRequest 'AuthorizationCode
+  mkAuthorizeRequestParameter ::
+    MonadIO m =>
+    IdpApplication 'AuthorizationCode i ->
+    m (AuthorizationRequest 'AuthorizationCode)
   mkAuthorizeRequestParameter AuthorizationCodeIdpApplication {..} =
-    AuthorizationCodeAuthorizationRequest
-      { scope = if null idpAppScope then Set.empty else idpAppScope,
-        state = idpAppAuthorizeState,
-        clientId = idpAppClientId,
-        redirectUri = Just (RedirectUri idpAppRedirectUri)
-      }
+    pure $
+      AuthorizationCodeAuthorizationRequest
+        { scope = if null idpAppScope then Set.empty else idpAppScope,
+          state = idpAppAuthorizeState,
+          clientId = idpAppClientId,
+          redirectUri = Just (RedirectUri idpAppRedirectUri)
+        }
 
-  mkAuthorizeRequest :: IdpApplication 'AuthorizationCode i -> Text
-  mkAuthorizeRequest idpAppConfig@AuthorizationCodeIdpApplication {..} =
-    let req = mkAuthorizeRequestParameter idpAppConfig
-        allParams =
+  mkAuthorizeRequest ::
+    MonadIO m =>
+    IdpApplication 'AuthorizationCode i ->
+    m Text -- \^ authorize URL with all parameters
+  mkAuthorizeRequest idpAppConfig@AuthorizationCodeIdpApplication {..} = do
+    req <- mkAuthorizeRequestParameter idpAppConfig
+    let allParams =
           map (bimap tlToBS tlToBS) $
             Map.toList $
               Map.unions [idpAppAuthorizeExtraParams, toQueryParam req]
-     in TL.fromStrict $
-          T.decodeUtf8 $
-            serializeURIRef' $
-              appendQueryParams allParams $
-                idpAuthorizeEndpoint idp
+    pure $
+      TL.fromStrict $
+        T.decodeUtf8 $
+          serializeURIRef' $
+            appendQueryParams allParams $
+              idpAuthorizeEndpoint idp
+
+instance HasAuthorizeRequest 'AuthorizationCodePkce where
+  data AuthorizationRequest 'AuthorizationCodePkce = AuthorizationCodePkceAuthorizationRequest
+    { authorizeRequest :: AuthorizationRequest 'AuthorizationCode,
+      codeChallenge :: CodeChallenge,
+      codeChallengeMethod :: CodeChallengeMethod,
+      _codeVerifier :: CodeVerifier -- \^ FIXME: hacky. maybe shall go type family instead of data family
+    }
+
+  type MkAuthorizationRequestResponse 'AuthorizationCodePkce = (Text, CodeVerifier)
+
+  mkAuthorizeRequestParameter ::
+    MonadIO m =>
+    IdpApplication 'AuthorizationCodePkce i ->
+    m (AuthorizationRequest 'AuthorizationCodePkce)
+  mkAuthorizeRequestParameter AuthorizationCodePkceIdpApplication {..} = do
+    PkceRequestParam {..} <- mkPkceParam
+    let authorizeRequest =
+          AuthorizationCodeAuthorizationRequest
+            { scope = if null idpAppScope then Set.empty else idpAppScope,
+              state = idpAppAuthorizeState,
+              clientId = idpAppClientId,
+              redirectUri = Just (RedirectUri idpAppRedirectUri)
+            }
+        _codeVerifier = codeVerifier
+    pure AuthorizationCodePkceAuthorizationRequest {..}
+
+  mkAuthorizeRequest ::
+    MonadIO m =>
+    IdpApplication 'AuthorizationCodePkce i ->
+    m (Text, CodeVerifier) -- \^ authorize URL with all parameters and code verifier
+  mkAuthorizeRequest idpAppConfig@AuthorizationCodePkceIdpApplication {..} = do
+    req <- mkAuthorizeRequestParameter idpAppConfig
+    let allParams =
+          map (bimap tlToBS tlToBS) $
+            Map.toList $
+              Map.unions [idpAppAuthorizeExtraParams, toQueryParam req]
+        url =
+          TL.fromStrict $
+            T.decodeUtf8 $
+              serializeURIRef' $
+                appendQueryParams allParams $
+                  idpAuthorizeEndpoint idp
+    pure (url, _codeVerifier req)
 
 instance HasTokenRequest 'AuthorizationCode where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
@@ -423,6 +490,7 @@ instance HasTokenRequest 'AuthorizationCode where
             ]
      in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
+{-
 instance HasPkceAuthorizeRequest 'AuthorizationCode where
   mkPkceAuthorizeRequest :: MonadIO m => IdpApplication 'AuthorizationCode i -> m (Text, CodeVerifier)
   mkPkceAuthorizeRequest idpAppConfig@AuthorizationCodeIdpApplication {..} = do
@@ -461,6 +529,7 @@ instance HasPkceTokenRequest 'AuthorizationCode where
               toQueryParam (if idpAppTokenRequestAuthenticationMethod == ClientSecretPost then Just idpAppClientSecret else Nothing)
             ]
      in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
+-}
 
 instance HasRefreshTokenRequest 'AuthorizationCode where
   data RefreshTokenRequest 'AuthorizationCode = AuthorizationCodeTokenRefreshRequest
@@ -511,6 +580,15 @@ instance ToQueryParam (AuthorizationRequest 'AuthorizationCode) where
         toQueryParam clientId,
         toQueryParam state,
         toQueryParam redirectUri
+      ]
+
+instance ToQueryParam (AuthorizationRequest 'AuthorizationCodePkce) where
+  toQueryParam :: AuthorizationRequest 'AuthorizationCodePkce -> Map Text Text
+  toQueryParam AuthorizationCodePkceAuthorizationRequest {..} =
+    Map.unions
+      [ toQueryParam authorizeRequest,
+        toQueryParam codeChallenge,
+        toQueryParam codeChallengeMethod
       ]
 
 instance ToQueryParam (TokenRequest 'AuthorizationCode) where
