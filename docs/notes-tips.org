@@ -1,0 +1,16 @@
+#+title: Notes Tips
+
+
+* Generalized Constraint
+
+#+begin_src haskell
+import Data.Kinds
+data Has (c :: Type -> Constraint) where
+  Has :: c t => t -> Has c
+#+end_src
+
+* Typeable - cast type at runtime
+
+#+begin_src haskell
+cast :: (Typeable a, Typeable b) => a -> Maybe b
+#+end_src

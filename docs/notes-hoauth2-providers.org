@@ -1,4 +1,4 @@
-#+title: Hoauth Providers
+#+title: HOAuth Providers
 
 #+begin_src haskell
 -- surprisingly this is not required now given using `Idp a` in the function
