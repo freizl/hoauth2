@@ -1,2 +1,0 @@
-* Integrated IdPs
-- [See here](../hoauth2-providers/)

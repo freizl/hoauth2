@@ -9,7 +9,6 @@
 1. [Tutorial for using the binding](./hoauth2-tutorial)
 1. [OAuth2 IdP providers](./hoauth2-providers)
 1. [Tutorial in terms of how to use those providers](./hoauth2-providers-tutorial)
-1. [Sample Application that plays with all those providers and different grant type flow](./hoauth2-demo)
 
 ## Build
 
