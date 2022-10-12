@@ -15,7 +15,6 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
--- | TODO: rename to Meta
 data Facebook = Facebook deriving (Eq, Show)
 
 type instance IdpUserInfo Facebook = FacebookUser
