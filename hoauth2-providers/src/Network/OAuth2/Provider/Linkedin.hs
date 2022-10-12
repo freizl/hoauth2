@@ -6,11 +6,6 @@
 
 module Network.OAuth2.Provider.Linkedin where
 
-{-
-https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS
-module Network.OAuth2.Provider.Linkedin where
--}
-
 import Data.Aeson
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set

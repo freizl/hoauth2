@@ -42,16 +42,16 @@ defaultDropboxIdp =
       idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
     }
 
-newtype DropboxName = DropboxName {displayName :: Text}
+newtype DropboxUserName = DropboxUserName {displayName :: Text}
   deriving (Show, Generic)
 
 data DropboxUser = DropboxUser
   { email :: Text,
-    name :: DropboxName
+    name :: DropboxUserName
   }
   deriving (Show, Generic)
 
-instance FromJSON DropboxName where
+instance FromJSON DropboxUserName where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
 instance FromJSON DropboxUser 

@@ -4,6 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-- | https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
 module Network.OAuth2.Provider.Github where
 
 import Data.Aeson
@@ -15,7 +16,6 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
--- | http://developer.github.com/v3/oauth/
 data Github = Github deriving (Eq, Show)
 
 type instance IdpUserInfo Github = GithubUser

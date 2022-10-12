@@ -53,11 +53,12 @@ defaultGoogleIdp =
       idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
     }
 
+-- requires scope "https://www.googleapis.com/auth/userinfo.profile" to obtain "name".
+-- requires scopes "https://www.googleapis.com/auth/userinfo.email" to obtain "email".
 data GoogleUser = GoogleUser
-  { -- | "scope": "https://www.googleapis.com/auth/userinfo.profile"]
+  {
     name :: Text,
     id :: Text,
-    -- | "scopes": "https://www.googleapis.com/auth/userinfo.email",
     email :: Text
   }
   deriving (Show, Generic)

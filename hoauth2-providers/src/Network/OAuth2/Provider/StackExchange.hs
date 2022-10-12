@@ -4,9 +4,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
-{-
-  NOTES: stackexchange API spec and its document just sucks!
--}
 module Network.OAuth2.Provider.StackExchange where
 
 import Data.Aeson

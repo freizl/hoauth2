@@ -15,9 +15,6 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
--- `oauth/user/info` url does not work and find answer from
--- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
-
 data ZOHO = ZOHO deriving (Eq, Show)
 
 type instance IdpUserInfo ZOHO = ZOHOUserResp
@@ -45,6 +42,8 @@ defaultZohoIdp =
       idpTokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]
     }
 
+-- `oauth/user/info` url does not work and find answer from
+-- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
 data ZOHOUser = ZOHOUser
   { email :: Text,
     fullName :: Text
@@ -54,7 +53,7 @@ data ZOHOUser = ZOHOUser
 newtype ZOHOUserResp = ZOHOUserResp {users :: [ZOHOUser]}
   deriving (Show, Generic)
 
-instance FromJSON ZOHOUserResp 
+instance FromJSON ZOHOUserResp
 
 instance FromJSON ZOHOUser where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}

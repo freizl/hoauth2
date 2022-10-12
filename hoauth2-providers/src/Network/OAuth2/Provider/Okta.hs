@@ -63,7 +63,7 @@ mkOktaIdp domain = do
         }
     )
 
--- | https://developer.okta.com/docs/reference/api/oidc/#request-parameters
+-- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
 data OktaUser = OktaUser

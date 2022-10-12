@@ -8,6 +8,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-- | https://auth0.com/docs/api/authentication#authorize-application
 module Network.OAuth2.Provider.Auth0 where
 
 import Control.Monad.IO.Class
@@ -68,7 +69,7 @@ mkAuth0Idp domain = do
         }
     )
 
--- | scopes: ["openid", "profile", "email"]
+-- | https://auth0.com/docs/api/authentication#user-profile
 data Auth0User = Auth0User
   { name :: Text,
     email :: Text,

@@ -38,7 +38,7 @@ defaultWeiboIdp =
       idpTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
     }
 
--- | UserInfor API: http://open.weibo.com/wiki/2/users/show
+-- | http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser
   { id :: Integer,
     name :: Text,
