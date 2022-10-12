@@ -36,7 +36,7 @@ format-cabal:
 watch-lib:
 	ghcid --command="cabal repl hoauth2" --restart=hoauth2/hoauth2.cabal
 
-publish:
+publish: dist
 	cabal upload $(echo ./dist-newstyle/sdist/*.tar.gz)
 
 ####################
