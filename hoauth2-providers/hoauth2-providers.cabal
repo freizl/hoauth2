@@ -45,6 +45,7 @@ library
     Network.OAuth2.Provider.Google
     Network.OAuth2.Provider.Linkedin
     Network.OAuth2.Provider.Okta
+    Network.OAuth2.Provider.Twitter
     Network.OAuth2.Provider.Slack
     Network.OAuth2.Provider.StackExchange
     Network.OAuth2.Provider.Weibo

@@ -302,14 +302,19 @@ authRequest ::
   -- | HTTP connection manager.
   Manager ->
   ExceptT BSL.ByteString m BSL.ByteString
-authRequest req upReq manage = ExceptT $ handleResponse <$> httpLbs (upReq req) manage
+authRequest req upReq manage = ExceptT $ do
+  resp <- httpLbs (upReq req) manage
+  -- liftIO (print resp)
+  pure (handleResponse resp)
 
 -- | Get response body out of a @Response@
 handleResponse :: Response BSL.ByteString -> Either BSL.ByteString BSL.ByteString
-handleResponse rsp =
+handleResponse rsp = do
   if HT.statusIsSuccessful (responseStatus rsp)
     then Right $ responseBody rsp
-    else -- TODO: better to surface up entire resp so that client can decide what to do when error happens.
+    -- FIXME: better to surface up entire resp so that client can decide what to do when error happens.
+    -- e.g. when 404, the response body could be empty hence library user has no idea what's happening.
+    else
       Left $ responseBody rsp
 
 -- | Set several header values:
