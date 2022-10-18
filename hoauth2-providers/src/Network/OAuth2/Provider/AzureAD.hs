@@ -18,24 +18,24 @@ type instance IdpUserInfo AzureAD = AzureADUser
 defaultAzureADApp :: IdpApplication 'AuthorizationCode AzureAD
 defaultAzureADApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.empty,
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.fromList [("resource", "https://graph.microsoft.com")],
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-azure-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultAzureADIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.empty
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.fromList [("resource", "https://graph.microsoft.com")]
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-azure-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultAzureADIdp
     }
 
 defaultAzureADIdp :: Idp AzureAD
 defaultAzureADIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD),
-      idpUserInfoEndpoint = [uri|https://graph.microsoft.com/v1.0/me|],
-      idpAuthorizeEndpoint = [uri|https://login.windows.net/common/oauth2/authorize|],
-      idpTokenEndpoint = [uri|https://login.windows.net/common/oauth2/token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
+    , idpUserInfoEndpoint = [uri|https://graph.microsoft.com/v1.0/me|]
+    , idpAuthorizeEndpoint = [uri|https://login.windows.net/common/oauth2/authorize|]
+    , idpTokenEndpoint = [uri|https://login.windows.net/common/oauth2/token|]
     }
 
 newtype AzureADUser = AzureADUser {mail :: Text} deriving (Show, Generic)

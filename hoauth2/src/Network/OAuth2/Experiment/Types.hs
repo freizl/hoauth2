@@ -115,8 +115,8 @@ newtype ClientSecret = ClientSecret {unClientSecret :: Text}
 toOAuth2Key :: ClientId -> ClientSecret -> OAuth2
 toOAuth2Key cid csecret =
   def
-    { oauth2ClientId = TL.toStrict $ unClientId cid,
-      oauth2ClientSecret = TL.toStrict $ unClientSecret csecret
+    { oauth2ClientId = TL.toStrict $ unClientId cid
+    , oauth2ClientSecret = TL.toStrict $ unClientSecret csecret
     }
 
 newtype RedirectUri = RedirectUri {unRedirectUri :: URI}
@@ -298,12 +298,12 @@ class HasUserInfoRequest (a :: GrantTypeFlow) where
 
 -- | Shall IdpApplication has a field of 'Idp a'??
 data Idp a = Idp
-  { idpUserInfoEndpoint :: URI,
-    -- NOTE: maybe worth data type to distinguish authorize and token endpoint
+  { idpUserInfoEndpoint :: URI
+  , -- NOTE: maybe worth data type to distinguish authorize and token endpoint
     -- as I made mistake at passing to Authorize and Token Request
-    idpAuthorizeEndpoint :: URI,
-    idpTokenEndpoint :: URI,
-    idpFetchUserInfo ::
+    idpAuthorizeEndpoint :: URI
+  , idpTokenEndpoint :: URI
+  , idpFetchUserInfo ::
       forall m.
       (FromJSON (IdpUserInfo a), MonadIO m) =>
       Manager ->
@@ -328,16 +328,16 @@ data family IdpApplication (a :: GrantTypeFlow) (i :: Type)
 
 -- | An Application that supports "Authorization code" flow
 data instance IdpApplication 'AuthorizationCode i = AuthorizationCodeIdpApplication
-  { idpAppName :: Text,
-    idpAppClientId :: ClientId,
-    idpAppClientSecret :: ClientSecret,
-    idpAppScope :: Set Scope,
-    idpAppRedirectUri :: URI,
-    idpAppAuthorizeState :: AuthorizeState,
-    -- | Though technically one key can have multiple value in query, but who actually does it?!
-    idpAppAuthorizeExtraParams :: Map Text Text,
-    idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod,
-    idp :: Idp i
+  { idpAppName :: Text
+  , idpAppClientId :: ClientId
+  , idpAppClientSecret :: ClientSecret
+  , idpAppScope :: Set Scope
+  , idpAppRedirectUri :: URI
+  , idpAppAuthorizeState :: AuthorizeState
+  , idpAppAuthorizeExtraParams :: Map Text Text
+  -- ^ Though technically one key can have multiple value in query, but who actually does it?!
+  , idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  , idp :: Idp i
   }
 
 -- NOTE: maybe add function for parase authorization response
@@ -352,20 +352,20 @@ instance HasIdpAppName 'AuthorizationCode where
 instance HasAuthorizeRequest 'AuthorizationCode where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
   data AuthorizationRequest 'AuthorizationCode = AuthorizationCodeAuthorizationRequest
-    { scope :: Set Scope,
-      state :: AuthorizeState,
-      clientId :: ClientId,
-      redirectUri :: Maybe RedirectUri
+    { scope :: Set Scope
+    , state :: AuthorizeState
+    , clientId :: ClientId
+    , redirectUri :: Maybe RedirectUri
     }
   type MkAuthorizationRequestResponse 'AuthorizationCode = Text
 
   mkAuthorizeRequestParameter :: IdpApplication 'AuthorizationCode i -> AuthorizationRequest 'AuthorizationCode
   mkAuthorizeRequestParameter AuthorizationCodeIdpApplication {..} =
     AuthorizationCodeAuthorizationRequest
-      { scope = if null idpAppScope then Set.empty else idpAppScope,
-        state = idpAppAuthorizeState,
-        clientId = idpAppClientId,
-        redirectUri = Just (RedirectUri idpAppRedirectUri)
+      { scope = if null idpAppScope then Set.empty else idpAppScope
+      , state = idpAppAuthorizeState
+      , clientId = idpAppClientId
+      , redirectUri = Just (RedirectUri idpAppRedirectUri)
       }
 
   mkAuthorizeRequest :: IdpApplication 'AuthorizationCode i -> Text
@@ -384,10 +384,10 @@ instance HasAuthorizeRequest 'AuthorizationCode where
 instance HasTokenRequest 'AuthorizationCode where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
   data TokenRequest 'AuthorizationCode = AuthorizationCodeTokenRequest
-    { code :: ExchangeToken,
-      clientId :: ClientId,
-      grantType :: GrantTypeValue,
-      redirectUri :: RedirectUri
+    { code :: ExchangeToken
+    , clientId :: ClientId
+    , grantType :: GrantTypeValue
+    , redirectUri :: RedirectUri
     }
   type WithExchangeToken 'AuthorizationCode a = ExchangeToken -> a
 
@@ -397,10 +397,10 @@ instance HasTokenRequest 'AuthorizationCode where
     TokenRequest 'AuthorizationCode
   mkTokenRequest AuthorizationCodeIdpApplication {..} authCode =
     AuthorizationCodeTokenRequest
-      { code = authCode,
-        clientId = idpAppClientId,
-        grantType = GTAuthorizationCode,
-        redirectUri = RedirectUri idpAppRedirectUri
+      { code = authCode
+      , clientId = idpAppClientId
+      , grantType = GTAuthorizationCode
+      , redirectUri = RedirectUri idpAppRedirectUri
       }
   conduitTokenRequest ::
     forall m i.
@@ -414,8 +414,8 @@ instance HasTokenRequest 'AuthorizationCode where
         key = toOAuth2Key idpAppClientId idpAppClientSecret
         body =
           mapsToParams
-            [ toQueryParam req,
-              toQueryParam
+            [ toQueryParam req
+            , toQueryParam
                 ( if idpAppTokenRequestAuthenticationMethod == ClientSecretPost
                     then Just idpAppClientSecret
                     else Nothing
@@ -430,10 +430,10 @@ instance HasPkceAuthorizeRequest 'AuthorizationCode where
     let req = mkAuthorizeRequestParameter idpAppConfig
     let allParams =
           mapsToParams
-            [ idpAppAuthorizeExtraParams,
-              toQueryParam req,
-              toQueryParam codeChallenge,
-              toQueryParam codeChallengeMethod
+            [ idpAppAuthorizeExtraParams
+            , toQueryParam req
+            , toQueryParam codeChallenge
+            , toQueryParam codeChallengeMethod
             ]
 
     let url =
@@ -456,25 +456,25 @@ instance HasPkceTokenRequest 'AuthorizationCode where
         key = toOAuth2Key idpAppClientId idpAppClientSecret
         body =
           mapsToParams
-            [ toQueryParam req,
-              toQueryParam codeVerifier,
-              toQueryParam (if idpAppTokenRequestAuthenticationMethod == ClientSecretPost then Just idpAppClientSecret else Nothing)
+            [ toQueryParam req
+            , toQueryParam codeVerifier
+            , toQueryParam (if idpAppTokenRequestAuthenticationMethod == ClientSecretPost then Just idpAppClientSecret else Nothing)
             ]
      in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
 instance HasRefreshTokenRequest 'AuthorizationCode where
   data RefreshTokenRequest 'AuthorizationCode = AuthorizationCodeTokenRefreshRequest
-    { refreshToken :: OAuth2.RefreshToken,
-      grantType :: GrantTypeValue,
-      scope :: Set Scope
+    { refreshToken :: OAuth2.RefreshToken
+    , grantType :: GrantTypeValue
+    , scope :: Set Scope
     }
 
   mkRefreshTokenRequest :: IdpApplication 'AuthorizationCode i -> OAuth2.RefreshToken -> RefreshTokenRequest 'AuthorizationCode
   mkRefreshTokenRequest AuthorizationCodeIdpApplication {..} rt =
     AuthorizationCodeTokenRefreshRequest
-      { scope = idpAppScope,
-        grantType = GTRefreshToken,
-        refreshToken = rt
+      { scope = idpAppScope
+      , grantType = GTRefreshToken
+      , refreshToken = rt
       }
   conduitRefreshTokenRequest ::
     (MonadIO m) =>
@@ -487,8 +487,8 @@ instance HasRefreshTokenRequest 'AuthorizationCode where
         key = toOAuth2Key idpAppClientId idpAppClientSecret
         body =
           mapsToParams
-            [ toQueryParam req,
-              toQueryParam (if idpAppTokenRequestAuthenticationMethod == ClientSecretPost then Just idpAppClientSecret else Nothing)
+            [ toQueryParam req
+            , toQueryParam (if idpAppTokenRequestAuthenticationMethod == ClientSecretPost then Just idpAppClientSecret else Nothing)
             ]
      in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
@@ -506,29 +506,29 @@ instance ToQueryParam (AuthorizationRequest 'AuthorizationCode) where
   toQueryParam :: AuthorizationRequest 'AuthorizationCode -> Map Text Text
   toQueryParam req@AuthorizationCodeAuthorizationRequest {..} =
     Map.unions
-      [ toResponseTypeParam req,
-        toQueryParam scope,
-        toQueryParam clientId,
-        toQueryParam state,
-        toQueryParam redirectUri
+      [ toResponseTypeParam req
+      , toQueryParam scope
+      , toQueryParam clientId
+      , toQueryParam state
+      , toQueryParam redirectUri
       ]
 
 instance ToQueryParam (TokenRequest 'AuthorizationCode) where
   toQueryParam :: TokenRequest 'AuthorizationCode -> Map Text Text
   toQueryParam AuthorizationCodeTokenRequest {..} =
     Map.unions
-      [ toQueryParam grantType,
-        toQueryParam code,
-        toQueryParam redirectUri
+      [ toQueryParam grantType
+      , toQueryParam code
+      , toQueryParam redirectUri
       ]
 
 instance ToQueryParam (RefreshTokenRequest 'AuthorizationCode) where
   toQueryParam :: RefreshTokenRequest 'AuthorizationCode -> Map Text Text
   toQueryParam AuthorizationCodeTokenRefreshRequest {..} =
     Map.unions
-      [ toQueryParam grantType,
-        toQueryParam scope,
-        toQueryParam refreshToken
+      [ toQueryParam grantType
+      , toQueryParam scope
+      , toQueryParam refreshToken
       ]
 
 -------------------------------------------------------------------------------
@@ -546,15 +546,15 @@ instance ToQueryParam (RefreshTokenRequest 'AuthorizationCode) where
 -- Hence no AuhorizationRequest instance
 
 data instance IdpApplication 'ResourceOwnerPassword i = ResourceOwnerPasswordIDPAppConfig
-  { idpAppClientId :: ClientId,
-    idpAppClientSecret :: ClientSecret,
-    idpAppName :: Text,
-    idpAppScope :: Set Scope,
-    idpAppUserName :: Username,
-    idpAppPassword :: Password,
-    -- | Any parameter that required by your Idp and not mentioned in the OAuth2 spec
-    idpAppTokenRequestExtraParams :: Map Text Text,
-    idp :: Idp i
+  { idpAppClientId :: ClientId
+  , idpAppClientSecret :: ClientSecret
+  , idpAppName :: Text
+  , idpAppScope :: Set Scope
+  , idpAppUserName :: Username
+  , idpAppPassword :: Password
+  , idpAppTokenRequestExtraParams :: Map Text Text
+  -- ^ Any parameter that required by your Idp and not mentioned in the OAuth2 spec
+  , idp :: Idp i
   }
 
 instance HasIdpAppName 'ResourceOwnerPassword where
@@ -568,20 +568,20 @@ instance HasUserInfoRequest 'ResourceOwnerPassword where
 instance HasTokenRequest 'ResourceOwnerPassword where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.3.2
   data TokenRequest 'ResourceOwnerPassword = PasswordTokenRequest
-    { scope :: Set Scope,
-      username :: Username,
-      password :: Password,
-      grantType :: GrantTypeValue
+    { scope :: Set Scope
+    , username :: Username
+    , password :: Password
+    , grantType :: GrantTypeValue
     }
   type WithExchangeToken 'ResourceOwnerPassword a = a
 
   mkTokenRequest :: IdpApplication 'ResourceOwnerPassword i -> TokenRequest 'ResourceOwnerPassword
   mkTokenRequest ResourceOwnerPasswordIDPAppConfig {..} =
     PasswordTokenRequest
-      { username = idpAppUserName,
-        password = idpAppPassword,
-        grantType = GTPassword,
-        scope = idpAppScope
+      { username = idpAppUserName
+      , password = idpAppPassword
+      , grantType = GTPassword
+      , scope = idpAppScope
       }
 
   conduitTokenRequest ::
@@ -617,10 +617,10 @@ instance ToQueryParam (TokenRequest 'ResourceOwnerPassword) where
   toQueryParam :: TokenRequest 'ResourceOwnerPassword -> Map Text Text
   toQueryParam PasswordTokenRequest {..} =
     Map.unions
-      [ toQueryParam grantType,
-        toQueryParam scope,
-        toQueryParam username,
-        toQueryParam password
+      [ toQueryParam grantType
+      , toQueryParam scope
+      , toQueryParam username
+      , toQueryParam password
       ]
 
 -------------------------------------------------------------------------------
@@ -637,13 +637,13 @@ instance ToQueryParam (TokenRequest 'ResourceOwnerPassword) where
 -- Hence no AuhorizationRequest instance
 
 data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPAppConfig
-  { idpAppClientId :: ClientId,
-    idpAppClientSecret :: ClientSecret,
-    idpAppName :: Text,
-    idpAppScope :: Set Scope,
-    -- | Any parameter that required by your Idp and not mentioned in the OAuth2 spec
-    idpAppTokenRequestExtraParams :: Map Text Text,
-    idp :: Idp i
+  { idpAppClientId :: ClientId
+  , idpAppClientSecret :: ClientSecret
+  , idpAppName :: Text
+  , idpAppScope :: Set Scope
+  , idpAppTokenRequestExtraParams :: Map Text Text
+  -- ^ Any parameter that required by your Idp and not mentioned in the OAuth2 spec
+  , idp :: Idp i
   }
 
 instance HasIdpAppName 'ClientCredentials where
@@ -653,8 +653,8 @@ instance HasIdpAppName 'ClientCredentials where
 instance HasTokenRequest 'ClientCredentials where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
   data TokenRequest 'ClientCredentials = ClientCredentialsTokenRequest
-    { scope :: Set Scope,
-      grantType :: GrantTypeValue
+    { scope :: Set Scope
+    , grantType :: GrantTypeValue
     }
 
   type WithExchangeToken 'ClientCredentials a = a
@@ -662,8 +662,8 @@ instance HasTokenRequest 'ClientCredentials where
   mkTokenRequest :: IdpApplication 'ClientCredentials i -> TokenRequest 'ClientCredentials
   mkTokenRequest ClientCredentialsIDPAppConfig {..} =
     ClientCredentialsTokenRequest
-      { scope = idpAppScope,
-        grantType = GTClientCredentials
+      { scope = idpAppScope
+      , grantType = GTClientCredentials
       }
 
   conduitTokenRequest ::
@@ -679,8 +679,8 @@ instance HasTokenRequest 'ClientCredentials where
             idpAppClientSecret
         body =
           mapsToParams
-            [ idpAppTokenRequestExtraParams,
-              toQueryParam req
+            [ idpAppTokenRequestExtraParams
+            , toQueryParam req
             ]
      in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
@@ -688,6 +688,6 @@ instance ToQueryParam (TokenRequest 'ClientCredentials) where
   toQueryParam :: TokenRequest 'ClientCredentials -> Map Text Text
   toQueryParam ClientCredentialsTokenRequest {..} =
     Map.unions
-      [ toQueryParam grantType,
-        toQueryParam scope
+      [ toQueryParam grantType
+      , toQueryParam scope
       ]

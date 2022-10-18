@@ -1,9 +1,9 @@
 module Utils where
 
-import qualified Data.Aeson as Aeson
-import qualified Data.ByteString.Lazy.Char8 as BSL
+import Data.Aeson qualified as Aeson
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as TL
+import Data.Text.Lazy qualified as TL
 import Web.Scotty.Internal.Types
 
 bslToText :: BSL.ByteString -> Text

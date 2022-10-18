@@ -12,8 +12,8 @@ import Control.Monad.Catch
 import Data.Aeson
 import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
 import Data.Binary (Binary)
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as BSL
+import Data.ByteString qualified as BS
+import Data.ByteString.Lazy qualified as BSL
 import Data.Default
 import Data.Maybe
 import Data.Text (Text, pack, unpack)
@@ -22,8 +22,8 @@ import GHC.Generics
 import Lens.Micro
 import Lens.Micro.Extras
 import Network.HTTP.Conduit as C
-import qualified Network.HTTP.Types as H
-import qualified Network.HTTP.Types as HT
+import Network.HTTP.Types qualified as H
+import Network.HTTP.Types qualified as HT
 import URI.ByteString
 import URI.ByteString.Aeson ()
 import URI.ByteString.QQ
@@ -36,22 +36,22 @@ import URI.ByteString.QQ
 
 -- | Query Parameter Representation
 data OAuth2 = OAuth2
-  { oauth2ClientId :: Text,
-    oauth2ClientSecret :: Text,
-    oauth2AuthorizeEndpoint :: URIRef Absolute,
-    oauth2TokenEndpoint :: URIRef Absolute,
-    oauth2RedirectUri :: URIRef Absolute
+  { oauth2ClientId :: Text
+  , oauth2ClientSecret :: Text
+  , oauth2AuthorizeEndpoint :: URIRef Absolute
+  , oauth2TokenEndpoint :: URIRef Absolute
+  , oauth2RedirectUri :: URIRef Absolute
   }
   deriving (Show, Eq)
 
 instance Default OAuth2 where
   def =
     OAuth2
-      { oauth2ClientId = "",
-        oauth2ClientSecret = "",
-        oauth2AuthorizeEndpoint = [uri|https://www.example.com/|],
-        oauth2TokenEndpoint = [uri|https://www.example.com/|],
-        oauth2RedirectUri = [uri|https://www.example.com/|]
+      { oauth2ClientId = ""
+      , oauth2ClientSecret = ""
+      , oauth2AuthorizeEndpoint = [uri|https://www.example.com/|]
+      , oauth2TokenEndpoint = [uri|https://www.example.com/|]
+      , oauth2RedirectUri = [uri|https://www.example.com/|]
       }
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
@@ -65,14 +65,14 @@ newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
 data OAuth2Token = OAuth2Token
-  { accessToken :: AccessToken,
-    -- | Exists when @offline_access@ scope is in the 'authorizeUrl' and the provider supports Refresh Access Token.
-    refreshToken :: Maybe RefreshToken,
-    expiresIn :: Maybe Int,
-    -- | See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
-    tokenType :: Maybe Text,
-    -- | Exists when @openid@ scope is in the 'authorizeUrl' and the provider supports OpenID.
-    idToken :: Maybe IdToken
+  { accessToken :: AccessToken
+  , refreshToken :: Maybe RefreshToken
+  -- ^ Exists when @offline_access@ scope is in the 'authorizeUrl' and the provider supports Refresh Access Token.
+  , expiresIn :: Maybe Int
+  , tokenType :: Maybe Text
+  -- ^ See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
+  , idToken :: Maybe IdToken
+  -- ^ Exists when @openid@ scope is in the 'authorizeUrl' and the provider supports OpenID.
   }
   deriving (Eq, Show, Generic)
 
@@ -101,9 +101,9 @@ instance ToJSON OAuth2Token where
   toEncoding = genericToEncoding defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
 data OAuth2Error a = OAuth2Error
-  { error :: Either Text a,
-    errorDescription :: Maybe Text,
-    errorUri :: Maybe (URIRef Absolute)
+  { error :: Either Text a
+  , errorDescription :: Maybe Text
+  , errorUri :: Maybe (URIRef Absolute)
   }
   deriving (Show, Eq, Generic)
 
@@ -167,8 +167,8 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 
 defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
 defaultRequestHeaders =
-  [ (HT.hUserAgent, "hoauth2"),
-    (HT.hAccept, "application/json")
+  [ (HT.hUserAgent, "hoauth2")
+  , (HT.hAccept, "application/json")
   ]
 
 appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
@@ -189,8 +189,8 @@ uriToRequest auri = do
       req =
         setQueryString query $
           defaultRequest
-            { secure = ssl,
-              path = view pathL auri
+            { secure = ssl
+            , path = view pathL auri
             }
       req2 = (over hostLens . maybe id const . preview hostL) auri req
       req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) auri req2

@@ -7,8 +7,8 @@ module Network.OAuth.OAuth2.AuthorizationRequest where
 
 import Data.Aeson
 import Data.Function (on)
-import qualified Data.List as List
-import qualified Data.Text.Encoding as T
+import Data.List qualified as List
+import Data.Text.Encoding qualified as T
 import GHC.Generics (Generic)
 import Lens.Micro (over)
 import Network.OAuth.OAuth2.Internal
@@ -62,7 +62,7 @@ authorizationUrlWithParams qs oa = over (queryL . queryPairsL) (++ queryParts) (
     queryParts =
       List.nubBy ((==) `on` fst) $
         qs
-          ++ [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-               ("response_type", "code"),
-               ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
+          ++ [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa)
+             , ("response_type", "code")
+             , ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
              ]

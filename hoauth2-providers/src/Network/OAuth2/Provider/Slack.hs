@@ -22,15 +22,15 @@ type instance IdpUserInfo Slack = SlackUser
 defaultSlackApp :: IdpApplication 'AuthorizationCode Slack
 defaultSlackApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["openid", "profile"],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idpAppName = "default-slack-App",
-      idp = defaultSlackIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["openid", "profile"]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idpAppName = "default-slack-App"
+    , idp = defaultSlackIdp
     }
 
 -- https://api.slack.com/authentication/sign-in-with-slack
@@ -38,15 +38,15 @@ defaultSlackApp =
 defaultSlackIdp :: Idp Slack
 defaultSlackIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Slack),
-      idpUserInfoEndpoint = [uri|https://slack.com/api/openid.connect.userInfo|],
-      idpAuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|],
-      idpTokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Slack)
+    , idpUserInfoEndpoint = [uri|https://slack.com/api/openid.connect.userInfo|]
+    , idpAuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|]
+    , idpTokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
     }
 
 data SlackUser = SlackUser
-  { name :: Text,
-    email :: Text
+  { name :: Text
+  , email :: Text
   }
   deriving (Show, Generic)
 

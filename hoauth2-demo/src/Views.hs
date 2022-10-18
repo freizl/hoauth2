@@ -4,7 +4,7 @@ module Views where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.List (sort)
-import qualified Data.Text.Lazy as TL
+import Data.Text.Lazy qualified as TL
 import Paths_hoauth2_demo
 import Text.Mustache
 import Text.Parsec.Error

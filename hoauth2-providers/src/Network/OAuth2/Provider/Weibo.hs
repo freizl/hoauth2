@@ -18,38 +18,38 @@ type instance IdpUserInfo Weibo = WeiboUID
 defaultWeiboApp :: IdpApplication 'AuthorizationCode Weibo
 defaultWeiboApp =
   AuthorizationCodeIdpApplication
-    { idpAppName = "default-weibo-App",
-      idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.empty,
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultWeiboIdp
+    { idpAppName = "default-weibo-App"
+    , idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.empty
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultWeiboIdp
     }
 
 defaultWeiboIdp :: Idp Weibo
 defaultWeiboIdp =
   Idp
-    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo Weibo) AuthInRequestQuery,
-      idpUserInfoEndpoint = [uri|https://api.weibo.com/2/account/get_uid.json|],
-      idpAuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|],
-      idpTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
+    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo Weibo) AuthInRequestQuery
+    , idpUserInfoEndpoint = [uri|https://api.weibo.com/2/account/get_uid.json|]
+    , idpAuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|]
+    , idpTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
     }
 
 -- | http://open.weibo.com/wiki/2/users/show
 data WeiboUser = WeiboUser
-  { id :: Integer,
-    name :: Text,
-    screenName :: Text
+  { id :: Integer
+  , name :: Text
+  , screenName :: Text
   }
   deriving (Show, Generic)
 
 newtype WeiboUID = WeiboUID {uid :: Integer}
   deriving (Show, Generic)
 
-instance FromJSON WeiboUID 
+instance FromJSON WeiboUID
 
 instance FromJSON WeiboUser where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}

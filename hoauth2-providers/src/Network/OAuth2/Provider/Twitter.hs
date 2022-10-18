@@ -24,30 +24,30 @@ type instance IdpUserInfo Twitter = TwitterUserResp
 defaultTwitterApp :: IdpApplication 'AuthorizationCode Twitter
 defaultTwitterApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["tweet.read", "users.read"],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-twitter-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultTwitterIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["tweet.read", "users.read"]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-twitter-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultTwitterIdp
     }
 
 defaultTwitterIdp :: Idp Twitter
 defaultTwitterIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Twitter),
-      idpUserInfoEndpoint = [uri|https://api.twitter.com/2/users/me|],
-      idpAuthorizeEndpoint = [uri|https://twitter.com/i/oauth2/authorize|],
-      idpTokenEndpoint = [uri|https://api.twitter.com/2/oauth2/token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Twitter)
+    , idpUserInfoEndpoint = [uri|https://api.twitter.com/2/users/me|]
+    , idpAuthorizeEndpoint = [uri|https://twitter.com/i/oauth2/authorize|]
+    , idpTokenEndpoint = [uri|https://api.twitter.com/2/oauth2/token|]
     }
 
 data TwitterUser = TwitterUser
-  { name :: Text,
-    id :: Text,
-    username :: Text
+  { name :: Text
+  , id :: Text
+  , username :: Text
   }
   deriving (Show, Generic)
 

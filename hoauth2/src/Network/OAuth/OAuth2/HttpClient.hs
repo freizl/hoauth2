@@ -4,39 +4,38 @@
 
 -- | Bindings for The OAuth 2.0 Authorization Framework: Bearer Token Usage
 -- RFC6750 <https://www.rfc-editor.org/rfc/rfc6750>
-module Network.OAuth.OAuth2.HttpClient
-  ( -- * AUTH requests
-    authGetJSON,
-    authGetBS,
-    authGetBS2,
-    authGetJSONWithAuthMethod,
-    authGetJSONInternal,
-    authGetBSWithAuthMethod,
-    authGetBSInternal,
-    authPostJSON,
-    authPostBS,
-    authPostBS2,
-    authPostBS3,
-    authPostJSONWithAuthMethod,
-    authPostJSONInternal,
-    authPostBSWithAuthMethod,
-    authPostBSInternal,
+module Network.OAuth.OAuth2.HttpClient (
+  -- * AUTH requests
+  authGetJSON,
+  authGetBS,
+  authGetBS2,
+  authGetJSONWithAuthMethod,
+  authGetJSONInternal,
+  authGetBSWithAuthMethod,
+  authGetBSInternal,
+  authPostJSON,
+  authPostBS,
+  authPostBS2,
+  authPostBS3,
+  authPostJSONWithAuthMethod,
+  authPostJSONInternal,
+  authPostBSWithAuthMethod,
+  authPostBSInternal,
 
-    -- * Types
-    APIAuthenticationMethod (..),
-  )
-where
+  -- * Types
+  APIAuthenticationMethod (..),
+) where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Data.Aeson (FromJSON, eitherDecode)
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
+import Data.ByteString.Char8 qualified as BS
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Maybe (fromJust, isJust)
-import qualified Data.Text.Encoding as T
+import Data.Text.Encoding qualified as T
 import Lens.Micro (over)
 import Network.HTTP.Conduit
-import qualified Network.HTTP.Types as HT
+import Network.HTTP.Types qualified as HT
 import Network.OAuth.OAuth2.Internal
 import URI.ByteString (URI, URIRef, queryL, queryPairsL)
 
@@ -312,9 +311,9 @@ handleResponse :: Response BSL.ByteString -> Either BSL.ByteString BSL.ByteStrin
 handleResponse rsp = do
   if HT.statusIsSuccessful (responseStatus rsp)
     then Right $ responseBody rsp
-    -- FIXME: better to surface up entire resp so that client can decide what to do when error happens.
+    else -- FIXME: better to surface up entire resp so that client can decide what to do when error happens.
     -- e.g. when 404, the response body could be empty hence library user has no idea what's happening.
-    else
+
       Left $ responseBody rsp
 
 -- | Set several header values:

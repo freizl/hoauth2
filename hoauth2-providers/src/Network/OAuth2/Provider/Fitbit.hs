@@ -22,30 +22,30 @@ type instance IdpUserInfo Fitbit = FitbitUser
 defaultFitbitApp :: IdpApplication 'AuthorizationCode Fitbit
 defaultFitbitApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.empty,
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-fitbit-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultFitbitIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.empty
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-fitbit-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultFitbitIdp
     }
 
 defaultFitbitIdp :: Idp Fitbit
 defaultFitbitIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Fitbit),
-      idpUserInfoEndpoint = [uri|https://api.fitbit.com/1/user/-/profile.json|],
-      idpAuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|],
-      idpTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Fitbit)
+    , idpUserInfoEndpoint = [uri|https://api.fitbit.com/1/user/-/profile.json|]
+    , idpAuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|]
+    , idpTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
     }
 
 data FitbitUser = FitbitUser
-  { userId :: Text,
-    userName :: Text,
-    userAge :: Int
+  { userId :: Text
+  , userName :: Text
+  , userAge :: Int
   }
   deriving (Show, Eq)
 

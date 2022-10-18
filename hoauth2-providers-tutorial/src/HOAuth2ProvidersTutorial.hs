@@ -18,25 +18,25 @@ import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
-import Network.OAuth.OAuth2.Internal
-  ( ExchangeToken (ExchangeToken),
-    OAuth2Error,
-    OAuth2Token (accessToken),
-  )
+import Network.OAuth.OAuth2.Internal (
+  ExchangeToken (ExchangeToken),
+  OAuth2Error,
+  OAuth2Token (accessToken),
+ )
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Auth0
-  ( Auth0,
-    Auth0User (Auth0User, email, name, sub),
-    defaultAuth0App,
-    defaultAuth0Idp,
-  )
-import Network.OAuth2.Provider.Google
-  ( Google,
-    GoogleUser (GoogleUser, email, id, name),
-    defaultGoogleApp,
-    defaultGoogleIdp,
-  )
+import Network.OAuth2.Provider.Auth0 (
+  Auth0,
+  Auth0User (Auth0User, email, name, sub),
+  defaultAuth0App,
+  defaultAuth0Idp,
+ )
+import Network.OAuth2.Provider.Google (
+  Google,
+  GoogleUser (GoogleUser, email, id, name),
+  defaultGoogleApp,
+  defaultGoogleIdp,
+ )
 import URI.ByteString (URI, serializeURIRef')
 import URI.ByteString.QQ (uri)
 import Web.Scotty (ActionM, scotty)
@@ -51,21 +51,21 @@ import Prelude hiding (id)
 
 testAuth0App :: IdpApplication 'AuthorizationCode Auth0
 testAuth0App =
-  ( defaultAuth0App testAuth0Idp )
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppAuthorizeState = AuthorizeState ("auth0." <> randomStateValue),
-      idpAppScope = Set.fromList ["openid", "email", "profile"],
-      idpAppRedirectUri = [uri|http://localhost:9988/oauth2/callback|],
-      idpAppName = "foo-auth0-app"
+  (defaultAuth0App testAuth0Idp)
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppAuthorizeState = AuthorizeState ("auth0." <> randomStateValue)
+    , idpAppScope = Set.fromList ["openid", "email", "profile"]
+    , idpAppRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
+    , idpAppName = "foo-auth0-app"
     }
 
 testAuth0Idp :: Idp Auth0
 testAuth0Idp =
   defaultAuth0Idp
-    { idpUserInfoEndpoint = [uri|https://freizl.auth0.com/userinfo|],
-      idpAuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|],
-      idpTokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
+    { idpUserInfoEndpoint = [uri|https://freizl.auth0.com/userinfo|]
+    , idpAuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|]
+    , idpTokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
     }
 
 testGoogleIdp :: Idp Google
@@ -74,12 +74,12 @@ testGoogleIdp = defaultGoogleIdp
 testGoogleApp :: IdpApplication 'AuthorizationCode Google
 testGoogleApp =
   defaultGoogleApp
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppAuthorizeState = AuthorizeState ("google." <> randomStateValue),
-      idpAppRedirectUri = [uri|http://localhost:9988/oauth2/callback|],
-      idpAppName = "foo-google-app",
-      idp = testGoogleIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppAuthorizeState = AuthorizeState ("google." <> randomStateValue)
+    , idpAppRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
+    , idpAppName = "foo-google-app"
+    , idp = testGoogleIdp
     }
 
 -- | You'll need to find out an better way to create @state@
@@ -93,8 +93,8 @@ randomStateValue = "random-state-to-prevent-csrf"
 
 ------------------------------
 data DemoUser = DemoUser
-  { name :: TL.Text,
-    email :: Maybe TL.Text
+  { name :: TL.Text
+  , email :: Maybe TL.Text
   }
   deriving (Eq, Show)
 
@@ -117,23 +117,23 @@ indexH refUser = do
 
   let info = case muser of
         Just DemoUser {..} ->
-          [ "<h2>Hello, ",
-            name,
-            "</h2>",
-            "<p>",
-            TL.pack (show email),
-            "</p>",
-            "<a href='/logout'>Logout</a>"
+          [ "<h2>Hello, "
+          , name
+          , "</h2>"
+          , "<p>"
+          , TL.pack (show email)
+          , "</p>"
+          , "<a href='/logout'>Logout</a>"
           ]
         Nothing ->
-          [ "<ul>",
-            "<li>",
-            "<a href='/login/auth0'>Login with Auth0</a>",
-            "</li>",
-            "<li>",
-            "<a href='/login/google'>Login with Google</a>",
-            "</li>",
-            "</ul>"
+          [ "<ul>"
+          , "<li>"
+          , "<a href='/login/auth0'>Login with Auth0</a>"
+          , "</li>"
+          , "<li>"
+          , "<a href='/login/google'>Login with Google</a>"
+          , "</li>"
+          , "</ul>"
           ]
 
   Scotty.html . mconcat $ "<h1>hoauth2 providers Tutorial</h1>" : info

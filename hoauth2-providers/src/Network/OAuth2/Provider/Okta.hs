@@ -26,25 +26,25 @@ type instance IdpUserInfo Okta = OktaUser
 defaultOktaApp :: Idp Okta -> IdpApplication 'AuthorizationCode Okta
 defaultOktaApp i =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["openid", "profile", "email"],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-okta-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = i
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["openid", "profile", "email"]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-okta-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = i
     }
 
 defaultOktaIdp :: Idp Okta
 defaultOktaIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta),
-      idpUserInfoEndpoint = [uri|https://foo.okta.com/oauth2/v1/userinfo|],
-      idpAuthorizeEndpoint =
-        [uri|https://foo.okta.com/oauth2/v1/authorize|],
-      idpTokenEndpoint =
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta)
+    , idpUserInfoEndpoint = [uri|https://foo.okta.com/oauth2/v1/userinfo|]
+    , idpAuthorizeEndpoint =
+        [uri|https://foo.okta.com/oauth2/v1/authorize|]
+    , idpTokenEndpoint =
         [uri|https://foo.okta.com/oauth2/v1/token|]
     }
 
@@ -57,9 +57,9 @@ mkOktaIdp domain = do
   OpenIDConfigurationUris {..} <- fetchWellKnownUris domain
   pure
     ( defaultOktaIdp
-        { idpUserInfoEndpoint = userinfoUri,
-          idpAuthorizeEndpoint = authorizationUri,
-          idpTokenEndpoint = tokenUri
+        { idpUserInfoEndpoint = userinfoUri
+        , idpAuthorizeEndpoint = authorizationUri
+        , idpTokenEndpoint = tokenUri
         }
     )
 
@@ -67,8 +67,8 @@ mkOktaIdp domain = do
 -- Okta Org AS doesn't support consent
 -- Okta Custom AS does support consent via config (what scope shall prompt consent)
 data OktaUser = OktaUser
-  { name :: Text,
-    preferredUsername :: Text
+  { name :: Text
+  , preferredUsername :: Text
   }
   deriving (Show, Generic)
 

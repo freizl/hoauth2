@@ -135,11 +135,11 @@ testPasswordGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
   where
     testPasswordGrantType ::
-      ( HasTokenRequest a,
-        'ResourceOwnerPassword ~ a,
-        HasDemoLoginUser b,
-        HasUserInfoRequest a,
-        FromJSON (IdpUserInfo b)
+      ( HasTokenRequest a
+      , 'ResourceOwnerPassword ~ a
+      , HasDemoLoginUser b
+      , HasUserInfoRequest a
+      , FromJSON (IdpUserInfo b)
       ) =>
       IdpApplication a b ->
       ActionM ()

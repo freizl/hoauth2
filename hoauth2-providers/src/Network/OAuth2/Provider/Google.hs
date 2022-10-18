@@ -29,37 +29,36 @@ type instance IdpUserInfo Google = GoogleUser
 defaultGoogleApp :: IdpApplication 'AuthorizationCode Google
 defaultGoogleApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope =
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope =
         Set.fromList
-          [ "https://www.googleapis.com/auth/userinfo.email",
-            "https://www.googleapis.com/auth/userinfo.profile"
-          ],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-google-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultGoogleIdp
+          [ "https://www.googleapis.com/auth/userinfo.email"
+          , "https://www.googleapis.com/auth/userinfo.profile"
+          ]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-google-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultGoogleIdp
     }
 
 defaultGoogleIdp :: Idp Google
 defaultGoogleIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google),
-      idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|],
-      idpTokenEndpoint = [uri|https://oauth2.googleapis.com/token|],
-      idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google)
+    , idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|]
+    , idpTokenEndpoint = [uri|https://oauth2.googleapis.com/token|]
+    , idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
     }
 
 -- requires scope "https://www.googleapis.com/auth/userinfo.profile" to obtain "name".
 -- requires scopes "https://www.googleapis.com/auth/userinfo.email" to obtain "email".
 data GoogleUser = GoogleUser
-  {
-    name :: Text,
-    id :: Text,
-    email :: Text
+  { name :: Text
+  , id :: Text
+  , email :: Text
   }
   deriving (Show, Generic)
 

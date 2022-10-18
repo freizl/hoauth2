@@ -118,17 +118,17 @@ import Data.Text.Lazy qualified as TL
 import GHC.Generics (Generic)
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
-import Network.OAuth.OAuth2.AuthorizationRequest
-  ( authorizationUrl,
-  )
+import Network.OAuth.OAuth2.AuthorizationRequest (
+  authorizationUrl,
+ )
 import Network.OAuth.OAuth2.HttpClient (authGetJSON)
-import Network.OAuth.OAuth2.Internal
-  ( ExchangeToken (ExchangeToken),
-    OAuth2 (..),
-    OAuth2Error,
-    OAuth2Token (accessToken),
-    appendQueryParams,
-  )
+import Network.OAuth.OAuth2.Internal (
+  ExchangeToken (ExchangeToken),
+  OAuth2 (..),
+  OAuth2Error,
+  OAuth2Token (accessToken),
+  appendQueryParams,
+ )
 import Network.OAuth.OAuth2.TokenRequest (fetchAccessToken)
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import URI.ByteString (URI, serializeURIRef')
@@ -145,18 +145,18 @@ import Web.Scotty qualified as Scotty
 auth0 :: OAuth2
 auth0 =
   OAuth2
-    { oauth2ClientId = "TZlmNRtLY9duT8M4ztgFBLsFA66aEoGs",
-      oauth2ClientSecret = "",
-      oauth2AuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|],
-      oauth2TokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|],
-      oauth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
+    { oauth2ClientId = "TZlmNRtLY9duT8M4ztgFBLsFA66aEoGs"
+    , oauth2ClientSecret = ""
+    , oauth2AuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|]
+    , oauth2TokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
+    , oauth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
     }
 
 authorizeUrl :: URI
 authorizeUrl =
   appendQueryParams
-    [ ("scope", "openid profile email"),
-      ("state", randomStateValue)
+    [ ("scope", "openid profile email")
+    , ("state", randomStateValue)
     ]
     $ authorizationUrl auth0
 
@@ -172,9 +172,9 @@ auth0UserInfoUri = [uri|https://freizl.auth0.com/userinfo|]
 -- | Auth0 user
 -- https://auth0.com/docs/api/authentication#get-user-info
 data Auth0User = Auth0User
-  { name :: TL.Text,
-    email :: TL.Text,
-    sub :: TL.Text
+  { name :: TL.Text
+  , email :: TL.Text
+  , sub :: TL.Text
   }
   deriving (Show, Generic)
 
@@ -204,8 +204,8 @@ indexH refUser = do
 
   let info = case muser of
         Just user ->
-          [ "<p>Hello, " `TL.append` name user `TL.append` "</p>",
-            "<a href='/logout'>Logout</a>"
+          [ "<p>Hello, " `TL.append` name user `TL.append` "</p>"
+          , "<a href='/logout'>Logout</a>"
           ]
         Nothing -> ["<a href='/login'>Login</a>"]
 

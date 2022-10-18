@@ -22,31 +22,31 @@ type instance IdpUserInfo ZOHO = ZOHOUserResp
 defaultZohoApp :: IdpApplication 'AuthorizationCode ZOHO
 defaultZohoApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["ZohoCRM.users.READ"],
-      idpAppAuthorizeExtraParams = Map.fromList [("access_type", "offline"), ("prompt", "consent")],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppRedirectUri = [uri|http://localhost/oauth2/callback|],
-      idpAppName = "default-zoho-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultZohoIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["ZohoCRM.users.READ"]
+    , idpAppAuthorizeExtraParams = Map.fromList [("access_type", "offline"), ("prompt", "consent")]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppRedirectUri = [uri|http://localhost/oauth2/callback|]
+    , idpAppName = "default-zoho-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultZohoIdp
     }
 
 defaultZohoIdp :: Idp ZOHO
 defaultZohoIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo ZOHO),
-      idpUserInfoEndpoint = [uri|https://www.zohoapis.com/crm/v2/users|],
-      idpAuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|],
-      idpTokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo ZOHO)
+    , idpUserInfoEndpoint = [uri|https://www.zohoapis.com/crm/v2/users|]
+    , idpAuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|]
+    , idpTokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]
     }
 
 -- `oauth/user/info` url does not work and find answer from
 -- https://help.zoho.com/portal/community/topic/oauth2-api-better-document-oauth-user-info
 data ZOHOUser = ZOHOUser
-  { email :: Text,
-    fullName :: Text
+  { email :: Text
+  , fullName :: Text
   }
   deriving (Show, Generic)
 

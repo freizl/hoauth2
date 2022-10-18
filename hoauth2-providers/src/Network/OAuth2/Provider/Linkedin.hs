@@ -22,30 +22,30 @@ type instance IdpUserInfo Linkedin = LinkedinUser
 defaultLinkedinApp :: IdpApplication 'AuthorizationCode Linkedin
 defaultLinkedinApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["r_liteprofile"],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-linkedin-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretPost,
-      idp = defaultLinkedinIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["r_liteprofile"]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-linkedin-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
+    , idp = defaultLinkedinIdp
     }
 
 defaultLinkedinIdp :: Idp Linkedin
 defaultLinkedinIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Linkedin),
-      idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|],
-      idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|],
-      idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Linkedin)
+    , idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
+    , idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|]
+    , idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
     }
 
 data LinkedinUser = LinkedinUser
-  { localizedFirstName :: Text,
-    localizedLastName :: Text
+  { localizedFirstName :: Text
+  , localizedLastName :: Text
   }
   deriving (Show, Generic, Eq)
 
-instance FromJSON LinkedinUser 
+instance FromJSON LinkedinUser

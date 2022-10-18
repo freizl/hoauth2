@@ -1,11 +1,10 @@
-module Network.OAuth2.Experiment.Pkce
-  ( mkPkceParam,
-    CodeChallenge (..),
-    CodeVerifier (..),
-    CodeChallengeMethod (..),
-    PkceRequestParam (..),
-  )
-where
+module Network.OAuth2.Experiment.Pkce (
+  mkPkceParam,
+  CodeChallenge (..),
+  CodeVerifier (..),
+  CodeChallengeMethod (..),
+  PkceRequestParam (..),
+) where
 
 import Control.Monad.IO.Class
 import Crypto.Hash qualified as H
@@ -25,11 +24,11 @@ data CodeChallengeMethod = S256
   deriving (Show)
 
 data PkceRequestParam = PkceRequestParam
-  { codeVerifier :: CodeVerifier,
-    codeChallenge :: CodeChallenge,
-    -- | spec says optional but really it shall be s256 or can be omitted?
-    -- https://datatracker.ietf.org/doc/html/rfc7636#section-4.3
-    codeChallengeMethod :: CodeChallengeMethod
+  { codeVerifier :: CodeVerifier
+  , codeChallenge :: CodeChallenge
+  , codeChallengeMethod :: CodeChallengeMethod
+  -- ^ spec says optional but really it shall be s256 or can be omitted?
+  -- https://datatracker.ietf.org/doc/html/rfc7636#section-4.3
   }
 
 mkPkceParam :: MonadIO m => m PkceRequestParam
@@ -37,9 +36,9 @@ mkPkceParam = do
   codeV <- genCodeVerifier
   pure
     PkceRequestParam
-      { codeVerifier = CodeVerifier (T.decodeUtf8 codeV),
-        codeChallenge = CodeChallenge (encodeCodeVerifier codeV),
-        codeChallengeMethod = S256
+      { codeVerifier = CodeVerifier (T.decodeUtf8 codeV)
+      , codeChallenge = CodeChallenge (encodeCodeVerifier codeV)
+      , codeChallengeMethod = S256
       }
 
 encodeCodeVerifier :: BS.ByteString -> Text

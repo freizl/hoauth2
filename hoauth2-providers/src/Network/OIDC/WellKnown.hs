@@ -18,19 +18,19 @@ import URI.ByteString
 -- | Slim OpenID Configuration
 -- TODO: could add more fields to be complete.
 data OpenIDConfiguration = OpenIDConfiguration
-  { issuer :: Text,
-    authorizationEndpoint :: Text,
-    tokenEndpoint :: Text,
-    userinfoEndpoint :: Text,
-    jwksUri :: Text
+  { issuer :: Text
+  , authorizationEndpoint :: Text
+  , tokenEndpoint :: Text
+  , userinfoEndpoint :: Text
+  , jwksUri :: Text
   }
   deriving (Generic)
 
 data OpenIDConfigurationUris = OpenIDConfigurationUris
-  { authorizationUri :: URI,
-    tokenUri :: URI,
-    userinfoUri :: URI,
-    jwksUri :: URI
+  { authorizationUri :: URI
+  , tokenUri :: URI
+  , userinfoUri :: URI
+  , jwksUri :: URI
   }
   deriving (Generic)
 
@@ -61,10 +61,10 @@ fetchWellKnownUris domain = do
     jwks <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 jwksUri)
     pure
       OpenIDConfigurationUris
-        { authorizationUri = ae,
-          tokenUri = te,
-          userinfoUri = ue,
-          jwksUri = jwks
+        { authorizationUri = ae
+        , tokenUri = te
+        , userinfoUri = ue
+        , jwksUri = jwks
         }
 
 handleWellKnownResponse :: Response ByteString -> Either Text OpenIDConfiguration

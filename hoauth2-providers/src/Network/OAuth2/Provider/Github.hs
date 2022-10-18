@@ -23,30 +23,30 @@ type instance IdpUserInfo Github = GithubUser
 defaultGithubApp :: IdpApplication 'AuthorizationCode Github
 defaultGithubApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.empty,
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-github-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = defaultGithubIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.empty
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-github-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = defaultGithubIdp
     }
 
 defaultGithubIdp :: Idp Github
 defaultGithubIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Github),
-      idpUserInfoEndpoint = [uri|https://api.github.com/user|],
-      idpAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|],
-      idpTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Github)
+    , idpUserInfoEndpoint = [uri|https://api.github.com/user|]
+    , idpAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
+    , idpTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
     }
 
 data GithubUser = GithubUser
-  { name :: Text,
-    id :: Integer
+  { name :: Text
+  , id :: Integer
   }
   deriving (Show, Generic)
 
-instance FromJSON GithubUser 
+instance FromJSON GithubUser

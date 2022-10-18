@@ -22,31 +22,31 @@ type instance IdpUserInfo Facebook = FacebookUser
 defaultFacebookApp :: IdpApplication 'AuthorizationCode Facebook
 defaultFacebookApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["user_about_me", "email"],
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-facebook-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretPost,
-      idp = defaultFacebookIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["user_about_me", "email"]
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-facebook-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
+    , idp = defaultFacebookIdp
     }
 
 defaultFacebookIdp :: Idp Facebook
 defaultFacebookIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Facebook),
-      idpUserInfoEndpoint = [uri|https://graph.facebook.com/me?fields=id,name,email|],
-      idpAuthorizeEndpoint = [uri|https://www.facebook.com/dialog/oauth|],
-      idpTokenEndpoint = [uri|https://graph.facebook.com/v2.3/oauth/access_token|]
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Facebook)
+    , idpUserInfoEndpoint = [uri|https://graph.facebook.com/me?fields=id,name,email|]
+    , idpAuthorizeEndpoint = [uri|https://www.facebook.com/dialog/oauth|]
+    , idpTokenEndpoint = [uri|https://graph.facebook.com/v2.3/oauth/access_token|]
     }
 
 data FacebookUser = FacebookUser
-  { id :: Text,
-    name :: Text,
-    email :: Text
+  { id :: Text
+  , name :: Text
+  , email :: Text
   }
   deriving (Show, Generic)
 
-instance FromJSON FacebookUser 
+instance FromJSON FacebookUser

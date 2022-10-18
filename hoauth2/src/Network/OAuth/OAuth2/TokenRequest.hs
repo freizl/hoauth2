@@ -8,13 +8,13 @@ module Network.OAuth.OAuth2.TokenRequest where
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Data.Aeson
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KeyMap
-import qualified Data.ByteString.Lazy.Char8 as BSL
-import qualified Data.Text.Encoding as T
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.ByteString.Lazy.Char8 qualified as BSL
+import Data.Text.Encoding qualified as T
 import GHC.Generics (Generic)
 import Network.HTTP.Conduit
-import qualified Network.HTTP.Types as HT
+import Network.HTTP.Types qualified as HT
 import Network.HTTP.Types.URI (parseQuery)
 import Network.OAuth.OAuth2.Internal
 import URI.ByteString (URI, serializeURIRef')
@@ -57,9 +57,9 @@ accessTokenUrl ::
 accessTokenUrl oa code =
   let uri = oauth2TokenEndpoint oa
       body =
-        [ ("code", T.encodeUtf8 $ extoken code),
-          ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa),
-          ("grant_type", "authorization_code")
+        [ ("code", T.encodeUtf8 $ extoken code)
+        , ("redirect_uri", serializeURIRef' $ oauth2RedirectUri oa)
+        , ("grant_type", "authorization_code")
         ]
    in (uri, body)
 
@@ -74,8 +74,8 @@ refreshAccessTokenUrl oa token = (uri, body)
   where
     uri = oauth2TokenEndpoint oa
     body =
-      [ ("grant_type", "refresh_token"),
-        ("refresh_token", T.encodeUtf8 $ rtoken token)
+      [ ("grant_type", "refresh_token")
+      , ("refresh_token", T.encodeUtf8 $ rtoken token)
       ]
 
 --------------------------------------------------
@@ -305,6 +305,6 @@ addDefaultRequestHeaders req =
 -- | Add Credential (client_id, client_secret) to the request post body.
 clientSecretPost :: OAuth2 -> PostBody
 clientSecretPost oa =
-  [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa),
-    ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
+  [ ("client_id", T.encodeUtf8 $ oauth2ClientId oa)
+  , ("client_secret", T.encodeUtf8 $ oauth2ClientSecret oa)
   ]

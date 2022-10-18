@@ -29,45 +29,45 @@ type instance IdpUserInfo StackExchange = StackExchangeResp
 defaultStackExchangeApp :: IdpApplication 'AuthorizationCode StackExchange
 defaultStackExchangeApp =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.empty,
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-stackexchange-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretPost,
-      idp = defaultStackexchangeIdp
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.empty
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-stackexchange-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
+    , idp = defaultStackexchangeIdp
     }
 
 defaultStackexchangeIdp :: Idp StackExchange
 defaultStackexchangeIdp =
   Idp
-    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo StackExchange) AuthInRequestQuery,
-      -- Only StackExchange has such specical app key which has to be append in userinfo uri.
+    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo StackExchange) AuthInRequestQuery
+    , -- Only StackExchange has such specical app key which has to be append in userinfo uri.
       -- I feel it's not worth to invent a way to read from config
       -- file which would break the generic of Idp data type.
       -- Until discover a easier way, hard code for now.
       idpUserInfoEndpoint =
         appendStackExchangeAppKey
           [uri|https://api.stackexchange.com/2.2/me?site=stackoverflow|]
-          stackexchangeAppKey,
-      idpAuthorizeEndpoint = [uri|https://stackexchange.com/oauth|],
-      idpTokenEndpoint = [uri|https://stackexchange.com/oauth/access_token|]
+          stackexchangeAppKey
+    , idpAuthorizeEndpoint = [uri|https://stackexchange.com/oauth|]
+    , idpTokenEndpoint = [uri|https://stackexchange.com/oauth/access_token|]
     }
 
 data StackExchangeResp = StackExchangeResp
-  { hasMore :: Bool,
-    quotaMax :: Integer,
-    quotaRemaining :: Integer,
-    items :: [StackExchangeUser]
+  { hasMore :: Bool
+  , quotaMax :: Integer
+  , quotaRemaining :: Integer
+  , items :: [StackExchangeUser]
   }
   deriving (Show, Generic)
 
 data StackExchangeUser = StackExchangeUser
-  { userId :: Integer,
-    displayName :: Text,
-    profileImage :: Text
+  { userId :: Integer
+  , displayName :: Text
+  , profileImage :: Text
   }
   deriving (Show, Generic)
 

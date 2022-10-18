@@ -24,16 +24,16 @@ class HasDemoLoginUser a where
 -- https://wiki.haskell.org/Heterogenous_collections
 data DemoAuthorizationApp
   = forall a b.
-    ( HasDemoLoginUser b,
-      FromJSON (IdpUserInfo b),
-      'AuthorizationCode ~ a,
-      HasPkceAuthorizeRequest a,
-      HasPkceTokenRequest a,
-      HasUserInfoRequest a,
-      HasIdpAppName a,
-      HasAuthorizeRequest a,
-      HasTokenRequest a,
-      HasRefreshTokenRequest a
+    ( HasDemoLoginUser b
+    , FromJSON (IdpUserInfo b)
+    , 'AuthorizationCode ~ a
+    , HasPkceAuthorizeRequest a
+    , HasPkceTokenRequest a
+    , HasUserInfoRequest a
+    , HasIdpAppName a
+    , HasAuthorizeRequest a
+    , HasTokenRequest a
+    , HasRefreshTokenRequest a
     ) =>
     DemoAuthorizationApp (IdpApplication a b)
 
@@ -44,10 +44,10 @@ newtype DemoLoginUser = DemoLoginUser
   deriving (Eq, Show)
 
 data DemoAppPerAppSessionData = DemoAppPerAppSessionData
-  { loginUser :: Maybe DemoLoginUser,
-    oauth2Token :: Maybe OAuth2Token,
-    authorizePkceCodeVerifier :: Maybe CodeVerifier,
-    authorizeAbsUri :: TL.Text
+  { loginUser :: Maybe DemoLoginUser
+  , oauth2Token :: Maybe OAuth2Token
+  , authorizePkceCodeVerifier :: Maybe CodeVerifier
+  , authorizeAbsUri :: TL.Text
   }
 
 data DemoAppEnv = DemoAppEnv DemoAuthorizationApp DemoAppPerAppSessionData
@@ -55,10 +55,10 @@ data DemoAppEnv = DemoAppEnv DemoAuthorizationApp DemoAppPerAppSessionData
 instance Default DemoAppPerAppSessionData where
   def =
     DemoAppPerAppSessionData
-      { loginUser = Nothing,
-        oauth2Token = Nothing,
-        authorizePkceCodeVerifier = Nothing,
-        authorizeAbsUri = ""
+      { loginUser = Nothing
+      , oauth2Token = Nothing
+      , authorizePkceCodeVerifier = Nothing
+      , authorizeAbsUri = ""
       }
 
 instance Show DemoAppEnv where
@@ -85,10 +85,10 @@ newtype TemplateData = TemplateData
 instance ToMustache DemoAppEnv where
   toMustache (DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) =
     M.object
-      [ "codeFlowUri" ~> authorizeAbsUri,
-        "isLogin" ~> isJust loginUser,
-        "user" ~> loginUser,
-        "name" ~> TL.unpack (getIdpAppName idpAppConfig)
+      [ "codeFlowUri" ~> authorizeAbsUri
+      , "isLogin" ~> isJust loginUser
+      , "user" ~> loginUser
+      , "name" ~> TL.unpack (getIdpAppName idpAppConfig)
       ]
 
 instance ToMustache DemoLoginUser where

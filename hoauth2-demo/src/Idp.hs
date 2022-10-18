@@ -10,7 +10,6 @@
 
 module Idp where
 
-import Lens.Micro
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson qualified as Aeson
@@ -25,6 +24,7 @@ import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Env qualified
+import Lens.Micro
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
@@ -35,9 +35,9 @@ import Network.OAuth2.Provider.Github qualified as IGithub
 import Network.OAuth2.Provider.Google qualified as IGoogle
 import Network.OAuth2.Provider.Linkedin qualified as ILinkedin
 import Network.OAuth2.Provider.Okta qualified as IOkta
-import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
+import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Session
@@ -59,39 +59,39 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
           Nothing -> idpAppConfig
           Just config ->
             idpAppConfig
-              { idpAppClientId = ClientId $ Env.clientId config,
-                idpAppClientSecret = ClientSecret $ Env.clientSecret config,
-                idpAppRedirectUri = defaultOAuth2RedirectUri,
-                idpAppScope = Set.unions [idpAppScope, Set.map Scope (Set.fromList (fromMaybe [] (Env.scopes config)))],
-                idpAppAuthorizeState = AuthorizeState (idpAppName <> ".hoauth2-demo-app-123")
+              { idpAppClientId = ClientId $ Env.clientId config
+              , idpAppClientSecret = ClientSecret $ Env.clientSecret config
+              , idpAppRedirectUri = defaultOAuth2RedirectUri
+              , idpAppScope = Set.unions [idpAppScope, Set.map Scope (Set.fromList (fromMaybe [] (Env.scopes config)))]
+              , idpAppAuthorizeState = AuthorizeState (idpAppName <> ".hoauth2-demo-app-123")
               }
   pure
-    [ DemoAuthorizationApp (initIdpAppConfig IAzureAD.defaultAzureADApp),
-      DemoAuthorizationApp (initIdpAppConfig (IAuth0.defaultAuth0App myAuth0Idp)),
-      DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookApp),
-      DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitApp),
-      DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubApp),
-      DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleApp),
-      DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinApp),
-      DemoAuthorizationApp (initIdpAppConfig (IOkta.defaultOktaApp myOktaIdp)),
-      DemoAuthorizationApp (initIdpAppConfig ITwitter.defaultTwitterApp),
-      DemoAuthorizationApp (initIdpAppConfig ISlack.defaultSlackApp),
-      DemoAuthorizationApp (initIdpAppConfig IWeibo.defaultWeiboApp),
-      DemoAuthorizationApp (initIdpAppConfig IZOHO.defaultZohoApp),
-      DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeApp)
+    [ DemoAuthorizationApp (initIdpAppConfig IAzureAD.defaultAzureADApp)
+    , DemoAuthorizationApp (initIdpAppConfig (IAuth0.defaultAuth0App myAuth0Idp))
+    , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookApp)
+    , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitApp)
+    , DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubApp)
+    , DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleApp)
+    , DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinApp)
+    , DemoAuthorizationApp (initIdpAppConfig (IOkta.defaultOktaApp myOktaIdp))
+    , DemoAuthorizationApp (initIdpAppConfig ITwitter.defaultTwitterApp)
+    , DemoAuthorizationApp (initIdpAppConfig ISlack.defaultSlackApp)
+    , DemoAuthorizationApp (initIdpAppConfig IWeibo.defaultWeiboApp)
+    , DemoAuthorizationApp (initIdpAppConfig IZOHO.defaultZohoApp)
+    , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeApp)
     ]
 
 oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication 'ResourceOwnerPassword IOkta.Okta
 oktaPasswordGrantApp i =
   ResourceOwnerPasswordIDPAppConfig
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppName = "okta-demo-password-grant-app",
-      idpAppScope = Set.fromList ["openid", "profile"],
-      idpAppUserName = "",
-      idpAppPassword = "",
-      idpAppTokenRequestExtraParams = Map.empty,
-      idp = i
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppName = "okta-demo-password-grant-app"
+    , idpAppScope = Set.fromList ["openid", "profile"]
+    , idpAppUserName = ""
+    , idpAppPassword = ""
+    , idpAppTokenRequestExtraParams = Map.empty
+    , idp = i
     }
 
 -- Base on the document, it works well with custom Athourization Server
@@ -103,42 +103,42 @@ oktaPasswordGrantApp i =
 oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IdpApplication 'ClientCredentials IOkta.Okta
 oktaClientCredentialsGrantApp i =
   ClientCredentialsIDPAppConfig
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppName = "okta-demo-cc-grant-app",
-      idpAppScope = Set.fromList ["hw-test"],
-      idpAppTokenRequestExtraParams = Map.empty,
-      idp = i
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppName = "okta-demo-cc-grant-app"
+    , idpAppScope = Set.fromList ["hw-test"]
+    , idpAppTokenRequestExtraParams = Map.empty
+    , idp = i
     }
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ResourceOwnerPassword IAuth0.Auth0
 auth0PasswordGrantApp i =
   ResourceOwnerPasswordIDPAppConfig
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppName = "auth0-demo-password-grant-app",
-      idpAppScope = Set.fromList ["openid", "profile", "email"],
-      idpAppUserName = "test",
-      idpAppPassword = "",
-      idpAppTokenRequestExtraParams = Map.empty,
-      idp = i
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppName = "auth0-demo-password-grant-app"
+    , idpAppScope = Set.fromList ["openid", "profile", "email"]
+    , idpAppUserName = "test"
+    , idpAppPassword = ""
+    , idpAppTokenRequestExtraParams = Map.empty
+    , idp = i
     }
 
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
 auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ClientCredentials IAuth0.Auth0
 auth0ClientCredentialsGrantApp i =
   ClientCredentialsIDPAppConfig
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppName = "auth0-demo-cc-grant-app",
-      idpAppScope = Set.fromList ["read:users"],
-      idpAppTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")],
-      idp = i
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppName = "auth0-demo-cc-grant-app"
+    , idpAppScope = Set.fromList ["read:users"]
+    , idpAppTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
+    , idp = i
     }
 
-isSupportPkce :: forall a i. ('AuthorizationCode ~ a) => IdpApplication a i -> Bool
-isSupportPkce AuthorizationCodeIdpApplication{..} =
+isSupportPkce :: forall a i. ( 'AuthorizationCode ~ a) => IdpApplication a i -> Bool
+isSupportPkce AuthorizationCodeIdpApplication {..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
    in any (`BS.isInfixOf` hostStr) ["auth0.com", "okta.com", "google.com", "twitter.com"]
 
@@ -190,7 +190,7 @@ instance HasDemoLoginUser ILinkedin.Linkedin where
 
 instance HasDemoLoginUser ITwitter.Twitter where
   toLoginUser :: ITwitter.TwitterUserResp -> DemoLoginUser
-  toLoginUser ITwitter.TwitterUserResp{..} = DemoLoginUser {loginUserName = ITwitter.name twitterUserRespData}
+  toLoginUser ITwitter.TwitterUserResp {..} = DemoLoginUser {loginUserName = ITwitter.name twitterUserRespData}
 
 instance HasDemoLoginUser IOkta.Okta where
   toLoginUser :: IOkta.OktaUser -> DemoLoginUser

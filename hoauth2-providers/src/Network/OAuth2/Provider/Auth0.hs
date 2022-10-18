@@ -31,26 +31,26 @@ type instance IdpUserInfo Auth0 = Auth0User
 defaultAuth0App :: Idp Auth0 -> IdpApplication 'AuthorizationCode Auth0
 defaultAuth0App i =
   AuthorizationCodeIdpApplication
-    { idpAppClientId = "",
-      idpAppClientSecret = "",
-      idpAppScope = Set.fromList ["openid", "profile", "email", "offline_access"],
-      idpAppAuthorizeState = "CHANGE_ME",
-      idpAppAuthorizeExtraParams = Map.empty,
-      idpAppRedirectUri = [uri|http://localhost|],
-      idpAppName = "default-auth0-App",
-      idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
-      idp = i
+    { idpAppClientId = ""
+    , idpAppClientSecret = ""
+    , idpAppScope = Set.fromList ["openid", "profile", "email", "offline_access"]
+    , idpAppAuthorizeState = "CHANGE_ME"
+    , idpAppAuthorizeExtraParams = Map.empty
+    , idpAppRedirectUri = [uri|http://localhost|]
+    , idpAppName = "default-auth0-App"
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
+    , idp = i
     }
 
 defaultAuth0Idp :: Idp Auth0
 defaultAuth0Idp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0),
-      --  https://auth0.com/docs/api/authentication#user-profile
-      idpUserInfoEndpoint = [uri|https://foo.auth0.com/userinfo|],
-      -- https://auth0.com/docs/api/authentication#authorization-code-flow
-      idpAuthorizeEndpoint = [uri|https://foo.auth0.com/authorize|],
-      -- https://auth0.com/docs/api/authentication#authorization-code-flow44
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0)
+    , --  https://auth0.com/docs/api/authentication#user-profile
+      idpUserInfoEndpoint = [uri|https://foo.auth0.com/userinfo|]
+    , -- https://auth0.com/docs/api/authentication#authorization-code-flow
+      idpAuthorizeEndpoint = [uri|https://foo.auth0.com/authorize|]
+    , -- https://auth0.com/docs/api/authentication#authorization-code-flow44
       idpTokenEndpoint = [uri|https://foo.auth0.com/oauth/token|]
     }
 
@@ -63,17 +63,17 @@ mkAuth0Idp domain = do
   OpenIDConfigurationUris {..} <- fetchWellKnownUris domain
   pure
     ( defaultAuth0Idp
-        { idpUserInfoEndpoint = userinfoUri,
-          idpAuthorizeEndpoint = authorizationUri,
-          idpTokenEndpoint = tokenUri
+        { idpUserInfoEndpoint = userinfoUri
+        , idpAuthorizeEndpoint = authorizationUri
+        , idpTokenEndpoint = tokenUri
         }
     )
 
 -- | https://auth0.com/docs/api/authentication#user-profile
 data Auth0User = Auth0User
-  { name :: Text,
-    email :: Text,
-    sub :: Text
+  { name :: Text
+  , email :: Text
+  , sub :: Text
   }
   deriving (Show, Generic)
 
