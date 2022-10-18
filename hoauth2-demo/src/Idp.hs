@@ -94,6 +94,12 @@ oktaPasswordGrantApp i =
       idp = i
     }
 
+-- Base on the document, it works well with custom Athourization Server
+-- https://developer.okta.com/docs/guides/implement-grant-type/clientcreds/main/#client-credentials-flow
+--
+-- With Org AS, got this error
+-- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
+--
 oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IdpApplication 'ClientCredentials IOkta.Okta
 oktaClientCredentialsGrantApp i =
   ClientCredentialsIDPAppConfig
