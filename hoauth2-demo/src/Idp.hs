@@ -42,6 +42,7 @@ import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
+import Network.OAuth.OAuth2
 import Session
 import System.Directory
 import Types
@@ -107,6 +108,8 @@ oktaClientCredentialsGrantApp i =
   ClientCredentialsIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
+    , idpAppJwt = ""
+    , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
     , idpAppName = "okta-demo-cc-grant-app"
     , idpAppScope = Set.fromList ["hw-test"]
     , idpAppTokenRequestExtraParams = Map.empty
@@ -133,6 +136,8 @@ auth0ClientCredentialsGrantApp i =
   ClientCredentialsIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
+    , idpAppJwt = ""
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
     , idpAppName = "auth0-demo-cc-grant-app"
     , idpAppScope = Set.fromList ["read:users"]
     , idpAppTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
