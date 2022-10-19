@@ -15,9 +15,10 @@
 module Network.OAuth2.Experiment.Types where
 
 import Control.Monad.IO.Class (MonadIO (..))
-import Control.Monad.Trans.Except (ExceptT)
+import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Data.Aeson (FromJSON)
 import Data.Bifunctor
+import Data.ByteString qualified as BS
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Default (Default (def))
 import Data.Kind
@@ -29,7 +30,7 @@ import Data.String
 import Data.Text.Encoding qualified as T
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import Network.HTTP.Conduit (Manager)
+import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
@@ -47,7 +48,7 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-data GrantTypeFlow = AuthorizationCode | ResourceOwnerPassword | ClientCredentials
+data GrantTypeFlow = AuthorizationCode | ResourceOwnerPassword | ClientCredentials | JwtBearer
 
 -------------------------------------------------------------------------------
 
@@ -73,10 +74,17 @@ toResponseTypeParam _ = Map.singleton "response_type" (toResponseTypeValue @a)
 
 -------------------------------------------------------------------------------
 
+newtype UrnOAuthParam a = UrnOAuthParam a
+
 -- | Grant type query parameter has association with 'GrantTypeFlow' but not completely strict.
 --
 -- e.g. Both 'AuthorizationCode' and 'ResourceOwnerPassword' flow could support refresh token flow.
-data GrantTypeValue = GTAuthorizationCode | GTPassword | GTClientCredentials | GTRefreshToken
+data GrantTypeValue
+  = GTAuthorizationCode
+  | GTPassword
+  | GTClientCredentials
+  | GTRefreshToken
+  | GTJwtBearer
   deriving (Eq, Show)
 
 -------------------------------------------------------------------------------
@@ -165,6 +173,7 @@ instance ToQueryParam GrantTypeValue where
       val GTPassword = "password"
       val GTClientCredentials = "client_credentials"
       val GTRefreshToken = "refresh_token"
+      val GTJwtBearer = "urn:ietf:params:oauth:grant-type:jwt-bearer"
 
 instance ToQueryParam ClientId where
   toQueryParam :: ClientId -> Map Text Text
@@ -530,6 +539,63 @@ instance ToQueryParam (RefreshTokenRequest 'AuthorizationCode) where
       , toQueryParam scope
       , toQueryParam refreshToken
       ]
+
+-------------------------------------------------------------------------------
+
+-- * JWTBearer
+
+-------------------------------------------------------------------------------
+
+-- | An Application that supports "Authorization code" flow
+data instance IdpApplication 'JwtBearer i = JwtBearerIdpApplication
+  { idpAppName :: Text
+  , idpAppJwt :: BS.ByteString
+  , idp :: Idp i
+  }
+
+instance HasTokenRequest 'JwtBearer where
+  data TokenRequest 'JwtBearer = JwtBearerTokenRequest
+    { grantType :: GrantTypeValue
+    , assertion :: BS.ByteString
+    }
+  type WithExchangeToken 'JwtBearer a = a
+
+  mkTokenRequest ::
+    IdpApplication 'JwtBearer i ->
+    TokenRequest 'JwtBearer
+  mkTokenRequest JwtBearerIdpApplication {..} =
+    JwtBearerTokenRequest
+      { grantType = GTJwtBearer
+      , assertion = idpAppJwt
+      }
+
+  conduitTokenRequest ::
+    forall m i.
+    (MonadIO m) =>
+    IdpApplication 'JwtBearer i ->
+    Manager ->
+    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+  conduitTokenRequest idpAppConfig@JwtBearerIdpApplication {..} mgr = do
+    resp <- ExceptT . liftIO $ do
+      let tokenReq = mkTokenRequest idpAppConfig
+      let body = mapsToParams [toQueryParam tokenReq]
+      req <- uriToRequest (idpTokenEndpoint idp)
+      handleOAuth2TokenResponse <$> httpLbs (urlEncodedBody body (addDefaultRequestHeaders req)) mgr
+    case parseResponseFlexible resp of
+      Right obj -> return obj
+      Left e -> throwE e
+
+instance ToQueryParam (TokenRequest 'JwtBearer) where
+  toQueryParam :: TokenRequest 'JwtBearer -> Map Text Text
+  toQueryParam JwtBearerTokenRequest {..} =
+    Map.unions
+      [ toQueryParam grantType
+      , Map.fromList [("assertion", bs8ToLazyText assertion)]
+      ]
+
+instance HasUserInfoRequest 'JwtBearer where
+  conduitUserInfoRequest  JwtBearerIdpApplication {..} mgr at = do
+    idpFetchUserInfo idp mgr at (idpUserInfoEndpoint idp)
 
 -------------------------------------------------------------------------------
 

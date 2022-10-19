@@ -74,6 +74,7 @@ executable hoauth2-demo
     , wai                    ^>=3.2
     , wai-middleware-static  >=0.8.1  && <0.10.0
     , warp                   >=3.2    && <3.4
+    , google-oauth2-jwt
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields

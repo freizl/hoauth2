@@ -14,10 +14,13 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
+import Data.Aeson qualified as Aeson
+import Data.ByteString.Char8 qualified as BS8
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Idp
+import Network.Google.OAuth2.JWT qualified as GJwt
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Network.OAuth.OAuth2
@@ -79,6 +82,8 @@ initApp cache idps = scottyApp $ do
 
   get "/login/password-grant" $ testPasswordGrantTypeH idps
   get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
+
+  get "/login/jwt-grant" testJwtBearerGrantTypeH
 
 --------------------------------------------------
 
@@ -175,6 +180,32 @@ testClientCredentialsGrantType testApp = do
     -- hence wont be able to hit /userinfo endpoint
     tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
     liftIO $ print tokenResp
+  redirectToHomeM
+
+-- Only testing google for now
+testJwtBearerGrantTypeH :: ActionM ()
+testJwtBearerGrantTypeH = do
+  exceptToActionM $ do
+    GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
+    pkey <- liftIO $ GJwt.fromPEMString privateKey
+    jwt <-
+      withExceptT
+        TL.pack
+        ( ExceptT $
+            GJwt.getSignedJWT
+              (TL.toStrict clientEmail)
+              Nothing
+              [ "https://www.googleapis.com/auth/userinfo.email"
+              , "https://www.googleapis.com/auth/userinfo.profile"
+              ]
+              Nothing
+              pkey
+        )
+    let testApp = googleServiceAccountApp (BS8.pack $ init $ tail $ show jwt)
+    mgr <- liftIO $ newManager tlsManagerSettings
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
+    user <- tryFetchUser mgr tokenResp testApp
+    liftIO $ print user
   redirectToHomeM
 
 --------------------------------------------------

@@ -1,5 +1,5 @@
-repl:
-	cabal repl hoauth2-demo
+ghcid:
+	ghcid --run
 
 start:
 	cabal run hoauth2-demo

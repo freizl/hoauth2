@@ -10,8 +10,10 @@
 
 module Idp where
 
+import GHC.Generics
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
+import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Aeson.Key qualified as Aeson
 import Data.Aeson.KeyMap qualified as Aeson
@@ -135,6 +137,22 @@ auth0ClientCredentialsGrantApp i =
     , idpAppScope = Set.fromList ["read:users"]
     , idpAppTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
     , idp = i
+    }
+
+data GoogleServiceAccountKey = GoogleServiceAccountKey
+  { privateKey :: String
+  , clientEmail :: Text
+  } deriving (Generic)
+
+instance FromJSON GoogleServiceAccountKey where
+  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+
+googleServiceAccountApp :: BS.ByteString -> IdpApplication 'JwtBearer IGoogle.Google
+googleServiceAccountApp jwt =
+  JwtBearerIdpApplication
+    { idpAppName = "foo-google-sa"
+    , idpAppJwt = jwt
+    , idp = IGoogle.defaultGoogleIdp
     }
 
 isSupportPkce :: forall a i. ( 'AuthorizationCode ~ a) => IdpApplication a i -> Bool
