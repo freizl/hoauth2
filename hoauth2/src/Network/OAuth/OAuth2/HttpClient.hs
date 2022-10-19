@@ -303,18 +303,18 @@ authRequest ::
   ExceptT BSL.ByteString m BSL.ByteString
 authRequest req upReq manage = ExceptT $ do
   resp <- httpLbs (upReq req) manage
-  -- liftIO (print resp)
   pure (handleResponse resp)
 
 -- | Get response body out of a @Response@
 handleResponse :: Response BSL.ByteString -> Either BSL.ByteString BSL.ByteString
-handleResponse rsp = do
-  if HT.statusIsSuccessful (responseStatus rsp)
-    then Right $ responseBody rsp
-    else -- FIXME: better to surface up entire resp so that client can decide what to do when error happens.
-    -- e.g. when 404, the response body could be empty hence library user has no idea what's happening.
-
-      Left $ responseBody rsp
+handleResponse rsp
+  | HT.statusIsSuccessful (responseStatus rsp) = Right (responseBody rsp)
+  -- FIXME: better to surface up entire resp so that client can decide what to do when error happens.
+  -- e.g. when 404, the response body could be empty hence library user has no idea what's happening.
+  -- Which will be breaking changes.
+  -- The current work around is surface up entire response as string.
+  | BSL.null (responseBody rsp) = Left (BSL.pack $ show rsp)
+  | otherwise = Left (responseBody rsp)
 
 -- | Set several header values:
 --   + userAgennt    : `hoauth2`
