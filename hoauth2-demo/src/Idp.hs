@@ -83,7 +83,7 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
 
 oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication 'ResourceOwnerPassword IOkta.Okta
 oktaPasswordGrantApp i =
-  ResourceOwnerPasswordIDPAppConfig
+  ResourceOwnerPasswordIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
     , idpAppName = "okta-demo-password-grant-app"
@@ -102,7 +102,7 @@ oktaPasswordGrantApp i =
 --
 oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IdpApplication 'ClientCredentials IOkta.Okta
 oktaClientCredentialsGrantApp i =
-  ClientCredentialsIDPAppConfig
+  ClientCredentialsIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
     , idpAppName = "okta-demo-cc-grant-app"
@@ -114,7 +114,7 @@ oktaClientCredentialsGrantApp i =
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ResourceOwnerPassword IAuth0.Auth0
 auth0PasswordGrantApp i =
-  ResourceOwnerPasswordIDPAppConfig
+  ResourceOwnerPasswordIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
     , idpAppName = "auth0-demo-password-grant-app"
@@ -128,7 +128,7 @@ auth0PasswordGrantApp i =
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
 auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ClientCredentials IAuth0.Auth0
 auth0ClientCredentialsGrantApp i =
-  ClientCredentialsIDPAppConfig
+  ClientCredentialsIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
     , idpAppName = "auth0-demo-cc-grant-app"

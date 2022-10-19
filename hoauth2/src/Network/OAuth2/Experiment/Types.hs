@@ -545,7 +545,7 @@ instance ToQueryParam (RefreshTokenRequest 'AuthorizationCode) where
 --
 -- Hence no AuhorizationRequest instance
 
-data instance IdpApplication 'ResourceOwnerPassword i = ResourceOwnerPasswordIDPAppConfig
+data instance IdpApplication 'ResourceOwnerPassword i = ResourceOwnerPasswordIDPApplication
   { idpAppClientId :: ClientId
   , idpAppClientSecret :: ClientSecret
   , idpAppName :: Text
@@ -559,10 +559,10 @@ data instance IdpApplication 'ResourceOwnerPassword i = ResourceOwnerPasswordIDP
 
 instance HasIdpAppName 'ResourceOwnerPassword where
   getIdpAppName :: IdpApplication 'ResourceOwnerPassword i -> Text
-  getIdpAppName ResourceOwnerPasswordIDPAppConfig {..} = idpAppName
+  getIdpAppName ResourceOwnerPasswordIDPApplication {..} = idpAppName
 
 instance HasUserInfoRequest 'ResourceOwnerPassword where
-  conduitUserInfoRequest ResourceOwnerPasswordIDPAppConfig {..} mgr at = do
+  conduitUserInfoRequest ResourceOwnerPasswordIDPApplication {..} mgr at = do
     idpFetchUserInfo idp mgr at (idpUserInfoEndpoint idp)
 
 instance HasTokenRequest 'ResourceOwnerPassword where
@@ -576,7 +576,7 @@ instance HasTokenRequest 'ResourceOwnerPassword where
   type WithExchangeToken 'ResourceOwnerPassword a = a
 
   mkTokenRequest :: IdpApplication 'ResourceOwnerPassword i -> TokenRequest 'ResourceOwnerPassword
-  mkTokenRequest ResourceOwnerPasswordIDPAppConfig {..} =
+  mkTokenRequest ResourceOwnerPasswordIDPApplication {..} =
     PasswordTokenRequest
       { username = idpAppUserName
       , password = idpAppPassword
@@ -589,7 +589,7 @@ instance HasTokenRequest 'ResourceOwnerPassword where
     IdpApplication 'ResourceOwnerPassword i ->
     Manager ->
     ExceptT (OAuth2Error TR.Errors) m OAuth2Token
-  conduitTokenRequest idpAppConfig@ResourceOwnerPasswordIDPAppConfig {..} mgr =
+  conduitTokenRequest idpAppConfig@ResourceOwnerPasswordIDPApplication {..} mgr =
     let req = mkTokenRequest idpAppConfig
         key = toOAuth2Key idpAppClientId idpAppClientSecret
         body = mapsToParams [idpAppTokenRequestExtraParams, toQueryParam req]
@@ -636,7 +636,7 @@ instance ToQueryParam (TokenRequest 'ResourceOwnerPassword) where
 --
 -- Hence no AuhorizationRequest instance
 
-data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPAppConfig
+data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPApplication
   { idpAppClientId :: ClientId
   , idpAppClientSecret :: ClientSecret
   , idpAppName :: Text
@@ -648,7 +648,7 @@ data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPAppConfi
 
 instance HasIdpAppName 'ClientCredentials where
   getIdpAppName :: IdpApplication 'ClientCredentials i -> Text
-  getIdpAppName ClientCredentialsIDPAppConfig {..} = idpAppName
+  getIdpAppName ClientCredentialsIDPApplication {..} = idpAppName
 
 instance HasTokenRequest 'ClientCredentials where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
@@ -660,7 +660,7 @@ instance HasTokenRequest 'ClientCredentials where
   type WithExchangeToken 'ClientCredentials a = a
 
   mkTokenRequest :: IdpApplication 'ClientCredentials i -> TokenRequest 'ClientCredentials
-  mkTokenRequest ClientCredentialsIDPAppConfig {..} =
+  mkTokenRequest ClientCredentialsIDPApplication {..} =
     ClientCredentialsTokenRequest
       { scope = idpAppScope
       , grantType = GTClientCredentials
@@ -671,7 +671,7 @@ instance HasTokenRequest 'ClientCredentials where
     IdpApplication 'ClientCredentials i ->
     Manager ->
     ExceptT (OAuth2Error TR.Errors) m OAuth2Token
-  conduitTokenRequest idpAppConfig@ClientCredentialsIDPAppConfig {..} mgr =
+  conduitTokenRequest idpAppConfig@ClientCredentialsIDPApplication {..} mgr =
     let req = mkTokenRequest idpAppConfig
         key =
           toOAuth2Key
