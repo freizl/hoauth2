@@ -111,7 +111,8 @@ oktaClientCredentialsGrantApp i =
     , idpAppJwt = ""
     , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
     , idpAppName = "okta-demo-cc-grant-app"
-    , idpAppScope = Set.fromList ["hw-test"]
+    -- , idpAppScope = Set.fromList ["hw-test"]
+    , idpAppScope = Set.fromList ["okta.users.read"]
     , idpAppTokenRequestExtraParams = Map.empty
     , idp = i
     }

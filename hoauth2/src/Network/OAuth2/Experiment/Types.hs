@@ -555,8 +555,8 @@ data instance IdpApplication 'JwtBearer i = JwtBearerIdpApplication
 
 instance HasTokenRequest 'JwtBearer where
   data TokenRequest 'JwtBearer = JwtBearerTokenRequest
-    { grantType :: GrantTypeValue -- ^ 'GTJwtBearer'
-    , assertion :: BS.ByteString -- ^ The the signed JWT token
+    { grantType :: GrantTypeValue -- \^ 'GTJwtBearer'
+    , assertion :: BS.ByteString -- \^ The the signed JWT token
     }
   type WithExchangeToken 'JwtBearer a = a
 
@@ -757,15 +757,15 @@ instance HasTokenRequest 'ClientCredentials where
             [ idpAppTokenRequestExtraParams
             , toQueryParam tokenReq
             ]
-    case clientAuthenticationMethod tokenReq == ClientAssertionJwt of
-      True -> do
+    if clientAuthenticationMethod tokenReq == ClientAssertionJwt
+      then do
         resp <- ExceptT . liftIO $ do
           req <- uriToRequest (idpTokenEndpoint idp)
           handleOAuth2TokenResponse <$> httpLbs (urlEncodedBody body (addDefaultRequestHeaders req)) mgr
         case parseResponseFlexible resp of
           Right obj -> return obj
           Left e -> throwE e
-      False -> doJSONPostRequest mgr key (idpTokenEndpoint idp) body
+      else doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
 instance ToQueryParam (TokenRequest 'ClientCredentials) where
   toQueryParam :: TokenRequest 'ClientCredentials -> Map Text Text
