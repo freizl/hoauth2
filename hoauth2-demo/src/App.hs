@@ -201,7 +201,7 @@ testJwtBearerGrantTypeH = do
               Nothing
               pkey
         )
-    let testApp = googleServiceAccountApp (BS8.pack $ init $ tail $ show jwt)
+    let testApp = googleServiceAccountApp (BS8.pack $ show jwt)
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
     user <- tryFetchUser mgr tokenResp testApp

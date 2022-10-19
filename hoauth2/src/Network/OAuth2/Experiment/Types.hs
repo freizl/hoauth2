@@ -555,8 +555,8 @@ data instance IdpApplication 'JwtBearer i = JwtBearerIdpApplication
 
 instance HasTokenRequest 'JwtBearer where
   data TokenRequest 'JwtBearer = JwtBearerTokenRequest
-    { grantType :: GrantTypeValue
-    , assertion :: BS.ByteString
+    { grantType :: GrantTypeValue -- ^ 'GTJwtBearer'
+    , assertion :: BS.ByteString -- ^ The the signed JWT token
     }
   type WithExchangeToken 'JwtBearer a = a
 

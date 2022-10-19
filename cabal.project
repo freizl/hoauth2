@@ -7,3 +7,9 @@ index-state: 2022-09-19T22:55:09Z
 --   location: https://github.com/MercuryTechnologies/ghc-specter
 --   tag: 7174f9802e2038ff1884fc104e826208aa956a61
 --   subdir: plugin
+
+-- Upper bound has been relax in the master branch but not yet released
+source-repository-package
+  type: git
+  location: https://github.com/MichelBoucey/google-oauth2-jwt
+  tag: 823449f74e4d6ec9264d3db9b247bf68edd90062

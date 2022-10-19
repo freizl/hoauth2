@@ -139,6 +139,7 @@ auth0ClientCredentialsGrantApp i =
     , idp = i
     }
 
+-- | Service account key (in JSON format) that download from google
 data GoogleServiceAccountKey = GoogleServiceAccountKey
   { privateKey :: String
   , clientEmail :: Text
