@@ -24,7 +24,7 @@ import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Env qualified
--- import Jose.Jwt
+import Jose.Jwt
 import Lens.Micro
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
@@ -108,13 +108,12 @@ oktaClientCredentialsGrantApp i = do
   keyJsonStr <- BS.readFile ".okta-key.json"
   ejwt <- IOkta.mkOktaClientCredentialAppJwt keyJsonStr clientId i
   case ejwt of
-    Right _ ->
+    Right jwt ->
       pure
         ClientCredentialsIDPApplication
-          { idpAppClientId = ""
+          { idpAppClientId = clientId
           , idpAppClientSecret = ""
-          , idpAppJwt = "RpIjoiZDM0OGViZjAtMzcxZS00MTVkLWJkNzgtN2YzOWY0YTg5OTkxIiwiaWF0IjoxNjY2MjM5NzY5LCJleHAiOjE2NjYyNDAwNjksImlzcyI6IjBvYTltYmtseG4yQWMwb0oyNHg3Iiwic3ViIjoiMG9hOW1ia2x4bjJBYzBvSjI0eDcifQ.eZMSbJ3kA07NZF6vsH38Yvpf9ohCt-nw6FRR6ELWgqHs_OhY5EGmFBkFRi7EnAFue0RwXw7OvvmiANo8Zc42jvLTDV-tgm4O0Wa4sszADBJH9SgqOPQmp4r9D76f0bvF7Fig2L7R-iMp23zAlWZHC_5-Lq9bP-uZnSIL6JhqopKDObmec_JUAxyOl_8-cynSu--XY4lIK_o0igGWPwHW8PMrZQOHF7LuUQFNL5gWHVAFPESeQnuQ3_R_WAzPsaiPbYmPN4hPQNy8lq44sC8sk-PvMcw4Wy45eHsAzJOBosA3-2rdpAvbS3rUHbAJkLKJ73PP-XFlR7apewh5jIe3SQ "
-          -- , idpAppJwt = (unJwt jwt)
+            idpAppJwt = (unJwt jwt)
           , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
           , idpAppName = "okta-demo-cc-grant-jwt-app"
           , -- , idpAppScope = Set.fromList ["hw-test"]

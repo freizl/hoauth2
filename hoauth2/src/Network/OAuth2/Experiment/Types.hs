@@ -555,7 +555,7 @@ data instance IdpApplication 'JwtBearer i = JwtBearerIdpApplication
 
 instance HasTokenRequest 'JwtBearer where
   data TokenRequest 'JwtBearer = JwtBearerTokenRequest
-    { grantType :: GrantTypeValue -- | 'GTJwtBearer'
+    { grantType :: GrantTypeValue -- \| 'GTJwtBearer'
     , assertion :: BS.ByteString -- \| The the signed JWT token
     }
   type WithExchangeToken 'JwtBearer a = a
@@ -762,9 +762,7 @@ instance HasTokenRequest 'ClientCredentials where
         resp <- ExceptT . liftIO $ do
           req <- uriToRequest (idpTokenEndpoint idp)
           let req' = (urlEncodedBody body (addDefaultRequestHeaders req))
-          print req'
-          print body
-          handleOAuth2TokenResponse <$> httpLbs req'  mgr
+          handleOAuth2TokenResponse <$> httpLbs req' mgr
         case parseResponseFlexible resp of
           Right obj -> return obj
           Left e -> throwE e
