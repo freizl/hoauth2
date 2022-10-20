@@ -140,7 +140,7 @@ oktaClientCredentialsGrantApp i = do
             ClientCredentialsIDPApplication
               { idpAppClientId = clientId
               , idpAppClientSecret = ""
-              , idpAppJwt = (unJwt jwt)
+              , idpAppJwt = unJwt jwt
               , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
               , idpAppName = "okta-demo-cc-grant-jwt-app"
               , -- , idpAppScope = Set.fromList ["hw-test"]

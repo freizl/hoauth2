@@ -761,7 +761,7 @@ instance HasTokenRequest 'ClientCredentials where
       then do
         resp <- ExceptT . liftIO $ do
           req <- uriToRequest (idpTokenEndpoint idp)
-          let req' = (urlEncodedBody body (addDefaultRequestHeaders req))
+          let req' = urlEncodedBody body (addDefaultRequestHeaders req)
           handleOAuth2TokenResponse <$> httpLbs req' mgr
         case parseResponseFlexible resp of
           Right obj -> return obj

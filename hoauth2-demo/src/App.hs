@@ -10,7 +10,6 @@
 
 module App (app) where
 
-import Data.Aeson qualified as Aeson
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
@@ -161,7 +160,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
   let i = head idpP
   case i of
     "auth0" -> testClientCredentialsGrantType (auth0ClientCredentialsGrantApp auth0)
-    "okta" -> (liftIO $ oktaClientCredentialsGrantApp okta) >>= testClientCredentialsGrantType
+    "okta" -> liftIO $ oktaClientCredentialsGrantApp okta >>= testClientCredentialsGrantType
     _ -> raise $ "unable to find password grant type flow for idp " <> i
 
 testClientCredentialsGrantType ::

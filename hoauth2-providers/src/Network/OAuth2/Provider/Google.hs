@@ -9,13 +9,13 @@
 
 module Network.OAuth2.Provider.Google where
 
-import Data.Maybe
 import Crypto.PubKey.RSA.Types
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
 import Data.Map.Strict qualified as Map
+import Data.Maybe
 import Data.Set qualified as Set
 import Data.Text qualified as T
 import Data.Text.Lazy (Text)
@@ -104,11 +104,11 @@ mkJwt privateKey iss muser scopes idp = do
               [ "iss" .= iss
               , "scope" .= T.intercalate " " (map (TL.toStrict . unScope) $ Set.toList scopes)
               , "aud" .= idpTokenEndpoint idp
-              , "exp" .= (tToSeconds $ addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
-              , "iat" .= (tToSeconds now)
+              , "exp" .= tToSeconds (addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
+              , "iat" .= tToSeconds now
               ]
                 ++ maybe [] (\a -> ["sub" .= a]) muser
-  first show <$> (rsaEncode RS256 privateKey payload)
+  first show <$> rsaEncode RS256 privateKey payload
   where
     tToSeconds = formatTime defaultTimeLocale "%s"
 
@@ -132,9 +132,9 @@ readPemRsaKey pemStr = do
           , private_d = rsaD k
           , private_p = rsaP k
           , private_q = rsaQ k
-          , private_dP = fromMaybe 0 ( rsaDMP1 k )
-          , private_dQ = fromMaybe 0 ( rsaDMQ1 k )
-          , private_qinv = fromMaybe 0 ( rsaIQMP k )
+          , private_dP = fromMaybe 0 (rsaDMP1 k)
+          , private_dQ = fromMaybe 0 (rsaDMQ1 k)
+          , private_qinv = fromMaybe 0 (rsaIQMP k)
           }
     Nothing -> Left "unable to parse PEM to RSA key"
 
@@ -142,7 +142,7 @@ defaultServiceAccountApp :: Jwt -> IdpApplication 'JwtBearer Google
 defaultServiceAccountApp jwt =
   JwtBearerIdpApplication
     { idpAppName = "google-sa-app"
-    , idpAppJwt = (unJwt jwt)
+    , idpAppJwt = unJwt jwt
     , idp = defaultGoogleIdp
     }
 

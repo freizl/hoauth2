@@ -86,10 +86,10 @@ mkOktaClientCredentialAppJwt jwk cid idp = do
               [ "iss" .= cidStr
               , "sub" .= cidStr
               , "aud" .= idpTokenEndpoint idp
-              , "exp" .= (tToSeconds $ addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
-              , "iat" .= (tToSeconds now)
+              , "exp" .= tToSeconds (addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
+              , "iat" .= tToSeconds now
               ]
-  first show <$> (jwkEncode RS256 jwk $ Claims payload)
+  first show <$> jwkEncode RS256 jwk (Claims payload)
   where
     tToSeconds = formatTime defaultTimeLocale "%s"
 
