@@ -68,8 +68,9 @@ library
     , transformers          ^>=0.5
     , unordered-containers  >=0.2.5
     , uri-bytestring        >=0.2.3  && <0.4
-    -- , jose-jwt
+    , jose-jwt              >= 0.9.4 && < 0.10
     , google-oauth2-jwt      ^>=0.3
+    , time
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields

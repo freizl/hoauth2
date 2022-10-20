@@ -163,7 +163,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
   let i = head idpP
   case i of
     "auth0" -> testClientCredentialsGrantType (auth0ClientCredentialsGrantApp auth0)
-    "okta" -> testClientCredentialsGrantType (oktaClientCredentialsGrantApp okta)
+    "okta" -> (liftIO $ oktaClientCredentialsGrantApp okta) >>= testClientCredentialsGrantType
     _ -> raise $ "unable to find password grant type flow for idp " <> i
 
 testClientCredentialsGrantType ::
@@ -258,7 +258,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
         (DemoAppEnv iApp $ sData {loginUser = Just luser, oauth2Token = Just token})
 
 oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
-oauth2ErrorToText e = TL.pack $ "mkTokenRequest - cannot fetch access token. error detail: " ++ show e
+oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::
   forall a b.

@@ -24,7 +24,9 @@ import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Env qualified
+-- import Jose.Jwt
 import Lens.Micro
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
@@ -40,7 +42,6 @@ import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
-import Network.OAuth.OAuth2
 import Session
 import System.Directory
 import Types
@@ -101,19 +102,27 @@ oktaPasswordGrantApp i =
 -- With Org AS, got this error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
-oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IdpApplication 'ClientCredentials IOkta.Okta
-oktaClientCredentialsGrantApp i =
-  ClientCredentialsIDPApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppJwt = ""
-    , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
-    , idpAppName = "okta-demo-cc-grant-app"
-    -- , idpAppScope = Set.fromList ["hw-test"]
-    , idpAppScope = Set.fromList ["okta.users.read"]
-    , idpAppTokenRequestExtraParams = Map.empty
-    , idp = i
-    }
+oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication 'ClientCredentials IOkta.Okta)
+oktaClientCredentialsGrantApp i = do
+  let clientId = "0oa9mbklxn2Ac0oJ24x7"
+  keyJsonStr <- BS.readFile ".okta-key.json"
+  ejwt <- IOkta.mkOktaClientCredentialAppJwt keyJsonStr clientId i
+  case ejwt of
+    Right _ ->
+      pure
+        ClientCredentialsIDPApplication
+          { idpAppClientId = ""
+          , idpAppClientSecret = ""
+          , idpAppJwt = "RpIjoiZDM0OGViZjAtMzcxZS00MTVkLWJkNzgtN2YzOWY0YTg5OTkxIiwiaWF0IjoxNjY2MjM5NzY5LCJleHAiOjE2NjYyNDAwNjksImlzcyI6IjBvYTltYmtseG4yQWMwb0oyNHg3Iiwic3ViIjoiMG9hOW1ia2x4bjJBYzBvSjI0eDcifQ.eZMSbJ3kA07NZF6vsH38Yvpf9ohCt-nw6FRR6ELWgqHs_OhY5EGmFBkFRi7EnAFue0RwXw7OvvmiANo8Zc42jvLTDV-tgm4O0Wa4sszADBJH9SgqOPQmp4r9D76f0bvF7Fig2L7R-iMp23zAlWZHC_5-Lq9bP-uZnSIL6JhqopKDObmec_JUAxyOl_8-cynSu--XY4lIK_o0igGWPwHW8PMrZQOHF7LuUQFNL5gWHVAFPESeQnuQ3_R_WAzPsaiPbYmPN4hPQNy8lq44sC8sk-PvMcw4Wy45eHsAzJOBosA3-2rdpAvbS3rUHbAJkLKJ73PP-XFlR7apewh5jIe3SQ "
+          -- , idpAppJwt = (unJwt jwt)
+          , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
+          , idpAppName = "okta-demo-cc-grant-jwt-app"
+          , -- , idpAppScope = Set.fromList ["hw-test"]
+            idpAppScope = Set.fromList ["okta.users.read"]
+          , idpAppTokenRequestExtraParams = Map.empty
+          , idp = i
+          }
+    Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ResourceOwnerPassword IAuth0.Auth0
