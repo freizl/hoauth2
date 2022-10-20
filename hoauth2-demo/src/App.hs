@@ -10,16 +10,15 @@
 
 module App (app) where
 
+import Data.Aeson qualified as Aeson
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
-import Data.Aeson qualified as Aeson
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Idp
-import Network.Google.OAuth2.JWT qualified as GJwt
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Network.OAuth.OAuth2
@@ -27,7 +26,6 @@ import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
-import Network.OAuth2.Provider.Google qualified as IGoogle
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
@@ -186,22 +184,7 @@ testClientCredentialsGrantType testApp = do
 testJwtBearerGrantTypeH :: ActionM ()
 testJwtBearerGrantTypeH = do
   exceptToActionM $ do
-    IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
-    pkey <- liftIO $ GJwt.fromPEMString privateKey
-    jwt <-
-      withExceptT
-        TL.pack
-        ( ExceptT $
-            GJwt.getSignedJWT
-              (TL.toStrict clientEmail)
-              Nothing
-              [ "https://www.googleapis.com/auth/userinfo.email"
-              , "https://www.googleapis.com/auth/userinfo.profile"
-              ]
-              Nothing
-              pkey
-        )
-    let testApp = IGoogle.defaultServiceAccountApp jwt
+    testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
     user <- tryFetchUser mgr tokenResp testApp

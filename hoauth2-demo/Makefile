@@ -1,5 +1,5 @@
 ghcid:
-	ghcid --run
+	ghcid --run --warnings
 
 start:
 	cabal run hoauth2-demo

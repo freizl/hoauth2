@@ -83,6 +83,31 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
     , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeApp)
     ]
 
+googleServiceAccountApp ::
+  ExceptT
+    Text
+    IO
+    (IdpApplication 'JwtBearer IGoogle.Google)
+googleServiceAccountApp = do
+  IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
+  pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
+  jwt <-
+    withExceptT
+      TL.pack
+      ( ExceptT $
+          IGoogle.mkJwt
+            pkey
+            clientEmail
+            Nothing
+            ( Set.fromList
+                [ "https://www.googleapis.com/auth/userinfo.email"
+                , "https://www.googleapis.com/auth/userinfo.profile"
+                ]
+            )
+            IGoogle.defaultGoogleIdp
+      )
+  pure $ IGoogle.defaultServiceAccountApp jwt
+
 oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication 'ResourceOwnerPassword IOkta.Okta
 oktaPasswordGrantApp i =
   ResourceOwnerPasswordIDPApplication
@@ -106,21 +131,24 @@ oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication 'ClientCre
 oktaClientCredentialsGrantApp i = do
   let clientId = "0oa9mbklxn2Ac0oJ24x7"
   keyJsonStr <- BS.readFile ".okta-key.json"
-  ejwt <- IOkta.mkOktaClientCredentialAppJwt keyJsonStr clientId i
-  case ejwt of
-    Right jwt ->
-      pure
-        ClientCredentialsIDPApplication
-          { idpAppClientId = clientId
-          , idpAppClientSecret = ""
-            idpAppJwt = (unJwt jwt)
-          , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
-          , idpAppName = "okta-demo-cc-grant-jwt-app"
-          , -- , idpAppScope = Set.fromList ["hw-test"]
-            idpAppScope = Set.fromList ["okta.users.read"]
-          , idpAppTokenRequestExtraParams = Map.empty
-          , idp = i
-          }
+  case Aeson.eitherDecodeStrict keyJsonStr of
+    Right jwk -> do
+      ejwt <- IOkta.mkOktaClientCredentialAppJwt jwk clientId i
+      case ejwt of
+        Right jwt ->
+          pure
+            ClientCredentialsIDPApplication
+              { idpAppClientId = clientId
+              , idpAppClientSecret = ""
+              , idpAppJwt = (unJwt jwt)
+              , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
+              , idpAppName = "okta-demo-cc-grant-jwt-app"
+              , -- , idpAppScope = Set.fromList ["hw-test"]
+                idpAppScope = Set.fromList ["okta.users.read"]
+              , idpAppTokenRequestExtraParams = Map.empty
+              , idp = i
+              }
+        Left e -> Prelude.error e
     Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password

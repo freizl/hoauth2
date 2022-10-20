@@ -31,6 +31,7 @@ format-cabal:
 	cabal-fmt -i hoauth2-tutorial/hoauth2-tutorial.cabal
 	cabal-fmt -i hoauth2-providers/hoauth2-providers.cabal
 	cabal-fmt -i hoauth2-providers-tutorial/hoauth2-providers-tutorial.cabal
+	cabal-fmt -i hoauth2-demo/hoauth2-demo.cabal
 
 ## install ghcid globally: `cabal install ghcid`
 watch-lib:

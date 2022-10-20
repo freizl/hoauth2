@@ -9,16 +9,31 @@
 
 module Network.OAuth2.Provider.Google where
 
+import Data.Maybe
+import Crypto.PubKey.RSA.Types
 import Data.Aeson
-import Data.ByteString.Char8 qualified as BS8
+import Data.Aeson qualified as Aeson
+import Data.Bifunctor
+import Data.ByteString qualified as BS
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
+import Data.Text qualified as T
 import Data.Text.Lazy (Text)
+import Data.Text.Lazy qualified as TL
+import Data.Time
 import GHC.Generics
+import Jose.Jwa
+import Jose.Jws
+import Jose.Jwt
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import OpenSSL.EVP.PKey (toKeyPair)
+import OpenSSL.PEM (
+  PemPasswordSupply (PwNone),
+  readPrivateKey,
+ )
+import OpenSSL.RSA
 import URI.ByteString.QQ
-import Network.Google.OAuth2.JWT (SignedJWT)
 
 {-
 To test at google playground, set redirect uri to "https://developers.google.com/oauthplayground"
@@ -61,16 +76,73 @@ data GoogleServiceAccountKey = GoogleServiceAccountKey
   , tokenUri :: Text
   , authProviderX509CertUrl :: Text
   , clientX509CertUrl :: Text
-  } deriving (Generic)
+  }
+  deriving (Generic)
 
 instance FromJSON GoogleServiceAccountKey where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
-defaultServiceAccountApp :: SignedJWT -> IdpApplication 'JwtBearer Google
+-- * Service Account
+
+mkJwt ::
+  PrivateKey ->
+  -- | Private key
+  Text ->
+  -- | Issuer
+  Maybe Text ->
+  -- | impersonate user
+  Set.Set Scope ->
+  -- | Scope
+  Idp Google ->
+  IO (Either String Jwt)
+mkJwt privateKey iss muser scopes idp = do
+  now <- getCurrentTime
+  let payload =
+        BS.toStrict $
+          Aeson.encode $
+            Aeson.object $
+              [ "iss" .= iss
+              , "scope" .= T.intercalate " " (map (TL.toStrict . unScope) $ Set.toList scopes)
+              , "aud" .= idpTokenEndpoint idp
+              , "exp" .= (tToSeconds $ addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
+              , "iat" .= (tToSeconds now)
+              ]
+                ++ maybe [] (\a -> ["sub" .= a]) muser
+  first show <$> (rsaEncode RS256 privateKey payload)
+  where
+    tToSeconds = formatTime defaultTimeLocale "%s"
+
+-- | Read private RSA Key in PEM format
+readPemRsaKey ::
+  -- | PEM content
+  String ->
+  IO (Either String PrivateKey)
+readPemRsaKey pemStr = do
+  somePair <- readPrivateKey pemStr PwNone
+  pure $ case (toKeyPair somePair :: Maybe RSAKeyPair) of
+    Just k ->
+      Right $
+        PrivateKey
+          { private_pub =
+              PublicKey
+                { public_size = rsaSize k
+                , public_n = rsaN k
+                , public_e = rsaE k
+                }
+          , private_d = rsaD k
+          , private_p = rsaP k
+          , private_q = rsaQ k
+          , private_dP = fromMaybe 0 ( rsaDMP1 k )
+          , private_dQ = fromMaybe 0 ( rsaDMQ1 k )
+          , private_qinv = fromMaybe 0 ( rsaIQMP k )
+          }
+    Nothing -> Left "unable to parse PEM to RSA key"
+
+defaultServiceAccountApp :: Jwt -> IdpApplication 'JwtBearer Google
 defaultServiceAccountApp jwt =
   JwtBearerIdpApplication
     { idpAppName = "google-sa-app"
-    , idpAppJwt = (BS8.pack $ show jwt)
+    , idpAppJwt = (unJwt jwt)
     , idp = defaultGoogleIdp
     }
 

@@ -12,9 +12,7 @@ import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
-import Data.ByteString
 import Data.ByteString qualified as BS
-import Data.ByteString.Base64.URL as B64
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
@@ -74,29 +72,26 @@ mkOktaIdp domain = do
     )
 
 mkOktaClientCredentialAppJwt ::
-  ByteString ->
-  -- | Private key
+  Jwk ->
   ClientId ->
   Idp Okta ->
   IO (Either String Jwt)
-mkOktaClientCredentialAppJwt jsonJwk cid idp =
-  case Aeson.eitherDecodeStrict jsonJwk of
-    Right jwk -> do
-      now <- getCurrentTime
-      let cidStr = unClientId cid
-      let body =
-            BS.toStrict $
-              Aeson.encode $
-                Aeson.object
-                  [ "iss" .= cidStr
-                  , "sub" .= cidStr
-                  , "aud" .= idpTokenEndpoint idp
-                  , "exp" .= (formatTime defaultTimeLocale "%s" $ addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
-                  , "iat" .= (formatTime defaultTimeLocale "%s" now)
-                  ]
-      let payload = Nested $ Jwt body
-      first show <$> (jwkEncode RS256 jwk payload)
-    Left e -> pure (Left e)
+mkOktaClientCredentialAppJwt jwk cid idp = do
+  now <- getCurrentTime
+  let cidStr = unClientId cid
+  let payload =
+        BS.toStrict $
+          Aeson.encode $
+            Aeson.object
+              [ "iss" .= cidStr
+              , "sub" .= cidStr
+              , "aud" .= idpTokenEndpoint idp
+              , "exp" .= (tToSeconds $ addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
+              , "iat" .= (tToSeconds now)
+              ]
+  first show <$> (jwkEncode RS256 jwk $ Claims payload)
+  where
+    tToSeconds = formatTime defaultTimeLocale "%s"
 
 -- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent
