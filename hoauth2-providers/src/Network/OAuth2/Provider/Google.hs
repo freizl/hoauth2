@@ -10,6 +10,7 @@
 module Network.OAuth2.Provider.Google where
 
 import Data.Aeson
+import Data.ByteString.Char8 qualified as BS8
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
@@ -17,6 +18,7 @@ import GHC.Generics
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
+import Network.Google.OAuth2.JWT (SignedJWT)
 
 {-
 To test at google playground, set redirect uri to "https://developers.google.com/oauthplayground"
@@ -25,6 +27,8 @@ To test at google playground, set redirect uri to "https://developers.google.com
 data Google = Google deriving (Eq, Show)
 
 type instance IdpUserInfo Google = GoogleUser
+
+-- * Authorization Code flow
 
 defaultGoogleApp :: IdpApplication 'AuthorizationCode Google
 defaultGoogleApp =
@@ -43,6 +47,34 @@ defaultGoogleApp =
     , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
     , idp = defaultGoogleIdp
     }
+
+-- * Service Account
+
+-- | Service account key (in JSON format) that download from google
+data GoogleServiceAccountKey = GoogleServiceAccountKey
+  { privateKey :: String
+  , clientEmail :: Text
+  , projectId :: Text
+  , privateKeyId :: Text
+  , clientId :: Text
+  , authUri :: Text
+  , tokenUri :: Text
+  , authProviderX509CertUrl :: Text
+  , clientX509CertUrl :: Text
+  } deriving (Generic)
+
+instance FromJSON GoogleServiceAccountKey where
+  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+
+defaultServiceAccountApp :: SignedJWT -> IdpApplication 'JwtBearer Google
+defaultServiceAccountApp jwt =
+  JwtBearerIdpApplication
+    { idpAppName = "google-sa-app"
+    , idpAppJwt = (BS8.pack $ show jwt)
+    , idp = defaultGoogleIdp
+    }
+
+-- * IDP
 
 defaultGoogleIdp :: Idp Google
 defaultGoogleIdp =

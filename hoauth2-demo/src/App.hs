@@ -15,7 +15,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Aeson qualified as Aeson
-import Data.ByteString.Char8 qualified as BS8
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -28,6 +27,7 @@ import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
+import Network.OAuth2.Provider.Google qualified as IGoogle
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
@@ -186,7 +186,7 @@ testClientCredentialsGrantType testApp = do
 testJwtBearerGrantTypeH :: ActionM ()
 testJwtBearerGrantTypeH = do
   exceptToActionM $ do
-    GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
+    IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
     pkey <- liftIO $ GJwt.fromPEMString privateKey
     jwt <-
       withExceptT
@@ -201,7 +201,7 @@ testJwtBearerGrantTypeH = do
               Nothing
               pkey
         )
-    let testApp = googleServiceAccountApp (BS8.pack $ show jwt)
+    let testApp = IGoogle.defaultServiceAccountApp jwt
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
     user <- tryFetchUser mgr tokenResp testApp
