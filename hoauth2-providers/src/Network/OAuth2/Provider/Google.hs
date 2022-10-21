@@ -6,6 +6,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE CPP #-}
 
 module Network.OAuth2.Provider.Google where
 
@@ -13,7 +14,11 @@ import Crypto.PubKey.RSA.Types
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
+#if MIN_VERSION_bytestring(0,11,0)
 import Data.ByteString qualified as BS
+#else
+import Data.ByteString.Lazy qualified as BSL
+#endif
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set qualified as Set
@@ -97,8 +102,13 @@ mkJwt ::
   IO (Either String Jwt)
 mkJwt privateKey iss muser scopes idp = do
   now <- getCurrentTime
+#if MIN_VERSION_bytestring(0,11,0)
+  let bsToStrict = BS.toStrict
+#else
+  let bsToStrict = BSL.toStrict
+#endif
   let payload =
-        BS.toStrict $
+        bsToStrict $
           Aeson.encode $
             Aeson.object $
               [ "iss" .= iss
