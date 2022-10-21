@@ -35,6 +35,7 @@ library
     Network.OAuth2.Experiment.Types
     Network.OAuth2.Experiment.Utils
     Network.OAuth.OAuth2.Internal
+    Paths_hoauth2
 
   exposed-modules:
     Network.OAuth.OAuth2

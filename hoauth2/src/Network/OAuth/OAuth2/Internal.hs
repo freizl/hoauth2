@@ -13,17 +13,20 @@ import Data.Aeson
 import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
 import Data.Binary (Binary)
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy qualified as BSL
 import Data.Default
 import Data.Maybe
 import Data.Text (Text, pack, unpack)
 import Data.Text.Encoding
+import Data.Version (showVersion)
 import GHC.Generics
 import Lens.Micro
 import Lens.Micro.Extras
 import Network.HTTP.Conduit as C
 import Network.HTTP.Types qualified as H
 import Network.HTTP.Types qualified as HT
+import Paths_hoauth2 (version)
 import URI.ByteString
 import URI.ByteString.Aeson ()
 import URI.ByteString.QQ
@@ -167,7 +170,7 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 
 defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
 defaultRequestHeaders =
-  [ (HT.hUserAgent, "hoauth2-2.6.0")
+  [ (HT.hUserAgent, "hoauth2-" <> (BS8.pack $ showVersion version))
   , (HT.hAccept, "application/json")
   ]
 
