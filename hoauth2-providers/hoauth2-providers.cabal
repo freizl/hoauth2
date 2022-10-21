@@ -35,6 +35,9 @@ library
     TypeApplications
     TypeFamilies
 
+  other-modules:
+    Network.OAuth2.Provider.Utils
+
   exposed-modules:
     Network.OAuth2.Provider.Auth0
     Network.OAuth2.Provider.AzureAD
