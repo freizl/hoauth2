@@ -18,7 +18,7 @@ import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
-import Network.OAuth.OAuth2.Internal (
+import Network.OAuth.OAuth2 (
   ExchangeToken (ExchangeToken),
   OAuth2Error,
   OAuth2Token (accessToken),

@@ -118,18 +118,16 @@ import Data.Text.Lazy qualified as TL
 import GHC.Generics (Generic)
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
-import Network.OAuth.OAuth2.AuthorizationRequest (
+import Network.OAuth.OAuth2 (
   authorizationUrl,
- )
-import Network.OAuth.OAuth2.HttpClient (authGetJSON)
-import Network.OAuth.OAuth2.Internal (
+  authGetJSON,
   ExchangeToken (ExchangeToken),
   OAuth2 (..),
   OAuth2Error,
   OAuth2Token (accessToken),
   appendQueryParams,
+  fetchAccessToken,
  )
-import Network.OAuth.OAuth2.TokenRequest (fetchAccessToken)
 import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import URI.ByteString (URI, serializeURIRef')
 import URI.ByteString.QQ (uri)
