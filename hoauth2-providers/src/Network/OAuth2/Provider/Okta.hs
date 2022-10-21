@@ -80,7 +80,7 @@ mkOktaClientCredentialAppJwt jwk cid idp = do
   now <- getCurrentTime
   let cidStr = unClientId cid
   let payload =
-        toStrict $
+        bsToStrict $
           Aeson.encode $
             Aeson.object
               [ "iss" .= cidStr
