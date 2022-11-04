@@ -178,7 +178,8 @@ instance HasDemoLoginUser IZOHO.ZOHO where
 
 instance HasDemoLoginUser IAzureAD.AzureAD where
   toLoginUser :: IAzureAD.AzureADUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IAzureAD.mail ouser}
+  toLoginUser ouser = DemoLoginUser
+    { loginUserName = IAzureAD.email ouser <> " " <> IAzureAD.name ouser}
 
 instance HasDemoLoginUser IWeibo.Weibo where
   toLoginUser :: IWeibo.WeiboUID -> DemoLoginUser
