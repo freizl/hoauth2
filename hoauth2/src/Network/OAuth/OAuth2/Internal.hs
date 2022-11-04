@@ -170,7 +170,7 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 
 defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
 defaultRequestHeaders =
-  [ (HT.hUserAgent, "hoauth2-" <> (BS8.pack $ showVersion version))
+  [ (HT.hUserAgent, "hoauth2-" <> BS8.pack (showVersion version))
   , (HT.hAccept, "application/json")
   ]
 
