@@ -49,13 +49,14 @@ import URI.ByteString hiding (UserInfo)
 -------------------------------------------------------------------------------
 
 data GrantTypeFlow
-  = AuthorizationCode
-  | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
-    ResourceOwnerPassword
+  = -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
+    AuthorizationCode
   | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3
-    ClientCredentials
+    ResourceOwnerPassword
   | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4
-    JwtBearer -- \| https://www.rfc-editor.org/rfc/rfc7523.html#section-2.1
+    ClientCredentials
+  | -- | https://www.rfc-editor.org/rfc/rfc7523.html#section-2.1
+    JwtBearer
 
 -------------------------------------------------------------------------------
 

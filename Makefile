@@ -33,6 +33,9 @@ format-cabal:
 	cabal-fmt -i hoauth2-providers-tutorial/hoauth2-providers-tutorial.cabal
 	cabal-fmt -i hoauth2-demo/hoauth2-demo.cabal
 
+format:
+	fourmolu --mode inplace $(git ls-files '*.hs')
+
 ## install ghcid globally: `cabal install ghcid`
 watch-lib:
 	ghcid --command="cabal repl hoauth2" --restart=hoauth2/hoauth2.cabal

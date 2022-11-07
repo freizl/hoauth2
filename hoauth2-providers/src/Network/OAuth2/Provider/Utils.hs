@@ -17,5 +17,5 @@ bsFromStrict :: BS.ByteString -> BSL.ByteString
 #if MIN_VERSION_bytestring(0,11,0)
 bsFromStrict = BS.fromStrict
 #else
-bsFromStrict = BS.fromStrict
+bsFromStrict = BSL.fromStrict
 #endif
