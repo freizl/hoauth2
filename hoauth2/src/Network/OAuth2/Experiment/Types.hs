@@ -122,6 +122,7 @@ instance IsString Scope where
 newtype ClientId = ClientId {unClientId :: Text}
   deriving (Show, Eq, IsString)
 
+-- | Can be either "Client Secret" or JWT base on client authentication method
 newtype ClientSecret = ClientSecret {unClientSecret :: Text}
   deriving (Eq, IsString)
 
