@@ -23,6 +23,7 @@ import Data.Maybe
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.Encoding qualified as TL
 import Env qualified
 import Jose.Jwt
 import Lens.Micro
@@ -40,6 +41,7 @@ import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
+import Network.OAuth2.Provider.Utils
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Session
@@ -139,8 +141,7 @@ oktaClientCredentialsGrantApp i = do
           pure
             ClientCredentialsIDPApplication
               { idpAppClientId = clientId
-              , idpAppClientSecret = ""
-              , idpAppJwt = unJwt jwt
+              , idpAppClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
               , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
               , idpAppName = "okta-demo-cc-grant-jwt-app"
               , -- , idpAppScope = Set.fromList ["hw-test"]
@@ -171,7 +172,6 @@ auth0ClientCredentialsGrantApp i =
   ClientCredentialsIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
-    , idpAppJwt = ""
     , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
     , idpAppName = "auth0-demo-cc-grant-app"
     , idpAppScope = Set.fromList ["read:users"]

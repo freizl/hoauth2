@@ -49,10 +49,13 @@ import URI.ByteString hiding (UserInfo)
 -------------------------------------------------------------------------------
 
 data GrantTypeFlow
-  = AuthorizationCode -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
-  | ResourceOwnerPassword -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3
-  | ClientCredentials -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4
-  | JwtBearer -- | https://www.rfc-editor.org/rfc/rfc7523.html#section-2.1
+  = AuthorizationCode
+  | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
+    ResourceOwnerPassword
+  | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3
+    ClientCredentials
+  | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4
+    JwtBearer -- \| https://www.rfc-editor.org/rfc/rfc7523.html#section-2.1
 
 -------------------------------------------------------------------------------
 
@@ -709,9 +712,8 @@ instance ToQueryParam (TokenRequest 'ResourceOwnerPassword) where
 data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPApplication
   { idpAppClientId :: ClientId
   , idpAppClientSecret :: ClientSecret
-  , idpAppJwt :: BS.ByteString
-  -- ^ FIXME: JWT and client id/secret shall be mutually exclusive base on idpAppTokenRequestAuthenticationMethod
   , idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  -- ^ FIXME: rename to ClientCredential
   , idpAppName :: Text
   , idpAppScope :: Set Scope
   , idpAppTokenRequestExtraParams :: Map Text Text
@@ -741,7 +743,7 @@ instance HasTokenRequest 'ClientCredentials where
       { scope = idpAppScope
       , grantType = GTClientCredentials
       , clientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-      , clientAssertion = idpAppJwt
+      , clientAssertion = tlToBS $ unClientSecret idpAppClientSecret
       , clientAuthenticationMethod = idpAppTokenRequestAuthenticationMethod
       }
 

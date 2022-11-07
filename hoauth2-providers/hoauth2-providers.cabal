@@ -35,8 +35,7 @@ library
     TypeApplications
     TypeFamilies
 
-  other-modules:
-    Network.OAuth2.Provider.Utils
+  -- other-modules:
 
   exposed-modules:
     Network.OAuth2.Provider.Auth0
@@ -51,6 +50,7 @@ library
     Network.OAuth2.Provider.Slack
     Network.OAuth2.Provider.StackExchange
     Network.OAuth2.Provider.Twitter
+    Network.OAuth2.Provider.Utils
     Network.OAuth2.Provider.Weibo
     Network.OAuth2.Provider.ZOHO
     Network.OIDC.WellKnown
