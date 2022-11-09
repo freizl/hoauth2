@@ -36,5 +36,4 @@ jobs:
           cabal build --only-dependencies --enable-tests all
 
       - name: Build
-        run: make build
-
+        run: make rb
