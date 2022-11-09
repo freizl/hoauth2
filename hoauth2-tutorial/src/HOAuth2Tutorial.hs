@@ -119,13 +119,13 @@ import GHC.Generics (Generic)
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
 import Network.OAuth.OAuth2 (
-  authorizationUrl,
-  authGetJSON,
   ExchangeToken (ExchangeToken),
   OAuth2 (..),
   OAuth2Error,
   OAuth2Token (accessToken),
   appendQueryParams,
+  authGetJSON,
+  authorizationUrl,
   fetchAccessToken,
  )
 import Network.OAuth.OAuth2.TokenRequest qualified as TR

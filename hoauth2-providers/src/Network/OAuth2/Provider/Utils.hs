@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
--- |
 
 module Network.OAuth2.Provider.Utils where
 
