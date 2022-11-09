@@ -149,6 +149,7 @@ mkDecodeOAuth2Error response err =
 data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost
+  | ClientAssertionJwt
   deriving (Eq, Ord)
 
 --------------------------------------------------

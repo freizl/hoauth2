@@ -14,13 +14,10 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
-import Data.Aeson qualified as Aeson
-import Data.ByteString.Char8 qualified as BS8
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Idp
-import Network.Google.OAuth2.JWT qualified as GJwt
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Network.OAuth.OAuth2
@@ -163,7 +160,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
   let i = head idpP
   case i of
     "auth0" -> testClientCredentialsGrantType (auth0ClientCredentialsGrantApp auth0)
-    "okta" -> testClientCredentialsGrantType (oktaClientCredentialsGrantApp okta)
+    "okta" -> liftIO (oktaClientCredentialsGrantApp okta) >>= testClientCredentialsGrantType
     _ -> raise $ "unable to find password grant type flow for idp " <> i
 
 testClientCredentialsGrantType ::
@@ -186,22 +183,7 @@ testClientCredentialsGrantType testApp = do
 testJwtBearerGrantTypeH :: ActionM ()
 testJwtBearerGrantTypeH = do
   exceptToActionM $ do
-    GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
-    pkey <- liftIO $ GJwt.fromPEMString privateKey
-    jwt <-
-      withExceptT
-        TL.pack
-        ( ExceptT $
-            GJwt.getSignedJWT
-              (TL.toStrict clientEmail)
-              Nothing
-              [ "https://www.googleapis.com/auth/userinfo.email"
-              , "https://www.googleapis.com/auth/userinfo.profile"
-              ]
-              Nothing
-              pkey
-        )
-    let testApp = googleServiceAccountApp (BS8.pack $ show jwt)
+    testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
     user <- tryFetchUser mgr tokenResp testApp
@@ -258,7 +240,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
         (DemoAppEnv iApp $ sData {loginUser = Just luser, oauth2Token = Just token})
 
 oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
-oauth2ErrorToText e = TL.pack $ "mkTokenRequest - cannot fetch access token. error detail: " ++ show e
+oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::
   forall a b.

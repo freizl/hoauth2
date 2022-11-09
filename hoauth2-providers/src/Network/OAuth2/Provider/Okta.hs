@@ -10,12 +10,20 @@ module Network.OAuth2.Provider.Okta where
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
+import Data.Aeson qualified as Aeson
+import Data.Bifunctor
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
+import Data.Time
 import GHC.Generics
+import Jose.Jwa
+import Jose.Jwk
+import Jose.Jws
+import Jose.Jwt
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider.Utils
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
@@ -62,6 +70,28 @@ mkOktaIdp domain = do
         , idpTokenEndpoint = tokenUri
         }
     )
+
+mkOktaClientCredentialAppJwt ::
+  Jwk ->
+  ClientId ->
+  Idp Okta ->
+  IO (Either String Jwt)
+mkOktaClientCredentialAppJwt jwk cid idp = do
+  now <- getCurrentTime
+  let cidStr = unClientId cid
+  let payload =
+        bsToStrict $
+          Aeson.encode $
+            Aeson.object
+              [ "iss" .= cidStr
+              , "sub" .= cidStr
+              , "aud" .= idpTokenEndpoint idp
+              , "exp" .= tToSeconds (addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
+              , "iat" .= tToSeconds now
+              ]
+  first show <$> jwkEncode RS256 jwk (Claims payload)
+  where
+    tToSeconds = formatTime defaultTimeLocale "%s"
 
 -- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
 -- Okta Org AS doesn't support consent

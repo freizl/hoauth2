@@ -10,10 +10,8 @@
 
 module Idp where
 
-import GHC.Generics
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
-import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Aeson.Key qualified as Aeson
 import Data.Aeson.KeyMap qualified as Aeson
@@ -25,8 +23,11 @@ import Data.Maybe
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.Encoding qualified as TL
 import Env qualified
+import Jose.Jwt
 import Lens.Micro
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
@@ -40,6 +41,7 @@ import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
+import Network.OAuth2.Provider.Utils
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Session
@@ -83,6 +85,31 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
     , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeApp)
     ]
 
+googleServiceAccountApp ::
+  ExceptT
+    Text
+    IO
+    (IdpApplication 'JwtBearer IGoogle.Google)
+googleServiceAccountApp = do
+  IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
+  pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
+  jwt <-
+    withExceptT
+      TL.pack
+      ( ExceptT $
+          IGoogle.mkJwt
+            pkey
+            clientEmail
+            Nothing
+            ( Set.fromList
+                [ "https://www.googleapis.com/auth/userinfo.email"
+                , "https://www.googleapis.com/auth/userinfo.profile"
+                ]
+            )
+            IGoogle.defaultGoogleIdp
+      )
+  pure $ IGoogle.defaultServiceAccountApp jwt
+
 oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication 'ResourceOwnerPassword IOkta.Okta
 oktaPasswordGrantApp i =
   ResourceOwnerPasswordIDPApplication
@@ -102,16 +129,28 @@ oktaPasswordGrantApp i =
 -- With Org AS, got this error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
-oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IdpApplication 'ClientCredentials IOkta.Okta
-oktaClientCredentialsGrantApp i =
-  ClientCredentialsIDPApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppName = "okta-demo-cc-grant-app"
-    , idpAppScope = Set.fromList ["hw-test"]
-    , idpAppTokenRequestExtraParams = Map.empty
-    , idp = i
-    }
+oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication 'ClientCredentials IOkta.Okta)
+oktaClientCredentialsGrantApp i = do
+  let clientId = "0oa9mbklxn2Ac0oJ24x7"
+  keyJsonStr <- BS.readFile ".okta-key.json"
+  case Aeson.eitherDecodeStrict keyJsonStr of
+    Right jwk -> do
+      ejwt <- IOkta.mkOktaClientCredentialAppJwt jwk clientId i
+      case ejwt of
+        Right jwt ->
+          pure
+            ClientCredentialsIDPApplication
+              { idpAppClientId = clientId
+              , idpAppClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
+              , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
+              , idpAppName = "okta-demo-cc-grant-jwt-app"
+              , -- , idpAppScope = Set.fromList ["hw-test"]
+                idpAppScope = Set.fromList ["okta.users.read"]
+              , idpAppTokenRequestExtraParams = Map.empty
+              , idp = i
+              }
+        Left e -> Prelude.error e
+    Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ResourceOwnerPassword IAuth0.Auth0
@@ -133,27 +172,11 @@ auth0ClientCredentialsGrantApp i =
   ClientCredentialsIDPApplication
     { idpAppClientId = ""
     , idpAppClientSecret = ""
+    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
     , idpAppName = "auth0-demo-cc-grant-app"
     , idpAppScope = Set.fromList ["read:users"]
     , idpAppTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
     , idp = i
-    }
-
--- | Service account key (in JSON format) that download from google
-data GoogleServiceAccountKey = GoogleServiceAccountKey
-  { privateKey :: String
-  , clientEmail :: Text
-  } deriving (Generic)
-
-instance FromJSON GoogleServiceAccountKey where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-googleServiceAccountApp :: BS.ByteString -> IdpApplication 'JwtBearer IGoogle.Google
-googleServiceAccountApp jwt =
-  JwtBearerIdpApplication
-    { idpAppName = "foo-google-sa"
-    , idpAppJwt = jwt
-    , idp = IGoogle.defaultGoogleIdp
     }
 
 isSupportPkce :: forall a i. ( 'AuthorizationCode ~ a) => IdpApplication a i -> Bool

@@ -48,7 +48,15 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-data GrantTypeFlow = AuthorizationCode | ResourceOwnerPassword | ClientCredentials | JwtBearer
+data GrantTypeFlow
+  = -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
+    AuthorizationCode
+  | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3
+    ResourceOwnerPassword
+  | -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4
+    ClientCredentials
+  | -- | https://www.rfc-editor.org/rfc/rfc7523.html#section-2.1
+    JwtBearer
 
 -------------------------------------------------------------------------------
 
@@ -115,6 +123,7 @@ instance IsString Scope where
 newtype ClientId = ClientId {unClientId :: Text}
   deriving (Show, Eq, IsString)
 
+-- | Can be either "Client Secret" or JWT base on client authentication method
 newtype ClientSecret = ClientSecret {unClientSecret :: Text}
   deriving (Eq, IsString)
 
@@ -555,8 +564,8 @@ data instance IdpApplication 'JwtBearer i = JwtBearerIdpApplication
 
 instance HasTokenRequest 'JwtBearer where
   data TokenRequest 'JwtBearer = JwtBearerTokenRequest
-    { grantType :: GrantTypeValue -- ^ 'GTJwtBearer'
-    , assertion :: BS.ByteString -- ^ The the signed JWT token
+    { grantType :: GrantTypeValue -- \| 'GTJwtBearer'
+    , assertion :: BS.ByteString -- \| The the signed JWT token
     }
   type WithExchangeToken 'JwtBearer a = a
 
@@ -594,7 +603,7 @@ instance ToQueryParam (TokenRequest 'JwtBearer) where
       ]
 
 instance HasUserInfoRequest 'JwtBearer where
-  conduitUserInfoRequest  JwtBearerIdpApplication {..} mgr at = do
+  conduitUserInfoRequest JwtBearerIdpApplication {..} mgr at = do
     idpFetchUserInfo idp mgr at (idpUserInfoEndpoint idp)
 
 -------------------------------------------------------------------------------
@@ -705,6 +714,8 @@ instance ToQueryParam (TokenRequest 'ResourceOwnerPassword) where
 data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPApplication
   { idpAppClientId :: ClientId
   , idpAppClientSecret :: ClientSecret
+  , idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  -- ^ FIXME: rename to ClientCredential
   , idpAppName :: Text
   , idpAppScope :: Set Scope
   , idpAppTokenRequestExtraParams :: Map Text Text
@@ -721,6 +732,9 @@ instance HasTokenRequest 'ClientCredentials where
   data TokenRequest 'ClientCredentials = ClientCredentialsTokenRequest
     { scope :: Set Scope
     , grantType :: GrantTypeValue
+    , clientAssertionType :: Text
+    , clientAssertion :: BS.ByteString
+    , clientAuthenticationMethod :: ClientAuthenticationMethod
     }
 
   type WithExchangeToken 'ClientCredentials a = a
@@ -730,6 +744,9 @@ instance HasTokenRequest 'ClientCredentials where
     ClientCredentialsTokenRequest
       { scope = idpAppScope
       , grantType = GTClientCredentials
+      , clientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+      , clientAssertion = tlToBS $ unClientSecret idpAppClientSecret
+      , clientAuthenticationMethod = idpAppTokenRequestAuthenticationMethod
       }
 
   conduitTokenRequest ::
@@ -737,8 +754,8 @@ instance HasTokenRequest 'ClientCredentials where
     IdpApplication 'ClientCredentials i ->
     Manager ->
     ExceptT (OAuth2Error TR.Errors) m OAuth2Token
-  conduitTokenRequest idpAppConfig@ClientCredentialsIDPApplication {..} mgr =
-    let req = mkTokenRequest idpAppConfig
+  conduitTokenRequest idpAppConfig@ClientCredentialsIDPApplication {..} mgr = do
+    let tokenReq = mkTokenRequest idpAppConfig
         key =
           toOAuth2Key
             idpAppClientId
@@ -746,14 +763,32 @@ instance HasTokenRequest 'ClientCredentials where
         body =
           mapsToParams
             [ idpAppTokenRequestExtraParams
-            , toQueryParam req
+            , toQueryParam tokenReq
             ]
-     in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
+    if clientAuthenticationMethod tokenReq == ClientAssertionJwt
+      then do
+        resp <- ExceptT . liftIO $ do
+          req <- uriToRequest (idpTokenEndpoint idp)
+          let req' = urlEncodedBody body (addDefaultRequestHeaders req)
+          handleOAuth2TokenResponse <$> httpLbs req' mgr
+        case parseResponseFlexible resp of
+          Right obj -> return obj
+          Left e -> throwE e
+      else doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
 instance ToQueryParam (TokenRequest 'ClientCredentials) where
   toQueryParam :: TokenRequest 'ClientCredentials -> Map Text Text
   toQueryParam ClientCredentialsTokenRequest {..} =
-    Map.unions
+    Map.unions $
       [ toQueryParam grantType
       , toQueryParam scope
       ]
+        ++ [ Map.fromList
+              ( if clientAuthenticationMethod == ClientAssertionJwt
+                  then
+                    [ ("client_assertion_type", clientAssertionType)
+                    , ("client_assertion", bs8ToLazyText clientAssertion)
+                    ]
+                  else []
+              )
+           ]
