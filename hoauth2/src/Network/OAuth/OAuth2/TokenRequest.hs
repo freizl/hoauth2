@@ -11,13 +11,15 @@ import Data.Aeson
 import Data.Aeson.Key qualified as Key
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.ByteString.Lazy.Char8 qualified as BSL
+import Data.Text (Text)
+import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import GHC.Generics (Generic)
 import Network.HTTP.Conduit
 import Network.HTTP.Types qualified as HT
 import Network.HTTP.Types.URI (parseQuery)
 import Network.OAuth.OAuth2.Internal
-import URI.ByteString (URI, serializeURIRef')
+import URI.ByteString
 
 --------------------------------------------------
 
@@ -25,20 +27,47 @@ import URI.ByteString (URI, serializeURIRef')
 
 --------------------------------------------------
 
-instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
+data TokenRequestError = TokenRequestError
+  { error :: TokenRequestErrorCode
+  , errorDescription :: Maybe Text
+  , errorUri :: Maybe (URIRef Absolute)
+  }
+  deriving (Show, Eq, Generic)
 
-instance ToJSON Errors where
-  toEncoding = genericToEncoding defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
+instance FromJSON TokenRequestError where
+  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_'}
+
+parseTokeRequestError :: BSL.ByteString -> TokenRequestError
+parseTokeRequestError string =
+  either (mkDecodeOAuth2Error string) id (eitherDecode string)
+  where
+    mkDecodeOAuth2Error :: BSL.ByteString -> String -> TokenRequestError
+    mkDecodeOAuth2Error response err =
+      TokenRequestError
+        (UnknownErrorCode "")
+        (Just $ T.pack $ "Decode TokenRequestError failed: " <> err <> "\n Original Response:\n" <> show (T.decodeUtf8 $ BSL.toStrict response))
+        Nothing
+
+instance FromJSON TokenRequestErrorCode where
+  parseJSON = withText "parseJSON TokenRequestErrorCode" $ \t ->
+    pure $ case t of
+      "invalid_request" -> InvalidRequest
+      "invalid_client" -> InvalidClient
+      "invalid_grant" -> InvalidGrant
+      "unauthorized_client" -> UnauthorizedClient
+      "unsupported_grant_type" -> UnsupportedGrantType
+      "invalid_scope" -> InvalidScope
+      _ -> UnknownErrorCode t
 
 -- | Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
-data Errors
+data TokenRequestErrorCode
   = InvalidRequest
   | InvalidClient
   | InvalidGrant
   | UnauthorizedClient
   | UnsupportedGrantType
   | InvalidScope
+  | UnknownErrorCode Text
   deriving (Show, Eq, Generic)
 
 --------------------------------------------------
@@ -94,7 +123,7 @@ fetchAccessToken ::
   -- | OAuth2 Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
 fetchAccessToken2 ::
@@ -106,7 +135,7 @@ fetchAccessToken2 ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -120,7 +149,7 @@ fetchAccessTokenInternal ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 {-# DEPRECATED fetchAccessTokenInternal "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -146,7 +175,7 @@ fetchAccessTokenWithAuthMethod ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 fetchAccessTokenWithAuthMethod authMethod manager oa code = do
   let (uri, body) = accessTokenUrl oa code
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
@@ -161,7 +190,7 @@ refreshAccessToken ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
 
 refreshAccessToken2 ::
@@ -172,7 +201,7 @@ refreshAccessToken2 ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -185,7 +214,7 @@ refreshAccessTokenInternal ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 {-# DEPRECATED refreshAccessTokenInternal "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -210,7 +239,7 @@ refreshAccessTokenWithAuthMethod ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT (OAuth2Error Errors) m OAuth2Token
+  ExceptT TokenRequestError m OAuth2Token
 refreshAccessTokenWithAuthMethod authMethod manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
@@ -224,7 +253,7 @@ refreshAccessTokenWithAuthMethod authMethod manager oa token = do
 
 -- | Conduct post request and return response as JSON.
 doJSONPostRequest ::
-  (MonadIO m, FromJSON err, FromJSON a) =>
+  (MonadIO m, FromJSON a) =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth options
@@ -234,7 +263,7 @@ doJSONPostRequest ::
   -- | request body
   PostBody ->
   -- | Response as JSON
-  ExceptT (OAuth2Error err) m a
+  ExceptT TokenRequestError m a
 doJSONPostRequest manager oa uri body = do
   resp <- doSimplePostRequest manager oa uri body
   case parseResponseFlexible resp of
@@ -243,7 +272,7 @@ doJSONPostRequest manager oa uri body = do
 
 -- | Conduct post request.
 doSimplePostRequest ::
-  (MonadIO m, FromJSON err) =>
+  (MonadIO m) =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth options
@@ -253,7 +282,7 @@ doSimplePostRequest ::
   -- | Request body.
   PostBody ->
   -- | Response as ByteString
-  ExceptT (OAuth2Error err) m BSL.ByteString
+  ExceptT TokenRequestError m BSL.ByteString
 doSimplePostRequest manager oa url body =
   ExceptT . liftIO $ fmap handleOAuth2TokenResponse go
   where
@@ -264,26 +293,26 @@ doSimplePostRequest manager oa url body =
       httpLbs (urlEncodedBody body req') manager
 
 -- | Gets response body from a @Response@ if 200 otherwise assume 'OAuth2Error'
-handleOAuth2TokenResponse :: FromJSON err => Response BSL.ByteString -> Either (OAuth2Error err) BSL.ByteString
+handleOAuth2TokenResponse :: Response BSL.ByteString -> Either TokenRequestError BSL.ByteString
 handleOAuth2TokenResponse rsp =
   if HT.statusIsSuccessful (responseStatus rsp)
     then Right $ responseBody rsp
-    else Left $ parseOAuth2Error (responseBody rsp)
+    else Left $ parseTokeRequestError (responseBody rsp)
 
 -- | Try to parses response as JSON, if failed, try to parse as like query string.
 parseResponseFlexible ::
-  (FromJSON err, FromJSON a) =>
+  (FromJSON a) =>
   BSL.ByteString ->
-  Either (OAuth2Error err) a
+  Either TokenRequestError a
 parseResponseFlexible r = case eitherDecode r of
   Left _ -> parseResponseString r
   Right x -> Right x
 
 -- | Parses the response that contains not JSON but a Query String
 parseResponseString ::
-  (FromJSON err, FromJSON a) =>
+  (FromJSON a) =>
   BSL.ByteString ->
-  Either (OAuth2Error err) a
+  Either TokenRequestError a
 parseResponseString b = case parseQuery $ BSL.toStrict b of
   [] -> Left errorMessage
   a -> case fromJSON $ queryToValue a of
@@ -292,7 +321,7 @@ parseResponseString b = case parseQuery $ BSL.toStrict b of
   where
     queryToValue = Object . KeyMap.fromList . map paramToPair
     paramToPair (k, mv) = (Key.fromText $ T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
-    errorMessage = parseOAuth2Error b
+    errorMessage = parseTokeRequestError b
 
 -- | Set several header values:
 --   + userAgennt    : `hoauth2`

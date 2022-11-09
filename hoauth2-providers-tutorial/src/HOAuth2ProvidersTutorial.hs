@@ -20,10 +20,9 @@ import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
 import Network.OAuth.OAuth2 (
   ExchangeToken (ExchangeToken),
-  OAuth2Error,
   OAuth2Token (accessToken),
+  TokenRequestError,
  )
-import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 (
   Auth0,
@@ -226,5 +225,5 @@ excepttToActionM e = do
   result <- liftIO $ runExceptT e
   either Scotty.raise pure result
 
-oauth2ErrorToText :: OAuth2Error TR.Errors -> TL.Text
+oauth2ErrorToText :: TokenRequestError -> TL.Text
 oauth2ErrorToText e = TL.pack $ "Unable fetch access token. error detail: " ++ show e

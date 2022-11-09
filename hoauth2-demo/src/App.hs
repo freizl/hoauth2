@@ -22,7 +22,6 @@ import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
-import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.Okta qualified as IOkta
@@ -239,7 +238,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
         c1
         (DemoAppEnv iApp $ sData {loginUser = Just luser, oauth2Token = Just token})
 
-oauth2ErrorToText :: OAuth2Error TR.Errors -> Text
+oauth2ErrorToText :: TokenRequestError -> Text
 oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::

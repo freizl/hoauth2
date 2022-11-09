@@ -33,7 +33,6 @@ import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
-import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Utils
 import URI.ByteString hiding (UserInfo)
@@ -267,7 +266,7 @@ class HasTokenRequest (a :: GrantTypeFlow) where
     (MonadIO m) =>
     IdpApplication a i ->
     Manager ->
-    WithExchangeToken a (ExceptT (OAuth2Error TR.Errors) m OAuth2Token)
+    WithExchangeToken a (ExceptT TokenRequestError m OAuth2Token)
 
 class HasPkceAuthorizeRequest (a :: GrantTypeFlow) where
   mkPkceAuthorizeRequest :: MonadIO m => IdpApplication a i -> m (TL.Text, CodeVerifier)
@@ -278,7 +277,7 @@ class HasPkceTokenRequest (b :: GrantTypeFlow) where
     IdpApplication b i ->
     Manager ->
     (ExchangeToken, CodeVerifier) ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
 
 class HasRefreshTokenRequest (a :: GrantTypeFlow) where
   -- | https://www.rfc-editor.org/rfc/rfc6749#page-47
@@ -290,7 +289,7 @@ class HasRefreshTokenRequest (a :: GrantTypeFlow) where
     IdpApplication a i ->
     Manager ->
     OAuth2.RefreshToken ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
 
 -------------------------------------------------------------------------------
 
@@ -426,7 +425,7 @@ instance HasTokenRequest 'AuthorizationCode where
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     ExchangeToken ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitTokenRequest idpAppConfig@AuthorizationCodeIdpApplication {..} mgr exchangeToken =
     let req = mkTokenRequest idpAppConfig exchangeToken
         key = toOAuth2Key idpAppClientId idpAppClientSecret
@@ -468,7 +467,7 @@ instance HasPkceTokenRequest 'AuthorizationCode where
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     (ExchangeToken, CodeVerifier) ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitPkceTokenRequest idpAppConfig@AuthorizationCodeIdpApplication {..} mgr (exchangeToken, codeVerifier) =
     let req = mkTokenRequest idpAppConfig exchangeToken
         key = toOAuth2Key idpAppClientId idpAppClientSecret
@@ -499,7 +498,7 @@ instance HasRefreshTokenRequest 'AuthorizationCode where
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     OAuth2.RefreshToken ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitRefreshTokenRequest idpAppConfig@AuthorizationCodeIdpApplication {..} mgr rt =
     let req = mkRefreshTokenRequest idpAppConfig rt
         key = toOAuth2Key idpAppClientId idpAppClientSecret
@@ -583,7 +582,7 @@ instance HasTokenRequest 'JwtBearer where
     (MonadIO m) =>
     IdpApplication 'JwtBearer i ->
     Manager ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitTokenRequest idpAppConfig@JwtBearerIdpApplication {..} mgr = do
     resp <- ExceptT . liftIO $ do
       let tokenReq = mkTokenRequest idpAppConfig
@@ -663,7 +662,7 @@ instance HasTokenRequest 'ResourceOwnerPassword where
     (MonadIO m) =>
     IdpApplication 'ResourceOwnerPassword i ->
     Manager ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitTokenRequest idpAppConfig@ResourceOwnerPasswordIDPApplication {..} mgr =
     let req = mkTokenRequest idpAppConfig
         key = toOAuth2Key idpAppClientId idpAppClientSecret
@@ -685,7 +684,7 @@ instance HasRefreshTokenRequest 'ResourceOwnerPassword where
     IdpApplication 'ResourceOwnerPassword i ->
     Manager ->
     OAuth2.RefreshToken ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitRefreshTokenRequest = undefined
 
 instance ToQueryParam (TokenRequest 'ResourceOwnerPassword) where
@@ -753,7 +752,7 @@ instance HasTokenRequest 'ClientCredentials where
     (MonadIO m) =>
     IdpApplication 'ClientCredentials i ->
     Manager ->
-    ExceptT (OAuth2Error TR.Errors) m OAuth2Token
+    ExceptT TokenRequestError m OAuth2Token
   conduitTokenRequest idpAppConfig@ClientCredentialsIDPApplication {..} mgr = do
     let tokenReq = mkTokenRequest idpAppConfig
         key =

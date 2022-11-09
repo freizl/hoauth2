@@ -121,14 +121,13 @@ import Network.HTTP.Types (status302)
 import Network.OAuth.OAuth2 (
   ExchangeToken (ExchangeToken),
   OAuth2 (..),
-  OAuth2Error,
   OAuth2Token (accessToken),
+  TokenRequestError,
   appendQueryParams,
   authGetJSON,
   authorizationUrl,
   fetchAccessToken,
  )
-import Network.OAuth.OAuth2.TokenRequest qualified as TR
 import URI.ByteString (URI, serializeURIRef')
 import URI.ByteString.QQ (uri)
 import Web.Scotty (ActionM, scotty)
@@ -284,5 +283,5 @@ excepttToActionM e = do
   result <- liftIO $ runExceptT e
   either Scotty.raise pure result
 
-oauth2ErrorToText :: OAuth2Error TR.Errors -> TL.Text
+oauth2ErrorToText :: TokenRequestError -> TL.Text
 oauth2ErrorToText e = TL.pack $ "Unable fetch access token. error detail: " ++ show e
