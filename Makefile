@@ -1,20 +1,17 @@
 default: build
 
-clean:
+c:
 	cabal clean
 
-build:
+b:
 	cabal build -j --run-tests all
 
 build-ide:
 	cabal build -j --run-tests all --ghc-options="-fwrite-ide-info"
 
-rebuild: clean build
+rb: clean build
 
-hlint-only:
-	hlint .
-
-hlint:
+l:
 	hlint .
 
 hlint-fix:

@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Bindings Access Token and Refresh Token part of The OAuth 2.0 Authorization Framework
@@ -34,6 +33,28 @@ data TokenRequestError = TokenRequestError
   }
   deriving (Show, Eq, Generic)
 
+-- | Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
+data TokenRequestErrorCode
+  = InvalidRequest
+  | InvalidClient
+  | InvalidGrant
+  | UnauthorizedClient
+  | UnsupportedGrantType
+  | InvalidScope
+  | UnknownErrorCode Text
+  deriving (Show, Eq)
+
+instance FromJSON TokenRequestErrorCode where
+  parseJSON = withText "parseJSON TokenRequestErrorCode" $ \t ->
+    pure $ case t of
+      "invalid_request" -> InvalidRequest
+      "invalid_client" -> InvalidClient
+      "invalid_grant" -> InvalidGrant
+      "unauthorized_client" -> UnauthorizedClient
+      "unsupported_grant_type" -> UnsupportedGrantType
+      "invalid_scope" -> InvalidScope
+      _ -> UnknownErrorCode t
+
 instance FromJSON TokenRequestError where
   parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_'}
 
@@ -47,28 +68,6 @@ parseTokeRequestError string =
         (UnknownErrorCode "")
         (Just $ T.pack $ "Decode TokenRequestError failed: " <> err <> "\n Original Response:\n" <> show (T.decodeUtf8 $ BSL.toStrict response))
         Nothing
-
-instance FromJSON TokenRequestErrorCode where
-  parseJSON = withText "parseJSON TokenRequestErrorCode" $ \t ->
-    pure $ case t of
-      "invalid_request" -> InvalidRequest
-      "invalid_client" -> InvalidClient
-      "invalid_grant" -> InvalidGrant
-      "unauthorized_client" -> UnauthorizedClient
-      "unsupported_grant_type" -> UnsupportedGrantType
-      "invalid_scope" -> InvalidScope
-      _ -> UnknownErrorCode t
-
--- | Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
-data TokenRequestErrorCode
-  = InvalidRequest
-  | InvalidClient
-  | InvalidGrant
-  | UnauthorizedClient
-  | UnsupportedGrantType
-  | InvalidScope
-  | UnknownErrorCode Text
-  deriving (Show, Eq, Generic)
 
 --------------------------------------------------
 
