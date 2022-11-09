@@ -9,7 +9,7 @@ b:
 build-ide:
 	cabal build -j --run-tests all --ghc-options="-fwrite-ide-info"
 
-rb: clean build
+rb: c b
 
 l:
 	hlint .
