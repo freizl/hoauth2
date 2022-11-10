@@ -11,16 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ['9.2.4', '8.10.7']
-        cabal: ['3.6']
+        ghc: ["9.2.4", "8.10.7"]
+        cabal: ["3.6"]
     name: Build hoauth2 on GHC ${{ matrix.ghc }}
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: haskell/actions/setup@v2
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
+
       - uses: actions/cache@v3
         name: Caching
         with:

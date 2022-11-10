@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   workflow_run:
-    workflows: ["Build"]
+    workflows: [Build]
     branches: [main]
     types:
       - completed
@@ -16,12 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ['9.2.4', '8.10.7']
-        cabal: ['3.6']
+        ghc: ["9.2.4", "8.10.7"]
+        cabal: ["3.6"]
     name: Test hoauth2 on GHC ${{ matrix.ghc }}
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: haskell/actions/setup@v2
         with:
           ghc-version: ${{ matrix.ghc }}
