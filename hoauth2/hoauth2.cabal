@@ -2,7 +2,7 @@ cabal-version:      2.4
 name:               hoauth2
 
 -- http://wiki.haskell.org/Package_versioning_policy
-version:            2.6.0
+version:            2.7.0
 synopsis:           Haskell OAuth2 authentication client
 description:
   Haskell OAuth2 authentication client.
@@ -84,14 +84,15 @@ test-suite hoauth-tests
   hs-source-dirs:     test
   ghc-options:        -Wall
   build-depends:
-    , base     >=4 && <5
-    , aeson                 >=2.0    && <2.2
+    , aeson    >=2.0 && <2.2
+    , base     >=4   && <5
     , hoauth2
-    , hspec    >=2 && <3
+    , hspec    >=2   && <3
 
   other-modules:      Network.OAuth.OAuth2.TokenRequestSpec
   default-language:   Haskell2010
   default-extensions:
     ImportQualifiedPost
     OverloadedStrings
+
   build-tool-depends: hspec-discover:hspec-discover >=2 && <3

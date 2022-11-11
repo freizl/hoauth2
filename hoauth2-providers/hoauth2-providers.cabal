@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name:          hoauth2-providers
-version:       0.1
+version:       0.2
 synopsis:      OAuth2 Identity Providers
 description:
   A list of Identity Providers base on hoauth2 Haskell OAuth2 binding
