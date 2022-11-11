@@ -21,15 +21,12 @@ import URI.ByteString
 --------------------------------------------------
 
 instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
-
-instance ToJSON Errors where
-  toEncoding = genericToEncoding defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
+  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_'}
 
 -- | Authorization Code Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 -- I found hard time to figure a way to test the authorization error flow
--- When anything wrong in @/authorize@ request (redirect to OAuth2 provider),
--- it will end-up at the Provider page hence no way for this library to parse error response.
+-- When anything wrong in @/authorize@ request, it will stuck at the Provider page
+-- hence no way for this library to parse error response.
 -- In other words, @/authorize@ ends up with 4xx or 5xx.
 -- Revisit this whenever find a case OAuth2 provider redirects back to Relying party with errors.
 data Errors

@@ -1,4 +1,4 @@
-name: lint
+name: Lint
 on:
   pull_request:
     branches:
@@ -11,14 +11,14 @@ jobs:
   hlint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: 'Set up HLint'
-      uses: haskell/actions/hlint-setup@v2
-      # with: version: '3.3.6'
+      - name: "Set up HLint"
+        uses: haskell/actions/hlint-setup@v2
 
-    - name: 'Run HLint'
-      uses: haskell/actions/hlint-run@v2
-      with:
-        path: '["hoauth2/src/", "hoauth2-tutorial/src", "hoauth2-tutorial/app", "hoauth2-providers/src", "hoauth2-providers-tutorial/src"]'
-        fail-on: warning
+        # with: version: '3.3.6'
+      - name: "Run HLint"
+        uses: haskell/actions/hlint-run@v2
+        with:
+          path: '["hoauth2/src/", "hoauth2-tutorial/src", "hoauth2-tutorial/app", "hoauth2-providers/src", "hoauth2-providers-tutorial/src"]'
+          fail-on: warning

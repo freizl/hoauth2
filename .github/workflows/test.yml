@@ -1,10 +1,15 @@
-name: Build
+name: Test
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_run:
+    workflows: [Build]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   build:
@@ -13,7 +18,7 @@ jobs:
       matrix:
         ghc: ["9.2.4", "8.10.7"]
         cabal: ["3.6"]
-    name: Build hoauth2 on GHC ${{ matrix.ghc }}
+    name: Test hoauth2 on GHC ${{ matrix.ghc }}
 
     steps:
       - uses: actions/checkout@v3
@@ -22,7 +27,6 @@ jobs:
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
-
       - uses: actions/cache@v3
         name: Caching
         with:
@@ -37,5 +41,5 @@ jobs:
           cabal update
           cabal build --only-dependencies --enable-tests all
 
-      - name: Build
-        run: make rb
+      - name: Test
+        run: cd hoauth2 && cabal test

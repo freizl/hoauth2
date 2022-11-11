@@ -6,7 +6,6 @@
 
 module Network.OAuth.OAuth2.Internal where
 
-import Control.Applicative
 import Control.Arrow (second)
 import Control.Monad.Catch
 import Data.Aeson
@@ -14,11 +13,9 @@ import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
 import Data.Binary (Binary)
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BS8
-import Data.ByteString.Lazy qualified as BSL
 import Data.Default
 import Data.Maybe
-import Data.Text (Text, pack, unpack)
-import Data.Text.Encoding
+import Data.Text (Text, unpack)
 import Data.Version (showVersion)
 import GHC.Generics
 import Lens.Micro
@@ -102,37 +99,6 @@ instance FromJSON OAuth2Token where
 instance ToJSON OAuth2Token where
   toJSON = genericToJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
   toEncoding = genericToEncoding defaultOptions {fieldLabelModifier = camelTo2 '_'}
-
-data OAuth2Error a = OAuth2Error
-  { error :: Either Text a
-  , errorDescription :: Maybe Text
-  , errorUri :: Maybe (URIRef Absolute)
-  }
-  deriving (Show, Eq, Generic)
-
-instance FromJSON err => FromJSON (OAuth2Error err) where
-  parseJSON (Object a) =
-    do
-      err <- (a .: "error") >>= (\str -> Right <$> parseJSON str <|> Left <$> parseJSON str)
-      desc <- a .:? "error_description"
-      errorUri <- a .:? "error_uri"
-      return $ OAuth2Error err desc errorUri
-  parseJSON _ = fail "Expected an object"
-
-instance ToJSON err => ToJSON (OAuth2Error err) where
-  toJSON = genericToJSON defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
-  toEncoding = genericToEncoding defaultOptions {constructorTagModifier = camelTo2 '_', allNullaryToStringTag = True}
-
-parseOAuth2Error :: FromJSON err => BSL.ByteString -> OAuth2Error err
-parseOAuth2Error string =
-  either (mkDecodeOAuth2Error string) id (eitherDecode string)
-
-mkDecodeOAuth2Error :: BSL.ByteString -> String -> OAuth2Error err
-mkDecodeOAuth2Error response err =
-  OAuth2Error
-    (Left "Decode error")
-    (Just $ pack $ "Error: " <> err <> "\n Original Response:\n" <> show (decodeUtf8 $ BSL.toStrict response))
-    Nothing
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
 -- According to spec:

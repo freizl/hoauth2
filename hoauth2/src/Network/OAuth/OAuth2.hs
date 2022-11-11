@@ -14,4 +14,4 @@ module Network.OAuth.OAuth2 (
 import Network.OAuth.OAuth2.AuthorizationRequest hiding (Errors (..))
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth.OAuth2.Internal
-import Network.OAuth.OAuth2.TokenRequest hiding (Errors (..))
+import Network.OAuth.OAuth2.TokenRequest
