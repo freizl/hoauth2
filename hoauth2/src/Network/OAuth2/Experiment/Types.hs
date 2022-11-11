@@ -239,9 +239,6 @@ instance ToQueryParam OAuth2.RefreshToken where
 
 -------------------------------------------------------------------------------
 
-class HasIdpAppName (a :: GrantTypeFlow) where
-  getIdpAppName :: IdpApplication a i -> Text
-
 class HasAuthorizeRequest (a :: GrantTypeFlow) where
   data AuthorizationRequest a
   type MkAuthorizationRequestResponse a
@@ -361,10 +358,6 @@ data instance IdpApplication 'AuthorizationCode i = AuthorizationCodeIdpApplicat
 -- though seems overkill. https://github.com/freizl/hoauth2/issues/149
 -- parseAuthorizationResponse :: String -> AuthorizationResponse
 -- parseAuthorizationResponse :: ( String, String ) -> AuthorizationResponse
-
-instance HasIdpAppName 'AuthorizationCode where
-  getIdpAppName :: IdpApplication 'AuthorizationCode i -> Text
-  getIdpAppName AuthorizationCodeIdpApplication {..} = idpAppName
 
 instance HasAuthorizeRequest 'AuthorizationCode where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
@@ -631,10 +624,6 @@ data instance IdpApplication 'ResourceOwnerPassword i = ResourceOwnerPasswordIDP
   , idp :: Idp i
   }
 
-instance HasIdpAppName 'ResourceOwnerPassword where
-  getIdpAppName :: IdpApplication 'ResourceOwnerPassword i -> Text
-  getIdpAppName ResourceOwnerPasswordIDPApplication {..} = idpAppName
-
 instance HasUserInfoRequest 'ResourceOwnerPassword where
   conduitUserInfoRequest ResourceOwnerPasswordIDPApplication {..} mgr at = do
     idpFetchUserInfo idp mgr at (idpUserInfoEndpoint idp)
@@ -721,10 +710,6 @@ data instance IdpApplication 'ClientCredentials i = ClientCredentialsIDPApplicat
   -- ^ Any parameter that required by your Idp and not mentioned in the OAuth2 spec
   , idp :: Idp i
   }
-
-instance HasIdpAppName 'ClientCredentials where
-  getIdpAppName :: IdpApplication 'ClientCredentials i -> Text
-  getIdpAppName ClientCredentialsIDPApplication {..} = idpAppName
 
 instance HasTokenRequest 'ClientCredentials where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
