@@ -6,7 +6,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Idp where
 
@@ -75,6 +74,7 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
     , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookApp)
     , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitApp)
     , DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubApp)
+    , DemoAuthorizationApp (initIdpAppConfig IDropbox.defaultDropboxApp)
     , DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleApp)
     , DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinApp)
     , DemoAuthorizationApp (initIdpAppConfig (IOkta.defaultOktaApp myOktaIdp))
@@ -182,75 +182,13 @@ auth0ClientCredentialsGrantApp i =
 isSupportPkce :: forall a i. ( 'AuthorizationCode ~ a) => IdpApplication a i -> Bool
 isSupportPkce AuthorizationCodeIdpApplication {..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
-   in any (`BS.isInfixOf` hostStr) ["auth0.com", "okta.com", "google.com", "twitter.com"]
-
-instance HasDemoLoginUser IAuth0.Auth0 where
-  toLoginUser :: IAuth0.Auth0User -> DemoLoginUser
-  toLoginUser IAuth0.Auth0User {..} = DemoLoginUser {loginUserName = name}
-
-instance HasDemoLoginUser IGoogle.Google where
-  toLoginUser :: IGoogle.GoogleUser -> DemoLoginUser
-  toLoginUser IGoogle.GoogleUser {..} = DemoLoginUser {loginUserName = name}
-
-instance HasDemoLoginUser IZOHO.ZOHO where
-  toLoginUser resp =
-    let us = IZOHO.users resp
-     in case us of
-          [] -> DemoLoginUser {loginUserName = "ZOHO: no user found"}
-          (a : _) -> DemoLoginUser {loginUserName = IZOHO.fullName a}
-
-instance HasDemoLoginUser IAzureAD.AzureAD where
-  toLoginUser :: IAzureAD.AzureADUser -> DemoLoginUser
-  toLoginUser ouser =
-    DemoLoginUser
-      { loginUserName = IAzureAD.email ouser <> " " <> IAzureAD.name ouser
-      }
-
-instance HasDemoLoginUser IWeibo.Weibo where
-  toLoginUser :: IWeibo.WeiboUID -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = TL.pack $ show $ IWeibo.uid ouser}
-
-instance HasDemoLoginUser IDropbox.Dropbox where
-  toLoginUser :: IDropbox.DropboxUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IDropbox.displayName $ IDropbox.name ouser}
-
-instance HasDemoLoginUser IFacebook.Facebook where
-  toLoginUser :: IFacebook.FacebookUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IFacebook.name ouser}
-
-instance HasDemoLoginUser IFitbit.Fitbit where
-  toLoginUser :: IFitbit.FitbitUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IFitbit.userName ouser}
-
-instance HasDemoLoginUser IGithub.Github where
-  toLoginUser :: IGithub.GithubUser -> DemoLoginUser
-  toLoginUser guser = DemoLoginUser {loginUserName = IGithub.name guser}
-
-instance HasDemoLoginUser ILinkedin.Linkedin where
-  toLoginUser :: ILinkedin.LinkedinUser -> DemoLoginUser
-  toLoginUser ILinkedin.LinkedinUser {..} =
-    DemoLoginUser
-      { loginUserName = localizedFirstName <> " " <> localizedLastName
-      }
-
-instance HasDemoLoginUser ITwitter.Twitter where
-  toLoginUser :: ITwitter.TwitterUserResp -> DemoLoginUser
-  toLoginUser ITwitter.TwitterUserResp {..} = DemoLoginUser {loginUserName = ITwitter.name twitterUserRespData}
-
-instance HasDemoLoginUser IOkta.Okta where
-  toLoginUser :: IOkta.OktaUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IOkta.name ouser}
-
-instance HasDemoLoginUser ISlack.Slack where
-  toLoginUser :: ISlack.SlackUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = ISlack.name ouser}
-
-instance HasDemoLoginUser IStackExchange.StackExchange where
-  toLoginUser :: IStackExchange.StackExchangeResp -> DemoLoginUser
-  toLoginUser IStackExchange.StackExchangeResp {..} =
-    case items of
-      [] -> DemoLoginUser {loginUserName = TL.pack "Cannot find stackexchange user"}
-      (user : _) -> DemoLoginUser {loginUserName = IStackExchange.displayName user}
+   in any
+        (`BS.isInfixOf` hostStr)
+        [ "auth0.com"
+        , "okta.com"
+        , "google.com"
+        , "twitter.com"
+        ]
 
 -- TODO: use Paths_ module for better to find the file?
 envFilePath :: String
