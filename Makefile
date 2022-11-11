@@ -20,7 +20,7 @@ hlint-fix:
 doc: build
 	cabal haddock all
 
-dist: rebuild
+dist: rb
 	cabal sdist all
 
 format-cabal:
