@@ -35,6 +35,7 @@ jobs:
             ~/.cabal/store
             dist-newstyle
           key: ${{ runner.os }}-build-ghc-${{ matrix.ghc }}-${{ hashFiles('**/*.cabal') }}
+          restore-keys: ${{ runner.os }}-build-ghc-${{ matrix.ghc }}-
 
       - name: Install dependencies
         run: |
