@@ -3,7 +3,7 @@ name:          hoauth2-providers
 version:       0.2
 synopsis:      OAuth2 Identity Providers
 description:
-  A list of Identity Providers base on hoauth2 Haskell OAuth2 binding
+  A few well known Identity Providers
 
 homepage:      https://github.com/freizl/hoauth2
 license:       MIT
