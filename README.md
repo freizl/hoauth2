@@ -13,11 +13,11 @@
 
 ## Src Packages
 
-1. [OAuth2 Haskell binding](./hoauth2)
-1. [Tutorial for OAuth2 binding](./hoauth2-tutorial)
-1. [A few well known OAuth2 Identity Providers](./hoauth2-providers)
-1. [Tutorial for OAuth2 Providers](./hoauth2-providers-tutorial)
-1. [Demo Application](./hoauth2-demo)
+- [OAuth2 Haskell binding](./hoauth2)
+- [Tutorial for OAuth2 binding](./hoauth2-tutorial)
+- [OAuth2 Identity Providers](./hoauth2-providers)
+- [Tutorial for OAuth2 Identity Providers](./hoauth2-providers-tutorial)
+- [Demo Application](./hoauth2-demo)
 
 ## Build
 
