@@ -7,7 +7,6 @@
 -- | [StackExchange authentication guide](https://api.stackexchange.com/docs/authentication)
 --
 --    * [StackExchange Apps page](https://stackapps.com/apps/oauth)
---
 module Network.OAuth2.Provider.StackExchange where
 
 import Data.Aeson

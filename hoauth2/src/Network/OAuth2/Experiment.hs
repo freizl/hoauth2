@@ -37,7 +37,7 @@
 -- Firstly, initialize your IdP (use google as example) and the application.
 --
 -- @
--- {-# LANGUAGE DataKinds #-}
+-- {\-# LANGUAGE DataKinds #-\}
 --
 -- data Google = Google deriving (Eq, Show)
 -- googleIdp :: Idp Google

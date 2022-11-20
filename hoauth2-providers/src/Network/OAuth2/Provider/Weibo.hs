@@ -1,7 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 -- | [微博授权机制](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6)
---
 module Network.OAuth2.Provider.Weibo where
 
 import Data.Aeson
