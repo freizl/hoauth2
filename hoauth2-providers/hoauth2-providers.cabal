@@ -38,6 +38,7 @@ library
   -- other-modules:
 
   exposed-modules:
+    Data.ByteString.Contrib
     Network.OAuth2.Provider.Auth0
     Network.OAuth2.Provider.AzureAD
     Network.OAuth2.Provider.Dropbox
@@ -50,7 +51,6 @@ library
     Network.OAuth2.Provider.Slack
     Network.OAuth2.Provider.StackExchange
     Network.OAuth2.Provider.Twitter
-    Network.OAuth2.Provider.Utils
     Network.OAuth2.Provider.Weibo
     Network.OAuth2.Provider.ZOHO
     Network.OIDC.WellKnown
