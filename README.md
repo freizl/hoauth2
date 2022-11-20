@@ -3,11 +3,11 @@
 
 <!-- [![Travis Status](https://app.travis-ci.com/freizl/hoauth2.svg?branch=master)](http://app.travis-ci.com/github/freizl/hoauth2) -->
 
-- [![Hackage](https://img.shields.io/hackage/v/hoauth2.svg)](https://hackage.haskell.org/package/hoauth2)
-- [![Hackage](https://img.shields.io/hackage/v/hoauth2-providers.svg)](https://hackage.haskell.org/package/hoauth2-providers)
-- [![Hackage](https://img.shields.io/hackage/v/hoauth2-tutorial.svg)](https://hackage.haskell.org/package/hoauth2-tutorial)
-- [![Hackage](https://img.shields.io/hackage/v/hoauth2-providers-tutorial.svg)](https://hackage.haskell.org/package/hoauth2-providers-tutorial)
-- [![Hackage](https://img.shields.io/hackage/v/hoauth2-demo.svg)](https://hackage.haskell.org/package/hoauth2-demo)
+- [![hoauth2](https://img.shields.io/hackage/v/hoauth2.svg)](https://hackage.haskell.org/package/hoauth2)
+- [![hoauth2-providers](https://img.shields.io/hackage/v/hoauth2-providers.svg)](https://hackage.haskell.org/package/hoauth2-providers)
+- [![hoauth2-tutorial](https://img.shields.io/hackage/v/hoauth2-tutorial.svg)](https://hackage.haskell.org/package/hoauth2-tutorial)
+- [![hoauth2-providers-tutorial](https://img.shields.io/hackage/v/hoauth2-providers-tutorial.svg)](https://hackage.haskell.org/package/hoauth2-providers-tutorial)
+- [![hoauth2-demo](https://img.shields.io/hackage/v/hoauth2-demo.svg)](https://hackage.haskell.org/package/hoauth2-demo)
 
 ## Introduction
 
