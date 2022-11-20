@@ -1,5 +1,3 @@
-#+title: README
-
 * Introduction
 
 An tutorial for using ~hoauth2~ to implement the social login flow using Auth0 as Identity Provider.

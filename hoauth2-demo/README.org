@@ -1,4 +1,4 @@
-#+TITLE: README
+* Introduction
 
 Sample Application that demonstrates the usage of [[../hoauth2-providers][hoauth2-providers]] to implement social login flow.
 

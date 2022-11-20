@@ -1,4 +1,4 @@
-#+title: README
+* Introduction
 
 A tutorial to demonstrate how to use ~hoauth2-providers~ module to implement social login flow.
 

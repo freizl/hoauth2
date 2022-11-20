@@ -1,5 +1,3 @@
-#+TITLE: README
-
 * Introduction
 
 Haskell binding for
