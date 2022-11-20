@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 
-module Network.OAuth2.Provider.Utils where
+module Data.ByteString.Contrib where
 
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as BSL

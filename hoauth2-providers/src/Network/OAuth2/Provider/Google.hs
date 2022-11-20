@@ -15,6 +15,7 @@ import Crypto.PubKey.RSA.Types
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
+import Data.ByteString.Contrib
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set qualified as Set
@@ -28,7 +29,6 @@ import Jose.Jws
 import Jose.Jwt
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Utils
 import OpenSSL.EVP.PKey (toKeyPair)
 import OpenSSL.PEM (
   PemPasswordSupply (PwNone),

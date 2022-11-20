@@ -14,6 +14,7 @@ import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
+import Data.ByteString.Contrib
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
@@ -25,7 +26,6 @@ import Jose.Jws
 import Jose.Jwt
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Utils
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 

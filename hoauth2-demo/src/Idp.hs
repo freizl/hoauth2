@@ -16,6 +16,7 @@ import Data.Aeson.Key qualified as Aeson
 import Data.Aeson.KeyMap qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
+import Data.ByteString.Contrib
 import Data.Default
 import Data.Map.Strict qualified as Map
 import Data.Maybe
@@ -40,7 +41,6 @@ import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
-import Network.OAuth2.Provider.Utils
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Session
@@ -179,7 +179,7 @@ auth0ClientCredentialsGrantApp i =
     , idp = i
     }
 
-isSupportPkce :: forall a i. ( 'AuthorizationCode ~ a) => IdpApplication a i -> Bool
+isSupportPkce :: forall a i. ('AuthorizationCode ~ a) => IdpApplication a i -> Bool
 isSupportPkce AuthorizationCodeIdpApplication {..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
    in any
