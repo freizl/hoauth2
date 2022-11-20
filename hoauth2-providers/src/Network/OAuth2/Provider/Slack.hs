@@ -4,6 +4,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-- | [Sign in with Slack](https://api.slack.com/authentication/sign-in-with-slack)
+--
+--   * [Using OAuth 2.0](https://api.slack.com/legacy/oauth)
+--
 module Network.OAuth2.Provider.Slack where
 
 import Data.Aeson
@@ -33,7 +37,6 @@ defaultSlackApp =
     , idp = defaultSlackIdp
     }
 
--- https://api.slack.com/authentication/sign-in-with-slack
 -- https://slack.com/.well-known/openid-configuration
 defaultSlackIdp :: Idp Slack
 defaultSlackIdp =

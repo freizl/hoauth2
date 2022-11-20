@@ -4,15 +4,6 @@ See [[./src/Network/OAuth2/Provider]] the list of supported Identity Providers.
 
 * Supported IdP list
 
-- [[https://auth0.com/docs/authorization/protocols/protocol-oauth2][Auth0]]
-- [[https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow][AzureAD]]
-- [[https://developers.dropbox.com/oauth-guide][DropBox]]
-- [[https://docs.github.com/en/developers/apps/building-oauth-apps][Github]]
-- [[https://developers.google.com/identity/protocols/oauth2/web-server][Google]]
-- [[http://developers.facebook.com/docs/facebook-login/][Facebook]]
-- [[https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/][Fitbit]]
-- [[https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext][Linkedin]]
-- [[https://developer.okta.com/docs/reference/api/oidc/][Okta]]
 - [[https://api.stackexchange.com/docs/authentication][StackExchange]]
   - [[https://stackapps.com/apps/oauth][StackExchange Apps page]]
 - [[https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code][Twitter]]

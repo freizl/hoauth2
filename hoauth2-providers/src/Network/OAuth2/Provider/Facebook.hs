@@ -4,6 +4,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-- | [Facebook Login](http://developers.facebook.com/docs/facebook-login/)
+--
 module Network.OAuth2.Provider.Facebook where
 
 import Data.Aeson
