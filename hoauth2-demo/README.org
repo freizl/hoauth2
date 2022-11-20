@@ -1,3 +1,17 @@
 #+TITLE: README
 
 Sample Application that demonstrates the usage of [[../hoauth2-providers][hoauth2-providers]] to implement social login flow.
+
+* Run the App
+1. Copy ~sample.env.json~ to ~.env.json~ for modify it properly.
+   a. The structure is like this. The key is App name that each IdP in ~hoauth2-providers~ has defined a name.
+      #+begin_example
+   "the-app-name": {
+     "clientId": "xxx",
+     "clientSecret": "xxx",
+     "scopes": ""
+   }
+      #+end_example
+   b. ~scopes~ are optional. When omit, use default scopes defined in each IdP from ~hoauth2-providers~. Otherwise, combine with default scopes.
+
+2. run ~make start~

@@ -190,13 +190,13 @@ isSupportPkce AuthorizationCodeIdpApplication {..} =
         , "twitter.com"
         ]
 
--- TODO: use Paths_ module for better to find the file?
 envFilePath :: String
 envFilePath = ".env.json"
 
 readEnvFile :: MonadIO m => ExceptT Text m Env.EnvConfig
 readEnvFile = liftIO $ do
-  envFileE <- doesFileExist envFilePath
+  pwd <- getCurrentDirectory
+  envFileE <- doesFileExist (pwd <> "/" <> envFilePath)
   if envFileE
     then do
       putStrLn "Found .env.json"
