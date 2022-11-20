@@ -1,5 +1,0 @@
-#+title: Readme
-
-* Introduce
-
-See [details here](https://hackage.haskell.org/package/hoauth2-tutorial-0.1.1/docs/HOAuth2Tutorial.html)

@@ -1,0 +1,5 @@
+* Introduction
+
+An tutorial for using ~hoauth2~ to implement the social login flow using Auth0 as Identity Provider.
+
+See details in the ~src/HOAuth2Tutorial.hs~ or [[https://hackage.haskell.org/package/hoauth2-tutorial-0.2/docs/HOAuth2Tutorial.html][haddock]].

@@ -1,5 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+-- | [AzureAD oauth2 flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
+--
 module Network.OAuth2.Provider.AzureAD where
 
 import Data.Aeson

@@ -1,0 +1,5 @@
+* Introduction
+
+A tutorial to demonstrate how to use ~hoauth2-providers~ module to implement social login flow.
+
+See details ~src/HOAuth2ProvidersTutorial.hs~ in or [[https://hackage.haskell.org/package/hoauth2-providers-tutorial-0.2/docs/HOAuth2ProvidersTutorial.html][haddock]].

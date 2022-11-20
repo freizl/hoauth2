@@ -4,7 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- | https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
+-- | [Twitter OAuth2 guide](https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code)
 module Network.OAuth2.Provider.Twitter where
 
 import Data.Aeson

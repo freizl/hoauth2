@@ -37,8 +37,11 @@
 -- Firstly, initialize your IdP (use google as example) and the application.
 --
 -- @
+-- {-# LANGUAGE DataKinds #-}
+--
 -- data Google = Google deriving (Eq, Show)
--- googleIdp = Idp Google
+-- googleIdp :: Idp Google
+-- googleIdp =
 --   Idp
 --     { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google),
 --       idpAuthorizeEndpoint = [uri|https:\/\/accounts.google.com\/o\/oauth2\/v2\/auth|],
