@@ -13,7 +13,6 @@
 --   * [Auth0 Authorize Application](https://auth0.com/docs/api/authentication#authorize-application)
 --
 --   * [OAuth 2.0 Authorization Framework](https://auth0.com/docs/authenticate/protocols/oauth)
---
 module Network.OAuth2.Provider.Auth0 where
 
 import Control.Monad.IO.Class
