@@ -1,3 +1,7 @@
+
+See [[./src/Network/OAuth2/Provider]] the list of supported Identity Providers.
+
+
 * Supported IdP list
 
 - [[https://auth0.com/docs/authorization/protocols/protocol-oauth2][Auth0]]
