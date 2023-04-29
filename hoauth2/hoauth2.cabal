@@ -16,7 +16,7 @@ copyright:          Haisheng Wu
 category:           Network
 build-type:         Simple
 stability:          Beta
-tested-with:        GHC <=9.2.2
+tested-with:        GHC <=9.6.1
 extra-source-files: README.org
 
 source-repository head
@@ -66,7 +66,7 @@ library
     , memory                ^>=0.18
     , microlens             ^>=0.4.0
     , text                  ^>=2.0
-    , transformers          ^>=0.5
+    , transformers          ^>=0.6
     , uri-bytestring        >=0.2.3  && <0.4
     , uri-bytestring-aeson  ^>=0.1
 
