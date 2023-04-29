@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["9.4.4", "9.2.4", "8.10.7"]
+        ghc: ["9.6.1", "9.2.7", "8.10.7"]
         cabal: ["3.8"]
     name: Test hoauth2 on GHC ${{ matrix.ghc }}
 
