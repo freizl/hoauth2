@@ -3,6 +3,7 @@
 module Network.OIDC.WellKnown where
 
 import Control.Monad.Except
+import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Bifunctor
 import Data.ByteString.Lazy (ByteString)
