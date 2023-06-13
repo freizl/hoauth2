@@ -4,9 +4,6 @@ c:
 	cabal clean
 
 b:
-	cabal build -j --enable-tests all
-
-build-ide:
 	cabal build -j --enable-tests all --ghc-options="-fwrite-ide-info"
 
 rb: c b
@@ -54,6 +51,11 @@ ci-lint:
 ###############################################################################
 #                                    HIEDB                                    #
 ###############################################################################
+clean-hindex:
+	rm -f .hiedb
+
+mk-hindex:
+	hiedb -D .hiedb index dist-newstyle/
 #
 # mk-html:
 # 	hiedb -D .hiedb html t:GrantTypeFlow:Network.OAuth2.Experiment.Types:hoauth2-2.5.0-inplace
