@@ -81,8 +81,6 @@ toResponseTypeParam _ = Map.singleton "response_type" (toResponseTypeValue @a)
 
 -------------------------------------------------------------------------------
 
-newtype UrnOAuthParam a = UrnOAuthParam a
-
 -- | Grant type query parameter has association with 'GrantTypeFlow' but not completely strict.
 --
 -- e.g. Both 'AuthorizationCode' and 'ResourceOwnerPassword' flow could support refresh token flow.
