@@ -15,7 +15,7 @@ paramValue key = fmap snd . filter (hasParam key)
 hasParam :: Text -> Param -> Bool
 hasParam t = (== t) . fst
 
-parseValue :: Aeson.FromJSON a => Maybe Aeson.Value -> Maybe a
+parseValue :: (Aeson.FromJSON a) => Maybe Aeson.Value -> Maybe a
 parseValue Nothing = Nothing
 parseValue (Just a) = case Aeson.fromJSON a of
   Aeson.Error _ -> Nothing

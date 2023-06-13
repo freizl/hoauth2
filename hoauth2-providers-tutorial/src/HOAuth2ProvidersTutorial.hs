@@ -23,19 +23,16 @@ import Network.OAuth.OAuth2 (
   OAuth2Token (accessToken),
   TokenRequestError,
  )
-import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Auth0 (
-  Auth0,
-  Auth0User (Auth0User, email, name, sub),
-  defaultAuth0App,
-  defaultAuth0Idp,
- )
-import Network.OAuth2.Provider.Google (
-  Google,
-  GoogleUser (GoogleUser, email, id, name),
-  defaultGoogleApp,
-  defaultGoogleIdp,
- )
+import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest
+import Network.OAuth2.Experiment.Flows.TokenRequest
+import Network.OAuth2.Experiment.Flows.UserInfoRequest
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode (Application (..))
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
+import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..))
+import Network.OAuth2.Provider.Auth0 qualified as Auth0
+import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
+import Network.OAuth2.Provider.Google qualified as Google
 import URI.ByteString (URI, serializeURIRef')
 import URI.ByteString.QQ (uri)
 import Web.Scotty (ActionM, scotty)
@@ -48,38 +45,40 @@ import Prelude hiding (id)
 
 ------------------------------
 
-testAuth0App :: IdpApplication 'AuthorizationCode Auth0
+testAuth0App :: IdpApplication AuthorizationCode.Application Auth0
 testAuth0App =
-  (defaultAuth0App testAuth0Idp)
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppAuthorizeState = AuthorizeState ("auth0." <> randomStateValue)
-    , idpAppScope = Set.fromList ["openid", "email", "profile"]
-    , idpAppRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
-    , idpAppName = "foo-auth0-app"
-    }
+  let application =
+        Auth0.defaultAuth0App
+          { acClientId = ""
+          , acClientSecret = ""
+          , acAuthorizeState = AuthorizeState ("auth0." <> randomStateValue)
+          , acScope = Set.fromList ["openid", "email", "profile"]
+          , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
+          , acName = "foo-auth0-app"
+          }
+      idp = testAuth0Idp
+   in IdpApplication {..}
 
 testAuth0Idp :: Idp Auth0
 testAuth0Idp =
-  defaultAuth0Idp
+  Auth0.defaultAuth0Idp
     { idpUserInfoEndpoint = [uri|https://freizl.auth0.com/userinfo|]
     , idpAuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|]
     , idpTokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
     }
 
-testGoogleIdp :: Idp Google
-testGoogleIdp = defaultGoogleIdp
-
-testGoogleApp :: IdpApplication 'AuthorizationCode Google
+testGoogleApp :: IdpApplication AuthorizationCode.Application Google
 testGoogleApp =
-  defaultGoogleApp
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppAuthorizeState = AuthorizeState ("google." <> randomStateValue)
-    , idpAppRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
-    , idpAppName = "foo-google-app"
-    , idp = testGoogleIdp
-    }
+  let application =
+        Google.defaultGoogleApp
+          { acClientId = ""
+          , acClientSecret = ""
+          , acAuthorizeState = AuthorizeState ("google." <> randomStateValue)
+          , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
+          , acName = "foo-google-app"
+          }
+      idp = Google.defaultGoogleIdp
+   in IdpApplication {..}
 
 -- | You'll need to find out an better way to create @state@
 -- which is recommended in <https://www.rfc-editor.org/rfc/rfc6749#section-10.12>
@@ -180,7 +179,7 @@ handleAuth0Callback :: ExchangeToken -> ExceptT TL.Text IO DemoUser
 handleAuth0Callback code = do
   let idpApp = testAuth0App
   mgr <- liftIO $ newManager tlsManagerSettings
-  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
+  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr (Just code))
   Auth0User {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
@@ -188,7 +187,7 @@ handleGoogleCallback :: ExchangeToken -> ExceptT TL.Text IO DemoUser
 handleGoogleCallback code = do
   let idpApp = testGoogleApp
   mgr <- liftIO $ newManager tlsManagerSettings
-  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
+  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr (Just code))
   GoogleUser {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
@@ -220,7 +219,7 @@ paramValue key params =
     hasParam t = (== t) . fst
 
 -- | Lift ExceptT to ActionM which is basically the handler Monad in Scotty.
-excepttToActionM :: Show a => ExceptT TL.Text IO a -> ActionM a
+excepttToActionM :: (Show a) => ExceptT TL.Text IO a -> ActionM a
 excepttToActionM e = do
   result <- liftIO $ runExceptT e
   either Scotty.raise pure result

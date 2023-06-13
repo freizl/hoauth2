@@ -22,8 +22,8 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
@@ -32,18 +32,17 @@ data Auth0 = Auth0
 
 type instance IdpUserInfo Auth0 = Auth0User
 
-defaultAuth0App :: Idp Auth0 -> IdpApplication 'AuthorizationCode Auth0
-defaultAuth0App i =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["openid", "profile", "email", "offline_access"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-auth0-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = i
+defaultAuth0App :: AuthorizationCode.Application
+defaultAuth0App =
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["openid", "profile", "email", "offline_access"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-auth0-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultAuth0Idp :: Idp Auth0
@@ -59,7 +58,7 @@ defaultAuth0Idp =
     }
 
 mkAuth0Idp ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Full domain with no http protocol. e.g. @foo.auth0.com@
   Text ->
   ExceptT Text m (Idp Auth0)

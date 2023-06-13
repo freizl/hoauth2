@@ -31,7 +31,7 @@ data PkceRequestParam = PkceRequestParam
   -- https://datatracker.ietf.org/doc/html/rfc7636#section-4.3
   }
 
-mkPkceParam :: MonadIO m => m PkceRequestParam
+mkPkceParam :: (MonadIO m) => m PkceRequestParam
 mkPkceParam = do
   codeV <- genCodeVerifier
   pure
@@ -44,7 +44,7 @@ mkPkceParam = do
 encodeCodeVerifier :: BS.ByteString -> Text
 encodeCodeVerifier = B64.encodeBase64Unpadded . BS.pack . ByteArray.unpack . hashSHA256
 
-genCodeVerifier :: MonadIO m => m BS.ByteString
+genCodeVerifier :: (MonadIO m) => m BS.ByteString
 genCodeVerifier = liftIO $ getBytesInternal BS.empty
 
 cvMaxLen :: Int

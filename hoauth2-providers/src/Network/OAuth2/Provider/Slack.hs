@@ -14,26 +14,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Slack = Slack deriving (Show, Eq)
 
 type instance IdpUserInfo Slack = SlackUser
 
-defaultSlackApp :: IdpApplication 'AuthorizationCode Slack
+defaultSlackApp :: AuthorizationCode.Application
 defaultSlackApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["openid", "profile"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idpAppName = "default-slack-App"
-    , idp = defaultSlackIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["openid", "profile"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acName = "default-slack-App"
     }
 
 -- https://slack.com/.well-known/openid-configuration

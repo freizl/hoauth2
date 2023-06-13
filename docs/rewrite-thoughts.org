@@ -183,6 +183,97 @@ Then could conduit api request (or generate /authorize URI) base on
   - toQueryParam ++ extra parameter
 #+end_example
 
+* Actual ending
+
+- summary
+
+#+begin_example
+data GrantTypeFlow = AuthCode | ResourceOwnerPassword | ClientCredentials | JwtBearer
+data GrantTypeValue
+  = GTAuthorizationCode
+  | GTPassword
+  | GTClientCredentials
+  | GTRefreshToken
+  | GTJwtBearer
+
+toQueryParam :: GrantTypeValue -> Map Text Text
+toQueryParam ...
+
+data instance IdpApplication 'AuthorizationCode i = AuthorizationCodeIdpApplication
+  { idpAppName :: Text
+  , idpAppClientId :: ClientId
+  , idpAppClientSecret :: ClientSecret
+  , idpAppScope :: Set Scope
+  , idpAppRedirectUri :: URI
+  , idpAppAuthorizeState :: AuthorizeState
+  , idpAppAuthorizeRequestExtraParams :: Map Text Text
+  -- ^ Though technically one key can have multiple value in query, but who actually does it?!
+  , idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  , idp :: Idp i
+  }
+
+----- Auth Code Request
+
+data AuthorizationRequest 'AuthorizationCode = AuthorizationCodeAuthorizationRequest
+    { scope :: Set Scope
+    , state :: AuthorizeState
+    , clientId :: ClientId
+    , redirectUri :: Maybe RedirectUri
+    }
+
+mkAuthorizeRequestParameter :: IdpApplication 'AuthorizationCode i -> AuthorizationRequest 'AuthorizationCode
+-- | this is URI to which redirect the user for authentication
+mkAuthorizeRequest =
+   idpAuthorizeEndpoint +
+   AuthorizationCodeAuthorizationRequest +
+   idpAppAuthorizeRequestExtraParams
+
+----- Token Request
+  data TokenRequest 'AuthorizationCode = AuthorizationCodeTokenRequest
+    { code :: ExchangeToken
+    , clientId :: ClientId
+    , grantType :: GrantTypeValue -- GTAuthorizationCode
+    , redirectUri :: RedirectUri
+    }
+  mkTokenRequest ::
+    IdpApplication 'AuthorizationCode i ->
+    ExchangeToken ->
+    TokenRequest 'AuthorizationCode
+
+  then create request body using
+    - result of mkTokenRequest
+    - may include client_secret in the header
+
+mkPkceAuthorizeRequest
+  - similar to HasAuthorizeRequest
+  - but need to include extra parameter in the header
+  - plus return the codeVerifier
+
+conduitPkceTokenRequest
+  - similar to conduitTokenRequest
+  - but include codeVerifier in the request body
+
+
+data RefreshTokenRequest 'AuthorizationCode = AuthorizationCodeTokenRefreshRequest
+    { refreshToken :: OAuth2.RefreshToken
+    , grantType :: GrantTypeValue -- GTRefreshToken
+    , scope :: Set Scope
+    }
+conduitRefreshTokenRequest
+
+#+end_example
+
+- [X] why ~Idp a~ has function for fetching user info?
+  - IdP has different protocol to fetch user info: GET v.s POST; where to set Authentication info;
+- [ ] can ~IdpApplication~ be data type instead of data family?
+  #+begin_src haskell
+data IdpApplication a =
+  IdpApplication { grantTypeFlow :: GrantTypeFlow
+                 , idp :: Idp i
+                 , application :: a
+                 }
+  #+end_src
+
 * Reference
 1. [[https://datatracker.ietf.org/doc/html/rfc6749][The OAuth 2.0 Authorization Framework]]
 2. [[https://datatracker.ietf.org/doc/html/rfc7636][PKCE]]

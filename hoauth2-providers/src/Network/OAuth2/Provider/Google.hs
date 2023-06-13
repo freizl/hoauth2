@@ -26,8 +26,9 @@ import GHC.Generics
 import Jose.Jwa
 import Jose.Jws
 import Jose.Jwt
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
+import Network.OAuth2.Experiment.GrantType.JwtBearer qualified as JwtBearer
 import OpenSSL.EVP.PKey (toKeyPair)
 import OpenSSL.PEM (
   PemPasswordSupply (PwNone),
@@ -46,25 +47,27 @@ type instance IdpUserInfo Google = GoogleUser
 
 -- * Authorization Code flow
 
-defaultGoogleApp :: IdpApplication 'AuthorizationCode Google
+defaultGoogleApp :: AuthorizationCode.Application
 defaultGoogleApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope =
-        Set.fromList
-          [ "https://www.googleapis.com/auth/userinfo.email"
-          , "https://www.googleapis.com/auth/userinfo.profile"
-          ]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-google-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultGoogleIdp
+  AuthorizationCode.Application
+    { acName = "default-google-App"
+    , acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost|]
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 -- * Service Account
+
+defaultServiceAccountApp :: Jwt -> JwtBearer.Application
+defaultServiceAccountApp jwt =
+  JwtBearer.Application
+    { jbName = "google-sa-app"
+    , jbJwtAssertion = unJwt jwt
+    }
 
 -- | Service account key (in JSON format) that download from google
 data GoogleServiceAccountKey = GoogleServiceAccountKey
@@ -138,14 +141,6 @@ readPemRsaKey pemStr = do
           , private_qinv = fromMaybe 0 (rsaIQMP k)
           }
     Nothing -> Left "unable to parse PEM to RSA key"
-
-defaultServiceAccountApp :: Jwt -> IdpApplication 'JwtBearer Google
-defaultServiceAccountApp jwt =
-  JwtBearerIdpApplication
-    { idpAppName = "google-sa-app"
-    , idpAppJwt = unJwt jwt
-    , idp = defaultGoogleIdp
-    }
 
 -- * IDP
 

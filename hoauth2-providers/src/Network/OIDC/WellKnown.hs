@@ -42,7 +42,7 @@ wellknownUrl :: TL.Text
 wellknownUrl = "/.well-known/openid-configuration"
 
 fetchWellKnown ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Domain
   TL.Text ->
   ExceptT Text m OpenIDConfiguration
@@ -52,7 +52,7 @@ fetchWellKnown domain = ExceptT $ do
   resp <- httpLbs req
   return (handleWellKnownResponse resp)
 
-fetchWellKnownUris :: MonadIO m => TL.Text -> ExceptT Text m OpenIDConfigurationUris
+fetchWellKnownUris :: (MonadIO m) => TL.Text -> ExceptT Text m OpenIDConfigurationUris
 fetchWellKnownUris domain = do
   OpenIDConfiguration {..} <- fetchWellKnown domain
   withExceptT (TL.pack . show) $ do

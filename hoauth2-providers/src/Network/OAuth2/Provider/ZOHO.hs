@@ -12,26 +12,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data ZOHO = ZOHO deriving (Eq, Show)
 
 type instance IdpUserInfo ZOHO = ZOHOUserResp
 
-defaultZohoApp :: IdpApplication 'AuthorizationCode ZOHO
+defaultZohoApp :: AuthorizationCode.Application
 defaultZohoApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["ZohoCRM.users.READ"]
-    , idpAppAuthorizeExtraParams = Map.fromList [("access_type", "offline"), ("prompt", "consent")]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppRedirectUri = [uri|http://localhost/oauth2/callback|]
-    , idpAppName = "default-zoho-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultZohoIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["ZohoCRM.users.READ"]
+    , acAuthorizeRequestExtraParams = Map.fromList [("access_type", "offline"), ("prompt", "consent")]
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost/oauth2/callback|]
+    , acName = "default-zoho-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultZohoIdp :: Idp ZOHO

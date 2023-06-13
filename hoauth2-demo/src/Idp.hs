@@ -30,6 +30,11 @@ import Jose.Jwt
 import Lens.Micro
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode (Application (..))
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
+import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
+import Network.OAuth2.Experiment.GrantType.JwtBearer qualified as JwtBearer
+import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Dropbox qualified as IDropbox
@@ -54,43 +59,42 @@ import Prelude hiding (id)
 defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
-createAuthorizationApps :: MonadIO m => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
+createAuthorizationApps :: (MonadIO m) => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
 createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
   configParams <- readEnvFile
-  let initIdpAppConfig :: IdpApplication 'AuthorizationCode i -> IdpApplication 'AuthorizationCode i
-      initIdpAppConfig idpAppConfig@AuthorizationCodeIdpApplication {..} =
+  let initIdpAppConfig :: Idp i -> AuthorizationCode.Application -> IdpApplication AuthorizationCode.Application i
+      initIdpAppConfig i idpAppConfig =
         case Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower $ getIdpAppName idpAppConfig) configParams of
-          Nothing -> idpAppConfig
+          Nothing -> IdpApplication {idp = i, application = idpAppConfig}
           Just config ->
-            idpAppConfig
-              { idpAppClientId = ClientId $ Env.clientId config
-              , idpAppClientSecret = ClientSecret $ Env.clientSecret config
-              , idpAppRedirectUri = defaultOAuth2RedirectUri
-              , idpAppScope = Set.unions [idpAppScope, Set.map Scope (Set.fromList (fromMaybe [] (Env.scopes config)))]
-              , idpAppAuthorizeState = AuthorizeState (idpAppName <> ".hoauth2-demo-app-123")
-              }
+            let oldApp = idpAppConfig
+                newApp =
+                  oldApp
+                    { acClientId = ClientId $ Env.clientId config
+                    , acClientSecret = ClientSecret $ Env.clientSecret config
+                    , acRedirectUri = defaultOAuth2RedirectUri
+                    , acScope = Set.unions [acScope oldApp, Set.map Scope (Set.fromList (fromMaybe [] (Env.scopes config)))]
+                    , acAuthorizeState = AuthorizeState (acName oldApp <> ".hoauth2-demo-app-123")
+                    }
+             in IdpApplication {idp = i, application = newApp}
   pure
-    [ DemoAuthorizationApp (initIdpAppConfig IAzureAD.defaultAzureADApp)
-    , DemoAuthorizationApp (initIdpAppConfig (IAuth0.defaultAuth0App myAuth0Idp))
-    , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookApp)
-    , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitApp)
-    , DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubApp)
-    , DemoAuthorizationApp (initIdpAppConfig IDropbox.defaultDropboxApp)
-    , DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleApp)
-    , DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinApp)
-    , DemoAuthorizationApp (initIdpAppConfig (IOkta.defaultOktaApp myOktaIdp))
-    , DemoAuthorizationApp (initIdpAppConfig ITwitter.defaultTwitterApp)
-    , DemoAuthorizationApp (initIdpAppConfig ISlack.defaultSlackApp)
-    , DemoAuthorizationApp (initIdpAppConfig IWeibo.defaultWeiboApp)
-    , DemoAuthorizationApp (initIdpAppConfig IZOHO.defaultZohoApp)
-    , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeApp)
+    [ DemoAuthorizationApp (initIdpAppConfig IAzureAD.defaultAzureADIdp IAzureAD.defaultAzureADApp)
+    , DemoAuthorizationApp (initIdpAppConfig myAuth0Idp IAuth0.defaultAuth0App)
+    , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookIdp IFacebook.defaultFacebookApp)
+    , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitIdp IFitbit.defaultFitbitApp)
+    , DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubIdp IGithub.defaultGithubApp)
+    , DemoAuthorizationApp (initIdpAppConfig IDropbox.defaultDropboxIdp IDropbox.defaultDropboxApp)
+    , DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleIdp IGoogle.defaultGoogleApp)
+    , DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinIdp ILinkedin.defaultLinkedinApp)
+    , DemoAuthorizationApp (initIdpAppConfig myOktaIdp IOkta.defaultOktaApp)
+    , DemoAuthorizationApp (initIdpAppConfig ITwitter.defaultTwitterIdp ITwitter.defaultTwitterApp)
+    , DemoAuthorizationApp (initIdpAppConfig ISlack.defaultSlackIdp ISlack.defaultSlackApp)
+    , DemoAuthorizationApp (initIdpAppConfig IWeibo.defaultWeiboIdp IWeibo.defaultWeiboApp)
+    , DemoAuthorizationApp (initIdpAppConfig IZOHO.defaultZohoIdp IZOHO.defaultZohoApp)
+    , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeIdp IStackExchange.defaultStackExchangeApp)
     ]
 
-googleServiceAccountApp ::
-  ExceptT
-    Text
-    IO
-    (IdpApplication 'JwtBearer IGoogle.Google)
+googleServiceAccountApp :: ExceptT Text IO (IdpApplication JwtBearer.Application IGoogle.Google)
 googleServiceAccountApp = do
   IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
   pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
@@ -109,19 +113,22 @@ googleServiceAccountApp = do
             )
             IGoogle.defaultGoogleIdp
       )
-  pure $ IGoogle.defaultServiceAccountApp jwt
+  pure $ IdpApplication {idp = IGoogle.defaultGoogleIdp, application = IGoogle.defaultServiceAccountApp jwt}
 
-oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication 'ResourceOwnerPassword IOkta.Okta
+oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication ResourceOwnerPassword.Application IOkta.Okta
 oktaPasswordGrantApp i =
-  ResourceOwnerPasswordIDPApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppName = "okta-demo-password-grant-app"
-    , idpAppScope = Set.fromList ["openid", "profile"]
-    , idpAppUserName = ""
-    , idpAppPassword = ""
-    , idpAppTokenRequestExtraParams = Map.empty
-    , idp = i
+  IdpApplication
+    { idp = i
+    , application =
+        ResourceOwnerPassword.Application
+          { ropClientId = ""
+          , ropClientSecret = ""
+          , ropName = "okta-demo-password-grant-app"
+          , ropScope = Set.fromList ["openid", "profile"]
+          , ropUserName = ""
+          , ropPassword = ""
+          , ropTokenRequestExtraParams = Map.empty
+          }
     }
 
 -- Base on the document, it works well with custom Athourization Server
@@ -130,7 +137,7 @@ oktaPasswordGrantApp i =
 -- With Org AS, got this error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
-oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication 'ClientCredentials IOkta.Okta)
+oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication ClientCredentials.Application IOkta.Okta)
 oktaClientCredentialsGrantApp i = do
   let clientId = "0oa9mbklxn2Ac0oJ24x7"
   keyJsonStr <- BS.readFile ".okta-key.json"
@@ -140,48 +147,57 @@ oktaClientCredentialsGrantApp i = do
       case ejwt of
         Right jwt ->
           pure
-            ClientCredentialsIDPApplication
-              { idpAppClientId = clientId
-              , idpAppClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
-              , idpAppTokenRequestAuthenticationMethod = ClientAssertionJwt
-              , idpAppName = "okta-demo-cc-grant-jwt-app"
-              , -- , idpAppScope = Set.fromList ["hw-test"]
-                idpAppScope = Set.fromList ["okta.users.read"]
-              , idpAppTokenRequestExtraParams = Map.empty
-              , idp = i
+            IdpApplication
+              { idp = i
+              , application =
+                  ClientCredentials.Application
+                    { ccClientId = clientId
+                    , ccClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
+                    , ccTokenRequestAuthenticationMethod = ClientAssertionJwt
+                    , ccName = "okta-demo-cc-grant-jwt-app"
+                    , -- , idpAppScope = Set.fromList ["hw-test"]
+                      ccScope = Set.fromList ["okta.users.read"]
+                    , ccTokenRequestExtraParams = Map.empty
+                    }
               }
         Left e -> Prelude.error e
     Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
-auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ResourceOwnerPassword IAuth0.Auth0
+auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication ResourceOwnerPassword.Application IAuth0.Auth0
 auth0PasswordGrantApp i =
-  ResourceOwnerPasswordIDPApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppName = "auth0-demo-password-grant-app"
-    , idpAppScope = Set.fromList ["openid", "profile", "email"]
-    , idpAppUserName = "test"
-    , idpAppPassword = ""
-    , idpAppTokenRequestExtraParams = Map.empty
-    , idp = i
+  IdpApplication
+    { idp = i
+    , application =
+        ResourceOwnerPassword.Application
+          { ropClientId = ""
+          , ropClientSecret = ""
+          , ropName = "auth0-demo-password-grant-app"
+          , ropScope = Set.fromList ["openid", "profile", "email"]
+          , ropUserName = "test"
+          , ropPassword = ""
+          , ropTokenRequestExtraParams = Map.empty
+          }
     }
 
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
-auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication 'ClientCredentials IAuth0.Auth0
+auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication ClientCredentials.Application IAuth0.Auth0
 auth0ClientCredentialsGrantApp i =
-  ClientCredentialsIDPApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
-    , idpAppName = "auth0-demo-cc-grant-app"
-    , idpAppScope = Set.fromList ["read:users"]
-    , idpAppTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
-    , idp = i
+  IdpApplication
+    { idp = i
+    , application =
+        ClientCredentials.Application
+          { ccClientId = ""
+          , ccClientSecret = ""
+          , ccTokenRequestAuthenticationMethod = ClientSecretPost
+          , ccName = "auth0-demo-cc-grant-app"
+          , ccScope = Set.fromList ["read:users"]
+          , ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
+          }
     }
 
-isSupportPkce :: forall a i. 'AuthorizationCode ~ a => IdpApplication a i -> Bool
-isSupportPkce AuthorizationCodeIdpApplication {..} =
+isSupportPkce :: IdpApplication a i -> Bool
+isSupportPkce IdpApplication {..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
    in any
         (`BS.isInfixOf` hostStr)
@@ -194,7 +210,7 @@ isSupportPkce AuthorizationCodeIdpApplication {..} =
 envFilePath :: String
 envFilePath = ".env.json"
 
-readEnvFile :: MonadIO m => ExceptT Text m Env.EnvConfig
+readEnvFile :: (MonadIO m) => ExceptT Text m Env.EnvConfig
 readEnvFile = liftIO $ do
   pwd <- getCurrentDirectory
   envFileE <- doesFileExist (pwd <> "/" <> envFilePath)
@@ -203,16 +219,16 @@ readEnvFile = liftIO $ do
       putStrLn "Found .env.json"
       fileContent <- BS.readFile envFilePath
       case Aeson.eitherDecodeStrict fileContent of
-        Left err -> print err >> return Aeson.empty
+        Left err -> print err >> Prelude.error "Unable to parse .env.json"
         Right ec -> return ec
     else return Aeson.empty
 
-initIdps :: MonadIO m => CacheStore -> (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m ()
+initIdps :: (MonadIO m) => CacheStore -> (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m ()
 initIdps c is = do
   idps <- createAuthorizationApps is
   mapM mkDemoAppEnv idps >>= mapM_ (upsertDemoAppEnv c)
 
-mkDemoAppEnv :: MonadIO m => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
+mkDemoAppEnv :: (MonadIO m) => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
 mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
   re <-
     if isSupportPkce idpAppConfig

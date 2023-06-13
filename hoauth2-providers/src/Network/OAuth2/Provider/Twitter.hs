@@ -13,26 +13,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Twitter = Twitter deriving (Eq, Show)
 
 type instance IdpUserInfo Twitter = TwitterUserResp
 
-defaultTwitterApp :: IdpApplication 'AuthorizationCode Twitter
+defaultTwitterApp :: AuthorizationCode.Application
 defaultTwitterApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["tweet.read", "users.read"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-twitter-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultTwitterIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["tweet.read", "users.read"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-twitter-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acAuthorizeRequestExtraParams = Map.empty
     }
 
 defaultTwitterIdp :: Idp Twitter

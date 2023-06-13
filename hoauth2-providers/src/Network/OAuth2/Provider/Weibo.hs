@@ -8,26 +8,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Weibo = Weibo deriving (Eq, Show)
 
 type instance IdpUserInfo Weibo = WeiboUID
 
-defaultWeiboApp :: IdpApplication 'AuthorizationCode Weibo
+defaultWeiboApp :: AuthorizationCode.Application
 defaultWeiboApp =
-  AuthorizationCodeIdpApplication
-    { idpAppName = "default-weibo-App"
-    , idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultWeiboIdp
+  AuthorizationCode.Application
+    { acName = "default-weibo-App"
+    , acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultWeiboIdp :: Idp Weibo

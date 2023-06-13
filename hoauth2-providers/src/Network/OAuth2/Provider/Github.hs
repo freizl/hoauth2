@@ -12,26 +12,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Github = Github deriving (Eq, Show)
 
 type instance IdpUserInfo Github = GithubUser
 
-defaultGithubApp :: IdpApplication 'AuthorizationCode Github
+defaultGithubApp :: AuthorizationCode.Application
 defaultGithubApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-github-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultGithubIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-github-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultGithubIdp :: Idp Github

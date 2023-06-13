@@ -12,26 +12,25 @@ import Data.Aeson
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Fitbit = Fitbit deriving (Eq, Show)
 
 type instance IdpUserInfo Fitbit = FitbitUser
 
-defaultFitbitApp :: IdpApplication 'AuthorizationCode Fitbit
+defaultFitbitApp :: AuthorizationCode.Application
 defaultFitbitApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.empty
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-fitbit-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultFitbitIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.empty
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-fitbit-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultFitbitIdp :: Idp Fitbit

@@ -12,26 +12,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Dropbox = Dropbox deriving (Eq, Show)
 
 type instance IdpUserInfo Dropbox = DropboxUser
 
-defaultDropboxApp :: IdpApplication 'AuthorizationCode Dropbox
+defaultDropboxApp :: AuthorizationCode.Application
 defaultDropboxApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-dropbox-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultDropboxIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-dropbox-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultDropboxIdp :: Idp Dropbox

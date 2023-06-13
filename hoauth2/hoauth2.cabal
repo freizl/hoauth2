@@ -27,8 +27,6 @@ library
   autogen-modules:    Paths_hoauth2
   other-modules:
     Network.OAuth.OAuth2.Internal
-    Network.OAuth2.Experiment.Pkce
-    Network.OAuth2.Experiment.Types
     Network.OAuth2.Experiment.Utils
     Paths_hoauth2
 
@@ -38,6 +36,16 @@ library
     Network.OAuth.OAuth2.HttpClient
     Network.OAuth.OAuth2.TokenRequest
     Network.OAuth2.Experiment
+    Network.OAuth2.Experiment.CoreTypes
+    Network.OAuth2.Experiment.Pkce
+    Network.OAuth2.Experiment.Flows.AuthorizationRequest
+    Network.OAuth2.Experiment.Flows.RefreshTokenRequest
+    Network.OAuth2.Experiment.Flows.TokenRequest
+    Network.OAuth2.Experiment.Flows.UserInfoRequest
+    Network.OAuth2.Experiment.GrantType.ClientCredentials
+    Network.OAuth2.Experiment.GrantType.JwtBearer
+    Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword
+    Network.OAuth2.Experiment.GrantType.AuthorizationCode
 
   default-extensions:
     DataKinds

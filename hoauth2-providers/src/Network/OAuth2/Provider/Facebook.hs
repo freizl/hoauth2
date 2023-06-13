@@ -12,26 +12,25 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Facebook = Facebook deriving (Eq, Show)
 
 type instance IdpUserInfo Facebook = FacebookUser
 
-defaultFacebookApp :: IdpApplication 'AuthorizationCode Facebook
+defaultFacebookApp :: AuthorizationCode.Application
 defaultFacebookApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["user_about_me", "email"]
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-facebook-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretPost
-    , idp = defaultFacebookIdp
+  AuthorizationCode.Application
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["user_about_me", "email"]
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-facebook-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
 defaultFacebookIdp :: Idp Facebook

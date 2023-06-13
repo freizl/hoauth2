@@ -2,8 +2,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 
 module Types where
 
@@ -14,6 +12,14 @@ import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest
+import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
+import Network.OAuth2.Experiment.Flows.TokenRequest
+import Network.OAuth2.Experiment.Flows.UserInfoRequest
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
+import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
+import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Dropbox qualified as IDropbox
@@ -128,9 +134,9 @@ data DemoAuthorizationApp
   = forall a b.
     ( HasDemoLoginUser b
     , FromJSON (IdpUserInfo b)
-    , 'AuthorizationCode ~ a
+    , ToQueryParam (TokenRequest a)
+    , ToQueryParam (RefreshTokenRequest a)
     , HasPkceAuthorizeRequest a
-    , HasPkceTokenRequest a
     , HasUserInfoRequest a
     , HasIdpAppName a
     , HasAuthorizeRequest a
@@ -168,7 +174,7 @@ instance Show DemoAppEnv where
   show = TL.unpack . toLabel
 
 toLabel :: DemoAppEnv -> TL.Text
-toLabel (DemoAppEnv (DemoAuthorizationApp idpAppConfig) _) = getIdpAppName idpAppConfig
+toLabel (DemoAppEnv (DemoAuthorizationApp idpAppConfig) _) = getIdpAppName (application idpAppConfig)
 
 -- simplify use case to only allow one idp instance for now.
 instance Eq DemoAppEnv where
@@ -190,7 +196,7 @@ instance ToMustache DemoAppEnv where
       [ "codeFlowUri" ~> authorizeAbsUri
       , "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
-      , "name" ~> TL.unpack (getIdpAppName idpAppConfig)
+      , "name" ~> TL.unpack (getIdpAppName (application idpAppConfig))
       ]
 
 instance ToMustache DemoLoginUser where
@@ -210,17 +216,17 @@ instance ToMustache TemplateData where
 
 -------------------------------------------------------------------------------
 
-class HasIdpAppName (a :: GrantTypeFlow) where
-  getIdpAppName :: IdpApplication a i -> Text
+class HasIdpAppName a where
+  getIdpAppName :: a -> Text
 
-instance HasIdpAppName 'ClientCredentials where
-  getIdpAppName :: IdpApplication 'ClientCredentials i -> Text
-  getIdpAppName ClientCredentialsIDPApplication {..} = idpAppName
+instance HasIdpAppName ClientCredentials.Application where
+  getIdpAppName :: ClientCredentials.Application -> Text
+  getIdpAppName ClientCredentials.Application {..} = ccName
 
-instance HasIdpAppName 'ResourceOwnerPassword where
-  getIdpAppName :: IdpApplication 'ResourceOwnerPassword i -> Text
-  getIdpAppName ResourceOwnerPasswordIDPApplication {..} = idpAppName
+instance HasIdpAppName ResourceOwnerPassword.Application where
+  getIdpAppName :: ResourceOwnerPassword.Application -> Text
+  getIdpAppName ResourceOwnerPassword.Application {..} = ropName
 
-instance HasIdpAppName 'AuthorizationCode where
-  getIdpAppName :: IdpApplication 'AuthorizationCode i -> Text
-  getIdpAppName AuthorizationCodeIdpApplication {..} = idpAppName
+instance HasIdpAppName AuthorizationCode.Application where
+  getIdpAppName :: AuthorizationCode.Application -> Text
+  getIdpAppName AuthorizationCode.Application {..} = acName

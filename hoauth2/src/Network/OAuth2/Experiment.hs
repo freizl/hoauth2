@@ -49,29 +49,31 @@
 --       idpUserInfoEndpoint = [uri|https:\/\/www.googleapis.com\/oauth2\/v2\/userinfo|]
 --     }
 --
--- fooApp :: IdpApplication 'AuthorizationCode Google
+-- fooApp :: AuthorizationCode.Application
 -- fooApp =
---   AuthorizationCodeIdpApplication
---     { idpAppClientId = "xxxxx",
---       idpAppClientSecret = "xxxxx",
---       idpAppScope =
+--   AuthorizationCode.Application
+--     { acClientId = "xxxxx",
+--       acClientSecret = "xxxxx",
+--       acScope =
 --         Set.fromList
 --           [ \"https:\/\/www.googleapis.com\/auth\/userinfo.email\",
 --             \"https:\/\/www.googleapis.com\/auth\/userinfo.profile\"
 --           ],
---       idpAppAuthorizeState = \"CHANGE_ME\",
---       idpAppAuthorizeExtraParams = Map.empty,
---       idpAppRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
---       idpAppName = "default-google-App",
---       idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
---       idp = googleIdp
+--       acAuthorizeState = \"CHANGE_ME\",
+--       acAuthorizeRequestExtraParams = Map.empty,
+--       acRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
+--       acName = "default-google-App",
+--       acTokenRequestAuthenticationMethod = ClientSecretBasic,
 --     }
+--
+-- fooIdpApplication :: IdpApplication AuthorizationCode.Application Google
+-- fooIdpApplication = IdpApplication fooApp googleIdp
 -- @
 --
 -- Secondly, construct the authorize URL.
 --
 -- @
--- authorizeUrl = mkAuthorizeRequest fooApp
+-- authorizeUrl = mkAuthorizeRequest fooIdpApplication
 -- @
 --
 -- Thirdly, after a successful redirect with authorize code,
@@ -79,20 +81,59 @@
 --
 -- @
 -- mgr <- liftIO $ newManager tlsManagerSettings
--- tokenResp <- conduitTokenRequest fooApp mgr authorizeCode
+-- tokenResp <- conduitTokenRequest fooIdpApplication mgr authorizeCode
 -- @
 --
 -- Lastly, you probably like to fetch user info
 --
 -- @
--- conduitUserInfoRequest fooApp mgr (accessToken tokenResp)
+-- conduitUserInfoRequest fooIdpApplication mgr (accessToken tokenResp)
 -- @
 --
--- Also you could find example from @hoauth2-providers-tutorials@ module.
+-- You could also find example from @hoauth2-providers-tutorials@ module.
 module Network.OAuth2.Experiment (
-  module Network.OAuth2.Experiment.Types,
   module Network.OAuth2.Experiment.Pkce,
+  module Network.OAuth2.Experiment.CoreTypes,
+  module Network.OAuth2.Experiment.Flows.AuthorizationRequest,
+  module Network.OAuth2.Experiment.Flows.RefreshTokenRequest,
+  module Network.OAuth2.Experiment.Flows.TokenRequest,
+  module Network.OAuth2.Experiment.Flows.UserInfoRequest,
+  module Network.OAuth.OAuth2,
+  module Network.OAuth.OAuth2.HttpClient,
 ) where
 
-import Network.OAuth2.Experiment.Pkce
-import Network.OAuth2.Experiment.Types
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
+import Network.OAuth.OAuth2.HttpClient (
+  APIAuthenticationMethod (..),
+  authGetBS,
+  authGetBSWithAuthMethod,
+  authGetJSON,
+  authGetJSONWithAuthMethod,
+  authPostBS,
+  authPostBSWithAuthMethod,
+  authPostJSON,
+  authPostJSONWithAuthMethod,
+ )
+import Network.OAuth2.Experiment.CoreTypes (
+  AuthorizeState (..),
+  ClientId (..),
+  ClientSecret (..),
+  Idp (..),
+  IdpApplication (..),
+  IdpUserInfo,
+  Password (..),
+  RedirectUri (..),
+  Scope (..),
+  Username (..),
+ )
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
+import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
+import Network.OAuth2.Experiment.Flows.TokenRequest (conduitPkceTokenRequest, conduitTokenRequest)
+import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
+import Network.OAuth2.Experiment.Pkce (
+  CodeChallenge (..),
+  CodeChallengeMethod (..),
+  CodeVerifier (..),
+  PkceRequestParam (..),
+  mkPkceParam,
+ )

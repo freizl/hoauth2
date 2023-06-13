@@ -278,7 +278,7 @@ paramValue key params =
     hasParam t = (== t) . fst
 
 -- | Lift ExceptT to ActionM which is basically the handler Monad in Scotty.
-excepttToActionM :: Show a => ExceptT TL.Text IO a -> ActionM a
+excepttToActionM :: (Show a) => ExceptT TL.Text IO a -> ActionM a
 excepttToActionM e = do
   result <- liftIO $ runExceptT e
   either Scotty.raise pure result

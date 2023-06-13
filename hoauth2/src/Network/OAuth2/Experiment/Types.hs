@@ -64,12 +64,12 @@ data GrantTypeFlow
 -------------------------------------------------------------------------------
 
 class ToResponseTypeValue (a :: GrantTypeFlow) where
-  toResponseTypeValue :: IsString b => b
+  toResponseTypeValue :: (IsString b) => b
 
 instance ToResponseTypeValue 'AuthorizationCode where
   -- https://www.rfc-editor.org/rfc/rfc6749#section-3.1.1
   -- Only support "authorization code" flow
-  toResponseTypeValue :: IsString b => b
+  toResponseTypeValue :: (IsString b) => b
   toResponseTypeValue = "code"
 
 toResponseTypeParam :: forall a b req. (ToResponseTypeValue a, IsString b) => req a -> Map b b
@@ -165,8 +165,8 @@ instance IsString Password where
 class ToQueryParam a where
   toQueryParam :: a -> Map Text Text
 
-instance ToQueryParam a => ToQueryParam (Maybe a) where
-  toQueryParam :: ToQueryParam a => Maybe a -> Map Text Text
+instance (ToQueryParam a) => ToQueryParam (Maybe a) where
+  toQueryParam :: (ToQueryParam a) => Maybe a -> Map Text Text
   toQueryParam Nothing = Map.empty
   toQueryParam (Just a) = toQueryParam a
 
@@ -264,7 +264,7 @@ class HasTokenRequest (a :: GrantTypeFlow) where
     WithExchangeToken a (ExceptT TokenRequestError m OAuth2Token)
 
 class HasPkceAuthorizeRequest (a :: GrantTypeFlow) where
-  mkPkceAuthorizeRequest :: MonadIO m => IdpApplication a i -> m (TL.Text, CodeVerifier)
+  mkPkceAuthorizeRequest :: (MonadIO m) => IdpApplication a i -> m (TL.Text, CodeVerifier)
 
 class HasPkceTokenRequest (b :: GrantTypeFlow) where
   conduitPkceTokenRequest ::
@@ -296,7 +296,7 @@ type family IdpUserInfo a
 
 class HasUserInfoRequest (a :: GrantTypeFlow) where
   conduitUserInfoRequest ::
-    FromJSON (IdpUserInfo i) =>
+    (FromJSON (IdpUserInfo i)) =>
     IdpApplication a i ->
     Manager ->
     AccessToken ->
@@ -393,8 +393,8 @@ instance HasTokenRequest 'AuthorizationCode where
   -- \| https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
   data TokenRequest 'AuthorizationCode = AuthorizationCodeTokenRequest
     { code :: ExchangeToken
-    , clientId :: ClientId
-    , grantType :: GrantTypeValue
+    , -- , clientId :: ClientId
+      grantType :: GrantTypeValue
     , redirectUri :: RedirectUri
     }
   type WithExchangeToken 'AuthorizationCode a = ExchangeToken -> a
@@ -406,8 +406,8 @@ instance HasTokenRequest 'AuthorizationCode where
   mkTokenRequest AuthorizationCodeIdpApplication {..} authCode =
     AuthorizationCodeTokenRequest
       { code = authCode
-      , clientId = idpAppClientId
-      , grantType = GTAuthorizationCode
+      , -- , clientId = idpAppClientId
+        grantType = GTAuthorizationCode
       , redirectUri = RedirectUri idpAppRedirectUri
       }
   conduitTokenRequest ::
@@ -432,7 +432,7 @@ instance HasTokenRequest 'AuthorizationCode where
      in doJSONPostRequest mgr key (idpTokenEndpoint idp) body
 
 instance HasPkceAuthorizeRequest 'AuthorizationCode where
-  mkPkceAuthorizeRequest :: MonadIO m => IdpApplication 'AuthorizationCode i -> m (Text, CodeVerifier)
+  mkPkceAuthorizeRequest :: (MonadIO m) => IdpApplication 'AuthorizationCode i -> m (Text, CodeVerifier)
   mkPkceAuthorizeRequest idpAppConfig@AuthorizationCodeIdpApplication {..} = do
     PkceRequestParam {..} <- mkPkceParam
     let req = mkAuthorizeRequestParameter idpAppConfig
@@ -454,7 +454,7 @@ instance HasPkceAuthorizeRequest 'AuthorizationCode where
 
 instance HasPkceTokenRequest 'AuthorizationCode where
   conduitPkceTokenRequest ::
-    MonadIO m =>
+    (MonadIO m) =>
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     (ExchangeToken, CodeVerifier) ->
@@ -502,7 +502,7 @@ instance HasRefreshTokenRequest 'AuthorizationCode where
 
 instance HasUserInfoRequest 'AuthorizationCode where
   conduitUserInfoRequest ::
-    FromJSON (IdpUserInfo i) =>
+    (FromJSON (IdpUserInfo i)) =>
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     AccessToken ->
@@ -667,7 +667,7 @@ instance HasRefreshTokenRequest 'ResourceOwnerPassword where
   mkRefreshTokenRequest = undefined
 
   conduitRefreshTokenRequest ::
-    MonadIO m =>
+    (MonadIO m) =>
     IdpApplication 'ResourceOwnerPassword i ->
     Manager ->
     OAuth2.RefreshToken ->
