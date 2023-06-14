@@ -6,8 +6,8 @@ import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
-import Network.OAuth2.Experiment.CoreTypes
 import Network.OAuth2.Experiment.Pkce
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
 
 -------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ class HasTokenRequestClientAuthenticationMethod a where
   getClientAuthenticationMethod :: a -> ClientAuthenticationMethod
 
 class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasTokenRequest a where
-  -- \| Each GrantTypeFlow has slightly different request parameter to /token endpoint.
+  -- Each GrantTypeFlow has slightly different request parameter to /token endpoint.
   data TokenRequest a
 
   -- | Only 'AuthorizationCode flow (but not resource owner password nor client credentials) will use 'ExchangeToken' in the token request
@@ -50,6 +50,10 @@ conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
         Right obj -> return obj
         Left e -> throwE e
     else doJSONPostRequest mgr (mkOAuth2Key application) (idpTokenEndpoint idp) body
+
+-------------------------------------------------------------------------------
+--                                    PKCE                                   --
+-------------------------------------------------------------------------------
 
 conduitPkceTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>

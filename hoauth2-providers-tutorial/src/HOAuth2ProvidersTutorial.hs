@@ -23,7 +23,7 @@ import Network.OAuth.OAuth2 (
   OAuth2Token (accessToken),
   TokenRequestError,
  )
-import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest

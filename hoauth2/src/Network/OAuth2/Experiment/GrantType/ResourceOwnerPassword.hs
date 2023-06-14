@@ -8,7 +8,7 @@ import Data.Set (Set)
 import Data.Text.Lazy (Text)
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken (..), OAuth2 (..))
 import Network.OAuth.OAuth2 qualified as OAuth2
-import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest

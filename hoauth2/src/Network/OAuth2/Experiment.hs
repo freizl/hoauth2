@@ -85,28 +85,16 @@
 -- You could also find example from @hoauth2-providers-tutorials@ module.
 module Network.OAuth2.Experiment (
   module Network.OAuth2.Experiment.Pkce,
-  module Network.OAuth2.Experiment.CoreTypes,
+  module Network.OAuth2.Experiment.Types,
   module Network.OAuth2.Experiment.Flows.AuthorizationRequest,
   module Network.OAuth2.Experiment.Flows.RefreshTokenRequest,
   module Network.OAuth2.Experiment.Flows.TokenRequest,
   module Network.OAuth2.Experiment.Flows.UserInfoRequest,
   module Network.OAuth.OAuth2,
-  module Network.OAuth.OAuth2.HttpClient,
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
-import Network.OAuth.OAuth2.HttpClient (
-  APIAuthenticationMethod (..),
-  authGetBS,
-  authGetBSWithAuthMethod,
-  authGetJSON,
-  authGetJSONWithAuthMethod,
-  authPostBS,
-  authPostBSWithAuthMethod,
-  authPostJSON,
-  authPostJSONWithAuthMethod,
- )
-import Network.OAuth2.Experiment.CoreTypes (
+import Network.OAuth2.Experiment.Types (
   AuthorizeState (..),
   ClientId (..),
   ClientSecret (..),

@@ -8,7 +8,7 @@ import Data.Aeson (FromJSON)
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
-import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Types
 
 -------------------------------------------------------------------------------
 --                             User Info Request                             --

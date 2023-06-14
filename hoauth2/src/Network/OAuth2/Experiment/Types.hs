@@ -3,7 +3,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Network.OAuth2.Experiment.CoreTypes where
+module Network.OAuth2.Experiment.Types where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..))
@@ -23,6 +23,33 @@ import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Utils
 import URI.ByteString hiding (UserInfo)
+
+-------------------------------------------------------------------------------
+
+-- * Idp App
+
+-------------------------------------------------------------------------------
+
+-- | Shall IdpApplication has a field of 'Idp a'??
+data Idp a = Idp
+  { idpUserInfoEndpoint :: URI
+  , -- NOTE: maybe worth data type to distinguish authorize and token endpoint
+    -- as I made mistake at passing to Authorize and Token Request
+    idpAuthorizeEndpoint :: URI
+  , idpTokenEndpoint :: URI
+  , idpFetchUserInfo ::
+      forall m.
+      (FromJSON (IdpUserInfo a), MonadIO m) =>
+      Manager ->
+      AccessToken ->
+      URI ->
+      ExceptT BSL.ByteString m (IdpUserInfo a)
+  }
+
+data IdpApplication a i = IdpApplication
+  { application :: a
+  , idp :: Idp i
+  }
 
 -------------------------------------------------------------------------------
 
@@ -196,30 +223,3 @@ instance ToQueryParam ResponseType where
 -------------------------------------------------------------------------------
 
 type family IdpUserInfo a
-
--------------------------------------------------------------------------------
-
--- * Idp App
-
--------------------------------------------------------------------------------
-
--- | Shall IdpApplication has a field of 'Idp a'??
-data Idp a = Idp
-  { idpUserInfoEndpoint :: URI
-  , -- NOTE: maybe worth data type to distinguish authorize and token endpoint
-    -- as I made mistake at passing to Authorize and Token Request
-    idpAuthorizeEndpoint :: URI
-  , idpTokenEndpoint :: URI
-  , idpFetchUserInfo ::
-      forall m.
-      (FromJSON (IdpUserInfo a), MonadIO m) =>
-      Manager ->
-      AccessToken ->
-      URI ->
-      ExceptT BSL.ByteString m (IdpUserInfo a)
-  }
-
-data IdpApplication a i = IdpApplication
-  { application :: a
-  , idp :: Idp i
-  }

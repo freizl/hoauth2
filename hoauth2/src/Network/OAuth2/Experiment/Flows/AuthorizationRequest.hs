@@ -9,7 +9,7 @@ import Data.Text.Encoding qualified as T
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
-import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Utils
 import URI.ByteString hiding (UserInfo)

@@ -8,7 +8,7 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Text.Lazy (Text)
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken, OAuth2)
-import Network.OAuth2.Experiment.CoreTypes
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Utils
