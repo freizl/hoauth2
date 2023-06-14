@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module App (app) where
@@ -18,6 +19,9 @@ import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
+import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
+import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
+import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
 import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.Okta qualified as IOkta
@@ -135,6 +139,7 @@ testPasswordGrantTypeH (auth0, okta) = do
       ( HasTokenRequest a
       , ToQueryParam (TokenRequest a)
       , HasUserInfoRequest a
+      , ResourceOwnerPassword.Application ~ a
       , HasDemoLoginUser b
       , FromJSON (IdpUserInfo b)
       ) =>
@@ -161,6 +166,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
 testClientCredentialsGrantType ::
   ( ToQueryParam (TokenRequest a)
   , HasTokenRequest a
+  , ClientCredentials.Application ~ a
   ) =>
   IdpApplication a b ->
   ActionM ()
@@ -209,16 +215,7 @@ fetchTokenAndUser ::
   ExceptT Text IO ()
 fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
   mgr <- liftIO $ newManager tlsManagerSettings
-  token <-
-    if isSupportPkce idpAppConfig
-      then do
-        when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
-        withExceptT oauth2ErrorToText $
-          conduitPkceTokenRequest
-            idpAppConfig
-            mgr
-            (ExchangeToken $ TL.toStrict exchangeToken, fromJust authorizePkceCodeVerifier)
-      else withExceptT oauth2ErrorToText $ conduitTokenRequest idpAppConfig mgr (ExchangeToken $ TL.toStrict exchangeToken)
+  token <- tryFetchAccessToken idpAppConfig mgr exchangeToken
   liftIO $ do
     putStrLn "Found access token"
     print token
@@ -227,6 +224,25 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
     print luser
   updateIdp c idpData luser token
   where
+    tryFetchAccessToken ::
+        ( ToQueryParam (TokenRequest a)
+        , HasTokenRequest a
+        , AuthorizationCode.Application ~ a) =>
+      IdpApplication a i ->
+      Manager ->
+      Text ->
+      ExceptT Text IO OAuth2Token
+    tryFetchAccessToken idpApp mgr exchangeTokenText = do
+      if isSupportPkce idpApp
+        then do
+          when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
+          withExceptT oauth2ErrorToText $
+            conduitPkceTokenRequest
+              idpApp
+              mgr
+              (ExchangeToken $ TL.toStrict exchangeTokenText, fromJust authorizePkceCodeVerifier)
+        else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr (ExchangeToken $ TL.toStrict exchangeTokenText)
+
     updateIdp :: (MonadIO m) => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
     updateIdp c1 (DemoAppEnv iApp sData) luser token =
       upsertDemoAppEnv

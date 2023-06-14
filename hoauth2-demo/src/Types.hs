@@ -12,14 +12,9 @@ import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.Flows.AuthorizationRequest
-import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
-import Network.OAuth2.Experiment.Flows.TokenRequest
-import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
 import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Dropbox qualified as IDropbox
@@ -34,7 +29,7 @@ import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
-import Text.Mustache
+import Text.Mustache (ToMustache (..), (~>))
 import Text.Mustache qualified as M
 import Prelude hiding (id)
 
@@ -62,6 +57,7 @@ instance HasDemoLoginUser IGoogle.Google where
   toLoginUser IGoogle.GoogleUser {..} = DemoLoginUser {loginUserName = name}
 
 instance HasDemoLoginUser IZOHO.ZOHO where
+  toLoginUser :: IdpUserInfo IZOHO.ZOHO -> DemoLoginUser
   toLoginUser resp =
     let us = IZOHO.users resp
      in case us of
@@ -131,19 +127,11 @@ instance HasDemoLoginUser IStackExchange.StackExchange where
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections
 data DemoAuthorizationApp
-  = forall a b.
-    ( HasDemoLoginUser b
-    , FromJSON (IdpUserInfo b)
-    , ToQueryParam (TokenRequest a)
-    , ToQueryParam (RefreshTokenRequest a)
-    , HasPkceAuthorizeRequest a
-    , HasUserInfoRequest a
-    , HasIdpAppName a
-    , HasAuthorizeRequest a
-    , HasTokenRequest a
-    , HasRefreshTokenRequest a
+  = forall a.
+    ( HasDemoLoginUser a
+    , FromJSON (IdpUserInfo a)
     ) =>
-    DemoAuthorizationApp (IdpApplication a b)
+    DemoAuthorizationApp (IdpApplication AuthorizationCode.Application a)
 
 -------------------------------------------------------------------------------
 
