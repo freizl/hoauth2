@@ -18,7 +18,7 @@ class HasUserInfoRequest a
 
 conduitUserInfoRequest ::
   (HasUserInfoRequest a, FromJSON (IdpUserInfo i), MonadIO m) =>
-  IdpApplication a i ->
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
   ExceptT BSL.ByteString m (IdpUserInfo i)

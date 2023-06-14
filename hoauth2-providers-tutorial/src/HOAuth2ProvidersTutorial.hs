@@ -45,7 +45,7 @@ import Prelude hiding (id)
 
 ------------------------------
 
-testAuth0App :: IdpApplication AuthorizationCode.Application Auth0
+testAuth0App :: IdpApplication Auth0 AuthorizationCode.Application
 testAuth0App =
   let application =
         Auth0.defaultAuth0App
@@ -67,7 +67,7 @@ testAuth0Idp =
     , idpTokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
     }
 
-testGoogleApp :: IdpApplication AuthorizationCode.Application Google
+testGoogleApp :: IdpApplication Google AuthorizationCode.Application
 testGoogleApp =
   let application =
         Google.defaultGoogleApp

@@ -62,7 +62,7 @@ defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 createAuthorizationApps :: (MonadIO m) => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
 createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
   configParams <- readEnvFile
-  let initIdpAppConfig :: Idp i -> AuthorizationCode.Application -> IdpApplication AuthorizationCode.Application i
+  let initIdpAppConfig :: Idp i -> AuthorizationCode.Application -> IdpApplication i AuthorizationCode.Application
       initIdpAppConfig i idpAppConfig =
         case Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower $ getIdpAppName idpAppConfig) configParams of
           Nothing -> IdpApplication {idp = i, application = idpAppConfig}
@@ -94,7 +94,7 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
     , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeIdp IStackExchange.defaultStackExchangeApp)
     ]
 
-googleServiceAccountApp :: ExceptT Text IO (IdpApplication JwtBearer.Application IGoogle.Google)
+googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearer.Application)
 googleServiceAccountApp = do
   IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
   pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
@@ -115,7 +115,7 @@ googleServiceAccountApp = do
       )
   pure $ IdpApplication {idp = IGoogle.defaultGoogleIdp, application = IGoogle.defaultServiceAccountApp jwt}
 
-oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication ResourceOwnerPassword.Application IOkta.Okta
+oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication IOkta.Okta ResourceOwnerPassword.Application
 oktaPasswordGrantApp i =
   IdpApplication
     { idp = i
@@ -137,7 +137,7 @@ oktaPasswordGrantApp i =
 -- With Org AS, got this error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
-oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication ClientCredentials.Application IOkta.Okta)
+oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication IOkta.Okta ClientCredentials.Application)
 oktaClientCredentialsGrantApp i = do
   let clientId = "0oa9mbklxn2Ac0oJ24x7"
   keyJsonStr <- BS.readFile ".okta-key.json"
@@ -164,7 +164,7 @@ oktaClientCredentialsGrantApp i = do
     Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
-auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication ResourceOwnerPassword.Application IAuth0.Auth0
+auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ResourceOwnerPassword.Application
 auth0PasswordGrantApp i =
   IdpApplication
     { idp = i
@@ -181,7 +181,7 @@ auth0PasswordGrantApp i =
     }
 
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
-auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication ClientCredentials.Application IAuth0.Auth0
+auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ClientCredentials.Application
 auth0ClientCredentialsGrantApp i =
   IdpApplication
     { idp = i

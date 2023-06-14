@@ -30,25 +30,26 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
--- | Shall IdpApplication has a field of 'Idp a'??
-data Idp a = Idp
+type family IdpUserInfo a
+
+-- NOTE: maybe worth data type to distinguish authorize and token endpoint
+-- as I made mistake at passing to Authorize and Token Request
+data Idp i = Idp
   { idpUserInfoEndpoint :: URI
-  , -- NOTE: maybe worth data type to distinguish authorize and token endpoint
-    -- as I made mistake at passing to Authorize and Token Request
-    idpAuthorizeEndpoint :: URI
+  , idpAuthorizeEndpoint :: URI
   , idpTokenEndpoint :: URI
   , idpFetchUserInfo ::
       forall m.
-      (FromJSON (IdpUserInfo a), MonadIO m) =>
+      (FromJSON (IdpUserInfo i), MonadIO m) =>
       Manager ->
       AccessToken ->
       URI ->
-      ExceptT BSL.ByteString m (IdpUserInfo a)
+      ExceptT BSL.ByteString m (IdpUserInfo i)
   }
 
-data IdpApplication a i = IdpApplication
-  { application :: a
-  , idp :: Idp i
+data IdpApplication i a = IdpApplication
+  { idp :: Idp i
+  , application :: a
   }
 
 -------------------------------------------------------------------------------
@@ -215,11 +216,3 @@ instance ToQueryParam OAuth2.RefreshToken where
 instance ToQueryParam ResponseType where
   toQueryParam :: ResponseType -> Map Text Text
   toQueryParam Code = Map.singleton "response_type" "code"
-
--------------------------------------------------------------------------------
-
--- * User Info types
-
--------------------------------------------------------------------------------
-
-type family IdpUserInfo a

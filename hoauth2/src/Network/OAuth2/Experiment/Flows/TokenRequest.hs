@@ -34,7 +34,7 @@ class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasTokenR
 
 conduitTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
-  IdpApplication a i ->
+  IdpApplication i a ->
   Manager ->
   ExchangeTokenInfo a ->
   ExceptT TokenRequestError m OAuth2Token
@@ -58,7 +58,7 @@ conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
 
 conduitPkceTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
-  IdpApplication a i ->
+  IdpApplication i a ->
   Manager ->
   (ExchangeTokenInfo a, CodeVerifier) ->
   ExceptT TokenRequestError m OAuth2Token

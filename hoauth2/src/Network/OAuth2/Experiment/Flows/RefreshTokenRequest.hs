@@ -22,7 +22,7 @@ class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasRefres
 
 conduitRefreshTokenRequest ::
   (HasRefreshTokenRequest a, ToQueryParam (RefreshTokenRequest a), MonadIO m) =>
-  IdpApplication a i ->
+  IdpApplication i a ->
   Manager ->
   OAuth2.RefreshToken ->
   ExceptT TokenRequestError m OAuth2Token

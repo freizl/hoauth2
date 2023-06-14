@@ -127,11 +127,11 @@ instance HasDemoLoginUser IStackExchange.StackExchange where
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections
 data DemoAuthorizationApp
-  = forall a.
-    ( HasDemoLoginUser a
-    , FromJSON (IdpUserInfo a)
+  = forall i.
+    ( HasDemoLoginUser i
+    , FromJSON (IdpUserInfo i)
     ) =>
-    DemoAuthorizationApp (IdpApplication AuthorizationCode.Application a)
+    DemoAuthorizationApp (IdpApplication i AuthorizationCode.Application)
 
 -------------------------------------------------------------------------------
 

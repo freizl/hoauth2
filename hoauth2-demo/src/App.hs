@@ -133,10 +133,10 @@ testPasswordGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
   where
     testPasswordGrantType ::
-      ( HasDemoLoginUser b
-      , FromJSON (IdpUserInfo b)
+      ( HasDemoLoginUser i
+      , FromJSON (IdpUserInfo i)
       ) =>
-      IdpApplication ResourceOwnerPassword.Application b ->
+      IdpApplication i ResourceOwnerPassword.Application ->
       ActionM ()
     testPasswordGrantType idpApp = do
       exceptToActionM $ do
@@ -157,7 +157,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
 
 testClientCredentialsGrantType ::
-  IdpApplication ClientCredentials.Application b ->
+  IdpApplication i ClientCredentials.Application ->
   ActionM ()
 testClientCredentialsGrantType testApp = do
   exceptToActionM $ do
@@ -214,7 +214,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
   updateIdp c idpData luser token
   where
     tryFetchAccessToken ::
-      IdpApplication AuthorizationCode.Application i ->
+      IdpApplication i AuthorizationCode.Application ->
       Manager ->
       Text ->
       ExceptT Text IO OAuth2Token
@@ -239,15 +239,15 @@ oauth2ErrorToText :: TokenRequestError -> Text
 oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::
-  forall a b.
-  (HasDemoLoginUser b, HasUserInfoRequest a, FromJSON (IdpUserInfo b)) =>
+  forall i a.
+  (HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
   Manager ->
   OAuth2Token ->
-  IdpApplication a b ->
+  IdpApplication i a ->
   ExceptT Text IO DemoLoginUser
 tryFetchUser mgr at idpAppConfig = do
   user <- withExceptT bslToText $ conduitUserInfoRequest idpAppConfig mgr (accessToken at)
-  pure $ toLoginUser @b user
+  pure $ toLoginUser @i user
 
 doRefreshToken :: DemoAppEnv -> ExceptT Text IO OAuth2Token
 doRefreshToken (DemoAppEnv (DemoAuthorizationApp idpAppConfig) (DemoAppPerAppSessionData {..})) = do
