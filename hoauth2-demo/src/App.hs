@@ -16,9 +16,9 @@ import Network.HTTP.Types
 import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
@@ -143,7 +143,7 @@ testPasswordGrantTypeH (auth0, okta) = do
     testPasswordGrantType idpApp = do
       exceptToActionM $ do
         mgr <- liftIO $ newManager tlsManagerSettings
-        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr Nothing
+        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr ()
         user <- tryFetchUser mgr token idpApp
         liftIO $ print user
       redirectToHomeM
@@ -169,7 +169,7 @@ testClientCredentialsGrantType testApp = do
     mgr <- liftIO $ newManager tlsManagerSettings
     -- client credentials flow is meant for machine to machine
     -- hence wont be able to hit /userinfo endpoint
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr Nothing
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr ()
     liftIO $ print tokenResp
   redirectToHomeM
 
@@ -179,7 +179,7 @@ testJwtBearerGrantTypeH = do
   exceptToActionM $ do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr Nothing
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr ()
     user <- tryFetchUser mgr tokenResp testApp
     liftIO $ print user
   redirectToHomeM
@@ -218,7 +218,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
             idpAppConfig
             mgr
             (ExchangeToken $ TL.toStrict exchangeToken, fromJust authorizePkceCodeVerifier)
-      else withExceptT oauth2ErrorToText $ conduitTokenRequest idpAppConfig mgr (Just $ ExchangeToken $ TL.toStrict exchangeToken)
+      else withExceptT oauth2ErrorToText $ conduitTokenRequest idpAppConfig mgr (ExchangeToken $ TL.toStrict exchangeToken)
   liftIO $ do
     putStrLn "Found access token"
     print token

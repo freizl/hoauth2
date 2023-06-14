@@ -7,10 +7,10 @@ import Data.Default (Default (def))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken, OAuth2)
-import Network.OAuth2.Experiment.Types
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), OAuth2)
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
 
 data Application = Application
@@ -30,12 +30,14 @@ instance HasTokenRequestClientAuthenticationMethod Application where
   getClientAuthenticationMethod _ = ClientAssertionJwt
 
 instance HasTokenRequest Application where
+  type ExchangeTokenInfo Application = ()
+
   data TokenRequest Application = JwtBearerTokenRequest
     { trGrantType :: GrantTypeValue -- \| 'GTJwtBearer'
     , trAssertion :: BS.ByteString -- \| The the signed JWT token
     }
 
-  mkTokenRequestParam :: Application -> Maybe ExchangeToken -> TokenRequest Application
+  mkTokenRequestParam :: Application -> () -> TokenRequest Application
   mkTokenRequestParam Application {..} _ =
     JwtBearerTokenRequest
       { trGrantType = GTJwtBearer

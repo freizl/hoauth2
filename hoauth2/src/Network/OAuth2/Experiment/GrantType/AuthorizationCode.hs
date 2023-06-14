@@ -5,17 +5,16 @@ module Network.OAuth2.Experiment.GrantType.AuthorizationCode where
 import Control.Monad.IO.Class (MonadIO (..))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
-import Data.Maybe
-import Data.Set
+import Data.Set (Set)
 import Data.Text.Lazy (Text)
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken (..), OAuth2)
 import Network.OAuth.OAuth2 qualified as OAuth2
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Pkce
+import Network.OAuth2.Experiment.Types
 import URI.ByteString hiding (UserInfo)
 
 data Application = Application
@@ -64,16 +63,17 @@ instance HasPkceAuthorizeRequest Application where
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
 instance HasTokenRequest Application where
+  type ExchangeTokenInfo Application = ExchangeToken
   data TokenRequest Application = AuthorizationCodeTokenRequest
     { trCode :: ExchangeToken
     , trGrantType :: GrantTypeValue
     , trRedirectUri :: RedirectUri
     }
 
-  mkTokenRequestParam :: Application -> Maybe ExchangeToken -> TokenRequest Application
+  mkTokenRequestParam :: Application -> ExchangeToken -> TokenRequest Application
   mkTokenRequestParam Application {..} authCode =
     AuthorizationCodeTokenRequest
-      { trCode = fromMaybe (ExchangeToken "missing_auth_code") authCode
+      { trCode = authCode
       , trGrantType = GTAuthorizationCode
       , trRedirectUri = RedirectUri acRedirectUri
       }

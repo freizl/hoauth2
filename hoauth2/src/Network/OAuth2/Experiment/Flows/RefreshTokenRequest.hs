@@ -7,8 +7,8 @@ import Control.Monad.Trans.Except (ExceptT (..))
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.TokenRequest
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
 
 -------------------------------------------------------------------------------

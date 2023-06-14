@@ -23,6 +23,7 @@ import Jose.Jwa
 import Jose.Jwk
 import Jose.Jws
 import Jose.Jwt
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OIDC.WellKnown

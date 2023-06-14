@@ -23,19 +23,20 @@ class HasTokenRequestClientAuthenticationMethod a where
 class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasTokenRequest a where
   -- Each GrantTypeFlow has slightly different request parameter to /token endpoint.
   data TokenRequest a
+  type ExchangeTokenInfo a
 
   -- | Only 'AuthorizationCode flow (but not resource owner password nor client credentials) will use 'ExchangeToken' in the token request
   -- create type family to be explicit on it.
   -- with 'type instance WithExchangeToken a b = b' implies no exchange token
   -- v.s. 'type instance WithExchangeToken a b = ExchangeToken -> b' implies needing an exchange token
   -- type WithExchangeToken a b
-  mkTokenRequestParam :: a -> Maybe ExchangeToken -> TokenRequest a
+  mkTokenRequestParam :: a -> ExchangeTokenInfo a -> TokenRequest a
 
 conduitTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
   IdpApplication a i ->
   Manager ->
-  Maybe ExchangeToken ->
+  ExchangeTokenInfo a ->
   ExceptT TokenRequestError m OAuth2Token
 conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
   let tokenReq = mkTokenRequestParam application exchangeToken
@@ -59,10 +60,10 @@ conduitPkceTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
   IdpApplication a i ->
   Manager ->
-  (ExchangeToken, CodeVerifier) ->
+  (ExchangeTokenInfo a, CodeVerifier) ->
   ExceptT TokenRequestError m OAuth2Token
 conduitPkceTokenRequest IdpApplication {..} mgr (exchangeToken, codeVerifier) =
-  let req = mkTokenRequestParam application (Just exchangeToken)
+  let req = mkTokenRequestParam application exchangeToken
       key = mkOAuth2Key application
       clientSecretPostParam =
         if getClientAuthenticationMethod application == ClientSecretPost

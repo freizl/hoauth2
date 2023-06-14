@@ -7,9 +7,9 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken, OAuth2)
-import Network.OAuth2.Experiment.Types
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), OAuth2)
 import Network.OAuth2.Experiment.Flows.TokenRequest
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
 
 data Application = Application
@@ -31,6 +31,7 @@ instance HasTokenRequestClientAuthenticationMethod Application where
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
 instance HasTokenRequest Application where
+  type ExchangeTokenInfo Application = ()
   data TokenRequest Application = ClientCredentialsTokenRequest
     { trScope :: Set Scope
     , trGrantType :: GrantTypeValue
@@ -40,7 +41,7 @@ instance HasTokenRequest Application where
     , trClientAuthenticationMethod :: ClientAuthenticationMethod
     }
 
-  mkTokenRequestParam :: Application -> Maybe ExchangeToken -> TokenRequest Application
+  mkTokenRequestParam :: Application -> () -> TokenRequest Application
   mkTokenRequestParam Application {..} _ =
     ClientCredentialsTokenRequest
       { trScope = ccScope

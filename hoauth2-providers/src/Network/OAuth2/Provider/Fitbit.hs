@@ -12,6 +12,7 @@ import Data.Aeson
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ

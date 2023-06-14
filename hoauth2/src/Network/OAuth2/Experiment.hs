@@ -1,4 +1,3 @@
-
 -- | This module contains a new way of doing OAuth2 authorization and authentication
 -- in order to obtain Access Token and maybe Refresh Token base on rfc6749.
 --
@@ -94,6 +93,17 @@ module Network.OAuth2.Experiment (
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
+import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
+import Network.OAuth2.Experiment.Flows.TokenRequest (conduitPkceTokenRequest, conduitTokenRequest)
+import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
+import Network.OAuth2.Experiment.Pkce (
+  CodeChallenge (..),
+  CodeChallengeMethod (..),
+  CodeVerifier (..),
+  PkceRequestParam (..),
+  mkPkceParam,
+ )
 import Network.OAuth2.Experiment.Types (
   AuthorizeState (..),
   ClientId (..),
@@ -105,15 +115,4 @@ import Network.OAuth2.Experiment.Types (
   RedirectUri (..),
   Scope (..),
   Username (..),
- )
-import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
-import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
-import Network.OAuth2.Experiment.Flows.TokenRequest (conduitPkceTokenRequest, conduitTokenRequest)
-import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
-import Network.OAuth2.Experiment.Pkce (
-  CodeChallenge (..),
-  CodeChallengeMethod (..),
-  CodeVerifier (..),
-  PkceRequestParam (..),
-  mkPkceParam,
  )

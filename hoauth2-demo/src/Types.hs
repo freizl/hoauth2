@@ -12,7 +12,6 @@ import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
@@ -20,6 +19,7 @@ import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
 import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Dropbox qualified as IDropbox

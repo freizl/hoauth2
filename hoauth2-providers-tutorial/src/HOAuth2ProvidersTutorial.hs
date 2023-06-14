@@ -23,12 +23,12 @@ import Network.OAuth.OAuth2 (
   OAuth2Token (accessToken),
   TokenRequestError,
  )
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode (Application (..))
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
+import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..))
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
@@ -179,7 +179,7 @@ handleAuth0Callback :: ExchangeToken -> ExceptT TL.Text IO DemoUser
 handleAuth0Callback code = do
   let idpApp = testAuth0App
   mgr <- liftIO $ newManager tlsManagerSettings
-  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr (Just code))
+  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
   Auth0User {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
@@ -187,7 +187,7 @@ handleGoogleCallback :: ExchangeToken -> ExceptT TL.Text IO DemoUser
 handleGoogleCallback code = do
   let idpApp = testGoogleApp
   mgr <- liftIO $ newManager tlsManagerSettings
-  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr (Just code))
+  tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
   GoogleUser {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
