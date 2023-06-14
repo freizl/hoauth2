@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module App (app) where
@@ -17,12 +16,10 @@ import Network.HTTP.Types
 import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
 import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
-import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
@@ -136,14 +133,10 @@ testPasswordGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
   where
     testPasswordGrantType ::
-      ( HasTokenRequest a
-      , ToQueryParam (TokenRequest a)
-      , HasUserInfoRequest a
-      , ResourceOwnerPassword.Application ~ a
-      , HasDemoLoginUser b
+      ( HasDemoLoginUser b
       , FromJSON (IdpUserInfo b)
       ) =>
-      IdpApplication a b ->
+      IdpApplication ResourceOwnerPassword.Application b ->
       ActionM ()
     testPasswordGrantType idpApp = do
       exceptToActionM $ do
@@ -164,11 +157,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
 
 testClientCredentialsGrantType ::
-  ( ToQueryParam (TokenRequest a)
-  , HasTokenRequest a
-  , ClientCredentials.Application ~ a
-  ) =>
-  IdpApplication a b ->
+  IdpApplication ClientCredentials.Application b ->
   ActionM ()
 testClientCredentialsGrantType testApp = do
   exceptToActionM $ do
@@ -225,10 +214,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
   updateIdp c idpData luser token
   where
     tryFetchAccessToken ::
-        ( ToQueryParam (TokenRequest a)
-        , HasTokenRequest a
-        , AuthorizationCode.Application ~ a) =>
-      IdpApplication a i ->
+      IdpApplication AuthorizationCode.Application i ->
       Manager ->
       Text ->
       ExceptT Text IO OAuth2Token
