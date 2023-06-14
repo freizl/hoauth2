@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE InstanceSigs #-}
 
 module Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword where
 

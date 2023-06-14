@@ -1,10 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 -- | This module contains a new way of doing OAuth2 authorization and authentication
 -- in order to obtain Access Token and maybe Refresh Token base on rfc6749.
@@ -37,7 +30,6 @@
 -- Firstly, initialize your IdP (use google as example) and the application.
 --
 -- @
--- {\-# LANGUAGE DataKinds #-\}
 --
 -- data Google = Google deriving (Eq, Show)
 -- googleIdp :: Idp Google
