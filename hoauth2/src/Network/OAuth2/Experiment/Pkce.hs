@@ -6,10 +6,10 @@ module Network.OAuth2.Experiment.Pkce (
   PkceRequestParam (..),
 ) where
 
-import Control.Monad.IO.Class
-import Crypto.Hash qualified as H
-import Crypto.Random qualified as Crypto
-import Data.ByteArray qualified as ByteArray
+import Data.List (unfoldr)
+import Control.Monad.IO.Class (MonadIO(..))
+import Crypto.Hash.SHA256 qualified as H
+import qualified System.Random.SplitMix as SM (SMGen, nextWord32, initSMGen)
 import Data.ByteString qualified as BS
 import Data.ByteString.Base64.URL qualified as B64
 import Data.Text (Text)
@@ -42,32 +42,37 @@ mkPkceParam = do
       }
 
 encodeCodeVerifier :: BS.ByteString -> Text
-encodeCodeVerifier = B64.encodeBase64Unpadded . BS.pack . ByteArray.unpack . hashSHA256
+encodeCodeVerifier = B64.encodeBase64Unpadded . H.hash
 
 genCodeVerifier :: MonadIO m => m BS.ByteString
-genCodeVerifier = liftIO $ getBytesInternal BS.empty
+genCodeVerifier = liftIO $ getRandomBytes cvMaxLen
 
 cvMaxLen :: Int
 cvMaxLen = 128
 
--- The default 'getRandomBytes' generates bytes out of unreverved characters scope.
+-- The default 'getRandomBytes' generates bytes out of unreserved characters scope.
 -- code-verifier = 43*128unreserved
 --   unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
 --   ALPHA = %x41-5A / %x61-7A
 --   DIGIT = %x30-39
-getBytesInternal :: BS.ByteString -> IO BS.ByteString
-getBytesInternal ba
-  | BS.length ba >= cvMaxLen = pure (BS.take cvMaxLen ba)
-  | otherwise = do
-      bs <- Crypto.getRandomBytes cvMaxLen
-      let bsUnreserved = ba `BS.append` BS.filter isUnreversed bs
-      getBytesInternal bsUnreserved
+getRandomBytes :: Int -> IO BS.ByteString
+getRandomBytes l = do
+  s0 <- SM.initSMGen
+  pure $ unreservedBytes l s0
 
-hashSHA256 :: BS.ByteString -> H.Digest H.SHA256
-hashSHA256 = H.hash
-
-isUnreversed :: Word8 -> Bool
-isUnreversed w = w `BS.elem` unreverseBS
+unreservedBytes :: Int -> SM.SMGen -> BS.ByteString
+unreservedBytes maxBytes s0 = BS.pack $ unfoldr mk (0, s0)
+  where
+    mk (i, s)
+      | i == maxBytes = Nothing
+      | otherwise =
+          let
+            (w32, s') = SM.nextWord32 s
+            w8 = (fromIntegral w32 :: Word8) -- we're wasting 24 out of 32 bits here
+          in
+            if w8 `elem` unreserveBS
+            then Just (w8, (i + 1, s')) -- accept byte
+            else mk (i, s') -- loop
 
 {-
 a-z: 97-122
@@ -77,5 +82,8 @@ A-Z: 65-90
 _: 95
 ~: 126
 -}
-unreverseBS :: BS.ByteString
-unreverseBS = BS.pack $ [97 .. 122] ++ [65 .. 90] ++ [45, 46, 95, 126]
+unreserveBS :: [Word8]
+unreserveBS = [97 .. 122] ++ [65 .. 90] ++ [45, 46, 95, 126]
+
+
+
