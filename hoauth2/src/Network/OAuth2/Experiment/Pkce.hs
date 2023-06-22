@@ -56,9 +56,7 @@ cvMaxLen = 128
 --   ALPHA = %x41-5A / %x61-7A
 --   DIGIT = %x30-39
 getRandomBytes :: Int -> IO BS.ByteString
-getRandomBytes l = do
-  s0 <- SM.initSMGen
-  pure $ unreservedBytes l s0
+getRandomBytes l = unreservedBytes l <$> SM.initSMGen
 
 unreservedBytes :: Int -> SM.SMGen -> BS.ByteString
 unreservedBytes maxBytes s0 = BS.pack $ unfoldr mk (0, s0)
