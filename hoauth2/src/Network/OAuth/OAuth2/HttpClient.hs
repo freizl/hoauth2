@@ -91,7 +91,7 @@ authGetJSONWithAuthMethod authTypes manager t uri = do
 -- | Conduct an authorized GET request.
 --   Inject Access Token to Authorization Header.
 authGetBS ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -102,7 +102,7 @@ authGetBS = authGetBSWithAuthMethod AuthInRequestHeader
 
 -- | Same to 'authGetBS' but set access token to query parameter rather than header
 authGetBS2 ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -113,7 +113,7 @@ authGetBS2 = authGetBSWithAuthMethod AuthInRequestQuery
 {-# DEPRECATED authGetBS2 "use authGetBSWithAuthMethod" #-}
 
 authGetBSInternal ::
-  (MonadIO m) =>
+  MonadIO m =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -129,7 +129,7 @@ authGetBSInternal = authGetBSWithAuthMethod
 --
 -- @since 2.6.0
 authGetBSWithAuthMethod ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | Specify the way that how to append the 'AccessToken' in the request
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
@@ -193,7 +193,7 @@ authPostJSONWithAuthMethod authTypes manager token url body = do
 -- | Conduct POST request.
 --   Inject Access Token to http header (Authorization)
 authPostBS ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -205,7 +205,7 @@ authPostBS = authPostBSWithAuthMethod AuthInRequestHeader
 
 -- | Conduct POST request with access token only in the request body but header.
 authPostBS2 ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -218,7 +218,7 @@ authPostBS2 = authPostBSWithAuthMethod AuthInRequestBody
 
 -- | Conduct POST request with access token only in the header and not in body
 authPostBS3 ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -230,7 +230,7 @@ authPostBS3 = authPostBSWithAuthMethod AuthInRequestHeader
 {-# DEPRECATED authPostBS3 "use 'authPostBSWithAuthMethod'" #-}
 
 authPostBSInternal ::
-  (MonadIO m) =>
+  MonadIO m =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -247,7 +247,7 @@ authPostBSInternal = authPostBSWithAuthMethod
 --
 -- @since 2.6.0
 authPostBSWithAuthMethod ::
-  (MonadIO m) =>
+  MonadIO m =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -293,7 +293,7 @@ data APIAuthenticationMethod
 
 -- | Send an HTTP request.
 authRequest ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | Request to perform
   Request ->
   -- | Modify request before sending

@@ -82,15 +82,11 @@ instance Binary OAuth2Token
 instance FromJSON OAuth2Token where
   parseJSON = withObject "OAuth2Token" $ \v ->
     OAuth2Token
-      <$> v
-      .: "access_token"
-      <*> v
-      .:? "refresh_token"
+      <$> v .: "access_token"
+      <*> v .:? "refresh_token"
       <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
-      <*> v
-      .:? "token_type"
-      <*> v
-      .:? "id_token"
+      <*> v .:? "token_type"
+      <*> v .:? "id_token"
     where
       parseIntFlexible :: Value -> Parser Int
       parseIntFlexible (String s) = pure . read $ unpack s

@@ -114,7 +114,7 @@ refreshAccessTokenUrl oa token = (uri, body)
 
 -- | Exchange @code@ for an Access Token with authenticate in request header.
 fetchAccessToken ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager
   Manager ->
   -- | OAuth Data
@@ -126,7 +126,7 @@ fetchAccessToken ::
 fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
 fetchAccessToken2 ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager
   Manager ->
   -- | OAuth Data
@@ -139,7 +139,7 @@ fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
 
 fetchAccessTokenInternal ::
-  (MonadIO m) =>
+  MonadIO m =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager
   Manager ->
@@ -165,7 +165,7 @@ fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 --
 -- @since 2.6.0
 fetchAccessTokenWithAuthMethod ::
-  (MonadIO m) =>
+  MonadIO m =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager
   Manager ->
@@ -182,7 +182,7 @@ fetchAccessTokenWithAuthMethod authMethod manager oa code = do
 
 -- | Fetch a new AccessToken using the Refresh Token with authentication in request header.
 refreshAccessToken ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth context
@@ -193,7 +193,7 @@ refreshAccessToken ::
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
 
 refreshAccessToken2 ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth context
@@ -205,7 +205,7 @@ refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
 
 refreshAccessTokenInternal ::
-  (MonadIO m) =>
+  MonadIO m =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -230,7 +230,7 @@ refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 --
 -- @since 2.6.0
 refreshAccessTokenWithAuthMethod ::
-  (MonadIO m) =>
+  MonadIO m =>
   ClientAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -271,7 +271,7 @@ doJSONPostRequest manager oa uri body = do
 
 -- | Conduct post request.
 doSimplePostRequest ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | HTTP connection manager.
   Manager ->
   -- | OAuth options
@@ -300,7 +300,7 @@ handleOAuth2TokenResponse rsp =
 
 -- | Try to parses response as JSON, if failed, try to parse as like query string.
 parseResponseFlexible ::
-  (FromJSON a) =>
+  FromJSON a =>
   BSL.ByteString ->
   Either TokenRequestError a
 parseResponseFlexible r = case eitherDecode r of
@@ -309,7 +309,7 @@ parseResponseFlexible r = case eitherDecode r of
 
 -- | Parses the response that contains not JSON but a Query String
 parseResponseString ::
-  (FromJSON a) =>
+  FromJSON a =>
   BSL.ByteString ->
   Either TokenRequestError a
 parseResponseString b = case parseQuery $ BSL.toStrict b of

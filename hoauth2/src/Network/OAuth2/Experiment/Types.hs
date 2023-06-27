@@ -208,7 +208,7 @@ instance ToQueryParam (Set Scope) where
   toQueryParam :: Set Scope -> Map Text Text
   toQueryParam = toScopeParam . Set.map unScope
     where
-      toScopeParam :: (IsString a) => Set Text -> Map a Text
+      toScopeParam :: IsString a => Set Text -> Map a Text
       toScopeParam scope = Map.singleton "scope" (TL.intercalate " " $ Set.toList scope)
 
 instance ToQueryParam CodeVerifier where
@@ -258,7 +258,7 @@ class HasTokenRequest (a :: GrantTypeFlow) where
     WithExchangeToken a (TokenRequest a)
 
   conduitTokenRequest ::
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication a i ->
     Manager ->
     WithExchangeToken a (ExceptT TokenRequestError m OAuth2Token)
@@ -268,7 +268,7 @@ class HasPkceAuthorizeRequest (a :: GrantTypeFlow) where
 
 class HasPkceTokenRequest (b :: GrantTypeFlow) where
   conduitPkceTokenRequest ::
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication b i ->
     Manager ->
     (ExchangeToken, CodeVerifier) ->
@@ -280,7 +280,7 @@ class HasRefreshTokenRequest (a :: GrantTypeFlow) where
 
   mkRefreshTokenRequest :: IdpApplication a i -> OAuth2.RefreshToken -> RefreshTokenRequest a
   conduitRefreshTokenRequest ::
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication a i ->
     Manager ->
     OAuth2.RefreshToken ->
@@ -412,7 +412,7 @@ instance HasTokenRequest 'AuthorizationCode where
       }
   conduitTokenRequest ::
     forall m i.
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     ExchangeToken ->
@@ -485,7 +485,7 @@ instance HasRefreshTokenRequest 'AuthorizationCode where
       , refreshToken = rt
       }
   conduitRefreshTokenRequest ::
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication 'AuthorizationCode i ->
     Manager ->
     OAuth2.RefreshToken ->
@@ -570,7 +570,7 @@ instance HasTokenRequest 'JwtBearer where
 
   conduitTokenRequest ::
     forall m i.
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication 'JwtBearer i ->
     Manager ->
     ExceptT TokenRequestError m OAuth2Token
@@ -646,7 +646,7 @@ instance HasTokenRequest 'ResourceOwnerPassword where
       }
 
   conduitTokenRequest ::
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication 'ResourceOwnerPassword i ->
     Manager ->
     ExceptT TokenRequestError m OAuth2Token
@@ -732,7 +732,7 @@ instance HasTokenRequest 'ClientCredentials where
       }
 
   conduitTokenRequest ::
-    (MonadIO m) =>
+    MonadIO m =>
     IdpApplication 'ClientCredentials i ->
     Manager ->
     ExceptT TokenRequestError m OAuth2Token

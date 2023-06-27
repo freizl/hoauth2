@@ -180,7 +180,7 @@ auth0ClientCredentialsGrantApp i =
     , idp = i
     }
 
-isSupportPkce :: forall a i. ('AuthorizationCode ~ a) => IdpApplication a i -> Bool
+isSupportPkce :: forall a i. 'AuthorizationCode ~ a => IdpApplication a i -> Bool
 isSupportPkce AuthorizationCodeIdpApplication {..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
    in any

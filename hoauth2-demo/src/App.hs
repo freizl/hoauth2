@@ -165,8 +165,7 @@ testClientCredentialGrantTypeH (auth0, okta) = do
 
 testClientCredentialsGrantType ::
   forall a b.
-  ( 'ClientCredentials ~ b
-  ) =>
+  'ClientCredentials ~ b =>
   HasTokenRequest b =>
   IdpApplication b a ->
   ActionM ()
