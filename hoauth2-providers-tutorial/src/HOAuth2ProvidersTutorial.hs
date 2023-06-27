@@ -24,9 +24,6 @@ import Network.OAuth.OAuth2 (
   TokenRequestError,
  )
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.Flows.AuthorizationRequest
-import Network.OAuth2.Experiment.Flows.TokenRequest
-import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..))
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))

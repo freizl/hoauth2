@@ -30,6 +30,8 @@
 --
 -- @
 --
+-- import Network.OAuth2.Experiment
+--
 -- data Google = Google deriving (Eq, Show)
 -- googleIdp :: Idp Google
 -- googleIdp =
