@@ -78,7 +78,7 @@ instance IsString Scope where
 
 -------------------------------------------------------------------------------
 
--- | Grant type query parameter has association with 'GrantTypeFlow' but not completely strict.
+-- | Grant type query parameter has association with different GrantType flows but not completely strict.
 --
 -- e.g. Both 'AuthorizationCode' and 'ResourceOwnerPassword' flow could support refresh token flow.
 data GrantTypeValue

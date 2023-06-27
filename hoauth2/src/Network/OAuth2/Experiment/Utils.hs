@@ -14,8 +14,8 @@ tlToBS = TE.encodeUtf8 . TL.toStrict
 bs8ToLazyText :: BS8.ByteString -> TL.Text
 bs8ToLazyText = TL.pack . BS8.unpack
 
-mapsToParams :: [Map TL.Text TL.Text] -> [(ByteString, ByteString)]
-mapsToParams =
+unionMapsToQueryParams :: [Map TL.Text TL.Text] -> [(ByteString, ByteString)]
+unionMapsToQueryParams =
   map (bimap tlToBS tlToBS)
     . Map.toList
     . Map.unions

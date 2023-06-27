@@ -40,7 +40,7 @@ conduitTokenRequest ::
   ExceptT TokenRequestError m OAuth2Token
 conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
   let tokenReq = mkTokenRequestParam application exchangeToken
-      body = mapsToParams [toQueryParam tokenReq]
+      body = unionMapsToQueryParams [toQueryParam tokenReq]
   if getClientAuthenticationMethod application == ClientAssertionJwt
     then do
       resp <- ExceptT . liftIO $ do
@@ -70,7 +70,7 @@ conduitPkceTokenRequest IdpApplication {..} mgr (exchangeToken, codeVerifier) =
           then clientSecretPost key
           else []
       body =
-        mapsToParams
+        unionMapsToQueryParams
           [ toQueryParam req
           , toQueryParam codeVerifier
           ]

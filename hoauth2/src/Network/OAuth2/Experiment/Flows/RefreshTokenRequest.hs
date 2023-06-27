@@ -28,5 +28,5 @@ conduitRefreshTokenRequest ::
   ExceptT TokenRequestError m OAuth2Token
 conduitRefreshTokenRequest IdpApplication {..} mgr rt =
   let tokenReq = mkRefreshTokenRequestParam application rt
-      body = mapsToParams [toQueryParam tokenReq]
+      body = unionMapsToQueryParams [toQueryParam tokenReq]
    in doJSONPostRequest mgr (mkOAuth2Key application) (idpTokenEndpoint idp) body
