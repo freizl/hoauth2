@@ -31,7 +31,7 @@ removeKey store idpKey = do
     updateIdpData (DemoAppEnv app sessionD) = Just (DemoAppEnv app sessionD {loginUser = Nothing})
 
 lookupKey ::
-  (MonadIO m) =>
+  MonadIO m =>
   CacheStore ->
   TL.Text ->
   ExceptT TL.Text m DemoAppEnv
@@ -39,7 +39,7 @@ lookupKey store idpKey = ExceptT $ do
   m1 <- liftIO $ tryReadMVar store
   return $ maybe (Left ("unknown Idp " <> idpKey)) Right (Map.lookup idpKey =<< m1)
 
-upsertDemoAppEnv :: (MonadIO m) => CacheStore -> DemoAppEnv -> ExceptT TL.Text m ()
+upsertDemoAppEnv :: MonadIO m => CacheStore -> DemoAppEnv -> ExceptT TL.Text m ()
 upsertDemoAppEnv store val = liftIO $ do
   m1 <- takeMVar store
   let m2 =

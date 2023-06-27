@@ -59,7 +59,7 @@ import Prelude hiding (id)
 defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
-createAuthorizationApps :: (MonadIO m) => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
+createAuthorizationApps :: MonadIO m => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
 createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
   configParams <- readEnvFile
   let initIdpAppConfig :: Idp i -> AuthorizationCode.Application -> IdpApplication i AuthorizationCode.Application
@@ -210,7 +210,7 @@ isSupportPkce IdpApplication {..} =
 envFilePath :: String
 envFilePath = ".env.json"
 
-readEnvFile :: (MonadIO m) => ExceptT Text m Env.EnvConfig
+readEnvFile :: MonadIO m => ExceptT Text m Env.EnvConfig
 readEnvFile = liftIO $ do
   pwd <- getCurrentDirectory
   envFileE <- doesFileExist (pwd <> "/" <> envFilePath)
@@ -223,12 +223,12 @@ readEnvFile = liftIO $ do
         Right ec -> return ec
     else return Aeson.empty
 
-initIdps :: (MonadIO m) => CacheStore -> (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m ()
+initIdps :: MonadIO m => CacheStore -> (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m ()
 initIdps c is = do
   idps <- createAuthorizationApps is
   mapM mkDemoAppEnv idps >>= mapM_ (upsertDemoAppEnv c)
 
-mkDemoAppEnv :: (MonadIO m) => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
+mkDemoAppEnv :: MonadIO m => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
 mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
   re <-
     if isSupportPkce idpAppConfig

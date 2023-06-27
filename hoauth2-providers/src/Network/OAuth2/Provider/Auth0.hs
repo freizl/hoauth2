@@ -59,7 +59,7 @@ defaultAuth0Idp =
     }
 
 mkAuth0Idp ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | Full domain with no http protocol. e.g. @foo.auth0.com@
   Text ->
   ExceptT Text m (Idp Auth0)

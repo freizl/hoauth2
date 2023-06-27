@@ -49,7 +49,7 @@ instance HasAuthorizeRequest Application where
       }
 
 instance HasPkceAuthorizeRequest Application where
-  mkPkceAuthorizeRequestParam :: (MonadIO m) => Application -> m (AuthorizationRequestParam, CodeVerifier)
+  mkPkceAuthorizeRequestParam :: MonadIO m => Application -> m (AuthorizationRequestParam, CodeVerifier)
   mkPkceAuthorizeRequestParam app = do
     PkceRequestParam {..} <- mkPkceParam
     let authReqParam = mkAuthorizeRequestParam app

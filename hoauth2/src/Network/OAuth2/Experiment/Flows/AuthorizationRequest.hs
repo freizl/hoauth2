@@ -41,7 +41,7 @@ instance ToQueryParam AuthorizationRequestParam where
 class HasAuthorizeRequest a where
   mkAuthorizeRequestParam :: a -> AuthorizationRequestParam
 
-mkAuthorizeRequest :: (HasAuthorizeRequest a) => IdpApplication i a -> Text
+mkAuthorizeRequest :: HasAuthorizeRequest a => IdpApplication i a -> Text
 mkAuthorizeRequest idpApp =
   let req = mkAuthorizeRequestParam (application idpApp)
       allParams =
@@ -58,8 +58,8 @@ mkAuthorizeRequest idpApp =
 --                                    PKCE                                   --
 -------------------------------------------------------------------------------
 
-class (HasAuthorizeRequest a) => HasPkceAuthorizeRequest a where
-  mkPkceAuthorizeRequestParam :: (MonadIO m) => a -> m (AuthorizationRequestParam, CodeVerifier)
+class HasAuthorizeRequest a => HasPkceAuthorizeRequest a where
+  mkPkceAuthorizeRequestParam :: MonadIO m => a -> m (AuthorizationRequestParam, CodeVerifier)
 
 mkPkceAuthorizeRequest ::
   (HasPkceAuthorizeRequest a, MonadIO m) =>

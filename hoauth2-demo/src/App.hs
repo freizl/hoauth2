@@ -185,7 +185,7 @@ testJwtBearerGrantTypeH = do
 
 --------------------------------------------------
 
-exceptToActionM :: (Show a) => ExceptT Text IO a -> ActionM a
+exceptToActionM :: Show a => ExceptT Text IO a -> ActionM a
 exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
@@ -229,7 +229,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
               (ExchangeToken $ TL.toStrict exchangeTokenText, fromJust authorizePkceCodeVerifier)
         else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr (ExchangeToken $ TL.toStrict exchangeTokenText)
 
-    updateIdp :: (MonadIO m) => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
+    updateIdp :: MonadIO m => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
     updateIdp c1 (DemoAppEnv iApp sData) luser token =
       upsertDemoAppEnv
         c1

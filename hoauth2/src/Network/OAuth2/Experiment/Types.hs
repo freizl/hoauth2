@@ -147,8 +147,8 @@ instance IsString Password where
 class ToQueryParam a where
   toQueryParam :: a -> Map Text Text
 
-instance (ToQueryParam a) => ToQueryParam (Maybe a) where
-  toQueryParam :: (ToQueryParam a) => Maybe a -> Map Text Text
+instance ToQueryParam a => ToQueryParam (Maybe a) where
+  toQueryParam :: ToQueryParam a => Maybe a -> Map Text Text
   toQueryParam Nothing = Map.empty
   toQueryParam (Just a) = toQueryParam a
 
@@ -190,7 +190,7 @@ instance ToQueryParam (Set Scope) where
   toQueryParam :: Set Scope -> Map Text Text
   toQueryParam = toScopeParam . Set.map unScope
     where
-      toScopeParam :: (IsString a) => Set Text -> Map a Text
+      toScopeParam :: IsString a => Set Text -> Map a Text
       toScopeParam scope = Map.singleton "scope" (TL.intercalate " " $ Set.toList scope)
 
 instance ToQueryParam CodeVerifier where
