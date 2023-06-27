@@ -12,9 +12,6 @@ import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
-import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
-import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Dropbox qualified as IDropbox
@@ -131,7 +128,7 @@ data DemoAuthorizationApp
     ( HasDemoLoginUser i
     , FromJSON (IdpUserInfo i)
     ) =>
-    DemoAuthorizationApp (IdpApplication i AuthorizationCode.Application)
+    DemoAuthorizationApp (IdpApplication i AuthorizationCodeApplication)
 
 -------------------------------------------------------------------------------
 
@@ -207,14 +204,14 @@ instance ToMustache TemplateData where
 class HasIdpAppName a where
   getIdpAppName :: a -> Text
 
-instance HasIdpAppName ClientCredentials.Application where
-  getIdpAppName :: ClientCredentials.Application -> Text
-  getIdpAppName ClientCredentials.Application {..} = ccName
+instance HasIdpAppName ClientCredentialsApplication where
+  getIdpAppName :: ClientCredentialsApplication -> Text
+  getIdpAppName ClientCredentialsApplication {..} = ccName
 
-instance HasIdpAppName ResourceOwnerPassword.Application where
-  getIdpAppName :: ResourceOwnerPassword.Application -> Text
-  getIdpAppName ResourceOwnerPassword.Application {..} = ropName
+instance HasIdpAppName ResourceOwnerPasswordApplication where
+  getIdpAppName :: ResourceOwnerPasswordApplication -> Text
+  getIdpAppName ResourceOwnerPasswordApplication {..} = ropName
 
-instance HasIdpAppName AuthorizationCode.Application where
-  getIdpAppName :: AuthorizationCode.Application -> Text
-  getIdpAppName AuthorizationCode.Application {..} = acName
+instance HasIdpAppName AuthorizationCodeApplication where
+  getIdpAppName :: AuthorizationCodeApplication -> Text
+  getIdpAppName AuthorizationCodeApplication {..} = acName

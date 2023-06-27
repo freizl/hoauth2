@@ -24,7 +24,6 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
@@ -33,9 +32,9 @@ data Auth0 = Auth0
 
 type instance IdpUserInfo Auth0 = Auth0User
 
-defaultAuth0App :: AuthorizationCode.Application
+defaultAuth0App :: AuthorizationCodeApplication
 defaultAuth0App =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["openid", "profile", "email", "offline_access"]

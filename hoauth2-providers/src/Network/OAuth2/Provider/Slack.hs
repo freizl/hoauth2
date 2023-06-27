@@ -16,16 +16,15 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Slack = Slack deriving (Show, Eq)
 
 type instance IdpUserInfo Slack = SlackUser
 
-defaultSlackApp :: AuthorizationCode.Application
+defaultSlackApp :: AuthorizationCodeApplication
 defaultSlackApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["openid", "profile"]

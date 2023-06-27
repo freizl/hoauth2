@@ -14,16 +14,15 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Linkedin = Linkedin deriving (Eq, Show)
 
 type instance IdpUserInfo Linkedin = LinkedinUser
 
-defaultLinkedinApp :: AuthorizationCode.Application
+defaultLinkedinApp :: AuthorizationCodeApplication
 defaultLinkedinApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["r_liteprofile"]

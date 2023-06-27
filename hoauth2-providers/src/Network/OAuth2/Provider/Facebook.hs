@@ -14,16 +14,15 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Facebook = Facebook deriving (Eq, Show)
 
 type instance IdpUserInfo Facebook = FacebookUser
 
-defaultFacebookApp :: AuthorizationCode.Application
+defaultFacebookApp :: AuthorizationCodeApplication
 defaultFacebookApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["user_about_me", "email"]

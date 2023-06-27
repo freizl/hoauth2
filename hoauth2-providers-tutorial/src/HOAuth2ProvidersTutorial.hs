@@ -23,12 +23,10 @@ import Network.OAuth.OAuth2 (
   OAuth2Token (accessToken),
   TokenRequestError,
  )
+import Network.OAuth2.Experiment
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode (Application (..))
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
-import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..))
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
@@ -45,7 +43,7 @@ import Prelude hiding (id)
 
 ------------------------------
 
-testAuth0App :: IdpApplication Auth0 AuthorizationCode.Application
+testAuth0App :: IdpApplication Auth0 AuthorizationCodeApplication
 testAuth0App =
   let application =
         Auth0.defaultAuth0App
@@ -67,7 +65,7 @@ testAuth0Idp =
     , idpTokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
     }
 
-testGoogleApp :: IdpApplication Google AuthorizationCode.Application
+testGoogleApp :: IdpApplication Google AuthorizationCodeApplication
 testGoogleApp =
   let application =
         Google.defaultGoogleApp

@@ -14,16 +14,15 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data ZOHO = ZOHO deriving (Eq, Show)
 
 type instance IdpUserInfo ZOHO = ZOHOUserResp
 
-defaultZohoApp :: AuthorizationCode.Application
+defaultZohoApp :: AuthorizationCodeApplication
 defaultZohoApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["ZohoCRM.users.READ"]

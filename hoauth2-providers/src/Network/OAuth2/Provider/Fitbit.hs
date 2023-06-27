@@ -14,16 +14,15 @@ import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Fitbit = Fitbit deriving (Eq, Show)
 
 type instance IdpUserInfo Fitbit = FitbitUser
 
-defaultFitbitApp :: AuthorizationCode.Application
+defaultFitbitApp :: AuthorizationCodeApplication
 defaultFitbitApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.empty

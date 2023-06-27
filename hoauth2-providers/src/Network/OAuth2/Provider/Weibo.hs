@@ -10,16 +10,15 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Weibo = Weibo deriving (Eq, Show)
 
 type instance IdpUserInfo Weibo = WeiboUID
 
-defaultWeiboApp :: AuthorizationCode.Application
+defaultWeiboApp :: AuthorizationCodeApplication
 defaultWeiboApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acName = "default-weibo-App"
     , acClientId = ""
     , acClientSecret = ""

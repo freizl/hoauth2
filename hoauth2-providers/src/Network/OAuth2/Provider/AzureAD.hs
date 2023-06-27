@@ -10,7 +10,6 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data AzureAD = AzureAD deriving (Eq, Show)
@@ -21,9 +20,9 @@ type instance IdpUserInfo AzureAD = AzureADUser
 --
 -- also be aware to find the right client id.
 -- see https://stackoverflow.com/a/70670961
-defaultAzureADApp :: AuthorizationCode.Application
+defaultAzureADApp :: AuthorizationCodeApplication
 defaultAzureADApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["openid", "profile", "email"]

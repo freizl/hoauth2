@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
 
--- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3
 module Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword where
 
 import Data.Map.Strict (Map)
@@ -14,7 +13,10 @@ import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Types
 
-data Application = Application
+-- | An Application that supports "Resource Owner Password" flow
+--
+-- https://www.rfc-editor.org/rfc/rfc6749#section-4.3
+data ResourceOwnerPasswordApplication = ResourceOwnerPasswordApplication
   { ropClientId :: ClientId
   , ropClientSecret :: ClientSecret
   , ropName :: Text
@@ -24,27 +26,27 @@ data Application = Application
   , ropTokenRequestExtraParams :: Map Text Text
   }
 
-instance HasOAuth2Key Application where
-  mkOAuth2Key :: Application -> OAuth2
-  mkOAuth2Key Application {..} = toOAuth2Key ropClientId ropClientSecret
+instance HasOAuth2Key ResourceOwnerPasswordApplication where
+  mkOAuth2Key :: ResourceOwnerPasswordApplication -> OAuth2
+  mkOAuth2Key ResourceOwnerPasswordApplication {..} = toOAuth2Key ropClientId ropClientSecret
 
-instance HasTokenRequestClientAuthenticationMethod Application where
-  getClientAuthenticationMethod :: Application -> ClientAuthenticationMethod
+instance HasTokenRequestClientAuthenticationMethod ResourceOwnerPasswordApplication where
+  getClientAuthenticationMethod :: ResourceOwnerPasswordApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod _ = ClientSecretBasic
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3.2
-instance HasTokenRequest Application where
-  type ExchangeTokenInfo Application = ()
+instance HasTokenRequest ResourceOwnerPasswordApplication where
+  type ExchangeTokenInfo ResourceOwnerPasswordApplication = ()
 
-  data TokenRequest Application = PasswordTokenRequest
+  data TokenRequest ResourceOwnerPasswordApplication = PasswordTokenRequest
     { trScope :: Set Scope
     , trUsername :: Username
     , trPassword :: Password
     , trGrantType :: GrantTypeValue
     , trExtraParams :: Map Text Text
     }
-  mkTokenRequestParam :: Application -> () -> TokenRequest Application
-  mkTokenRequestParam Application {..} _ =
+  mkTokenRequestParam :: ResourceOwnerPasswordApplication -> () -> TokenRequest ResourceOwnerPasswordApplication
+  mkTokenRequestParam ResourceOwnerPasswordApplication {..} _ =
     PasswordTokenRequest
       { trUsername = ropUserName
       , trPassword = ropPassword
@@ -53,8 +55,8 @@ instance HasTokenRequest Application where
       , trExtraParams = ropTokenRequestExtraParams
       }
 
-instance ToQueryParam (TokenRequest Application) where
-  toQueryParam :: TokenRequest Application -> Map Text Text
+instance ToQueryParam (TokenRequest ResourceOwnerPasswordApplication) where
+  toQueryParam :: TokenRequest ResourceOwnerPasswordApplication -> Map Text Text
   toQueryParam PasswordTokenRequest {..} =
     Map.unions
       [ toQueryParam trGrantType
@@ -64,25 +66,25 @@ instance ToQueryParam (TokenRequest Application) where
       , trExtraParams
       ]
 
-instance HasUserInfoRequest Application
+instance HasUserInfoRequest ResourceOwnerPasswordApplication
 
-instance HasRefreshTokenRequest Application where
-  data RefreshTokenRequest Application = ResourceOwnerPasswordRefreshTokenRequest
+instance HasRefreshTokenRequest ResourceOwnerPasswordApplication where
+  data RefreshTokenRequest ResourceOwnerPasswordApplication = ResourceOwnerPasswordRefreshTokenRequest
     { rrRefreshToken :: OAuth2.RefreshToken
     , rrGrantType :: GrantTypeValue
     , rrScope :: Set Scope
     }
 
-  mkRefreshTokenRequestParam :: Application -> OAuth2.RefreshToken -> RefreshTokenRequest Application
-  mkRefreshTokenRequestParam Application {..} rt =
+  mkRefreshTokenRequestParam :: ResourceOwnerPasswordApplication -> OAuth2.RefreshToken -> RefreshTokenRequest ResourceOwnerPasswordApplication
+  mkRefreshTokenRequestParam ResourceOwnerPasswordApplication {..} rt =
     ResourceOwnerPasswordRefreshTokenRequest
       { rrScope = ropScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
       }
 
-instance ToQueryParam (RefreshTokenRequest Application) where
-  toQueryParam :: RefreshTokenRequest Application -> Map Text Text
+instance ToQueryParam (RefreshTokenRequest ResourceOwnerPasswordApplication) where
+  toQueryParam :: RefreshTokenRequest ResourceOwnerPasswordApplication -> Map Text Text
   toQueryParam ResourceOwnerPasswordRefreshTokenRequest {..} =
     Map.unions
       [ toQueryParam rrGrantType

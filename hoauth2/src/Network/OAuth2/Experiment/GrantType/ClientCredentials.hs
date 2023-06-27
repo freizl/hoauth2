@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
 
--- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4
 module Network.OAuth2.Experiment.GrantType.ClientCredentials where
 
 import Data.ByteString qualified as BS
@@ -13,7 +12,10 @@ import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
 
-data Application = Application
+-- | An Application that supports "Client Credentials" flow
+--
+-- https://www.rfc-editor.org/rfc/rfc6749#section-4.4
+data ClientCredentialsApplication = ClientCredentialsApplication
   { ccClientId :: ClientId
   , ccClientSecret :: ClientSecret
   , ccName :: Text
@@ -22,18 +24,18 @@ data Application = Application
   , ccTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
   }
 
-instance HasOAuth2Key Application where
-  mkOAuth2Key :: Application -> OAuth2
-  mkOAuth2Key Application {..} = toOAuth2Key ccClientId ccClientSecret
+instance HasOAuth2Key ClientCredentialsApplication where
+  mkOAuth2Key :: ClientCredentialsApplication -> OAuth2
+  mkOAuth2Key ClientCredentialsApplication {..} = toOAuth2Key ccClientId ccClientSecret
 
-instance HasTokenRequestClientAuthenticationMethod Application where
-  getClientAuthenticationMethod :: Application -> ClientAuthenticationMethod
-  getClientAuthenticationMethod Application {..} = ccTokenRequestAuthenticationMethod
+instance HasTokenRequestClientAuthenticationMethod ClientCredentialsApplication where
+  getClientAuthenticationMethod :: ClientCredentialsApplication -> ClientAuthenticationMethod
+  getClientAuthenticationMethod ClientCredentialsApplication {..} = ccTokenRequestAuthenticationMethod
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
-instance HasTokenRequest Application where
-  type ExchangeTokenInfo Application = ()
-  data TokenRequest Application = ClientCredentialsTokenRequest
+instance HasTokenRequest ClientCredentialsApplication where
+  type ExchangeTokenInfo ClientCredentialsApplication = ()
+  data TokenRequest ClientCredentialsApplication = ClientCredentialsTokenRequest
     { trScope :: Set Scope
     , trGrantType :: GrantTypeValue
     , trClientAssertionType :: Text
@@ -42,8 +44,8 @@ instance HasTokenRequest Application where
     , trClientAuthenticationMethod :: ClientAuthenticationMethod
     }
 
-  mkTokenRequestParam :: Application -> () -> TokenRequest Application
-  mkTokenRequestParam Application {..} _ =
+  mkTokenRequestParam :: ClientCredentialsApplication -> () -> TokenRequest ClientCredentialsApplication
+  mkTokenRequestParam ClientCredentialsApplication {..} _ =
     ClientCredentialsTokenRequest
       { trScope = ccScope
       , trGrantType = GTClientCredentials
@@ -53,8 +55,8 @@ instance HasTokenRequest Application where
       , trExtraParams = ccTokenRequestExtraParams
       }
 
-instance ToQueryParam (TokenRequest Application) where
-  toQueryParam :: TokenRequest Application -> Map Text Text
+instance ToQueryParam (TokenRequest ClientCredentialsApplication) where
+  toQueryParam :: TokenRequest ClientCredentialsApplication -> Map Text Text
   toQueryParam ClientCredentialsTokenRequest {..} =
     let clientAssertion =
           if trClientAuthenticationMethod == ClientAssertionJwt

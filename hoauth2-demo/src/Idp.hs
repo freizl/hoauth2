@@ -30,11 +30,6 @@ import Jose.Jwt
 import Lens.Micro
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode (Application (..))
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
-import Network.OAuth2.Experiment.GrantType.ClientCredentials qualified as ClientCredentials
-import Network.OAuth2.Experiment.GrantType.JwtBearer qualified as JwtBearer
-import Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword qualified as ResourceOwnerPassword
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Dropbox qualified as IDropbox
@@ -62,7 +57,7 @@ defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 createAuthorizationApps :: MonadIO m => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
 createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
   configParams <- readEnvFile
-  let initIdpAppConfig :: Idp i -> AuthorizationCode.Application -> IdpApplication i AuthorizationCode.Application
+  let initIdpAppConfig :: Idp i -> AuthorizationCodeApplication -> IdpApplication i AuthorizationCodeApplication
       initIdpAppConfig i idpAppConfig =
         case Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower $ getIdpAppName idpAppConfig) configParams of
           Nothing -> IdpApplication {idp = i, application = idpAppConfig}
@@ -94,7 +89,7 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
     , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeIdp IStackExchange.defaultStackExchangeApp)
     ]
 
-googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearer.Application)
+googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearerApplication)
 googleServiceAccountApp = do
   IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
   pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
@@ -115,12 +110,12 @@ googleServiceAccountApp = do
       )
   pure $ IdpApplication {idp = IGoogle.defaultGoogleIdp, application = IGoogle.defaultServiceAccountApp jwt}
 
-oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication IOkta.Okta ResourceOwnerPassword.Application
+oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication IOkta.Okta ResourceOwnerPasswordApplication
 oktaPasswordGrantApp i =
   IdpApplication
     { idp = i
     , application =
-        ResourceOwnerPassword.Application
+        ResourceOwnerPasswordApplication
           { ropClientId = ""
           , ropClientSecret = ""
           , ropName = "okta-demo-password-grant-app"
@@ -137,7 +132,7 @@ oktaPasswordGrantApp i =
 -- With Org AS, got this error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
-oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication IOkta.Okta ClientCredentials.Application)
+oktaClientCredentialsGrantApp :: Idp IOkta.Okta -> IO (IdpApplication IOkta.Okta ClientCredentialsApplication)
 oktaClientCredentialsGrantApp i = do
   let clientId = "0oa9mbklxn2Ac0oJ24x7"
   keyJsonStr <- BS.readFile ".okta-key.json"
@@ -150,7 +145,7 @@ oktaClientCredentialsGrantApp i = do
             IdpApplication
               { idp = i
               , application =
-                  ClientCredentials.Application
+                  ClientCredentialsApplication
                     { ccClientId = clientId
                     , ccClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
                     , ccTokenRequestAuthenticationMethod = ClientAssertionJwt
@@ -164,12 +159,12 @@ oktaClientCredentialsGrantApp i = do
     Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
-auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ResourceOwnerPassword.Application
+auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ResourceOwnerPasswordApplication
 auth0PasswordGrantApp i =
   IdpApplication
     { idp = i
     , application =
-        ResourceOwnerPassword.Application
+        ResourceOwnerPasswordApplication
           { ropClientId = ""
           , ropClientSecret = ""
           , ropName = "auth0-demo-password-grant-app"
@@ -181,12 +176,12 @@ auth0PasswordGrantApp i =
     }
 
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
-auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ClientCredentials.Application
+auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ClientCredentialsApplication
 auth0ClientCredentialsGrantApp i =
   IdpApplication
     { idp = i
     , application =
-        ClientCredentials.Application
+        ClientCredentialsApplication
           { ccClientId = ""
           , ccClientSecret = ""
           , ccTokenRequestAuthenticationMethod = ClientSecretPost

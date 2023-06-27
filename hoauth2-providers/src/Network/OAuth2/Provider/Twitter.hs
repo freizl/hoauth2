@@ -15,16 +15,15 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import URI.ByteString.QQ
 
 data Twitter = Twitter deriving (Eq, Show)
 
 type instance IdpUserInfo Twitter = TwitterUserResp
 
-defaultTwitterApp :: AuthorizationCode.Application
+defaultTwitterApp :: AuthorizationCodeApplication
 defaultTwitterApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["tweet.read", "users.read"]

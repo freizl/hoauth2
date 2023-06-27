@@ -28,8 +28,6 @@ import Jose.Jws
 import Jose.Jwt
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
-import Network.OAuth2.Experiment.GrantType.JwtBearer qualified as JwtBearer
 import OpenSSL.EVP.PKey (toKeyPair)
 import OpenSSL.PEM (
   PemPasswordSupply (PwNone),
@@ -48,9 +46,9 @@ type instance IdpUserInfo Google = GoogleUser
 
 -- * Authorization Code flow
 
-defaultGoogleApp :: AuthorizationCode.Application
+defaultGoogleApp :: AuthorizationCodeApplication
 defaultGoogleApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acName = "default-google-App"
     , acClientId = ""
     , acClientSecret = ""
@@ -63,9 +61,9 @@ defaultGoogleApp =
 
 -- * Service Account
 
-defaultServiceAccountApp :: Jwt -> JwtBearer.Application
+defaultServiceAccountApp :: Jwt -> JwtBearerApplication
 defaultServiceAccountApp jwt =
-  JwtBearer.Application
+  JwtBearerApplication
     { jbName = "google-sa-app"
     , jbJwtAssertion = unJwt jwt
     }

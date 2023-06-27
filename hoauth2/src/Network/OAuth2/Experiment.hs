@@ -40,9 +40,9 @@
 --       idpUserInfoEndpoint = [uri|https:\/\/www.googleapis.com\/oauth2\/v2\/userinfo|]
 --     }
 --
--- fooApp :: AuthorizationCode.Application
+-- fooApp :: AuthorizationCodeApplication
 -- fooApp =
---   AuthorizationCode.Application
+--   AuthorizationCodeApplication
 --     { acClientId = "xxxxx",
 --       acClientSecret = "xxxxx",
 --       acScope =
@@ -57,7 +57,7 @@
 --       acTokenRequestAuthenticationMethod = ClientSecretBasic,
 --     }
 --
--- fooIdpApplication :: IdpApplication AuthorizationCode.Application Google
+-- fooIdpApplication :: IdpApplication AuthorizationCodeApplication Google
 -- fooIdpApplication = IdpApplication fooApp googleIdp
 -- @
 --
@@ -90,6 +90,7 @@ module Network.OAuth2.Experiment (
   module Network.OAuth2.Experiment.Flows.TokenRequest,
   module Network.OAuth2.Experiment.Flows.UserInfoRequest,
   module Network.OAuth.OAuth2,
+  module Network.OAuth2.Experiment.GrantType,
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
@@ -97,6 +98,7 @@ import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest,
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
 import Network.OAuth2.Experiment.Flows.TokenRequest (conduitPkceTokenRequest, conduitTokenRequest)
 import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
+import Network.OAuth2.Experiment.GrantType
 import Network.OAuth2.Experiment.Pkce (
   CodeChallenge (..),
   CodeChallengeMethod (..),

@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
 
--- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
 module Network.OAuth2.Experiment.GrantType.AuthorizationCode where
 
 import Control.Monad.IO.Class (MonadIO (..))
@@ -18,7 +17,10 @@ import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Types
 import URI.ByteString hiding (UserInfo)
 
-data Application = Application
+-- | An Application that supports "Authorization code" flow
+--
+-- https://www.rfc-editor.org/rfc/rfc6749#section-4.1
+data AuthorizationCodeApplication = AuthorizationCodeApplication
   { acName :: Text
   , acClientId :: ClientId
   , acClientSecret :: ClientSecret
@@ -29,18 +31,17 @@ data Application = Application
   , acTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
   }
 
-instance HasOAuth2Key Application where
-  mkOAuth2Key :: Application -> OAuth2
-  mkOAuth2Key Application {..} = toOAuth2Key acClientId acClientSecret
+instance HasOAuth2Key AuthorizationCodeApplication where
+  mkOAuth2Key :: AuthorizationCodeApplication -> OAuth2
+  mkOAuth2Key AuthorizationCodeApplication {..} = toOAuth2Key acClientId acClientSecret
 
-instance HasTokenRequestClientAuthenticationMethod Application where
-  getClientAuthenticationMethod :: Application -> ClientAuthenticationMethod
-  getClientAuthenticationMethod Application {..} = acTokenRequestAuthenticationMethod
+instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication where
+  getClientAuthenticationMethod :: AuthorizationCodeApplication -> ClientAuthenticationMethod
+  getClientAuthenticationMethod AuthorizationCodeApplication {..} = acTokenRequestAuthenticationMethod
 
--- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.2
-instance HasAuthorizeRequest Application where
-  mkAuthorizeRequestParam :: Application -> AuthorizationRequestParam
-  mkAuthorizeRequestParam Application {..} =
+instance HasAuthorizeRequest AuthorizationCodeApplication where
+  mkAuthorizeRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
+  mkAuthorizeRequestParam AuthorizationCodeApplication {..} =
     AuthorizationRequestParam
       { arScope = acScope
       , arState = acAuthorizeState
@@ -50,8 +51,8 @@ instance HasAuthorizeRequest Application where
       , arExtraParams = acAuthorizeRequestExtraParams
       }
 
-instance HasPkceAuthorizeRequest Application where
-  mkPkceAuthorizeRequestParam :: MonadIO m => Application -> m (AuthorizationRequestParam, CodeVerifier)
+instance HasPkceAuthorizeRequest AuthorizationCodeApplication where
+  mkPkceAuthorizeRequestParam :: MonadIO m => AuthorizationCodeApplication -> m (AuthorizationRequestParam, CodeVerifier)
   mkPkceAuthorizeRequestParam app = do
     PkceRequestParam {..} <- mkPkceParam
     let authReqParam = mkAuthorizeRequestParam app
@@ -64,24 +65,24 @@ instance HasPkceAuthorizeRequest Application where
     pure (authReqParam {arExtraParams = combinatedExtraParams}, codeVerifier)
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
-instance HasTokenRequest Application where
-  type ExchangeTokenInfo Application = ExchangeToken
-  data TokenRequest Application = AuthorizationCodeTokenRequest
+instance HasTokenRequest AuthorizationCodeApplication where
+  type ExchangeTokenInfo AuthorizationCodeApplication = ExchangeToken
+  data TokenRequest AuthorizationCodeApplication = AuthorizationCodeTokenRequest
     { trCode :: ExchangeToken
     , trGrantType :: GrantTypeValue
     , trRedirectUri :: RedirectUri
     }
 
-  mkTokenRequestParam :: Application -> ExchangeToken -> TokenRequest Application
-  mkTokenRequestParam Application {..} authCode =
+  mkTokenRequestParam :: AuthorizationCodeApplication -> ExchangeToken -> TokenRequest AuthorizationCodeApplication
+  mkTokenRequestParam AuthorizationCodeApplication {..} authCode =
     AuthorizationCodeTokenRequest
       { trCode = authCode
       , trGrantType = GTAuthorizationCode
       , trRedirectUri = RedirectUri acRedirectUri
       }
 
-instance ToQueryParam (TokenRequest Application) where
-  toQueryParam :: TokenRequest Application -> Map Text Text
+instance ToQueryParam (TokenRequest AuthorizationCodeApplication) where
+  toQueryParam :: TokenRequest AuthorizationCodeApplication -> Map Text Text
   toQueryParam AuthorizationCodeTokenRequest {..} =
     Map.unions
       [ toQueryParam trCode
@@ -89,25 +90,25 @@ instance ToQueryParam (TokenRequest Application) where
       , toQueryParam trRedirectUri
       ]
 
-instance HasUserInfoRequest Application
+instance HasUserInfoRequest AuthorizationCodeApplication
 
-instance HasRefreshTokenRequest Application where
-  data RefreshTokenRequest Application = AuthorizationCodeTokenRefreshRequest
+instance HasRefreshTokenRequest AuthorizationCodeApplication where
+  data RefreshTokenRequest AuthorizationCodeApplication = AuthorizationCodeTokenRefreshRequest
     { rrRefreshToken :: OAuth2.RefreshToken
     , rrGrantType :: GrantTypeValue
     , rrScope :: Set Scope
     }
 
-  mkRefreshTokenRequestParam :: Application -> OAuth2.RefreshToken -> RefreshTokenRequest Application
-  mkRefreshTokenRequestParam Application {..} rt =
+  mkRefreshTokenRequestParam :: AuthorizationCodeApplication -> OAuth2.RefreshToken -> RefreshTokenRequest AuthorizationCodeApplication
+  mkRefreshTokenRequestParam AuthorizationCodeApplication {..} rt =
     AuthorizationCodeTokenRefreshRequest
       { rrScope = acScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
       }
 
-instance ToQueryParam (RefreshTokenRequest Application) where
-  toQueryParam :: RefreshTokenRequest Application -> Map Text Text
+instance ToQueryParam (RefreshTokenRequest AuthorizationCodeApplication) where
+  toQueryParam :: RefreshTokenRequest AuthorizationCodeApplication -> Map Text Text
   toQueryParam AuthorizationCodeTokenRefreshRequest {..} =
     Map.unions
       [ toQueryParam rrGrantType

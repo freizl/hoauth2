@@ -25,7 +25,6 @@ import Jose.Jws
 import Jose.Jwt
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
@@ -33,9 +32,9 @@ data Okta = Okta deriving (Eq, Show)
 
 type instance IdpUserInfo Okta = OktaUser
 
-defaultOktaApp :: AuthorizationCode.Application
+defaultOktaApp :: AuthorizationCodeApplication
 defaultOktaApp =
-  AuthorizationCode.Application
+  AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["openid", "profile", "email"]

@@ -25,7 +25,7 @@ library
     , http-types         >=0.11   && <0.13
     , scotty             >=0.10.0 && <0.13
     , text               >=0.11   && <2.1
-    , transformers       >=0.4 && <0.7
+    , transformers       >=0.4    && <0.7
     , uri-bytestring     >=0.2.3  && <0.4
     , wai                ^>=3.2
     , warp               >=3.2    && <3.4
