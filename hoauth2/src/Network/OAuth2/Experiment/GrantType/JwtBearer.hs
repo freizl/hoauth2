@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
+-- | https://www.rfc-editor.org/rfc/rfc7523.html#section-2.1
 module Network.OAuth2.Experiment.GrantType.JwtBearer where
 
 import Data.ByteString qualified as BS

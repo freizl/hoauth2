@@ -38,6 +38,7 @@ instance ToQueryParam AuthorizationRequestParam where
       , arExtraParams
       ]
 
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.2
 class HasAuthorizeRequest a where
   mkAuthorizeRequestParam :: a -> AuthorizationRequestParam
 
@@ -58,6 +59,7 @@ mkAuthorizeRequest idpApp =
 --                                    PKCE                                   --
 -------------------------------------------------------------------------------
 
+-- | https://datatracker.ietf.org/doc/html/rfc7636
 class HasAuthorizeRequest a => HasPkceAuthorizeRequest a where
   mkPkceAuthorizeRequestParam :: MonadIO m => a -> m (AuthorizationRequestParam, CodeVerifier)
 

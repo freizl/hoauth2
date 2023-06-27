@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3
 module Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword where
 
 import Data.Map.Strict (Map)

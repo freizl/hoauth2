@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1
 module Network.OAuth2.Experiment.GrantType.AuthorizationCode where
 
 import Control.Monad.IO.Class (MonadIO (..))
@@ -36,6 +37,7 @@ instance HasTokenRequestClientAuthenticationMethod Application where
   getClientAuthenticationMethod :: Application -> ClientAuthenticationMethod
   getClientAuthenticationMethod Application {..} = acTokenRequestAuthenticationMethod
 
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.2
 instance HasAuthorizeRequest Application where
   mkAuthorizeRequestParam :: Application -> AuthorizationRequestParam
   mkAuthorizeRequestParam Application {..} =

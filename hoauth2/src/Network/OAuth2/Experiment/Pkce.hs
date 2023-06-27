@@ -27,7 +27,7 @@ data PkceRequestParam = PkceRequestParam
   { codeVerifier :: CodeVerifier
   , codeChallenge :: CodeChallenge
   , codeChallengeMethod :: CodeChallengeMethod
-  -- ^ spec says optional but really it shall be s256 or can be omitted?
+  -- ^ spec says optional but in practice it is S256
   -- https://datatracker.ietf.org/doc/html/rfc7636#section-4.3
   }
 

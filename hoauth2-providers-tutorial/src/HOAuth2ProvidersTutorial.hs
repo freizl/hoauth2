@@ -28,7 +28,7 @@ import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode (Application (..))
 import Network.OAuth2.Experiment.GrantType.AuthorizationCode qualified as AuthorizationCode
-import Network.OAuth2.Experiment.Types
+import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..))
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
