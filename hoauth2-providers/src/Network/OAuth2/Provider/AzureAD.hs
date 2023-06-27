@@ -3,6 +3,8 @@
 -- | [AzureAD oauth2 flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
 module Network.OAuth2.Provider.AzureAD where
 
+import Control.Monad.IO.Class
+import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
@@ -11,12 +13,13 @@ import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
+import Network.OIDC.WellKnown
 
 data AzureAD = AzureAD deriving (Eq, Show)
 
 type instance IdpUserInfo AzureAD = AzureADUser
 
--- create app at https://go.microsoft.com/fwlink/?linkid=2083908
+-- Create app at https://go.microsoft.com/fwlink/?linkid=2083908
 --
 -- also be aware to find the right client id.
 -- see https://stackoverflow.com/a/70670961
@@ -36,11 +39,26 @@ defaultAzureADApp =
 -- | https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
 defaultAzureADIdp :: Idp AzureAD
 defaultAzureADIdp =
+  -- TODO: use `mkAzureIdp` instead of hard-code
   Idp
     { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
     , idpUserInfoEndpoint = [uri|https://graph.microsoft.com/oidc/userinfo|]
     , idpAuthorizeEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/authorize|]
     , idpTokenEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/token|]
+    }
+
+mkAzureIdp ::
+  MonadIO m =>
+  -- | Full domain with no http protocol. e.g. @contoso.onmicrosoft.com@
+  Text ->
+  ExceptT Text m (Idp AzureAD)
+mkAzureIdp domain = do
+  OpenIDConfigurationUris {..} <- fetchWellKnownUris ("login.microsoftonline.com/" <> domain)
+  pure $ Idp
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
+    , idpUserInfoEndpoint = userinfoUri
+    , idpAuthorizeEndpoint = authorizationUri
+    , idpTokenEndpoint = tokenUri
     }
 
 -- | https://learn.microsoft.com/en-us/azure/active-directory/develop/userinfo
