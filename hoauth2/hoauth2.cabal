@@ -4,7 +4,7 @@ name:               hoauth2
 -- http://wiki.haskell.org/Package_versioning_policy
 version:            2.8.1
 synopsis:           Haskell OAuth2 authentication client
-description:        See readme for more details.
+description:        This is Haskell binding of OAuth2 Authorization framework and Bearer Token Usage framework.
 homepage:           https://github.com/freizl/hoauth2
 license:            MIT
 license-file:       LICENSE
