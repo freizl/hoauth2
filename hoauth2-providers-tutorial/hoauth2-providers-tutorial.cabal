@@ -11,6 +11,7 @@ license-file:  LICENSE
 author:        Haisheng Wu (M)
 maintainer:    freizl@gmail.com
 category:      Network
+tested-with:   GHC <=9.6.1
 
 library
   exposed-modules:  HOAuth2ProvidersTutorial

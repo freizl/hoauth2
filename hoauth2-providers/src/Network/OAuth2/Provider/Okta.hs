@@ -1,10 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
-
 -- | [Okta OIDC & OAuth2 API](https://developer.okta.com/docs/reference/api/oidc/)
 module Network.OAuth2.Provider.Okta where
 

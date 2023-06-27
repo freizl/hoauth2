@@ -1,9 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
-
 -- | [StackExchange authentication guide](https://api.stackexchange.com/docs/authentication)
 --
 --    * [StackExchange Apps page](https://stackapps.com/apps/oauth)

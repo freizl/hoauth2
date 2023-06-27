@@ -14,7 +14,7 @@ copyright:          Haisheng Wu
 category:           Network
 build-type:         Simple
 stability:          Beta
-tested-with:        GHC <=9.2.2
+tested-with:        GHC <=9.6.1
 extra-source-files:
   README.org
   sample.env.json
@@ -41,14 +41,13 @@ executable hoauth2-demo
     Views
 
   default-extensions:
-    DataKinds
-    DeriveGeneric
-    GeneralizedNewtypeDeriving
     ImportQualifiedPost
     OverloadedStrings
     RecordWildCards
     TypeApplications
-    TypeFamilies
+    DeriveGeneric
+    QuasiQuotes
+    InstanceSigs
 
   hs-source-dirs:     src
   default-language:   Haskell2010

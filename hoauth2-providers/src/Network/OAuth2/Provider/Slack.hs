@@ -1,9 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
-
 -- | [Sign in with Slack](https://api.slack.com/authentication/sign-in-with-slack)
 --
 --   * [Using OAuth 2.0](https://api.slack.com/legacy/oauth)

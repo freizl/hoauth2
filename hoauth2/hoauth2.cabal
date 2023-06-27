@@ -51,14 +51,12 @@ library
     Network.OAuth2.Experiment.Types
 
   default-extensions:
-    DataKinds
     DeriveGeneric
     GeneralizedNewtypeDeriving
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
     RecordWildCards
-    TypeApplications
     TypeFamilies
 
   build-depends:

@@ -1,9 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
-
 -- | [Fitbit Authorization developer guide](https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/)
 module Network.OAuth2.Provider.Fitbit where
 

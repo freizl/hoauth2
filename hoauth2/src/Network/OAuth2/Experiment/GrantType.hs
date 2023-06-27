@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 module Network.OAuth2.Experiment.GrantType (
   module Network.OAuth2.Experiment.GrantType.AuthorizationCode,
   module Network.OAuth2.Experiment.GrantType.ClientCredentials,

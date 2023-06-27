@@ -14,7 +14,7 @@ copyright:     Haisheng Wu
 category:      Network
 build-type:    Simple
 stability:     Beta
-tested-with:   GHC <=9.2.2
+tested-with:   GHC <=9.6.1
 
 -- A copyright notice.
 -- copyright:
