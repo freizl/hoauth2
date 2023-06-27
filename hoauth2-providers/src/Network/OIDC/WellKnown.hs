@@ -1,8 +1,12 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
 module Network.OIDC.WellKnown where
 
 import Control.Monad.Except
+#if MIN_VERSION_base(4,18,0)
+import Control.Monad.IO.Class
+#endif
 import Data.Aeson
 import Data.Bifunctor
 import Data.ByteString.Lazy (ByteString)

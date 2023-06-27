@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Idp where
 
 import Control.Monad.IO.Class

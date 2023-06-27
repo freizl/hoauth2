@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- | [ZOHO oauth overview](https://www.zoho.com/crm/developer/docs/api/v2/oauth-overview.html)
 module Network.OAuth2.Provider.ZOHO where
 

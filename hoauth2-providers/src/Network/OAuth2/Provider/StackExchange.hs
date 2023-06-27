@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- | [StackExchange authentication guide](https://api.stackexchange.com/docs/authentication)
 --
 --    * [StackExchange Apps page](https://stackapps.com/apps/oauth)

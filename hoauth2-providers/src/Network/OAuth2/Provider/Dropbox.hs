@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- | [DropBox oauth guide](https://developers.dropbox.com/oauth-guide)
 module Network.OAuth2.Provider.Dropbox where
 

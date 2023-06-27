@@ -29,7 +29,6 @@ library
     RecordWildCards
     TypeApplications
     TypeFamilies
-    QuasiQuotes
 
   exposed-modules:
     Data.ByteString.Contrib

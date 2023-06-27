@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- | [Google build oauth2 web server application](https://developers.google.com/identity/protocols/oauth2/web-server)
 module Network.OAuth2.Provider.Google where
 

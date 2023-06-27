@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- | [Auth0](https://auth0.com)
 --
 --   * [Auth0 Authorize Application](https://auth0.com/docs/api/authentication#authorize-application)

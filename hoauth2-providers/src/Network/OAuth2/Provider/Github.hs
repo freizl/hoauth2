@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- | [Github build oauth applications guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
 module Network.OAuth2.Provider.Github where
 
