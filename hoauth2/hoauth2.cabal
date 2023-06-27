@@ -64,7 +64,7 @@ library
     , memory                ^>=0.18
     , microlens             ^>=0.4.0
     , text                  ^>=2.0
-    , transformers          >=0.6
+    , transformers          >=0.4 && <0.7
     , uri-bytestring        >=0.2.3  && <0.4
     , uri-bytestring-aeson  ^>=0.1
 
