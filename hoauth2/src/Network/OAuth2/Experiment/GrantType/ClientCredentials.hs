@@ -2,7 +2,6 @@
 
 module Network.OAuth2.Experiment.GrantType.ClientCredentials where
 
-import Data.ByteString qualified as BS
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
@@ -38,8 +37,7 @@ instance HasTokenRequest ClientCredentialsApplication where
   data TokenRequest ClientCredentialsApplication = ClientCredentialsTokenRequest
     { trScope :: Set Scope
     , trGrantType :: GrantTypeValue
-    , trClientAssertionType :: Text
-    , trClientAssertion :: BS.ByteString
+    , trClientSecret :: ClientSecret
     , trExtraParams :: Map Text Text
     , trClientAuthenticationMethod :: ClientAuthenticationMethod
     }
@@ -49,8 +47,7 @@ instance HasTokenRequest ClientCredentialsApplication where
     ClientCredentialsTokenRequest
       { trScope = ccScope
       , trGrantType = GTClientCredentials
-      , trClientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-      , trClientAssertion = tlToBS $ unClientSecret ccClientSecret
+      , trClientSecret = ccClientSecret
       , trClientAuthenticationMethod = ccTokenRequestAuthenticationMethod
       , trExtraParams = ccTokenRequestExtraParams
       }
@@ -62,8 +59,8 @@ instance ToQueryParam (TokenRequest ClientCredentialsApplication) where
           if trClientAuthenticationMethod == ClientAssertionJwt
             then
               Map.fromList
-                [ ("client_assertion_type", trClientAssertionType)
-                , ("client_assertion", bs8ToLazyText trClientAssertion)
+                [ ("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+                , ("client_assertion", bs8ToLazyText $ tlToBS $ unClientSecret trClientSecret)
                 ]
             else Map.empty
      in Map.unions
