@@ -138,7 +138,7 @@ testPasswordGrantTypeH (auth0, okta) = do
     testPasswordGrantType idpApp = do
       exceptToActionM $ do
         mgr <- liftIO $ newManager tlsManagerSettings
-        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr ()
+        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
         user <- tryFetchUser mgr token idpApp
         liftIO $ print user
       redirectToHomeM
@@ -161,7 +161,7 @@ testClientCredentialsGrantType testApp = do
     mgr <- liftIO $ newManager tlsManagerSettings
     -- client credentials flow is meant for machine to machine
     -- hence wont be able to hit /userinfo endpoint
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr ()
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
     liftIO $ print tokenResp
   redirectToHomeM
 
@@ -171,7 +171,7 @@ testJwtBearerGrantTypeH = do
   exceptToActionM $ do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr ()
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
     user <- tryFetchUser mgr tokenResp testApp
     liftIO $ print user
   redirectToHomeM

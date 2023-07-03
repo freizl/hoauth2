@@ -33,14 +33,14 @@ instance HasTokenRequestClientAuthenticationMethod JwtBearerApplication where
   getClientAuthenticationMethod _ = ClientAssertionJwt
 
 instance HasTokenRequest JwtBearerApplication where
-  type ExchangeTokenInfo JwtBearerApplication = ()
+  type ExchangeTokenInfo JwtBearerApplication = NoNeedExchangeToken
 
   data TokenRequest JwtBearerApplication = JwtBearerTokenRequest
     { trGrantType :: GrantTypeValue -- \| 'GTJwtBearer'
     , trAssertion :: BS.ByteString -- \| The the signed JWT token
     }
 
-  mkTokenRequestParam :: JwtBearerApplication -> () -> TokenRequest JwtBearerApplication
+  mkTokenRequestParam :: JwtBearerApplication -> NoNeedExchangeToken -> TokenRequest JwtBearerApplication
   mkTokenRequestParam JwtBearerApplication {..} _ =
     JwtBearerTokenRequest
       { trGrantType = GTJwtBearer

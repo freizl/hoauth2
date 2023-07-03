@@ -36,7 +36,7 @@ instance HasTokenRequestClientAuthenticationMethod ResourceOwnerPasswordApplicat
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3.2
 instance HasTokenRequest ResourceOwnerPasswordApplication where
-  type ExchangeTokenInfo ResourceOwnerPasswordApplication = ()
+  type ExchangeTokenInfo ResourceOwnerPasswordApplication = NoNeedExchangeToken
 
   data TokenRequest ResourceOwnerPasswordApplication = PasswordTokenRequest
     { trScope :: Set Scope
@@ -45,7 +45,7 @@ instance HasTokenRequest ResourceOwnerPasswordApplication where
     , trGrantType :: GrantTypeValue
     , trExtraParams :: Map Text Text
     }
-  mkTokenRequestParam :: ResourceOwnerPasswordApplication -> () -> TokenRequest ResourceOwnerPasswordApplication
+  mkTokenRequestParam :: ResourceOwnerPasswordApplication -> NoNeedExchangeToken -> TokenRequest ResourceOwnerPasswordApplication
   mkTokenRequestParam ResourceOwnerPasswordApplication {..} _ =
     PasswordTokenRequest
       { trUsername = ropUserName

@@ -20,6 +20,8 @@ class HasOAuth2Key a where
 class HasTokenRequestClientAuthenticationMethod a where
   getClientAuthenticationMethod :: a -> ClientAuthenticationMethod
 
+data NoNeedExchangeToken = NoNeedExchangeToken
+
 class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasTokenRequest a where
   -- Each GrantTypeFlow has slightly different request parameter to /token endpoint.
   data TokenRequest a

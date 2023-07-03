@@ -98,7 +98,11 @@ module Network.OAuth2.Experiment (
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
-import Network.OAuth2.Experiment.Flows.TokenRequest (conduitPkceTokenRequest, conduitTokenRequest)
+import Network.OAuth2.Experiment.Flows.TokenRequest (
+  NoNeedExchangeToken (..),
+  conduitPkceTokenRequest,
+  conduitTokenRequest,
+ )
 import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
 import Network.OAuth2.Experiment.GrantType
 import Network.OAuth2.Experiment.Pkce (

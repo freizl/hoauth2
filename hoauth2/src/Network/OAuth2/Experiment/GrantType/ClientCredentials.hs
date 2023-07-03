@@ -33,7 +33,7 @@ instance HasTokenRequestClientAuthenticationMethod ClientCredentialsApplication 
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
 instance HasTokenRequest ClientCredentialsApplication where
-  type ExchangeTokenInfo ClientCredentialsApplication = ()
+  type ExchangeTokenInfo ClientCredentialsApplication = NoNeedExchangeToken
   data TokenRequest ClientCredentialsApplication = ClientCredentialsTokenRequest
     { trScope :: Set Scope
     , trGrantType :: GrantTypeValue
@@ -42,7 +42,7 @@ instance HasTokenRequest ClientCredentialsApplication where
     , trClientAuthenticationMethod :: ClientAuthenticationMethod
     }
 
-  mkTokenRequestParam :: ClientCredentialsApplication -> () -> TokenRequest ClientCredentialsApplication
+  mkTokenRequestParam :: ClientCredentialsApplication -> NoNeedExchangeToken -> TokenRequest ClientCredentialsApplication
   mkTokenRequestParam ClientCredentialsApplication {..} _ =
     ClientCredentialsTokenRequest
       { trScope = ccScope
