@@ -43,4 +43,4 @@ jobs:
           cabal build --only-dependencies --enable-tests all
 
       - name: Test
-        run: cd hoauth2 && cabal test
+        run: make clean && cabal test all
