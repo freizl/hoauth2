@@ -1,8 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
 
 -- | [Fitbit Authorization developer guide](https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/)
 module Network.OAuth2.Provider.Fitbit where
@@ -12,7 +8,7 @@ import Data.Aeson
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
@@ -20,18 +16,17 @@ data Fitbit = Fitbit deriving (Eq, Show)
 
 type instance IdpUserInfo Fitbit = FitbitUser
 
-defaultFitbitApp :: IdpApplication 'AuthorizationCode Fitbit
+defaultFitbitApp :: AuthorizationCodeApplication
 defaultFitbitApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.empty
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-fitbit-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultFitbitIdp
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.empty
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-fitbit-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultFitbitIdp :: Idp Fitbit

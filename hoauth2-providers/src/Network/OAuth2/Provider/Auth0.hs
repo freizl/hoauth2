@@ -1,12 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
 
 -- | [Auth0](https://auth0.com)
 --
@@ -22,7 +14,7 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
@@ -32,18 +24,17 @@ data Auth0 = Auth0
 
 type instance IdpUserInfo Auth0 = Auth0User
 
-defaultAuth0App :: Idp Auth0 -> IdpApplication 'AuthorizationCode Auth0
-defaultAuth0App i =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["openid", "profile", "email", "offline_access"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-auth0-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = i
+defaultAuth0App :: AuthorizationCodeApplication
+defaultAuth0App =
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["openid", "profile", "email", "offline_access"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-auth0-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultAuth0Idp :: Idp Auth0

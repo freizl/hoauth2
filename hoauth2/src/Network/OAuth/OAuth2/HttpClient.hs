@@ -1,7 +1,3 @@
-{-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 -- | Bindings for The OAuth 2.0 Authorization Framework: Bearer Token Usage
 -- RFC6750 <https://www.rfc-editor.org/rfc/rfc6750>
 module Network.OAuth.OAuth2.HttpClient (

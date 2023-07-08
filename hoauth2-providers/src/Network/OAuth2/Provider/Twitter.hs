@@ -1,8 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
 
 -- | [Twitter OAuth2 guide](https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code)
 module Network.OAuth2.Provider.Twitter where
@@ -13,7 +9,7 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
@@ -21,18 +17,17 @@ data Twitter = Twitter deriving (Eq, Show)
 
 type instance IdpUserInfo Twitter = TwitterUserResp
 
-defaultTwitterApp :: IdpApplication 'AuthorizationCode Twitter
+defaultTwitterApp :: AuthorizationCodeApplication
 defaultTwitterApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["tweet.read", "users.read"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-twitter-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultTwitterIdp
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["tweet.read", "users.read"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-twitter-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acAuthorizeRequestExtraParams = Map.empty
     }
 
 defaultTwitterIdp :: Idp Twitter

@@ -1,8 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
 
 -- | [Github build oauth applications guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
 module Network.OAuth2.Provider.Github where
@@ -12,7 +8,7 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
@@ -20,18 +16,17 @@ data Github = Github deriving (Eq, Show)
 
 type instance IdpUserInfo Github = GithubUser
 
-defaultGithubApp :: IdpApplication 'AuthorizationCode Github
+defaultGithubApp :: AuthorizationCodeApplication
 defaultGithubApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.empty
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-github-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultGithubIdp
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.empty
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-github-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultGithubIdp :: Idp Github

@@ -8,7 +8,7 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
@@ -20,18 +20,17 @@ type instance IdpUserInfo AzureAD = AzureADUser
 --
 -- also be aware to find the right client id.
 -- see https://stackoverflow.com/a/70670961
-defaultAzureADApp :: IdpApplication 'AuthorizationCode AzureAD
+defaultAzureADApp :: AuthorizationCodeApplication
 defaultAzureADApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["openid", "profile", "email"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-azure-app"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = defaultAzureADIdp
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["openid", "profile", "email"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-azure-app"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 -- | https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration

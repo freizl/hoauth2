@@ -1,9 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
 
 -- | [Okta OIDC & OAuth2 API](https://developer.okta.com/docs/reference/api/oidc/)
 module Network.OAuth2.Provider.Okta where
@@ -23,7 +18,7 @@ import Jose.Jwa
 import Jose.Jwk
 import Jose.Jws
 import Jose.Jwt
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
@@ -32,18 +27,17 @@ data Okta = Okta deriving (Eq, Show)
 
 type instance IdpUserInfo Okta = OktaUser
 
-defaultOktaApp :: Idp Okta -> IdpApplication 'AuthorizationCode Okta
-defaultOktaApp i =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["openid", "profile", "email"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppName = "default-okta-App"
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idp = i
+defaultOktaApp :: AuthorizationCodeApplication
+defaultOktaApp =
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["openid", "profile", "email"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acName = "default-okta-App"
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
 defaultOktaIdp :: Idp Okta

@@ -1,8 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeFamilies #-}
 
 -- | [Sign in with Slack](https://api.slack.com/authentication/sign-in-with-slack)
 --
@@ -14,7 +10,7 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2
+import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
@@ -22,18 +18,17 @@ data Slack = Slack deriving (Show, Eq)
 
 type instance IdpUserInfo Slack = SlackUser
 
-defaultSlackApp :: IdpApplication 'AuthorizationCode Slack
+defaultSlackApp :: AuthorizationCodeApplication
 defaultSlackApp =
-  AuthorizationCodeIdpApplication
-    { idpAppClientId = ""
-    , idpAppClientSecret = ""
-    , idpAppScope = Set.fromList ["openid", "profile"]
-    , idpAppAuthorizeState = "CHANGE_ME"
-    , idpAppAuthorizeExtraParams = Map.empty
-    , idpAppRedirectUri = [uri|http://localhost|]
-    , idpAppTokenRequestAuthenticationMethod = ClientSecretBasic
-    , idpAppName = "default-slack-App"
-    , idp = defaultSlackIdp
+  AuthorizationCodeApplication
+    { acClientId = ""
+    , acClientSecret = ""
+    , acScope = Set.fromList ["openid", "profile"]
+    , acAuthorizeState = "CHANGE_ME"
+    , acAuthorizeRequestExtraParams = Map.empty
+    , acRedirectUri = [uri|http://localhost|]
+    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acName = "default-slack-App"
     }
 
 -- https://slack.com/.well-known/openid-configuration

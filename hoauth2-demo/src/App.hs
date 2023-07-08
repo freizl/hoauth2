@@ -1,13 +1,5 @@
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 
 module App (app) where
 
@@ -24,6 +16,7 @@ import Network.HTTP.Types
 import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
@@ -137,18 +130,15 @@ testPasswordGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
   where
     testPasswordGrantType ::
-      ( HasTokenRequest a
-      , 'ResourceOwnerPassword ~ a
-      , HasDemoLoginUser b
-      , HasUserInfoRequest a
-      , FromJSON (IdpUserInfo b)
+      ( HasDemoLoginUser i
+      , FromJSON (IdpUserInfo i)
       ) =>
-      IdpApplication a b ->
+      IdpApplication i ResourceOwnerPasswordApplication ->
       ActionM ()
     testPasswordGrantType idpApp = do
       exceptToActionM $ do
         mgr <- liftIO $ newManager tlsManagerSettings
-        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr
+        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
         user <- tryFetchUser mgr token idpApp
         liftIO $ print user
       redirectToHomeM
@@ -164,17 +154,14 @@ testClientCredentialGrantTypeH (auth0, okta) = do
     _ -> raise $ "unable to find password grant type flow for idp " <> i
 
 testClientCredentialsGrantType ::
-  forall a b.
-  'ClientCredentials ~ b =>
-  HasTokenRequest b =>
-  IdpApplication b a ->
+  IdpApplication i ClientCredentialsApplication ->
   ActionM ()
 testClientCredentialsGrantType testApp = do
   exceptToActionM $ do
     mgr <- liftIO $ newManager tlsManagerSettings
     -- client credentials flow is meant for machine to machine
     -- hence wont be able to hit /userinfo endpoint
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
     liftIO $ print tokenResp
   redirectToHomeM
 
@@ -184,7 +171,7 @@ testJwtBearerGrantTypeH = do
   exceptToActionM $ do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
     user <- tryFetchUser mgr tokenResp testApp
     liftIO $ print user
   redirectToHomeM
@@ -214,16 +201,7 @@ fetchTokenAndUser ::
   ExceptT Text IO ()
 fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
   mgr <- liftIO $ newManager tlsManagerSettings
-  token <-
-    if isSupportPkce idpAppConfig
-      then do
-        when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
-        withExceptT oauth2ErrorToText $
-          conduitPkceTokenRequest
-            idpAppConfig
-            mgr
-            (ExchangeToken $ TL.toStrict exchangeToken, fromJust authorizePkceCodeVerifier)
-      else withExceptT oauth2ErrorToText $ conduitTokenRequest idpAppConfig mgr (ExchangeToken $ TL.toStrict exchangeToken)
+  token <- tryFetchAccessToken idpAppConfig mgr exchangeToken
   liftIO $ do
     putStrLn "Found access token"
     print token
@@ -232,6 +210,22 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
     print luser
   updateIdp c idpData luser token
   where
+    tryFetchAccessToken ::
+      IdpApplication i AuthorizationCodeApplication ->
+      Manager ->
+      Text ->
+      ExceptT Text IO OAuth2Token
+    tryFetchAccessToken idpApp mgr exchangeTokenText = do
+      if isSupportPkce idpApp
+        then do
+          when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
+          withExceptT oauth2ErrorToText $
+            conduitPkceTokenRequest
+              idpApp
+              mgr
+              (ExchangeToken $ TL.toStrict exchangeTokenText, fromJust authorizePkceCodeVerifier)
+        else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr (ExchangeToken $ TL.toStrict exchangeTokenText)
+
     updateIdp :: MonadIO m => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
     updateIdp c1 (DemoAppEnv iApp sData) luser token =
       upsertDemoAppEnv
@@ -242,15 +236,15 @@ oauth2ErrorToText :: TokenRequestError -> Text
 oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::
-  forall a b.
-  (HasDemoLoginUser a, HasUserInfoRequest b, FromJSON (IdpUserInfo a)) =>
+  forall i a.
+  (HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
   Manager ->
   OAuth2Token ->
-  IdpApplication b a ->
+  IdpApplication i a ->
   ExceptT Text IO DemoLoginUser
 tryFetchUser mgr at idpAppConfig = do
   user <- withExceptT bslToText $ conduitUserInfoRequest idpAppConfig mgr (accessToken at)
-  pure $ toLoginUser @a user
+  pure $ toLoginUser @i user
 
 doRefreshToken :: DemoAppEnv -> ExceptT Text IO OAuth2Token
 doRefreshToken (DemoAppEnv (DemoAuthorizationApp idpAppConfig) (DemoAppPerAppSessionData {..})) = do

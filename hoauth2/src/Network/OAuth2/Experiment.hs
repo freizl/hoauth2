@@ -1,11 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | This module contains a new way of doing OAuth2 authorization and authentication
 -- in order to obtain Access Token and maybe Refresh Token base on rfc6749.
 --
@@ -37,7 +29,8 @@
 -- Firstly, initialize your IdP (use google as example) and the application.
 --
 -- @
--- {\-# LANGUAGE DataKinds #-\}
+--
+-- import Network.OAuth2.Experiment
 --
 -- data Google = Google deriving (Eq, Show)
 -- googleIdp :: Idp Google
@@ -49,29 +42,31 @@
 --       idpUserInfoEndpoint = [uri|https:\/\/www.googleapis.com\/oauth2\/v2\/userinfo|]
 --     }
 --
--- fooApp :: IdpApplication 'AuthorizationCode Google
+-- fooApp :: AuthorizationCodeApplication
 -- fooApp =
---   AuthorizationCodeIdpApplication
---     { idpAppClientId = "xxxxx",
---       idpAppClientSecret = "xxxxx",
---       idpAppScope =
+--   AuthorizationCodeApplication
+--     { acClientId = "xxxxx",
+--       acClientSecret = "xxxxx",
+--       acScope =
 --         Set.fromList
 --           [ \"https:\/\/www.googleapis.com\/auth\/userinfo.email\",
 --             \"https:\/\/www.googleapis.com\/auth\/userinfo.profile\"
 --           ],
---       idpAppAuthorizeState = \"CHANGE_ME\",
---       idpAppAuthorizeExtraParams = Map.empty,
---       idpAppRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
---       idpAppName = "default-google-App",
---       idpAppTokenRequestAuthenticationMethod = ClientSecretBasic,
---       idp = googleIdp
+--       acAuthorizeState = \"CHANGE_ME\",
+--       acAuthorizeRequestExtraParams = Map.empty,
+--       acRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
+--       acName = "default-google-App",
+--       acTokenRequestAuthenticationMethod = ClientSecretBasic,
 --     }
+--
+-- fooIdpApplication :: IdpApplication AuthorizationCodeApplication Google
+-- fooIdpApplication = IdpApplication fooApp googleIdp
 -- @
 --
 -- Secondly, construct the authorize URL.
 --
 -- @
--- authorizeUrl = mkAuthorizeRequest fooApp
+-- authorizeUrl = mkAuthorizeRequest fooIdpApplication
 -- @
 --
 -- Thirdly, after a successful redirect with authorize code,
@@ -79,20 +74,53 @@
 --
 -- @
 -- mgr <- liftIO $ newManager tlsManagerSettings
--- tokenResp <- conduitTokenRequest fooApp mgr authorizeCode
+-- tokenResp <- conduitTokenRequest fooIdpApplication mgr authorizeCode
 -- @
 --
 -- Lastly, you probably like to fetch user info
 --
 -- @
--- conduitUserInfoRequest fooApp mgr (accessToken tokenResp)
+-- conduitUserInfoRequest fooIdpApplication mgr (accessToken tokenResp)
 -- @
 --
--- Also you could find example from @hoauth2-providers-tutorials@ module.
+-- You could also find example from @hoauth2-providers-tutorials@ module.
 module Network.OAuth2.Experiment (
-  module Network.OAuth2.Experiment.Types,
   module Network.OAuth2.Experiment.Pkce,
+  module Network.OAuth2.Experiment.Types,
+  module Network.OAuth2.Experiment.Flows.AuthorizationRequest,
+  module Network.OAuth2.Experiment.Flows.RefreshTokenRequest,
+  module Network.OAuth2.Experiment.Flows.TokenRequest,
+  module Network.OAuth2.Experiment.Flows.UserInfoRequest,
+  module Network.OAuth.OAuth2,
+  module Network.OAuth2.Experiment.GrantType,
 ) where
 
-import Network.OAuth2.Experiment.Pkce
-import Network.OAuth2.Experiment.Types
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
+import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
+import Network.OAuth2.Experiment.Flows.TokenRequest (
+  NoNeedExchangeToken (..),
+  conduitPkceTokenRequest,
+  conduitTokenRequest,
+ )
+import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
+import Network.OAuth2.Experiment.GrantType
+import Network.OAuth2.Experiment.Pkce (
+  CodeChallenge (..),
+  CodeChallengeMethod (..),
+  CodeVerifier (..),
+  PkceRequestParam (..),
+  mkPkceParam,
+ )
+import Network.OAuth2.Experiment.Types (
+  AuthorizeState (..),
+  ClientId (..),
+  ClientSecret (..),
+  Idp (..),
+  IdpApplication (..),
+  IdpUserInfo,
+  Password (..),
+  RedirectUri (..),
+  Scope (..),
+  Username (..),
+ )

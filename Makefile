@@ -14,7 +14,7 @@ l:
 hlint-fix:
 	hlint --refactor --refactor-options="--inplace" .
 
-doc: build
+doc: b
 	cabal haddock all
 
 dist: rb

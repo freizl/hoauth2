@@ -1,9 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 
 module Types where
 
@@ -28,7 +25,7 @@ import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
-import Text.Mustache
+import Text.Mustache (ToMustache (..), (~>))
 import Text.Mustache qualified as M
 import Prelude hiding (id)
 
@@ -56,6 +53,7 @@ instance HasDemoLoginUser IGoogle.Google where
   toLoginUser IGoogle.GoogleUser {..} = DemoLoginUser {loginUserName = name}
 
 instance HasDemoLoginUser IZOHO.ZOHO where
+  toLoginUser :: IdpUserInfo IZOHO.ZOHO -> DemoLoginUser
   toLoginUser resp =
     let us = IZOHO.users resp
      in case us of
@@ -125,19 +123,11 @@ instance HasDemoLoginUser IStackExchange.StackExchange where
 -- Heterogenous collections
 -- https://wiki.haskell.org/Heterogenous_collections
 data DemoAuthorizationApp
-  = forall a b.
-    ( HasDemoLoginUser b
-    , FromJSON (IdpUserInfo b)
-    , 'AuthorizationCode ~ a
-    , HasPkceAuthorizeRequest a
-    , HasPkceTokenRequest a
-    , HasUserInfoRequest a
-    , HasIdpAppName a
-    , HasAuthorizeRequest a
-    , HasTokenRequest a
-    , HasRefreshTokenRequest a
+  = forall i.
+    ( HasDemoLoginUser i
+    , FromJSON (IdpUserInfo i)
     ) =>
-    DemoAuthorizationApp (IdpApplication a b)
+    DemoAuthorizationApp (IdpApplication i AuthorizationCodeApplication)
 
 -------------------------------------------------------------------------------
 
@@ -168,7 +158,7 @@ instance Show DemoAppEnv where
   show = TL.unpack . toLabel
 
 toLabel :: DemoAppEnv -> TL.Text
-toLabel (DemoAppEnv (DemoAuthorizationApp idpAppConfig) _) = getIdpAppName idpAppConfig
+toLabel (DemoAppEnv (DemoAuthorizationApp idpAppConfig) _) = getIdpAppName (application idpAppConfig)
 
 -- simplify use case to only allow one idp instance for now.
 instance Eq DemoAppEnv where
@@ -190,7 +180,7 @@ instance ToMustache DemoAppEnv where
       [ "codeFlowUri" ~> authorizeAbsUri
       , "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
-      , "name" ~> TL.unpack (getIdpAppName idpAppConfig)
+      , "name" ~> TL.unpack (getIdpAppName (application idpAppConfig))
       ]
 
 instance ToMustache DemoLoginUser where
@@ -210,17 +200,17 @@ instance ToMustache TemplateData where
 
 -------------------------------------------------------------------------------
 
-class HasIdpAppName (a :: GrantTypeFlow) where
-  getIdpAppName :: IdpApplication a i -> Text
+class HasIdpAppName a where
+  getIdpAppName :: a -> Text
 
-instance HasIdpAppName 'ClientCredentials where
-  getIdpAppName :: IdpApplication 'ClientCredentials i -> Text
-  getIdpAppName ClientCredentialsIDPApplication {..} = idpAppName
+instance HasIdpAppName ClientCredentialsApplication where
+  getIdpAppName :: ClientCredentialsApplication -> Text
+  getIdpAppName ClientCredentialsApplication {..} = ccName
 
-instance HasIdpAppName 'ResourceOwnerPassword where
-  getIdpAppName :: IdpApplication 'ResourceOwnerPassword i -> Text
-  getIdpAppName ResourceOwnerPasswordIDPApplication {..} = idpAppName
+instance HasIdpAppName ResourceOwnerPasswordApplication where
+  getIdpAppName :: ResourceOwnerPasswordApplication -> Text
+  getIdpAppName ResourceOwnerPasswordApplication {..} = ropName
 
-instance HasIdpAppName 'AuthorizationCode where
-  getIdpAppName :: IdpApplication 'AuthorizationCode i -> Text
-  getIdpAppName AuthorizationCodeIdpApplication {..} = idpAppName
+instance HasIdpAppName AuthorizationCodeApplication where
+  getIdpAppName :: AuthorizationCodeApplication -> Text
+  getIdpAppName AuthorizationCodeApplication {..} = acName
