@@ -46,8 +46,8 @@ import Prelude hiding (id)
 defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
-createAuthorizationApps :: MonadIO m => (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m [DemoAuthorizationApp]
-createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
+createAuthorizationApps :: MonadIO m => (Idp IAuth0.Auth0, Idp IOkta.Okta, Idp IAzureAD.AzureAD) -> ExceptT Text m [DemoAuthorizationApp]
+createAuthorizationApps (myAuth0Idp, myOktaIdp, myAzureIdp) = do
   configParams <- readEnvFile
   let initIdpAppConfig :: Idp i -> AuthorizationCodeApplication -> IdpApplication i AuthorizationCodeApplication
       initIdpAppConfig i idpAppConfig =
@@ -65,7 +65,7 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
                     }
              in IdpApplication {idp = i, application = newApp}
   pure
-    [ DemoAuthorizationApp (initIdpAppConfig IAzureAD.defaultAzureADIdp IAzureAD.defaultAzureADApp)
+    [ DemoAuthorizationApp (initIdpAppConfig myAzureIdp IAzureAD.defaultAzureADApp)
     , DemoAuthorizationApp (initIdpAppConfig myAuth0Idp IAuth0.defaultAuth0App)
     , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookIdp IFacebook.defaultFacebookApp)
     , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitIdp IFitbit.defaultFitbitApp)
@@ -210,7 +210,11 @@ readEnvFile = liftIO $ do
         Right ec -> return ec
     else return Aeson.empty
 
-initIdps :: MonadIO m => CacheStore -> (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ExceptT Text m ()
+initIdps ::
+  MonadIO m =>
+  CacheStore ->
+  (Idp IAuth0.Auth0, Idp IOkta.Okta, Idp IAzureAD.AzureAD) ->
+  ExceptT Text m ()
 initIdps c is = do
   idps <- createAuthorizationApps is
   mapM mkDemoAppEnv idps >>= mapM_ (upsertDemoAppEnv c)

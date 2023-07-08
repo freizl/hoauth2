@@ -37,18 +37,6 @@ defaultAuth0App =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
-defaultAuth0Idp :: Idp Auth0
-defaultAuth0Idp =
-  Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0)
-    , --  https://auth0.com/docs/api/authentication#user-profile
-      idpUserInfoEndpoint = [uri|https://foo.auth0.com/userinfo|]
-    , -- https://auth0.com/docs/api/authentication#authorization-code-flow
-      idpAuthorizeEndpoint = [uri|https://foo.auth0.com/authorize|]
-    , -- https://auth0.com/docs/api/authentication#authorization-code-flow44
-      idpTokenEndpoint = [uri|https://foo.auth0.com/oauth/token|]
-    }
-
 mkAuth0Idp ::
   MonadIO m =>
   -- | Full domain with no http protocol. e.g. @foo.auth0.com@
@@ -57,10 +45,14 @@ mkAuth0Idp ::
 mkAuth0Idp domain = do
   OpenIDConfigurationUris {..} <- fetchWellKnownUris domain
   pure
-    ( defaultAuth0Idp
-        { idpUserInfoEndpoint = userinfoUri
-        , idpAuthorizeEndpoint = authorizationUri
-        , idpTokenEndpoint = tokenUri
+    ( Idp
+        { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0)
+        , --  https://auth0.com/docs/api/authentication#user-profile
+          idpUserInfoEndpoint = userinfoUri
+        , -- https://auth0.com/docs/api/authentication#authorization-code-flow
+          idpAuthorizeEndpoint = authorizationUri
+        , -- https://auth0.com/docs/api/authentication#authorization-code-flow44
+          idpTokenEndpoint = tokenUri
         }
     )
 

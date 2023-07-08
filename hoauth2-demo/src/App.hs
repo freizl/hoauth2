@@ -18,6 +18,7 @@ import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
+import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
@@ -48,12 +49,13 @@ waiApp = do
   re <- runExceptT $ do
     myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
     myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
+    myAzureIdp <- IAzureAD.defaultAzureADIdp
     -- For the sake of simplicity for this demo App,
     -- I store user data in MVar in server side.
     -- It means user session shared across browsers.
     -- which simplify my testing cross browsers.
     -- I am sure you don't want to this for your production services.
-    initIdps cache (myAuth0Idp, myOktaIdp)
+    initIdps cache (myAuth0Idp, myOktaIdp, myAzureIdp)
     pure (myAuth0Idp, myOktaIdp)
   case re of
     Left e -> Prelude.error $ TL.unpack $ "unable to init cache: " <> e

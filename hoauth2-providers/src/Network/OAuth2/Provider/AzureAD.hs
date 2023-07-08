@@ -12,8 +12,8 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import URI.ByteString.QQ
 import Network.OIDC.WellKnown
+import URI.ByteString.QQ
 
 data AzureAD = AzureAD deriving (Eq, Show)
 
@@ -37,15 +37,8 @@ defaultAzureADApp =
     }
 
 -- | https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
-defaultAzureADIdp :: Idp AzureAD
-defaultAzureADIdp =
-  -- TODO: use `mkAzureIdp` instead of hard-code
-  Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
-    , idpUserInfoEndpoint = [uri|https://graph.microsoft.com/oidc/userinfo|]
-    , idpAuthorizeEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/authorize|]
-    , idpTokenEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/token|]
-    }
+defaultAzureADIdp :: MonadIO m => ExceptT Text m (Idp AzureAD)
+defaultAzureADIdp = mkAzureIdp "common"
 
 mkAzureIdp ::
   MonadIO m =>
@@ -53,13 +46,14 @@ mkAzureIdp ::
   Text ->
   ExceptT Text m (Idp AzureAD)
 mkAzureIdp domain = do
-  OpenIDConfigurationUris {..} <- fetchWellKnownUris ("login.microsoftonline.com/" <> domain)
-  pure $ Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
-    , idpUserInfoEndpoint = userinfoUri
-    , idpAuthorizeEndpoint = authorizationUri
-    , idpTokenEndpoint = tokenUri
-    }
+  OpenIDConfigurationUris {..} <- fetchWellKnownUris ("login.microsoftonline.com/" <> domain <> "/v2.0")
+  pure $
+    Idp
+      { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
+      , idpUserInfoEndpoint = userinfoUri
+      , idpAuthorizeEndpoint = authorizationUri
+      , idpTokenEndpoint = tokenUri
+      }
 
 -- | https://learn.microsoft.com/en-us/azure/active-directory/develop/userinfo
 data AzureADUser = AzureADUser

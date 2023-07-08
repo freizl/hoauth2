@@ -40,17 +40,6 @@ defaultOktaApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
-defaultOktaIdp :: Idp Okta
-defaultOktaIdp =
-  Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta)
-    , idpUserInfoEndpoint = [uri|https://foo.okta.com/oauth2/v1/userinfo|]
-    , idpAuthorizeEndpoint =
-        [uri|https://foo.okta.com/oauth2/v1/authorize|]
-    , idpTokenEndpoint =
-        [uri|https://foo.okta.com/oauth2/v1/token|]
-    }
-
 mkOktaIdp ::
   MonadIO m =>
   -- | Full domain with no http protocol. e.g. @foo.okta.com@
@@ -58,13 +47,13 @@ mkOktaIdp ::
   ExceptT Text m (Idp Okta)
 mkOktaIdp domain = do
   OpenIDConfigurationUris {..} <- fetchWellKnownUris domain
-  pure
-    ( defaultOktaIdp
-        { idpUserInfoEndpoint = userinfoUri
-        , idpAuthorizeEndpoint = authorizationUri
-        , idpTokenEndpoint = tokenUri
-        }
-    )
+  pure $
+    Idp
+      { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta)
+      , idpUserInfoEndpoint = userinfoUri
+      , idpAuthorizeEndpoint = authorizationUri
+      , idpTokenEndpoint = tokenUri
+      }
 
 mkOktaClientCredentialAppJwt ::
   Jwk ->
