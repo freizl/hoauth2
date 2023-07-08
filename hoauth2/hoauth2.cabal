@@ -92,6 +92,7 @@ test-suite hoauth-tests
     , base     >=4   && <5
     , hoauth2
     , hspec    >=2   && <3
+    , uri-bytestring        >=0.2.3  && <0.4
 
   other-modules:      Network.OAuth.OAuth2.TokenRequestSpec
   default-language:   Haskell2010
