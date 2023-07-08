@@ -101,3 +101,6 @@ test-suite hoauth-tests
     OverloadedStrings
 
   build-tool-depends: hspec-discover:hspec-discover >=2 && <3
+  ghc-options:
+    -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
+    -Wwarnings-deprecations
