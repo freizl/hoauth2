@@ -11,6 +11,7 @@ import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 import Data.Set qualified as Set
 import Data.Text.Encoding qualified as T
+import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
@@ -20,7 +21,7 @@ import Network.OAuth.OAuth2 (
   TokenRequestError,
  )
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..))
+import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..), mkAuth0Idp)
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
@@ -36,8 +37,9 @@ import Prelude hiding (id)
 
 ------------------------------
 
-testAuth0App :: IdpApplication Auth0 AuthorizationCodeApplication
-testAuth0App =
+mkTestAuth0App :: ExceptT Text IO (IdpApplication Auth0 AuthorizationCodeApplication)
+mkTestAuth0App = do
+  idp <- mkTestAuth0Idp
   let application =
         Auth0.defaultAuth0App
           { acClientId = ""
@@ -47,19 +49,13 @@ testAuth0App =
           , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
           , acName = "foo-auth0-app"
           }
-      idp = testAuth0Idp
-   in IdpApplication {..}
+  pure IdpApplication {..}
 
-testAuth0Idp :: Idp Auth0
-testAuth0Idp =
-  Auth0.defaultAuth0Idp
-    { idpUserInfoEndpoint = [uri|https://freizl.auth0.com/userinfo|]
-    , idpAuthorizeEndpoint = [uri|https://freizl.auth0.com/authorize|]
-    , idpTokenEndpoint = [uri|https://freizl.auth0.com/oauth/token|]
-    }
+mkTestAuth0Idp :: ExceptT Text IO (Idp Auth0)
+mkTestAuth0Idp = mkAuth0Idp "freizl.auth0.com"
 
-testGoogleApp :: IdpApplication Google AuthorizationCodeApplication
-testGoogleApp =
+mkTestGoogleApp :: IdpApplication Google AuthorizationCodeApplication
+mkTestGoogleApp =
   let application =
         Google.defaultGoogleApp
           { acClientId = ""
@@ -90,14 +86,20 @@ data DemoUser = DemoUser
 -- | The 'scotty' application
 app :: IO ()
 app = do
-  -- Poor man's solution for creating user session.
-  refUser <- newIORef Nothing
-  scotty 9988 $ do
-    Scotty.get "/" $ indexH refUser
-    Scotty.get "/login/auth0" loginAuth0H
-    Scotty.get "/login/google" loginGoogleH
-    Scotty.get "/logout" (logoutH refUser)
-    Scotty.get "/oauth2/callback" $ callbackH refUser
+  eAuth0App <- runExceptT mkTestAuth0App
+  either (error . TL.unpack) runApp eAuth0App
+  where
+    runApp :: IdpApplication Auth0 AuthorizationCodeApplication -> IO ()
+    runApp auth0App = do
+      -- Poor man's solution for creating user session.
+      refUser <- newIORef Nothing
+      let googleApp = mkTestGoogleApp
+      scotty 9988 $ do
+        Scotty.get "/" $ indexH refUser
+        Scotty.get "/login/auth0" (loginAuth0H auth0App)
+        Scotty.get "/login/google" (loginGoogleH googleApp)
+        Scotty.get "/logout" (logoutH refUser)
+        Scotty.get "/oauth2/callback" $ callbackH auth0App googleApp refUser
 
 -- | @/@ endpoint handler
 indexH :: IORef (Maybe DemoUser) -> ActionM ()
@@ -128,15 +130,15 @@ indexH refUser = do
   Scotty.html . mconcat $ "<h1>hoauth2 providers Tutorial</h1>" : info
 
 -- | @/login/auth0@ endpoint handler
-loginAuth0H :: ActionM ()
-loginAuth0H = do
-  Scotty.setHeader "Location" (mkAuthorizeRequest testAuth0App)
+loginAuth0H :: IdpApplication Auth0 AuthorizationCodeApplication -> ActionM ()
+loginAuth0H auth0App = do
+  Scotty.setHeader "Location" (mkAuthorizeRequest auth0App)
   Scotty.status status302
 
 -- | @/login/google@ endpoint handler
-loginGoogleH :: ActionM ()
-loginGoogleH = do
-  Scotty.setHeader "Location" (mkAuthorizeRequest testGoogleApp)
+loginGoogleH :: IdpApplication Google AuthorizationCodeApplication -> ActionM ()
+loginGoogleH googleApp = do
+  Scotty.setHeader "Location" (mkAuthorizeRequest googleApp)
   Scotty.status status302
 
 -- | @/logout@ endpoint handler
@@ -146,8 +148,12 @@ logoutH refUser = do
   Scotty.redirect "/"
 
 -- | @/oauth2/callback@ endpoint handler
-callbackH :: IORef (Maybe DemoUser) -> ActionM ()
-callbackH refUser = do
+callbackH ::
+  IdpApplication Auth0 AuthorizationCodeApplication ->
+  IdpApplication Google AuthorizationCodeApplication ->
+  IORef (Maybe DemoUser) ->
+  ActionM ()
+callbackH auth0App googleApp refUser = do
   pas <- Scotty.params
 
   excepttToActionM $ do
@@ -158,25 +164,29 @@ callbackH refUser = do
     let idpName = TL.takeWhile ('.' /=) state
 
     user <- case idpName of
-      "google" -> handleGoogleCallback code
-      "auth0" -> handleAuth0Callback code
+      "google" -> handleGoogleCallback googleApp code
+      "auth0" -> handleAuth0Callback auth0App code
       _ -> throwE $ "unable to find idp app of: " <> idpName
 
     liftIO $ writeIORef refUser (Just user)
 
   Scotty.redirect "/"
 
-handleAuth0Callback :: ExchangeToken -> ExceptT TL.Text IO DemoUser
-handleAuth0Callback code = do
-  let idpApp = testAuth0App
+handleAuth0Callback ::
+  IdpApplication Auth0 AuthorizationCodeApplication ->
+  ExchangeToken ->
+  ExceptT TL.Text IO DemoUser
+handleAuth0Callback idpApp code = do
   mgr <- liftIO $ newManager tlsManagerSettings
   tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
   Auth0User {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
-handleGoogleCallback :: ExchangeToken -> ExceptT TL.Text IO DemoUser
-handleGoogleCallback code = do
-  let idpApp = testGoogleApp
+handleGoogleCallback ::
+  IdpApplication Google AuthorizationCodeApplication ->
+  ExchangeToken ->
+  ExceptT TL.Text IO DemoUser
+handleGoogleCallback idpApp code = do
   mgr <- liftIO $ newManager tlsManagerSettings
   tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
   GoogleUser {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
