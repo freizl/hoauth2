@@ -1,6 +1,9 @@
 packages: */*.cabal
 index-state: 2023-06-13T00:56:04Z
 
+extra-include-dirs: /opt/homebrew/opt/openssl@3/include
+extra-lib-dirs: /opt/homebrew/opt/openssl@3/lib
+
 -- -fplugin Plugin.GHCSpecter
 -- source-repository-package
 --   type: git

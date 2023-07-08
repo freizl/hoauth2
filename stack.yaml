@@ -35,6 +35,12 @@ packages:
 - hoauth2-providers
 - hoauth2-providers-tutorial
 - hoauth2-tutorial
+
+extra-include-dirs:
+  - /opt/homebrew/opt/openssl@3/include
+extra-lib-dirs:
+  - /opt/homebrew/opt/openssl@3/lib
+
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
