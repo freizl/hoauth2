@@ -43,4 +43,4 @@ jobs:
           cabal build --only-dependencies --enable-tests all
 
       - name: Test
-        run: make clean && cabal test all
+        run: cabal clean && cabal test all
