@@ -20,12 +20,15 @@ import URI.ByteString
 
 -- | Slim OpenID Configuration
 -- TODO: could add more fields to be complete.
+--
+-- See spec <https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata>
 data OpenIDConfiguration = OpenIDConfiguration
   { issuer :: Text
   , authorizationEndpoint :: Text
   , tokenEndpoint :: Text
   , userinfoEndpoint :: Text
-  , jwksUri :: Text
+  , jwksEndpoint :: Text
+  , deviceAuthorizationEndpoint :: Text
   }
   deriving (Show, Eq)
 
@@ -34,6 +37,7 @@ data OpenIDConfigurationUris = OpenIDConfigurationUris
   , tokenUri :: URI
   , userinfoUri :: URI
   , jwksUri :: URI
+  , deviceAuthorizationUri :: URI
   }
 
 instance FromJSON OpenIDConfiguration where
@@ -42,7 +46,8 @@ instance FromJSON OpenIDConfiguration where
     authorizationEndpoint <- t .: "authorization_endpoint"
     tokenEndpoint <- t .: "token_endpoint"
     userinfoEndpoint <- t .: "userinfo_endpoint"
-    jwksUri <- t .: "jwks_uri"
+    jwksEndpoint <- t .: "jwks_uri"
+    deviceAuthorizationEndpoint <- t .: "device_authorization_endpoint"
     pure OpenIDConfiguration {..}
 
 wellknownUrl :: TL.Text
@@ -70,17 +75,13 @@ fetchWellKnownUris :: MonadIO m => TL.Text -> ExceptT Text m OpenIDConfiguration
 fetchWellKnownUris domain = do
   OpenIDConfiguration {..} <- fetchWellKnown domain
   withExceptT (TL.pack . show) $ do
-    ae <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 authorizationEndpoint)
-    te <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 tokenEndpoint)
-    ue <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 userinfoEndpoint)
-    jwks <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 jwksUri)
+    authorizationUri <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 authorizationEndpoint)
+    tokenUri <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 tokenEndpoint)
+    userinfoUri <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 userinfoEndpoint)
+    jwksUri <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 jwksEndpoint)
+    deviceAuthorizationUri <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 deviceAuthorizationEndpoint)
     pure
-      OpenIDConfigurationUris
-        { authorizationUri = ae
-        , tokenUri = te
-        , userinfoUri = ue
-        , jwksUri = jwks
-        }
+      OpenIDConfigurationUris {..}
 
 handleWellKnownResponse :: Response ByteString -> Either Text OpenIDConfiguration
 handleWellKnownResponse resp = do
