@@ -5,28 +5,34 @@ module Network.OAuth.OAuth2.AuthorizationRequest where
 import Data.Aeson
 import Data.Function (on)
 import Data.List qualified as List
+import Data.Text (Text)
 import Data.Text.Encoding qualified as T
-import GHC.Generics (Generic)
 import Lens.Micro (over)
 import Network.OAuth.OAuth2.Internal
 import URI.ByteString
+import Prelude hiding (error)
 
 --------------------------------------------------
 
--- * Errors
+-- * Authorization Request Errors
 
 --------------------------------------------------
-
-instance FromJSON Errors where
-  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_'}
 
 -- | Authorization Code Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.1.2.1
+--
 -- I found hard time to figure a way to test the authorization error flow
 -- When anything wrong in @/authorize@ request, it will stuck at the Provider page
 -- hence no way for this library to parse error response.
 -- In other words, @/authorize@ ends up with 4xx or 5xx.
 -- Revisit this whenever find a case OAuth2 provider redirects back to Relying party with errors.
-data Errors
+data AuthorizationRequestError = AuthorizationRequestError
+  { error :: AuthorizationRequestErrorCode
+  , errorDescription :: Maybe Text
+  , errorUri :: Maybe (URIRef Absolute)
+  }
+  deriving (Show, Eq)
+
+data AuthorizationRequestErrorCode
   = InvalidRequest
   | UnauthorizedClient
   | AccessDenied
@@ -34,7 +40,27 @@ data Errors
   | InvalidScope
   | ServerError
   | TemporarilyUnavailable
-  deriving (Show, Eq, Generic)
+  | UnknownErrorCode Text
+  deriving (Show, Eq)
+
+instance FromJSON AuthorizationRequestErrorCode where
+  parseJSON = withText "parseJSON TokenRequestErrorCode" $ \t ->
+    pure $ case t of
+      "invalid_request" -> InvalidRequest
+      "unauthorized_client" -> UnauthorizedClient
+      "access_denied" -> AccessDenied
+      "unsupported_response_type" -> UnsupportedResponseType
+      "invalid_scope" -> InvalidScope
+      "server_error" -> ServerError
+      "temporarily_unavailable" -> TemporarilyUnavailable
+      _ -> UnknownErrorCode t
+
+instance FromJSON AuthorizationRequestError where
+  parseJSON = withObject "parseJSON AuthorizationRequestError" $ \t -> do
+    error <- t .: "error"
+    errorDescription <- t .:? "error_description"
+    errorUri <- t .:? "error_uri"
+    pure AuthorizationRequestError {..}
 
 --------------------------------------------------
 

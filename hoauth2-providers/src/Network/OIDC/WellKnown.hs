@@ -14,7 +14,6 @@ import Data.ByteString.Lazy qualified as BSL
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
-import GHC.Generics
 import Network.HTTP.Simple
 import Network.HTTP.Types.Status
 import URI.ByteString
@@ -28,7 +27,7 @@ data OpenIDConfiguration = OpenIDConfiguration
   , userinfoEndpoint :: Text
   , jwksUri :: Text
   }
-  deriving (Generic)
+  deriving (Show, Eq)
 
 data OpenIDConfigurationUris = OpenIDConfigurationUris
   { authorizationUri :: URI
@@ -36,10 +35,15 @@ data OpenIDConfigurationUris = OpenIDConfigurationUris
   , userinfoUri :: URI
   , jwksUri :: URI
   }
-  deriving (Generic)
 
 instance FromJSON OpenIDConfiguration where
-  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+  parseJSON = withObject "parseJSON OpenIDConfiguration" $ \t -> do
+    issuer <- t .: "issuer"
+    authorizationEndpoint <- t .: "authorization_endpoint"
+    tokenEndpoint <- t .: "token_endpoint"
+    userinfoEndpoint <- t .: "userinfo_endpoint"
+    jwksUri <- t .: "jwks_uri"
+    pure OpenIDConfiguration {..}
 
 wellknownUrl :: TL.Text
 wellknownUrl = "/.well-known/openid-configuration"
@@ -55,6 +59,13 @@ fetchWellKnown domain = ExceptT $ do
   resp <- httpLbs req
   return (handleWellKnownResponse resp)
 
+-- | Similar to 'fetchWellKnown' but only return following endpoints with 'URI' type
+--
+-- * authorization
+-- * token
+-- * userinfor
+-- * jwks
+--
 fetchWellKnownUris :: MonadIO m => TL.Text -> ExceptT Text m OpenIDConfigurationUris
 fetchWellKnownUris domain = do
   OpenIDConfiguration {..} <- fetchWellKnown domain

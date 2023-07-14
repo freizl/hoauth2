@@ -11,12 +11,12 @@ import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
-import GHC.Generics (Generic)
 import Network.HTTP.Conduit
 import Network.HTTP.Types qualified as HT
 import Network.HTTP.Types.URI (parseQuery)
 import Network.OAuth.OAuth2.Internal
 import URI.ByteString
+import Prelude hiding (error)
 
 --------------------------------------------------
 
@@ -29,7 +29,7 @@ data TokenRequestError = TokenRequestError
   , errorDescription :: Maybe Text
   , errorUri :: Maybe (URIRef Absolute)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 -- | Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
 data TokenRequestErrorCode
@@ -54,7 +54,11 @@ instance FromJSON TokenRequestErrorCode where
       _ -> UnknownErrorCode t
 
 instance FromJSON TokenRequestError where
-  parseJSON = genericParseJSON defaultOptions {constructorTagModifier = camelTo2 '_'}
+  parseJSON = withObject "parseJSON TokenRequestError" $ \t -> do
+    error <- t .: "error"
+    errorDescription <- t .:? "error_description"
+    errorUri <- t .:? "error_uri"
+    pure TokenRequestError{..}
 
 parseTokeRequestError :: BSL.ByteString -> TokenRequestError
 parseTokeRequestError string =
