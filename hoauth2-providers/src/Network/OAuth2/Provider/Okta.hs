@@ -46,13 +46,13 @@ mkOktaIdp ::
   Text ->
   ExceptT Text m (Idp Okta)
 mkOktaIdp domain = do
-  OpenIDConfigurationUris {..} <- fetchWellKnownUris domain
+  OpenIDConfiguration {..} <- fetchWellKnown domain
   pure $
     Idp
       { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta)
-      , idpUserInfoEndpoint = userinfoUri
-      , idpAuthorizeEndpoint = authorizationUri
-      , idpTokenEndpoint = tokenUri
+      , idpUserInfoEndpoint = userinfoEndpoint
+      , idpAuthorizeEndpoint = authorizationEndpoint
+      , idpTokenEndpoint = tokenEndpoint
       }
 
 mkOktaClientCredentialAppJwt ::

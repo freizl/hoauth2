@@ -12,9 +12,9 @@ module Network.OAuth.OAuth2 (
   Shall qualified import given the naming collision.
 -}
 import Network.OAuth.OAuth2.AuthorizationRequest hiding (
-  AuthorizationRequestError(..),
-  AuthorizationRequestErrorCode(..),
-  )
+  AuthorizationRequestError (..),
+  AuthorizationRequestErrorCode (..),
+ )
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth.OAuth2.Internal
 import Network.OAuth.OAuth2.TokenRequest
