@@ -46,13 +46,13 @@ mkAzureIdp ::
   Text ->
   ExceptT Text m (Idp AzureAD)
 mkAzureIdp domain = do
-  OpenIDConfigurationUris {..} <- fetchWellKnownUris ("login.microsoftonline.com/" <> domain <> "/v2.0")
+  OpenIDConfiguration {..} <- fetchWellKnown ("login.microsoftonline.com/" <> domain <> "/v2.0")
   pure $
     Idp
       { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
-      , idpUserInfoEndpoint = userinfoUri
-      , idpAuthorizeEndpoint = authorizationUri
-      , idpTokenEndpoint = tokenUri
+      , idpUserInfoEndpoint = userinfoEndpoint
+      , idpAuthorizeEndpoint = authorizationEndpoint
+      , idpTokenEndpoint = tokenEndpoint
       }
 
 -- | https://learn.microsoft.com/en-us/azure/active-directory/develop/userinfo

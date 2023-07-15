@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 
 module Network.OIDC.WellKnown where
 
@@ -8,41 +7,40 @@ import Control.Monad.Except
 import Control.Monad.IO.Class
 #endif
 import Data.Aeson
+import Data.Aeson.Types
 import Data.Bifunctor
 import Data.ByteString.Lazy (ByteString)
-import Data.ByteString.Lazy qualified as BSL
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import Network.HTTP.Simple
 import Network.HTTP.Types.Status
 import URI.ByteString
+import URI.ByteString.Aeson ()
 
 -- | Slim OpenID Configuration
 -- TODO: could add more fields to be complete.
+--
+-- See spec <https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata>
 data OpenIDConfiguration = OpenIDConfiguration
-  { issuer :: Text
-  , authorizationEndpoint :: Text
-  , tokenEndpoint :: Text
-  , userinfoEndpoint :: Text
-  , jwksUri :: Text
+  { issuer :: URI
+  , authorizationEndpoint :: URI
+  , tokenEndpoint :: URI
+  , userinfoEndpoint :: URI
+  , jwksUri :: URI
+  , deviceAuthorizationEndpoint :: URI
   }
   deriving (Show, Eq)
 
-data OpenIDConfigurationUris = OpenIDConfigurationUris
-  { authorizationUri :: URI
-  , tokenUri :: URI
-  , userinfoUri :: URI
-  , jwksUri :: URI
-  }
-
 instance FromJSON OpenIDConfiguration where
+  parseJSON :: Value -> Parser OpenIDConfiguration
   parseJSON = withObject "parseJSON OpenIDConfiguration" $ \t -> do
     issuer <- t .: "issuer"
     authorizationEndpoint <- t .: "authorization_endpoint"
     tokenEndpoint <- t .: "token_endpoint"
     userinfoEndpoint <- t .: "userinfo_endpoint"
     jwksUri <- t .: "jwks_uri"
+    deviceAuthorizationEndpoint <- t .: "device_authorization_endpoint"
     pure OpenIDConfiguration {..}
 
 wellknownUrl :: TL.Text
@@ -57,30 +55,7 @@ fetchWellKnown domain = ExceptT $ do
   let uri = "https://" <> domain <> wellknownUrl
   req <- liftIO $ parseRequest (TL.unpack uri)
   resp <- httpLbs req
-  return (handleWellKnownResponse resp)
-
--- | Similar to 'fetchWellKnown' but only return following endpoints with 'URI' type
---
--- * authorization
--- * token
--- * userinfor
--- * jwks
---
-fetchWellKnownUris :: MonadIO m => TL.Text -> ExceptT Text m OpenIDConfigurationUris
-fetchWellKnownUris domain = do
-  OpenIDConfiguration {..} <- fetchWellKnown domain
-  withExceptT (TL.pack . show) $ do
-    ae <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 authorizationEndpoint)
-    te <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 tokenEndpoint)
-    ue <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 userinfoEndpoint)
-    jwks <- ExceptT $ pure (parseURI strictURIParserOptions $ BSL.toStrict $ TL.encodeUtf8 jwksUri)
-    pure
-      OpenIDConfigurationUris
-        { authorizationUri = ae
-        , tokenUri = te
-        , userinfoUri = ue
-        , jwksUri = jwks
-        }
+  pure (handleWellKnownResponse resp)
 
 handleWellKnownResponse :: Response ByteString -> Either Text OpenIDConfiguration
 handleWellKnownResponse resp = do

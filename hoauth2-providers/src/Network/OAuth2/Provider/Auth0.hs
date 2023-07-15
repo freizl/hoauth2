@@ -43,16 +43,16 @@ mkAuth0Idp ::
   Text ->
   ExceptT Text m (Idp Auth0)
 mkAuth0Idp domain = do
-  OpenIDConfigurationUris {..} <- fetchWellKnownUris domain
+  OpenIDConfiguration {..} <- fetchWellKnown domain
   pure
     ( Idp
         { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0)
         , --  https://auth0.com/docs/api/authentication#user-profile
-          idpUserInfoEndpoint = userinfoUri
+          idpUserInfoEndpoint = userinfoEndpoint
         , -- https://auth0.com/docs/api/authentication#authorization-code-flow
-          idpAuthorizeEndpoint = authorizationUri
+          idpAuthorizeEndpoint = authorizationEndpoint
         , -- https://auth0.com/docs/api/authentication#authorization-code-flow44
-          idpTokenEndpoint = tokenUri
+          idpTokenEndpoint = tokenEndpoint
         }
     )
 

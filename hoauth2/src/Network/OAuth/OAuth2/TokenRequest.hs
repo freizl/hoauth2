@@ -58,7 +58,7 @@ instance FromJSON TokenRequestError where
     error <- t .: "error"
     errorDescription <- t .:? "error_description"
     errorUri <- t .:? "error_uri"
-    pure TokenRequestError{..}
+    pure TokenRequestError {..}
 
 parseTokeRequestError :: BSL.ByteString -> TokenRequestError
 parseTokeRequestError string =
