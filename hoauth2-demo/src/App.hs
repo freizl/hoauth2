@@ -49,7 +49,7 @@ waiApp = do
   re <- runExceptT $ do
     myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
     myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
-    myAzureIdp <- IAzureAD.defaultAzureADIdp
+    let myAzureIdp = IAzureAD.defaultAzureADIdp
     -- For the sake of simplicity for this demo App,
     -- I store user data in MVar in server side.
     -- It means user session shared across browsers.

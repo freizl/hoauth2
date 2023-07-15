@@ -37,8 +37,22 @@ defaultAzureADApp =
     }
 
 -- | https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
-defaultAzureADIdp :: MonadIO m => ExceptT Text m (Idp AzureAD)
-defaultAzureADIdp = mkAzureIdp "common"
+-- It's supporse to resue 'mkAzureIdp'
+--
+-- @
+-- mkAzureIdp "common"
+-- @
+--
+-- But its issuer is "https://login.microsoftonline.com/{tenantid}/v2.0",
+-- which is invalid 'URI'!!
+defaultAzureADIdp :: Idp AzureAD
+defaultAzureADIdp =
+  Idp
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
+    , idpAuthorizeEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/authorize|]
+    , idpTokenEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/token|]
+    , idpUserInfoEndpoint = [uri|https://graph.microsoft.com/oidc/userinfo|]
+    }
 
 mkAzureIdp ::
   MonadIO m =>
