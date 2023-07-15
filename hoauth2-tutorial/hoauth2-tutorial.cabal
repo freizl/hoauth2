@@ -38,8 +38,6 @@ library
     , text            >=0.11  && <2.1
     , transformers    >=0.4   && <0.7
     , uri-bytestring  >=0.2.3 && <0.4
-    , wai             ^>=3.2
-    , warp            >=3.2   && <3.4
 
   default-language: Haskell2010
   ghc-options:

@@ -36,6 +36,7 @@ defaultGithubIdp =
     , idpUserInfoEndpoint = [uri|https://api.github.com/user|]
     , idpAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
     , idpTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
+    , idpDeviceAuthorizationEndpoint = Just [uri|https://github.com/login/device/code|]
     }
 
 data GithubUser = GithubUser

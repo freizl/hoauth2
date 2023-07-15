@@ -35,8 +35,13 @@ type family IdpUserInfo a
 -- as I made mistake at passing to Authorize and Token Request
 data Idp i = Idp
   { idpUserInfoEndpoint :: URI
+  -- ^ Userinfo Endpoint
   , idpAuthorizeEndpoint :: URI
+  -- ^ Authorization Endpoint
   , idpTokenEndpoint :: URI
+  -- ^ Token Endpoint
+  , idpDeviceAuthorizationEndpoint :: Maybe URI
+  -- ^ Apparently not all IdP support device code flow
   , idpFetchUserInfo ::
       forall m.
       (FromJSON (IdpUserInfo i), MonadIO m) =>
@@ -86,6 +91,7 @@ data GrantTypeValue
   | GTClientCredentials
   | GTRefreshToken
   | GTJwtBearer
+  | GTDeviceCode
   deriving (Eq, Show)
 
 -------------------------------------------------------------------------------
@@ -161,6 +167,7 @@ instance ToQueryParam GrantTypeValue where
       val GTClientCredentials = "client_credentials"
       val GTRefreshToken = "refresh_token"
       val GTJwtBearer = "urn:ietf:params:oauth:grant-type:jwt-bearer"
+      val GTDeviceCode = "urn:ietf:params:oauth:grant-type:device_code"
 
 instance ToQueryParam ClientId where
   toQueryParam :: ClientId -> Map Text Text

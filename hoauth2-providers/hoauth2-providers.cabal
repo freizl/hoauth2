@@ -55,24 +55,21 @@ library
     , bytestring            >=0.9    && <0.12
     , containers            ^>=0.6
     , cryptonite            >=0.30   && <0.31
-    , data-default          ^>=0.7
-    , directory             ^>=1.3
     , hoauth2               >=2.7    && <2.9
     , HsOpenSSL             >=0.11   && <0.12
     , http-conduit          >=2.1    && <2.4
     , http-types            >=0.11   && <0.13
     , jose-jwt              >=0.9.4  && <0.10
     , mtl                   >=2.0    && <2.4
-    , parsec                >=3.1.11 && <3.2.0
     , text                  >=0.11   && <2.1
     , time                  >=1.12   && <1.13
     , transformers          >=0.4    && <0.7
-    , unordered-containers  >=0.2.5  && <0.3
     , uri-bytestring        >=0.2.3  && <0.4
     , uri-bytestring-aeson  ^>=0.1
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
+    -Werror
     -Wwarnings-deprecations
 
 test-suite hoauth-providers-tests
@@ -96,4 +93,5 @@ test-suite hoauth-providers-tests
   build-tool-depends: hspec-discover:hspec-discover >=2 && <3
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
+    -Werror
     -Wwarnings-deprecations

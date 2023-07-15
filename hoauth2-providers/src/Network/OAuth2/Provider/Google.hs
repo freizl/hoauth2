@@ -143,6 +143,7 @@ defaultGoogleIdp =
     , idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|]
     , idpTokenEndpoint = [uri|https://oauth2.googleapis.com/token|]
     , idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
+    , idpDeviceAuthorizationEndpoint = Just [uri|https://oauth2.googleapis.com/device/code|]
     }
 
 -- requires scope "https://www.googleapis.com/auth/userinfo.profile" to obtain "name".

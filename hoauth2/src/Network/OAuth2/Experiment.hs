@@ -93,10 +93,15 @@ module Network.OAuth2.Experiment (
   module Network.OAuth2.Experiment.Flows.UserInfoRequest,
   module Network.OAuth.OAuth2,
   module Network.OAuth2.Experiment.GrantType,
+  module Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest,
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
+import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest (
+  DeviceAuthorizationResponse (..),
+  conduitDeviceAuthorizationRequest,
+ )
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
 import Network.OAuth2.Experiment.Flows.TokenRequest (
   NoNeedExchangeToken (..),

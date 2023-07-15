@@ -36,6 +36,7 @@ defaultZohoIdp =
     , idpUserInfoEndpoint = [uri|https://www.zohoapis.com/crm/v2/users|]
     , idpAuthorizeEndpoint = [uri|https://accounts.zoho.com/oauth/v2/auth|]
     , idpTokenEndpoint = [uri|https://accounts.zoho.com/oauth/v2/token|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 -- `oauth/user/info` url does not work and find answer from

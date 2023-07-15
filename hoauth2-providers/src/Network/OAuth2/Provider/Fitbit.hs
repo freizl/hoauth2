@@ -36,6 +36,7 @@ defaultFitbitIdp =
     , idpUserInfoEndpoint = [uri|https://api.fitbit.com/1/user/-/profile.json|]
     , idpAuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data FitbitUser = FitbitUser

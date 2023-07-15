@@ -36,6 +36,7 @@ defaultLinkedinIdp =
     , idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
     , idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|]
     , idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data LinkedinUser = LinkedinUser

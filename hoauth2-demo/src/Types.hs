@@ -175,12 +175,16 @@ newtype TemplateData = TemplateData
 
 instance ToMustache DemoAppEnv where
   toMustache (DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
+    -- FIXME: find another way to determine device-app
+    -- Often time the App is different with AuthorizationCodeApp
     let idpAppName = getIdpAppName (application idpAppConfig)
+        supportDeviceGrant = any (`TL.isInfixOf` idpAppName) ["okta", "github", "auth0", "azure", "google"]
     M.object
       [ "codeFlowUri" ~> authorizeAbsUri
       , "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
       , "idpAppName" ~> TL.unpack idpAppName
+      , "isSupportDeviceGrant" ~> supportDeviceGrant
       ]
 
 instance ToMustache DemoLoginUser where

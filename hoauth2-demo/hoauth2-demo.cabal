@@ -77,3 +77,4 @@ executable hoauth2-demo
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
     -Wwarnings-deprecations
+    -Werror

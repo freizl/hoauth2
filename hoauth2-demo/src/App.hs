@@ -10,6 +10,7 @@ import Data.Aeson
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.IO qualified as TL
 import Idp
 import Network.HTTP.Conduit
 import Network.HTTP.Types
@@ -76,6 +77,8 @@ initApp cache idps = scottyApp $ do
   get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
 
   get "/login/jwt-grant" testJwtBearerGrantTypeH
+
+  get "/login/device-code" (testDeviceCodeGrantTypeH cache)
 
 --------------------------------------------------
 
@@ -176,6 +179,25 @@ testJwtBearerGrantTypeH = do
     tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
     user <- tryFetchUser mgr tokenResp testApp
     liftIO $ print user
+  redirectToHomeM
+
+testDeviceCodeGrantTypeH :: CacheStore -> ActionM ()
+testDeviceCodeGrantTypeH cache = do
+  (DemoAppEnv (DemoAuthorizationApp idpApp) _) <- readIdpParam cache
+  exceptToActionM $ do
+    let testApp = createDeviceAuthApp idpApp
+    mgr <- liftIO $ newManager tlsManagerSettings
+    deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
+    liftIO $ do
+      putStr "Please visit this URL to redeem the code: "
+      TL.putStr $ userCode deviceAuthResp <> "\n"
+      TL.putStrLn $ uriToText (verificationUri deviceAuthResp)
+    atoken <- withExceptT oauth2ErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
+    liftIO $ do
+      putStrLn "[Device Authorization Flow] Found access token"
+      print atoken
+    luser <- tryFetchUser mgr atoken testApp
+    liftIO $ print luser
   redirectToHomeM
 
 --------------------------------------------------

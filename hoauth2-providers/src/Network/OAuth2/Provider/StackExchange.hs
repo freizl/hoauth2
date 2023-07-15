@@ -58,6 +58,7 @@ defaultStackExchangeIdp =
       idpUserInfoEndpoint = userInfoEndpoint
     , idpAuthorizeEndpoint = [uri|https://stackexchange.com/oauth|]
     , idpTokenEndpoint = [uri|https://stackexchange.com/oauth/access_token|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data StackExchangeResp = StackExchangeResp

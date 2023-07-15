@@ -37,6 +37,7 @@ defaultTwitterIdp =
     , idpUserInfoEndpoint = [uri|https://api.twitter.com/2/users/me|]
     , idpAuthorizeEndpoint = [uri|https://twitter.com/i/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.twitter.com/2/oauth2/token|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data TwitterUser = TwitterUser
