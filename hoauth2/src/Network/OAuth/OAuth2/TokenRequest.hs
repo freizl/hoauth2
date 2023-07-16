@@ -24,6 +24,8 @@ import Prelude hiding (error)
 
 --------------------------------------------------
 
+-- FIXME: `error` conliates with Prelude.error
+-- which is annoying. Add reasonable prefix.
 data TokenRequestError = TokenRequestError
   { error :: TokenRequestErrorCode
   , errorDescription :: Maybe Text
@@ -287,10 +289,9 @@ doSimplePostRequest ::
 doSimplePostRequest manager oa url body =
   ExceptT . liftIO $ fmap handleOAuth2TokenResponse go
   where
-    addBasicAuth = applyBasicAuth (T.encodeUtf8 $ oauth2ClientId oa) (T.encodeUtf8 $ oauth2ClientSecret oa)
     go = do
       req <- uriToRequest url
-      let req' = (addBasicAuth . addDefaultRequestHeaders) req
+      let req' = (addBasicAuth oa . addDefaultRequestHeaders) req
       httpLbs (urlEncodedBody body req') manager
 
 -- | Gets response body from a @Response@ if 200 otherwise assume 'OAuth2Error'
@@ -323,6 +324,13 @@ parseResponseString b = case parseQuery $ BSL.toStrict b of
     queryToValue = Object . KeyMap.fromList . map paramToPair
     paramToPair (k, mv) = (Key.fromText $ T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
     errorMessage = parseTokeRequestError b
+
+-- | Add Basic Authentication header using client_id and client_secret.
+addBasicAuth :: OAuth2 -> Request -> Request
+addBasicAuth oa =
+  applyBasicAuth
+    (T.encodeUtf8 $ oauth2ClientId oa)
+    (T.encodeUtf8 $ oauth2ClientSecret oa)
 
 -- | Set several header values:
 --   + userAgennt    : `hoauth2`

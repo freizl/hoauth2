@@ -25,7 +25,7 @@ defaultTwitterApp =
     , acScope = Set.fromList ["tweet.read", "users.read"]
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-twitter-App"
+    , acName = "default-twitter-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     , acAuthorizeRequestExtraParams = Map.empty
     }

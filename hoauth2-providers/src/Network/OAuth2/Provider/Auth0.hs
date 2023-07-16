@@ -33,7 +33,7 @@ defaultAuth0App =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-auth0-App"
+    , acName = "default-auth0-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

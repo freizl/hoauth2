@@ -37,7 +37,6 @@ import Prelude hiding (id)
 
 newtype DemoLoginUser = DemoLoginUser
   { loginUserName :: TL.Text
-  -- TODO: maybe email
   }
   deriving (Eq, Show)
 
@@ -175,12 +174,13 @@ newtype TemplateData = TemplateData
 -- * Mustache instances
 
 instance ToMustache DemoAppEnv where
-  toMustache (DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) =
+  toMustache (DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
+    let idpAppName = getIdpAppName (application idpAppConfig)
     M.object
       [ "codeFlowUri" ~> authorizeAbsUri
       , "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
-      , "name" ~> TL.unpack (getIdpAppName (application idpAppConfig))
+      , "idpAppName" ~> TL.unpack idpAppName
       ]
 
 instance ToMustache DemoLoginUser where

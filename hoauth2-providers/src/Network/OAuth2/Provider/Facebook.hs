@@ -25,7 +25,7 @@ defaultFacebookApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-facebook-App"
+    , acName = "default-facebook-app"
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 

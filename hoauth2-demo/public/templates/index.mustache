@@ -9,15 +9,15 @@
         {{#idps}}
         <section class="login-with">
             {{^isLogin}}
-            <a href="{{codeFlowUri}}">Sign in with {{name}}</a>
+            <a href="{{codeFlowUri}}">Sign in with {{idpAppName}}</a>
             {{/isLogin}}
             {{#isLogin}}
-            <h2>Welcome to {{name}}</h2>
+            <h2>Welcome to {{idpAppName}}</h2>
             {{#user}}
-            <div class="result">Hello, {{name}}</div>
+            <div class="result">Hello, {{idpAppName}}</div>
             {{/user}}
-            <a href="/logout?idp={{name}}">Logout</a>
-            <a href="/refresh?idp={{name}}">Refresh</a>
+            <a href="/logout?idp={{idpAppName}}">Logout</a>
+            <a href="/refresh?idp={{idpAppName}}">Refresh</a>
             {{/isLogin}}
         </section>
         {{/idps}}

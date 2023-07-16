@@ -36,7 +36,7 @@ defaultOktaApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-okta-App"
+    , acName = "default-okta-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

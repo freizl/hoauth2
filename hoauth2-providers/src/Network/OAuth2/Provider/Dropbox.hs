@@ -25,7 +25,7 @@ defaultDropboxApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-dropbox-App"
+    , acName = "default-dropbox-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

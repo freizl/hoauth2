@@ -42,6 +42,7 @@ instance ToQueryParam AuthorizationRequestParam where
 class HasAuthorizeRequest a where
   mkAuthorizeRequestParam :: a -> AuthorizationRequestParam
 
+-- FIXME: rename to mkAuthorizationRequest. similar to other cases.
 mkAuthorizeRequest :: HasAuthorizeRequest a => IdpApplication i a -> Text
 mkAuthorizeRequest idpApp =
   let req = mkAuthorizeRequestParam (application idpApp)

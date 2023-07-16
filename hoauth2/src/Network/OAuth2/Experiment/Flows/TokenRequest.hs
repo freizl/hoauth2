@@ -14,9 +14,6 @@ import Network.OAuth2.Experiment.Utils
 --                               Token Request                               --
 -------------------------------------------------------------------------------
 
-class HasOAuth2Key a where
-  mkOAuth2Key :: a -> OAuth2
-
 class HasTokenRequestClientAuthenticationMethod a where
   getClientAuthenticationMethod :: a -> ClientAuthenticationMethod
 

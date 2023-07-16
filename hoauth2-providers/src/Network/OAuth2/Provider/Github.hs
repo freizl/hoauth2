@@ -25,7 +25,7 @@ defaultGithubApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-github-App"
+    , acName = "default-github-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

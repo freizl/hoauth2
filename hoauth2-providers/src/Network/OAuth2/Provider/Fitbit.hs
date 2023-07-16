@@ -25,7 +25,7 @@ defaultFitbitApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-fitbit-App"
+    , acName = "default-fitbit-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

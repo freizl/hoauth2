@@ -25,7 +25,7 @@ defaultZohoApp =
     , acAuthorizeRequestExtraParams = Map.fromList [("access_type", "offline"), ("prompt", "consent")]
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost/oauth2/callback|]
-    , acName = "default-zoho-App"
+    , acName = "default-zoho-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

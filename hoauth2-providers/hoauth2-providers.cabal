@@ -25,9 +25,9 @@ library
     DeriveGeneric
     GeneralizedNewtypeDeriving
     ImportQualifiedPost
+    InstanceSigs
     OverloadedStrings
     RecordWildCards
-    InstanceSigs
     TypeApplications
     TypeFamilies
 
@@ -81,11 +81,11 @@ test-suite hoauth-providers-tests
   hs-source-dirs:     test
   ghc-options:        -Wall
   build-depends:
-    , aeson    >=2.0 && <2.2
-    , base     >=4   && <5
+    , aeson              >=2.0   && <2.2
+    , base               >=4     && <5
     , hoauth2-providers
-    , hspec    >=2   && <3
-    , uri-bytestring        >=0.2.3  && <0.4
+    , hspec              >=2     && <3
+    , uri-bytestring     >=0.2.3 && <0.4
 
   other-modules:      Network.OIDC.WellKnownSpec
   default-language:   Haskell2010

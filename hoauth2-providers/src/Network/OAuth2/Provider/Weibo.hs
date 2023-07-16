@@ -19,7 +19,7 @@ type instance IdpUserInfo Weibo = WeiboUID
 defaultWeiboApp :: AuthorizationCodeApplication
 defaultWeiboApp =
   AuthorizationCodeApplication
-    { acName = "default-weibo-App"
+    { acName = "default-weibo-app"
     , acClientId = ""
     , acClientSecret = ""
     , acScope = Set.empty

@@ -28,7 +28,7 @@ defaultSlackApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
-    , acName = "default-slack-App"
+    , acName = "default-slack-app"
     }
 
 -- https://slack.com/.well-known/openid-configuration

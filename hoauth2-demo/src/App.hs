@@ -205,7 +205,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
   mgr <- liftIO $ newManager tlsManagerSettings
   token <- tryFetchAccessToken idpAppConfig mgr exchangeToken
   liftIO $ do
-    putStrLn "Found access token"
+    putStrLn "[Authorization Code Flow] Found access token"
     print token
   luser <- tryFetchUser mgr token idpAppConfig
   liftIO $ do

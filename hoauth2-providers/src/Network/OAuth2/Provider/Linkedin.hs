@@ -25,7 +25,7 @@ defaultLinkedinApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-linkedin-App"
+    , acName = "default-linkedin-app"
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 

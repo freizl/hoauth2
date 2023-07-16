@@ -43,7 +43,7 @@ defaultStackExchangeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-stackexchange-App"
+    , acName = "default-stackexchange-app"
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 

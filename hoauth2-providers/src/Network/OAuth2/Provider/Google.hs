@@ -42,7 +42,7 @@ type instance IdpUserInfo Google = GoogleUser
 defaultGoogleApp :: AuthorizationCodeApplication
 defaultGoogleApp =
   AuthorizationCodeApplication
-    { acName = "default-google-App"
+    { acName = "default-google-app"
     , acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
