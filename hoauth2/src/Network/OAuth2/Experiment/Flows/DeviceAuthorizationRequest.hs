@@ -53,6 +53,7 @@ instance FromJSON DeviceAuthorizationResponse where
 data DeviceAuthorizationRequestParam = DeviceAuthorizationRequestParam
   { arScope :: Set Scope
   , arClientId :: Maybe ClientId
+  , arExtraParams :: Map Text Text
   }
 
 instance ToQueryParam DeviceAuthorizationRequestParam where
@@ -61,6 +62,7 @@ instance ToQueryParam DeviceAuthorizationRequestParam where
     Map.unions
       [ toQueryParam arScope
       , toQueryParam arClientId
+      , arExtraParams
       ]
 
 -- | https://www.rfc-editor.org/rfc/rfc8628#section-3.1

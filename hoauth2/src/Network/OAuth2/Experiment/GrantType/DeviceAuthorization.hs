@@ -29,6 +29,7 @@ data DeviceAuthorizationApplication = DeviceAuthorizationApplication
   , daClientId :: ClientId
   , daClientSecret :: ClientSecret
   , daScope :: Set Scope
+  , daAuthorizationRequestExtraParam :: Map Text Text
   , daAuthorizationRequestAuthenticationMethod :: Maybe ClientAuthenticationMethod
   -- ^ The spec requires similar authentication method as /token request.
   -- But most of identity provider I test doesn't required it except Okta.
@@ -90,6 +91,7 @@ instance HasDeviceAuthorizationRequest DeviceAuthorizationApplication where
           if daAuthorizationRequestAuthenticationMethod == Just ClientSecretBasic
             then Nothing
             else Just daClientId
+      , arExtraParams = daAuthorizationRequestExtraParam
       }
 
 -- | https://www.rfc-editor.org/rfc/rfc8628#section-3.4
@@ -121,7 +123,7 @@ instance ToQueryParam (TokenRequest DeviceAuthorizationApplication) where
     Map.unions
       [ toQueryParam trCode
       , toQueryParam trGrantType
-      -- , toQueryParam trClientId
+      , toQueryParam trClientId
       ]
 
 instance HasUserInfoRequest DeviceAuthorizationApplication
