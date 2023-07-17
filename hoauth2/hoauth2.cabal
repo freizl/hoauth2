@@ -44,12 +44,12 @@ library
     Network.OAuth2.Experiment.Flows.RefreshTokenRequest
     Network.OAuth2.Experiment.Flows.TokenRequest
     Network.OAuth2.Experiment.Flows.UserInfoRequest
-    Network.OAuth2.Experiment.GrantType
-    Network.OAuth2.Experiment.GrantType.AuthorizationCode
-    Network.OAuth2.Experiment.GrantType.ClientCredentials
-    Network.OAuth2.Experiment.GrantType.DeviceAuthorization
-    Network.OAuth2.Experiment.GrantType.JwtBearer
-    Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword
+    Network.OAuth2.Experiment.Grants
+    Network.OAuth2.Experiment.Grants.AuthorizationCode
+    Network.OAuth2.Experiment.Grants.ClientCredentials
+    Network.OAuth2.Experiment.Grants.DeviceAuthorization
+    Network.OAuth2.Experiment.Grants.JwtBearer
+    Network.OAuth2.Experiment.Grants.ResourceOwnerPassword
     Network.OAuth2.Experiment.Pkce
     Network.OAuth2.Experiment.Types
 

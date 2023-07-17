@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Network.OAuth2.Experiment.GrantType.AuthorizationCode where
+module Network.OAuth2.Experiment.Grants.AuthorizationCode where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Data.Map.Strict (Map)
