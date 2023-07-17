@@ -52,6 +52,7 @@ defaultAzureADIdp =
     , idpAuthorizeEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/authorize|]
     , idpTokenEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/token|]
     , idpUserInfoEndpoint = [uri|https://graph.microsoft.com/oidc/userinfo|]
+    , idpDeviceAuthorizationEndpoint = Just [uri|https://login.microsoftonline.com/common/oauth2/v2.0/devicecode|]
     }
 
 mkAzureIdp ::
@@ -67,6 +68,7 @@ mkAzureIdp domain = do
       , idpUserInfoEndpoint = userinfoEndpoint
       , idpAuthorizeEndpoint = authorizationEndpoint
       , idpTokenEndpoint = tokenEndpoint
+      , idpDeviceAuthorizationEndpoint = Just deviceAuthorizationEndpoint
       }
 
 -- | https://learn.microsoft.com/en-us/azure/active-directory/develop/userinfo

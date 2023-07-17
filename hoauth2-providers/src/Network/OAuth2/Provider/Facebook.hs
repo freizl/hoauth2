@@ -36,6 +36,7 @@ defaultFacebookIdp =
     , idpUserInfoEndpoint = [uri|https://graph.facebook.com/me?fields=id,name,email|]
     , idpAuthorizeEndpoint = [uri|https://www.facebook.com/dialog/oauth|]
     , idpTokenEndpoint = [uri|https://graph.facebook.com/v2.3/oauth/access_token|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data FacebookUser = FacebookUser

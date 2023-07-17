@@ -183,6 +183,31 @@ auth0ClientCredentialsGrantApp i =
           }
     }
 
+createDeviceAuthApp ::
+  IdpApplication i AuthorizationCodeApplication ->
+  IdpApplication i DeviceAuthorizationApplication
+createDeviceAuthApp (IdpApplication i authCodeApp) =
+  let authMethod =
+        if "okta" `TL.isInfixOf` acName authCodeApp
+          then Just ClientSecretBasic
+          else Nothing
+      extraParams =
+        if "azure" `TL.isInfixOf` acName authCodeApp
+          then Map.singleton "tenant" "/common"
+          else Map.empty
+   in IdpApplication
+        { idp = i
+        , application =
+            DeviceAuthorizationApplication
+              { daClientId = acClientId authCodeApp
+              , daClientSecret = acClientSecret authCodeApp
+              , daName = acName authCodeApp
+              , daScope = acScope authCodeApp
+              , daAuthorizationRequestExtraParam = extraParams
+              , daAuthorizationRequestAuthenticationMethod = authMethod
+              }
+        }
+
 isSupportPkce :: IdpApplication a i -> Bool
 isSupportPkce IdpApplication {..} =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)

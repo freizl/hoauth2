@@ -39,6 +39,7 @@ defaultSlackIdp =
     , idpUserInfoEndpoint = [uri|https://slack.com/api/openid.connect.userInfo|]
     , idpAuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|]
     , idpTokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data SlackUser = SlackUser

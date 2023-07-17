@@ -4,7 +4,7 @@ c:
 	cabal clean
 
 b:
-	cabal build -j --enable-tests all --ghc-options="-fwrite-ide-info"
+	cabal build --enable-tests all --ghc-options="-fwrite-ide-info"
 
 rb: c b
 

@@ -53,6 +53,7 @@ mkOktaIdp domain = do
       , idpUserInfoEndpoint = userinfoEndpoint
       , idpAuthorizeEndpoint = authorizationEndpoint
       , idpTokenEndpoint = tokenEndpoint
+      , idpDeviceAuthorizationEndpoint = Just deviceAuthorizationEndpoint
       }
 
 mkOktaClientCredentialAppJwt ::

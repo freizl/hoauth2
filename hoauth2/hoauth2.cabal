@@ -40,12 +40,14 @@ library
     Network.OAuth.OAuth2.TokenRequest
     Network.OAuth2.Experiment
     Network.OAuth2.Experiment.Flows.AuthorizationRequest
+    Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest
     Network.OAuth2.Experiment.Flows.RefreshTokenRequest
     Network.OAuth2.Experiment.Flows.TokenRequest
     Network.OAuth2.Experiment.Flows.UserInfoRequest
     Network.OAuth2.Experiment.GrantType
     Network.OAuth2.Experiment.GrantType.AuthorizationCode
     Network.OAuth2.Experiment.GrantType.ClientCredentials
+    Network.OAuth2.Experiment.GrantType.DeviceAuthorization
     Network.OAuth2.Experiment.GrantType.JwtBearer
     Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword
     Network.OAuth2.Experiment.Pkce
@@ -81,7 +83,7 @@ library
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Wwarnings-deprecations
+    -Werror -Wwarnings-deprecations
 
 test-suite hoauth-tests
   type:               exitcode-stdio-1.0
@@ -104,4 +106,4 @@ test-suite hoauth-tests
   build-tool-depends: hspec-discover:hspec-discover >=2 && <3
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Wwarnings-deprecations
+    -Werror -Wwarnings-deprecations

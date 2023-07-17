@@ -53,6 +53,7 @@ mkAuth0Idp domain = do
           idpAuthorizeEndpoint = authorizationEndpoint
         , -- https://auth0.com/docs/api/authentication#authorization-code-flow44
           idpTokenEndpoint = tokenEndpoint
+        , idpDeviceAuthorizationEndpoint = Just deviceAuthorizationEndpoint
         }
     )
 

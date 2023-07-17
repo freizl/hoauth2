@@ -36,6 +36,7 @@ defaultDropboxIdp =
     , idpAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
     , idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
+    , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 newtype DropboxUserName = DropboxUserName {displayName :: Text}

@@ -53,6 +53,18 @@
             <li>Check console for login success</li>
         </ul>
 
+        <h2>Device Auth flow</h2>
+        {{#idps}}
+        {{#isSupportDeviceGrant}}
+        <section class="login-with">
+             <a href="/login/device-code?idp={{idpAppName}}">Try Device flow of on {{idpAppName}}</a>
+        </section>
+        {{/isSupportDeviceGrant}}
+        {{/idps}}
+        <ul>
+            <li>Check console for login success</li>
+        </ul>
+
         <h2>Notes</h2>
         <ol>
             <li>for StackExchange, the callback domain is localhost, have manually add port 9988.</li>
