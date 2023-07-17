@@ -1,0 +1,24 @@
+#+title: Design Notes
+
+1. The current design basically tries to
+   - convert ~IdpApplication.application~ to request data per Grant type
+   - then making request using the request data aforementioned.
+   - this is intermittent *request data* is not required since the request body is just key/pair.
+   - I feel having a data type is easier to comprehensive that just key/pair.
+
+2. Some type class only has one instance, probably will be only forever.
+   Maybe shall consider to ditch/simplify it.
+
+3. limitation on the ~TokenRequestError~
+   - Device Authorization Grant expand the error code.
+   - But I don't know a good way to model such in Haskell
+     - use ~TokenRequestError~ for typical token request
+     - use ~DeviceTokenRequestError~ for device token request
+     - ~DeviceTokenRequestError~ shall be just extend from ~TokenRequestError~ in terms of enum and ~FromJSON~ implementation.
+
+4. Applications from Identify Provider often model as
+   - One Application could support multiple grant types.
+   - It feels straightforward if we could model same way: constructs an Application that could have multiple grants.
+   - But I don't know if it makes simpler for the usage and implementation.
+   - Plus, I imagine for SASS services that uses hoauth2 library would probably only use particular grant, e.g. service that uses Authorization Code Grant, service that uses Device Code flow etc.
+   - Hence I did not think this path too much yet.
