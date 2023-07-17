@@ -29,6 +29,7 @@ instance ToQueryParam DeviceCode where
   toQueryParam :: DeviceCode -> Map Text Text
   toQueryParam (DeviceCode dc) = Map.singleton "device_code" dc
 
+-- | https://www.rfc-editor.org/rfc/rfc8628#section-3.2
 data DeviceAuthorizationResponse = DeviceAuthorizationResponse
   { deviceCode :: DeviceCode
   , userCode :: Text
@@ -65,12 +66,16 @@ instance ToQueryParam DeviceAuthorizationRequestParam where
       , arExtraParams
       ]
 
--- | https://www.rfc-editor.org/rfc/rfc8628#section-3.1
 class HasOAuth2Key a => HasDeviceAuthorizationRequest a where
+  -- | Create Device Authorization Request parameters
+  -- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
   mkDeviceAuthorizationRequestParam :: a -> DeviceAuthorizationRequestParam
 
 -- TODO: there is only (possibly always only) on instance of 'HasDeviceAuthorizationRequest'
 -- Maybe consider to hard-code the data type instead of use type class.
+
+-- | Makes Device Authorization Request
+-- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
 conduitDeviceAuthorizationRequest ::
   (MonadIO m, HasDeviceAuthorizationRequest a) =>
   IdpApplication i a ->

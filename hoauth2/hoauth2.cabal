@@ -30,15 +30,6 @@ library
   other-modules:
     Network.HTTP.Client.Contrib
     Network.OAuth.OAuth2.Internal
-    Network.OAuth2.Experiment.Utils
-    Paths_hoauth2
-
-  exposed-modules:
-    Network.OAuth.OAuth2
-    Network.OAuth.OAuth2.AuthorizationRequest
-    Network.OAuth.OAuth2.HttpClient
-    Network.OAuth.OAuth2.TokenRequest
-    Network.OAuth2.Experiment
     Network.OAuth2.Experiment.Flows.AuthorizationRequest
     Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest
     Network.OAuth2.Experiment.Flows.RefreshTokenRequest
@@ -52,6 +43,15 @@ library
     Network.OAuth2.Experiment.Grants.ResourceOwnerPassword
     Network.OAuth2.Experiment.Pkce
     Network.OAuth2.Experiment.Types
+    Network.OAuth2.Experiment.Utils
+    Paths_hoauth2
+
+  exposed-modules:
+    Network.OAuth.OAuth2
+    Network.OAuth.OAuth2.AuthorizationRequest
+    Network.OAuth.OAuth2.HttpClient
+    Network.OAuth.OAuth2.TokenRequest
+    Network.OAuth2.Experiment
 
   default-extensions:
     DeriveGeneric

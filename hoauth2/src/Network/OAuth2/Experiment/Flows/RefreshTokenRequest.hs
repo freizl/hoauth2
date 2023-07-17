@@ -15,11 +15,15 @@ import Network.OAuth2.Experiment.Utils
 --                            RefreshToken Requset                           --
 -------------------------------------------------------------------------------
 
--- | https://www.rfc-editor.org/rfc/rfc6749#page-47
 class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasRefreshTokenRequest a where
   data RefreshTokenRequest a
+
+  -- | Make Refresh Token Request parameters
+  -- | https://www.rfc-editor.org/rfc/rfc6749#section-6
   mkRefreshTokenRequestParam :: a -> OAuth2.RefreshToken -> RefreshTokenRequest a
 
+-- | Make Refresh Token Request
+-- https://www.rfc-editor.org/rfc/rfc6749#section-6
 conduitRefreshTokenRequest ::
   (HasRefreshTokenRequest a, ToQueryParam (RefreshTokenRequest a), MonadIO m) =>
   IdpApplication i a ->

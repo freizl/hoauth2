@@ -18,7 +18,7 @@ import Data.Word
 
 newtype CodeChallenge = CodeChallenge {unCodeChallenge :: Text}
 
-newtype CodeVerifier = CodeVerifier {unCodeVerifier :: Text} deriving (Show)
+newtype CodeVerifier = CodeVerifier {unCodeVerifier :: Text}
 
 data CodeChallengeMethod = S256
   deriving (Show)

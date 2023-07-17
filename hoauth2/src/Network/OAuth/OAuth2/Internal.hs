@@ -108,7 +108,7 @@ data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost
   | ClientAssertionJwt
-  deriving (Eq, Ord)
+  deriving (Eq)
 
 --------------------------------------------------
 

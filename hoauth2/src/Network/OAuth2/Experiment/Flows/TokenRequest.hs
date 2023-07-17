@@ -17,6 +17,8 @@ import Network.OAuth2.Experiment.Utils
 class HasTokenRequestClientAuthenticationMethod a where
   getClientAuthenticationMethod :: a -> ClientAuthenticationMethod
 
+-- | Only Authorization Code Grant involves a Exchange Token (Authorization Code).
+-- ResourceOwnerPassword and Client Credentials make token request directly.
 data NoNeedExchangeToken = NoNeedExchangeToken
 
 class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasTokenRequest a where
@@ -31,6 +33,8 @@ class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasTokenR
   -- type WithExchangeToken a b
   mkTokenRequestParam :: a -> ExchangeTokenInfo a -> TokenRequest a
 
+-- | Make Token Request
+-- https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
 conduitTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
   IdpApplication i a ->
@@ -55,6 +59,8 @@ conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
 --                                    PKCE                                   --
 -------------------------------------------------------------------------------
 
+-- | Make Token Request (PKCE)
+-- https://datatracker.ietf.org/doc/html/rfc7636#section-4.5
 conduitPkceTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
   IdpApplication i a ->

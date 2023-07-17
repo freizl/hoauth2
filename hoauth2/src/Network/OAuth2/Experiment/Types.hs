@@ -70,7 +70,7 @@ data IdpApplication i a = IdpApplication
 --
 -- Would be nice to define Enum for standard Scope, plus allow user to define their own define (per Idp) and plugin somehow.
 newtype Scope = Scope {unScope :: Text}
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
 instance IsString Scope where
   fromString :: String -> Scope
@@ -84,7 +84,7 @@ instance IsString Scope where
 
 -- | Grant type query parameter has association with different GrantType flows but not completely strict.
 --
--- e.g. Both 'AuthorizationCode' and 'ResourceOwnerPassword' flow could support refresh token flow.
+-- e.g. Both AuthorizationCode and ResourceOwnerPassword flow could support refresh token flow.
 data GrantTypeValue
   = GTAuthorizationCode
   | GTPassword
