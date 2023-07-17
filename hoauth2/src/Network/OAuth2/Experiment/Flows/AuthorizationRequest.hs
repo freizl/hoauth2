@@ -5,9 +5,7 @@ import Data.Bifunctor
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
-import Data.Text.Encoding qualified as T
 import Data.Text.Lazy (Text)
-import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Types
@@ -47,18 +45,15 @@ class HasAuthorizeRequest a where
 
 -- | Constructs Authorization Code request URI
 -- https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-mkAuthorizationRequest :: HasAuthorizeRequest a => IdpApplication i a -> Text
+mkAuthorizationRequest :: HasAuthorizeRequest a => IdpApplication i a -> URI
 mkAuthorizationRequest idpApp =
   let req = mkAuthorizationRequestParam (application idpApp)
       allParams =
         map (bimap tlToBS tlToBS) $
           Map.toList $
             toQueryParam req
-   in TL.fromStrict $
-        T.decodeUtf8 $
-          serializeURIRef' $
-            appendQueryParams allParams $
-              idpAuthorizeEndpoint (idp idpApp)
+   in appendQueryParams allParams $
+        idpAuthorizeEndpoint (idp idpApp)
 
 -------------------------------------------------------------------------------
 --                                    PKCE                                   --
@@ -73,14 +68,11 @@ class HasAuthorizeRequest a => HasPkceAuthorizeRequest a where
 mkPkceAuthorizeRequest ::
   (HasPkceAuthorizeRequest a, MonadIO m) =>
   IdpApplication i a ->
-  m (Text, CodeVerifier)
+  m (URI, CodeVerifier)
 mkPkceAuthorizeRequest IdpApplication {..} = do
   (req, codeVerifier) <- mkPkceAuthorizeRequestParam application
   let allParams = map (bimap tlToBS tlToBS) $ Map.toList $ toQueryParam req
   let url =
-        TL.fromStrict $
-          T.decodeUtf8 $
-            serializeURIRef' $
-              appendQueryParams allParams $
-                idpAuthorizeEndpoint idp
+        appendQueryParams allParams $
+          idpAuthorizeEndpoint idp
   pure (url, codeVerifier)

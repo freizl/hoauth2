@@ -250,4 +250,11 @@ mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
     if isSupportPkce idpAppConfig
       then fmap (second Just) (mkPkceAuthorizeRequest idpAppConfig)
       else pure (mkAuthorizationRequest idpAppConfig, Nothing)
-  pure $ DemoAppEnv ia (def {authorizeAbsUri = fst re, authorizePkceCodeVerifier = snd re})
+  pure $
+    DemoAppEnv
+      ia
+      ( def
+          { authorizeAbsUri = TL.fromStrict $ uriToText (fst re)
+          , authorizePkceCodeVerifier = snd re
+          }
+      )

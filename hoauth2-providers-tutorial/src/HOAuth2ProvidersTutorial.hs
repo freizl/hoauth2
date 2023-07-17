@@ -25,7 +25,6 @@ import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..), mkAuth0Idp)
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
-import URI.ByteString (URI, serializeURIRef')
 import URI.ByteString.QQ (uri)
 import Web.Scotty (ActionM, scotty)
 import Web.Scotty qualified as Scotty
@@ -132,13 +131,13 @@ indexH refUser = do
 -- | @/login/auth0@ endpoint handler
 loginAuth0H :: IdpApplication Auth0 AuthorizationCodeApplication -> ActionM ()
 loginAuth0H auth0App = do
-  Scotty.setHeader "Location" (mkAuthorizationRequest auth0App)
+  Scotty.setHeader "Location" (TL.fromStrict $ uriToText $ mkAuthorizationRequest auth0App)
   Scotty.status status302
 
 -- | @/login/google@ endpoint handler
 loginGoogleH :: IdpApplication Google AuthorizationCodeApplication -> ActionM ()
 loginGoogleH googleApp = do
-  Scotty.setHeader "Location" (mkAuthorizationRequest googleApp)
+  Scotty.setHeader "Location" (TL.fromStrict $ uriToText $ mkAuthorizationRequest googleApp)
   Scotty.status status302
 
 -- | @/logout@ endpoint handler
@@ -197,9 +196,6 @@ handleGoogleCallback idpApp code = do
 -- * Utilities
 
 ------------------------------
-
-uriToText :: URI -> TL.Text
-uriToText = TL.fromStrict . T.decodeUtf8 . serializeURIRef'
 
 bslToText :: BSL.ByteString -> TL.Text
 bslToText = TL.pack . BSL.unpack

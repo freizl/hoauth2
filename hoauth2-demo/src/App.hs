@@ -191,7 +191,7 @@ testDeviceCodeGrantTypeH cache = do
     liftIO $ do
       putStr "Please visit this URL to redeem the code: "
       TL.putStr $ userCode deviceAuthResp <> "\n"
-      TL.putStrLn $ uriToText (verificationUri deviceAuthResp)
+      TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
     atoken <- withExceptT oauth2ErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
     liftIO $ do
       putStrLn "[Device Authorization Flow] Found access token"

@@ -2,10 +2,8 @@ module Utils where
 
 import Data.Aeson qualified as Aeson
 import Data.ByteString.Lazy.Char8 qualified as BSL
-import Data.Text.Encoding qualified as T
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import URI.ByteString (URI, serializeURIRef')
 import Web.Scotty.Internal.Types
 
 bslToText :: BSL.ByteString -> Text
@@ -22,6 +20,3 @@ parseValue Nothing = Nothing
 parseValue (Just a) = case Aeson.fromJSON a of
   Aeson.Error _ -> Nothing
   Aeson.Success b -> Just b
-
-uriToText :: URI -> TL.Text
-uriToText = TL.fromStrict . T.decodeUtf8 . serializeURIRef'
