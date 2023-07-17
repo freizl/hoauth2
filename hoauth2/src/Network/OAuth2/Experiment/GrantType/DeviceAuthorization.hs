@@ -21,7 +21,7 @@ import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Types
 import Prelude hiding (error)
 
--- | An Application that supports "Device Authorization code" flow
+-- | An Application that supports "Device Authorization Grant"
 --
 -- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
 data DeviceAuthorizationApplication = DeviceAuthorizationApplication
@@ -30,9 +30,12 @@ data DeviceAuthorizationApplication = DeviceAuthorizationApplication
   , daClientSecret :: ClientSecret
   , daScope :: Set Scope
   , daAuthorizationRequestExtraParam :: Map Text Text
+  -- ^ Additional parameters to the device authorization request.
+  -- Most of identity providers follow the spec strictly but
+  -- AzureAD requires "tenant" parameter.
   , daAuthorizationRequestAuthenticationMethod :: Maybe ClientAuthenticationMethod
   -- ^ The spec requires similar authentication method as /token request.
-  -- But most of identity provider I test doesn't required it except Okta.
+  -- Most of identity providers doesn't required it but some does like Okta.
   }
 
 pollDeviceTokenRequest ::

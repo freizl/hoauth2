@@ -83,8 +83,7 @@ library
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Werror
-    -Wwarnings-deprecations
+    -Werror -Wwarnings-deprecations
 
 test-suite hoauth-tests
   type:               exitcode-stdio-1.0
@@ -107,5 +106,4 @@ test-suite hoauth-tests
   build-tool-depends: hspec-discover:hspec-discover >=2 && <3
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Werror
-    -Wwarnings-deprecations
+    -Werror -Wwarnings-deprecations
