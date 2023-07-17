@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Network.OAuth2.Experiment.GrantType.JwtBearer where
+module Network.OAuth2.Experiment.Grants.JwtBearer where
 
 import Data.ByteString qualified as BS
 import Data.Default (Default (def))

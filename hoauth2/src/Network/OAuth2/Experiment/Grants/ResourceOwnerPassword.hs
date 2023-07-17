@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Network.OAuth2.Experiment.GrantType.ResourceOwnerPassword where
+module Network.OAuth2.Experiment.Grants.ResourceOwnerPassword where
 
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map

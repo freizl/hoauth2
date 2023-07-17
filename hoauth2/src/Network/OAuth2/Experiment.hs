@@ -92,7 +92,7 @@ module Network.OAuth2.Experiment (
   module Network.OAuth2.Experiment.Flows.TokenRequest,
   module Network.OAuth2.Experiment.Flows.UserInfoRequest,
   module Network.OAuth.OAuth2,
-  module Network.OAuth2.Experiment.GrantType,
+  module Network.OAuth2.Experiment.Grants,
   module Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest,
 ) where
 
@@ -109,7 +109,7 @@ import Network.OAuth2.Experiment.Flows.TokenRequest (
   conduitTokenRequest,
  )
 import Network.OAuth2.Experiment.Flows.UserInfoRequest (conduitUserInfoRequest)
-import Network.OAuth2.Experiment.GrantType
+import Network.OAuth2.Experiment.Grants
 import Network.OAuth2.Experiment.Pkce (
   CodeChallenge (..),
   CodeChallengeMethod (..),

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Network.OAuth2.Experiment.GrantType.DeviceAuthorization (
+module Network.OAuth2.Experiment.Grants.DeviceAuthorization (
   DeviceAuthorizationApplication (..),
   pollDeviceTokenRequest,
 ) where

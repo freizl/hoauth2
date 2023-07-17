@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Network.OAuth2.Experiment.GrantType.ClientCredentials where
+module Network.OAuth2.Experiment.Grants.ClientCredentials where
 
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
