@@ -70,7 +70,7 @@
 -- Secondly, construct the authorize URL.
 --
 -- @
--- authorizeUrl = mkAuthorizeRequest fooIdpApplication
+-- authorizeUrl = mkAuthorizationRequest fooIdpApplication
 -- @
 --
 -- Thirdly, after a successful redirect with authorize code,
@@ -114,7 +114,7 @@ module Network.OAuth2.Experiment (
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
-import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizeRequest, mkPkceAuthorizeRequest)
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizationRequest, mkPkceAuthorizeRequest)
 import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest (
   DeviceAuthorizationResponse (..),
   conduitDeviceAuthorizationRequest,

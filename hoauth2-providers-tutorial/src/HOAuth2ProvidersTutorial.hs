@@ -132,13 +132,13 @@ indexH refUser = do
 -- | @/login/auth0@ endpoint handler
 loginAuth0H :: IdpApplication Auth0 AuthorizationCodeApplication -> ActionM ()
 loginAuth0H auth0App = do
-  Scotty.setHeader "Location" (mkAuthorizeRequest auth0App)
+  Scotty.setHeader "Location" (mkAuthorizationRequest auth0App)
   Scotty.status status302
 
 -- | @/login/google@ endpoint handler
 loginGoogleH :: IdpApplication Google AuthorizationCodeApplication -> ActionM ()
 loginGoogleH googleApp = do
-  Scotty.setHeader "Location" (mkAuthorizeRequest googleApp)
+  Scotty.setHeader "Location" (mkAuthorizationRequest googleApp)
   Scotty.status status302
 
 -- | @/logout@ endpoint handler

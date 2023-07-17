@@ -40,8 +40,8 @@ instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication 
   getClientAuthenticationMethod AuthorizationCodeApplication {..} = acTokenRequestAuthenticationMethod
 
 instance HasAuthorizeRequest AuthorizationCodeApplication where
-  mkAuthorizeRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
-  mkAuthorizeRequestParam AuthorizationCodeApplication {..} =
+  mkAuthorizationRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
+  mkAuthorizationRequestParam AuthorizationCodeApplication {..} =
     AuthorizationRequestParam
       { arScope = acScope
       , arState = acAuthorizeState
@@ -55,7 +55,7 @@ instance HasPkceAuthorizeRequest AuthorizationCodeApplication where
   mkPkceAuthorizeRequestParam :: MonadIO m => AuthorizationCodeApplication -> m (AuthorizationRequestParam, CodeVerifier)
   mkPkceAuthorizeRequestParam app = do
     PkceRequestParam {..} <- mkPkceParam
-    let authReqParam = mkAuthorizeRequestParam app
+    let authReqParam = mkAuthorizationRequestParam app
         combinatedExtraParams =
           Map.unions
             [ arExtraParams authReqParam

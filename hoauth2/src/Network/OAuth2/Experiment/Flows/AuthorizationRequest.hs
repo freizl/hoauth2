@@ -41,15 +41,15 @@ instance ToQueryParam AuthorizationRequestParam where
 class HasAuthorizeRequest a where
   -- | Constructs Authorization Code request parameters
   -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-  mkAuthorizeRequestParam :: a -> AuthorizationRequestParam
+  mkAuthorizationRequestParam :: a -> AuthorizationRequestParam
 
 -- FIXME: rename to mkAuthorizationRequest. similar to other cases.
 
 -- | Constructs Authorization Code request URI
 -- https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-mkAuthorizeRequest :: HasAuthorizeRequest a => IdpApplication i a -> Text
-mkAuthorizeRequest idpApp =
-  let req = mkAuthorizeRequestParam (application idpApp)
+mkAuthorizationRequest :: HasAuthorizeRequest a => IdpApplication i a -> Text
+mkAuthorizationRequest idpApp =
+  let req = mkAuthorizationRequestParam (application idpApp)
       allParams =
         map (bimap tlToBS tlToBS) $
           Map.toList $

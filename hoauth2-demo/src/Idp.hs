@@ -249,5 +249,5 @@ mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
   re <-
     if isSupportPkce idpAppConfig
       then fmap (second Just) (mkPkceAuthorizeRequest idpAppConfig)
-      else pure (mkAuthorizeRequest idpAppConfig, Nothing)
+      else pure (mkAuthorizationRequest idpAppConfig, Nothing)
   pure $ DemoAppEnv ia (def {authorizeAbsUri = fst re, authorizePkceCodeVerifier = snd re})

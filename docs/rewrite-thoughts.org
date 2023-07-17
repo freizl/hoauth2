@@ -221,9 +221,9 @@ data AuthorizationRequest 'AuthorizationCode = AuthorizationCodeAuthorizationReq
     , redirectUri :: Maybe RedirectUri
     }
 
-mkAuthorizeRequestParameter :: IdpApplication 'AuthorizationCode i -> AuthorizationRequest 'AuthorizationCode
+mkAuthorizationRequestParameter :: IdpApplication 'AuthorizationCode i -> AuthorizationRequest 'AuthorizationCode
 -- | this is URI to which redirect the user for authentication
-mkAuthorizeRequest =
+mkAuthorizationRequest =
    idpAuthorizeEndpoint +
    AuthorizationCodeAuthorizationRequest +
    idpAppAuthorizeRequestExtraParams
