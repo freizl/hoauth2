@@ -79,7 +79,7 @@ initApp cache idps = scottyApp $ do
 
   get "/login/jwt-grant" testJwtBearerGrantTypeH
 
-  get "/login/device-code" (testDeviceCodeGrantTypeH idps)
+  get "/login/device-auth-grant" (testDeviceCodeGrantTypeH idps)
 
 --------------------------------------------------
 

@@ -3,7 +3,7 @@
         <link href="/main.css" rel="stylesheet"/>
     </head>
     <body>
-        <h1>HOAuth2 Demo Server</h1>
+        <h1>HOAuth2 Demo</h1>
 
         <h2>Authorization Code flow</h2>
         {{#idps}}
@@ -23,24 +23,25 @@
         {{/idps}}
 
         <h2>Password flow</h2>
+        {{#idps}}
+        {{#isSupportPasswordGrant}}
         <section class="login-with">
-            <a href="/login/password-grant?idp=auth0">Test Password Grant Type flow-auth0</a>
+            <a href="/login/password-grant?idp={{idpName}}">Sign-in with {{idpName}}</a>
         </section>
-        <section class="login-with">
-            <a href="/login/password-grant?idp=okta">Test Password Grant Type flow-okta</a>
-        </section>
-
+        {{/isSupportPasswordGrant}}
+        {{/idps}}
         <ul>
             <li>Check console for login success</li>
         </ul>
 
         <h2>Client Credentials flow</h2>
+        {{#idps}}
+        {{#isSupportClientCredentialsGrant}}
         <section class="login-with">
-            <a href="/login/cc-grant?idp=auth0">Test Client Credentials Grant Type flow (auth0)</a>
+            <a href="/login/cc-grant?idp={{idpName}}">Sign-in with {{idpName}}</a>
         </section>
-        <section class="login-with">
-            <a href="/login/cc-grant?idp=okta">Test Client Credentials Grant Type flow (okta)</a>
-        </section>
+        {{/isSupportClientCredentialsGrant}}
+        {{/idps}}
         <ul>
             <li>Check console for login success</li>
         </ul>
@@ -57,7 +58,7 @@
         {{#idps}}
         {{#isSupportDeviceGrant}}
         <section class="login-with">
-             <a href="/login/device-code?idp={{idpName}}">Test Device flow of on {{idpName}}</a>
+             <a href="/login/device-auth-grant?idp={{idpName}}">Test Device flow of on {{idpName}}</a>
         </section>
         {{/isSupportDeviceGrant}}
         {{/idps}}
