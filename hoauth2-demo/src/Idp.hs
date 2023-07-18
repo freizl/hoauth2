@@ -65,20 +65,20 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp, myAzureIdp) = do
                     }
              in IdpApplication {idp = i, application = newApp}
   pure
-    [ DemoAuthorizationApp (initIdpAppConfig myAzureIdp IAzureAD.defaultAzureADApp)
-    , DemoAuthorizationApp (initIdpAppConfig myAuth0Idp IAuth0.defaultAuth0App)
-    , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookIdp IFacebook.defaultFacebookApp)
-    , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitIdp IFitbit.defaultFitbitApp)
-    , DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubIdp IGithub.defaultGithubApp)
-    , DemoAuthorizationApp (initIdpAppConfig IDropbox.defaultDropboxIdp IDropbox.defaultDropboxApp)
-    , DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleIdp IGoogle.defaultGoogleApp)
-    , DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinIdp ILinkedin.defaultLinkedinApp)
-    , DemoAuthorizationApp (initIdpAppConfig myOktaIdp IOkta.defaultOktaApp)
-    , DemoAuthorizationApp (initIdpAppConfig ITwitter.defaultTwitterIdp ITwitter.defaultTwitterApp)
-    , DemoAuthorizationApp (initIdpAppConfig ISlack.defaultSlackIdp ISlack.defaultSlackApp)
-    , DemoAuthorizationApp (initIdpAppConfig IWeibo.defaultWeiboIdp IWeibo.defaultWeiboApp)
-    , DemoAuthorizationApp (initIdpAppConfig IZOHO.defaultZohoIdp IZOHO.defaultZohoApp)
-    , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeIdp IStackExchange.defaultStackExchangeApp)
+    [ DemoAuthorizationApp (initIdpAppConfig myAzureIdp IAzureAD.sampleAzureADAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig myAuth0Idp IAuth0.sampleAuth0AuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IFacebook.defaultFacebookIdp IFacebook.sampleFacebookAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IFitbit.defaultFitbitIdp IFitbit.sampleFitbitAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IGithub.defaultGithubIdp IGithub.sampleGithubAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IDropbox.defaultDropboxIdp IDropbox.sampleDropboxAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IGoogle.defaultGoogleIdp IGoogle.sampleGoogleAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig ILinkedin.defaultLinkedinIdp ILinkedin.sampleLinkedinAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig myOktaIdp IOkta.sampleOktaAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig ITwitter.defaultTwitterIdp ITwitter.sampleTwitterAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig ISlack.defaultSlackIdp ISlack.sampleSlackAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IWeibo.defaultWeiboIdp IWeibo.sampleWeiboAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IZOHO.defaultZohoIdp IZOHO.sampleZohoAuthorizationCodeApp)
+    , DemoAuthorizationApp (initIdpAppConfig IStackExchange.defaultStackExchangeIdp IStackExchange.sampleStackExchangeAuthorizationCodeApp)
     ]
 
 googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearerApplication)
@@ -100,7 +100,11 @@ googleServiceAccountApp = do
             )
             IGoogle.defaultGoogleIdp
       )
-  pure $ IdpApplication {idp = IGoogle.defaultGoogleIdp, application = IGoogle.defaultServiceAccountApp jwt}
+  pure $
+    IdpApplication
+      { idp = IGoogle.defaultGoogleIdp
+      , application = IGoogle.sampleServiceAccountApp jwt
+      }
 
 oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication IOkta.Okta ResourceOwnerPasswordApplication
 oktaPasswordGrantApp i =

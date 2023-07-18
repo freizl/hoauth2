@@ -39,10 +39,10 @@ type instance IdpUserInfo Google = GoogleUser
 
 -- * Authorization Code flow
 
-defaultGoogleApp :: AuthorizationCodeApplication
-defaultGoogleApp =
+sampleGoogleAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleGoogleAuthorizationCodeApp =
   AuthorizationCodeApplication
-    { acName = "default-google-app"
+    { acName = "sample-google-authorization-code-app"
     , acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
@@ -54,8 +54,8 @@ defaultGoogleApp =
 
 -- * Service Account
 
-defaultServiceAccountApp :: Jwt -> JwtBearerApplication
-defaultServiceAccountApp jwt =
+sampleServiceAccountApp :: Jwt -> JwtBearerApplication
+sampleServiceAccountApp jwt =
   JwtBearerApplication
     { jbName = "google-sa-app"
     , jbJwtAssertion = unJwt jwt

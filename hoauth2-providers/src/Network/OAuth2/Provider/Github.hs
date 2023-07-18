@@ -16,8 +16,8 @@ data Github = Github deriving (Eq, Show)
 
 type instance IdpUserInfo Github = GithubUser
 
-defaultGithubApp :: AuthorizationCodeApplication
-defaultGithubApp =
+sampleGithubAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleGithubAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -25,7 +25,7 @@ defaultGithubApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-github-app"
+    , acName = "sample-github-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

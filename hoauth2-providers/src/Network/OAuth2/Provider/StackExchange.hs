@@ -34,8 +34,8 @@ data StackExchange = StackExchange deriving (Eq, Show)
 
 type instance IdpUserInfo StackExchange = StackExchangeResp
 
-defaultStackExchangeApp :: AuthorizationCodeApplication
-defaultStackExchangeApp =
+sampleStackExchangeAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleStackExchangeAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -43,7 +43,7 @@ defaultStackExchangeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-stackexchange-app"
+    , acName = "sample-stackexchange-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 

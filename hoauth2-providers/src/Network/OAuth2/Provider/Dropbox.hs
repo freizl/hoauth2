@@ -16,8 +16,8 @@ data Dropbox = Dropbox deriving (Eq, Show)
 
 type instance IdpUserInfo Dropbox = DropboxUser
 
-defaultDropboxApp :: AuthorizationCodeApplication
-defaultDropboxApp =
+sampleDropboxAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleDropboxAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -25,7 +25,7 @@ defaultDropboxApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-dropbox-app"
+    , acName = "sample-dropbox-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

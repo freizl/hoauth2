@@ -23,8 +23,8 @@ type instance IdpUserInfo AzureAD = AzureADUser
 --
 -- also be aware to find the right client id.
 -- see https://stackoverflow.com/a/70670961
-defaultAzureADApp :: AuthorizationCodeApplication
-defaultAzureADApp =
+sampleAzureADAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleAzureADAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -32,7 +32,7 @@ defaultAzureADApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-azure-app"
+    , acName = "sample-azure-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

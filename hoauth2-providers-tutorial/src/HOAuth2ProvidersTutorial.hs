@@ -9,8 +9,8 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
+import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
-import Data.Text.Encoding qualified as T
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
@@ -22,7 +22,6 @@ import Network.OAuth.OAuth2 (
  )
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..), mkAuth0Idp)
-import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
 import URI.ByteString.QQ (uri)
@@ -40,13 +39,15 @@ mkTestAuth0App :: ExceptT Text IO (IdpApplication Auth0 AuthorizationCodeApplica
 mkTestAuth0App = do
   idp <- mkTestAuth0Idp
   let application =
-        Auth0.defaultAuth0App
+        AuthorizationCodeApplication
           { acClientId = ""
           , acClientSecret = ""
           , acAuthorizeState = AuthorizeState ("auth0." <> randomStateValue)
           , acScope = Set.fromList ["openid", "email", "profile"]
           , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
           , acName = "foo-auth0-app"
+          , acAuthorizeRequestExtraParams = Map.empty
+          , acTokenRequestAuthenticationMethod = ClientSecretBasic
           }
   pure IdpApplication {..}
 
@@ -56,12 +57,19 @@ mkTestAuth0Idp = mkAuth0Idp "freizl.auth0.com"
 mkTestGoogleApp :: IdpApplication Google AuthorizationCodeApplication
 mkTestGoogleApp =
   let application =
-        Google.defaultGoogleApp
+        AuthorizationCodeApplication
           { acClientId = ""
           , acClientSecret = ""
           , acAuthorizeState = AuthorizeState ("google." <> randomStateValue)
           , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
+          , acScope =
+              Set.fromList
+                [ "https://www.googleapis.com/auth/userinfo.email"
+                , "https://www.googleapis.com/auth/userinfo.profile"
+                ]
           , acName = "foo-google-app"
+          , acAuthorizeRequestExtraParams = Map.empty
+          , acTokenRequestAuthenticationMethod = ClientSecretBasic
           }
       idp = Google.defaultGoogleIdp
    in IdpApplication {..}

@@ -16,8 +16,8 @@ data Facebook = Facebook deriving (Eq, Show)
 
 type instance IdpUserInfo Facebook = FacebookUser
 
-defaultFacebookApp :: AuthorizationCodeApplication
-defaultFacebookApp =
+sampleFacebookAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleFacebookAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -25,7 +25,7 @@ defaultFacebookApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-facebook-app"
+    , acName = "sample-facebook-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 

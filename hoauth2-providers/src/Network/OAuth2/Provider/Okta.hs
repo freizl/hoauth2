@@ -27,8 +27,8 @@ data Okta = Okta deriving (Eq, Show)
 
 type instance IdpUserInfo Okta = OktaUser
 
-defaultOktaApp :: AuthorizationCodeApplication
-defaultOktaApp =
+sampleOktaAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleOktaAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -36,7 +36,7 @@ defaultOktaApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-okta-app"
+    , acName = "sample-okta-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

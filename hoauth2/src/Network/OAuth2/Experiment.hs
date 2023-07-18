@@ -59,7 +59,7 @@
 --       acAuthorizeState = \"CHANGE_ME\",
 --       acAuthorizeRequestExtraParams = Map.empty,
 --       acRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
---       acName = "default-google-app",
+--       acName = "sample-google-authorization-code-app",
 --       acTokenRequestAuthenticationMethod = ClientSecretBasic,
 --     }
 --

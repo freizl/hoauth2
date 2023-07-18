@@ -16,8 +16,8 @@ data ZOHO = ZOHO deriving (Eq, Show)
 
 type instance IdpUserInfo ZOHO = ZOHOUserResp
 
-defaultZohoApp :: AuthorizationCodeApplication
-defaultZohoApp =
+sampleZohoAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleZohoAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -25,7 +25,7 @@ defaultZohoApp =
     , acAuthorizeRequestExtraParams = Map.fromList [("access_type", "offline"), ("prompt", "consent")]
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost/oauth2/callback|]
-    , acName = "default-zoho-app"
+    , acName = "sample-zoho-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

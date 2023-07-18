@@ -16,10 +16,10 @@ data Weibo = Weibo deriving (Eq, Show)
 
 type instance IdpUserInfo Weibo = WeiboUID
 
-defaultWeiboApp :: AuthorizationCodeApplication
-defaultWeiboApp =
+sampleWeiboAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleWeiboAuthorizationCodeApp =
   AuthorizationCodeApplication
-    { acName = "default-weibo-app"
+    { acName = "sample-weibo-authorization-code-app"
     , acClientId = ""
     , acClientSecret = ""
     , acScope = Set.empty

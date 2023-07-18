@@ -17,15 +17,15 @@ data Twitter = Twitter deriving (Eq, Show)
 
 type instance IdpUserInfo Twitter = TwitterUserResp
 
-defaultTwitterApp :: AuthorizationCodeApplication
-defaultTwitterApp =
+sampleTwitterAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleTwitterAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["tweet.read", "users.read"]
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-twitter-app"
+    , acName = "sample-twitter-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     , acAuthorizeRequestExtraParams = Map.empty
     }

@@ -16,8 +16,8 @@ data Linkedin = Linkedin deriving (Eq, Show)
 
 type instance IdpUserInfo Linkedin = LinkedinUser
 
-defaultLinkedinApp :: AuthorizationCodeApplication
-defaultLinkedinApp =
+sampleLinkedinAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleLinkedinAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -25,7 +25,7 @@ defaultLinkedinApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-linkedin-app"
+    , acName = "sample-linkedin-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 

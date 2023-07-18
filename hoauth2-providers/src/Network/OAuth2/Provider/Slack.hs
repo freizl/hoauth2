@@ -18,8 +18,8 @@ data Slack = Slack deriving (Show, Eq)
 
 type instance IdpUserInfo Slack = SlackUser
 
-defaultSlackApp :: AuthorizationCodeApplication
-defaultSlackApp =
+sampleSlackAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleSlackAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -28,7 +28,7 @@ defaultSlackApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
-    , acName = "default-slack-app"
+    , acName = "sample-slack-authorization-code-app"
     }
 
 -- https://slack.com/.well-known/openid-configuration

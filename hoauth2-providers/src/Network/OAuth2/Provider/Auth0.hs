@@ -24,16 +24,16 @@ data Auth0 = Auth0
 
 type instance IdpUserInfo Auth0 = Auth0User
 
-defaultAuth0App :: AuthorizationCodeApplication
-defaultAuth0App =
+sampleAuth0AuthorizationCodeApp :: AuthorizationCodeApplication
+sampleAuth0AuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["openid", "profile", "email", "offline_access"]
     , acAuthorizeState = "CHANGE_ME"
-    , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-auth0-app"
+    , acName = "sample-auth0-authorization-code-app"
+    , acAuthorizeRequestExtraParams = Map.empty
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 

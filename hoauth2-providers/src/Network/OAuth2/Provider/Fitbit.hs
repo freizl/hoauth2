@@ -16,8 +16,8 @@ data Fitbit = Fitbit deriving (Eq, Show)
 
 type instance IdpUserInfo Fitbit = FitbitUser
 
-defaultFitbitApp :: AuthorizationCodeApplication
-defaultFitbitApp =
+sampleFitbitAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleFitbitAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -25,7 +25,7 @@ defaultFitbitApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
-    , acName = "default-fitbit-app"
+    , acName = "sample-fitbit-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
