@@ -128,6 +128,13 @@ data DemoAuthorizationApp
     ) =>
     DemoAuthorizationApp (IdpApplication i AuthorizationCodeApplication)
 
+data DemoIdp
+  = forall i.
+    ( HasDemoLoginUser i
+    , FromJSON (IdpUserInfo i)
+    ) =>
+    DemoIdp (Idp i)
+
 -------------------------------------------------------------------------------
 
 -- * Env

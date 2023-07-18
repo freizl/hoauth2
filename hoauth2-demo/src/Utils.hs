@@ -12,6 +12,11 @@ bslToText = TL.pack . BSL.unpack
 paramValue :: Text -> [Param] -> [Text]
 paramValue key = fmap snd . filter (hasParam key)
 
+paramValueMaybe :: Text -> [Param] -> Maybe Text
+paramValueMaybe key xs = case filter (hasParam key) xs of
+                   [a] -> Just (snd a)
+                   _ -> Nothing
+
 hasParam :: Text -> Param -> Bool
 hasParam t = (== t) . fst
 

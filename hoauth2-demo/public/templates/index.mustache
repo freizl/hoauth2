@@ -24,10 +24,10 @@
 
         <h2>Password flow</h2>
         <section class="login-with">
-            <a href="/login/password-grant?i=auth0">Test Password Grant Type flow-auth0</a>
+            <a href="/login/password-grant?idp=auth0">Test Password Grant Type flow-auth0</a>
         </section>
         <section class="login-with">
-            <a href="/login/password-grant?i=okta">Test Password Grant Type flow-okta</a>
+            <a href="/login/password-grant?idp=okta">Test Password Grant Type flow-okta</a>
         </section>
 
         <ul>
@@ -36,10 +36,10 @@
 
         <h2>Client Credentials flow</h2>
         <section class="login-with">
-            <a href="/login/cc-grant?i=auth0">Test Client Credentials Grant Type flow (auth0)</a>
+            <a href="/login/cc-grant?idp=auth0">Test Client Credentials Grant Type flow (auth0)</a>
         </section>
         <section class="login-with">
-            <a href="/login/cc-grant?i=okta">Test Client Credentials Grant Type flow (okta)</a>
+            <a href="/login/cc-grant?idp=okta">Test Client Credentials Grant Type flow (okta)</a>
         </section>
         <ul>
             <li>Check console for login success</li>
@@ -57,7 +57,7 @@
         {{#idps}}
         {{#isSupportDeviceGrant}}
         <section class="login-with">
-             <a href="/login/device-code?idp={{idpAppName}}">Test Device flow of on {{idpName}}</a>
+             <a href="/login/device-code?idp={{idpName}}">Test Device flow of on {{idpName}}</a>
         </section>
         {{/isSupportDeviceGrant}}
         {{/idps}}
