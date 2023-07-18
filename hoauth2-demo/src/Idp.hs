@@ -48,7 +48,7 @@ defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 loadCredentialFromConfig ::
-  (MonadIO m) =>
+  MonadIO m =>
   Text ->
   -- | Idp Application name
   ExceptT Text m (Maybe (ClientId, ClientSecret, Set.Set Scope))
@@ -64,8 +64,17 @@ loadCredentialFromConfig idpAppName = do
       , Set.map Scope (Set.fromList (fromMaybe [] (Env.scopes env)))
       )
 
+loadCredentialFromConfig2 ::
+  MonadIO m =>
+  Text ->
+  ExceptT Text m (Maybe Env.EnvConfigAuthParams)
+loadCredentialFromConfig2 idpAppName = do
+  configParams <- readEnvFile
+  let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
+  pure mConfigs
+
 createAuthorizationApps ::
-  (MonadIO m) =>
+  MonadIO m =>
   (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
   ExceptT Text m [DemoAuthorizationApp]
 createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
@@ -126,38 +135,42 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
-oktaPasswordGrantApp :: Idp i -> IdpApplication i ResourceOwnerPasswordApplication
-oktaPasswordGrantApp i =
-  IdpApplication
-    { idp = i
-    , application =
+-- | https://auth0.com/docs/api/authentication#resource-owner-password
+createResourceOwnerPasswordApp ::
+  Idp i ->
+  Text ->
+  ExceptT Text IO (IdpApplication i ResourceOwnerPasswordApplication)
+createResourceOwnerPasswordApp i idpName = do
+  let newAppName = "sample-" <> idpName <> "-resource-owner-app"
+  let defaultApp =
         ResourceOwnerPasswordApplication
           { ropClientId = ""
           , ropClientSecret = ""
-          , ropName = "okta-demo-password-grant-app"
-          , ropScope = Set.fromList ["openid", "profile"]
+          , ropName = newAppName
+          , ropScope = Set.fromList ["openid", "profile", "email"]
           , ropUserName = ""
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
           }
-    }
-
--- | https://auth0.com/docs/api/authentication#resource-owner-password
-auth0PasswordGrantApp :: Idp i -> IdpApplication i ResourceOwnerPasswordApplication
-auth0PasswordGrantApp i =
-  IdpApplication
-    { idp = i
-    , application =
-        ResourceOwnerPasswordApplication
-          { ropClientId = ""
-          , ropClientSecret = ""
-          , ropName = "auth0-demo-password-grant-app"
-          , ropScope = Set.fromList ["openid", "profile", "email"]
-          , ropUserName = "test"
-          , ropPassword = ""
-          , ropTokenRequestExtraParams = Map.empty
-          }
-    }
+  resp <- loadCredentialFromConfig2 newAppName
+  newApp' <- case resp of
+    Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load config for " <> idpName)
+    Just env ->
+      case Env.user env of
+        Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
+        Just userConfig ->
+          pure
+            defaultApp
+              { ropClientId = ClientId (Env.clientId env)
+              , ropClientSecret = ClientSecret (Env.clientSecret env)
+              , ropUserName = Username (Env.username userConfig)
+              , ropPassword = Password (Env.password userConfig)
+              }
+  pure $
+    IdpApplication
+      { idp = i
+      , application = newApp'
+      }
 
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
 createClientCredentialsApp ::
@@ -267,7 +280,7 @@ createDeviceAuthApp i idpName = do
       }
 
 findIdp ::
-  (MonadIO m) =>
+  MonadIO m =>
   (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
   Text ->
   ExceptT Text m DemoIdp
@@ -302,7 +315,7 @@ isSupportPkce IdpApplication {..} =
 envFilePath :: String
 envFilePath = ".env.json"
 
-readEnvFile :: (MonadIO m) => ExceptT Text m Env.EnvConfig
+readEnvFile :: MonadIO m => ExceptT Text m Env.EnvConfig
 readEnvFile = liftIO $ do
   pwd <- getCurrentDirectory
   envFileE <- doesFileExist (pwd <> "/" <> envFilePath)
@@ -316,7 +329,7 @@ readEnvFile = liftIO $ do
     else return Aeson.empty
 
 initIdps ::
-  (MonadIO m) =>
+  MonadIO m =>
   CacheStore ->
   (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
   ExceptT Text m ()
@@ -324,7 +337,7 @@ initIdps c is = do
   idps <- createAuthorizationApps is
   mapM mkDemoAppEnv idps >>= mapM_ (upsertDemoAppEnv c)
 
-mkDemoAppEnv :: (MonadIO m) => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
+mkDemoAppEnv :: MonadIO m => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
 mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
   re <-
     if isSupportPkce idpAppConfig

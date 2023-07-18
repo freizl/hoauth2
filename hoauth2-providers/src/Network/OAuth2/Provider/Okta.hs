@@ -41,7 +41,7 @@ sampleOktaAuthorizationCodeApp =
     }
 
 mkOktaIdp ::
-  (MonadIO m) =>
+  MonadIO m =>
   -- | Full domain with no http protocol. e.g. @foo.okta.com@
   Text ->
   ExceptT Text m (Idp Okta)

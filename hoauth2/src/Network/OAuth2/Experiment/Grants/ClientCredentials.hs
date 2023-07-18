@@ -72,4 +72,4 @@ instance ToQueryParam (TokenRequest ClientCredentialsApplication) where
           , toQueryParam trScope
           , trExtraParams
           ]
-          ++ jwtAssertionBody
+            ++ jwtAssertionBody

@@ -47,7 +47,8 @@ waiApp = do
   cache <- initCacheStore
   re <- runExceptT $ do
     myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
-    myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
+    myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
+    -- myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
     -- For the sake of simplicity for this demo App,
     -- I store user data in MVar in server side.
     -- It means user session shared across browsers.
@@ -125,28 +126,21 @@ callbackH c = do
   redirectToHomeM
 
 testPasswordGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
-testPasswordGrantTypeH (auth0, okta) = do
-  idpP <- paramValue "i" <$> params
-  when (null idpP) (raise "testPasswordGrantTypeH: no idp parameter in the password grant type login request")
-  let i = head idpP
-  case i of
-    "auth0" -> testPasswordGrantType (auth0PasswordGrantApp auth0)
-    "okta" -> testPasswordGrantType (oktaPasswordGrantApp okta)
-    _ -> raise $ "unable to find password grant type flow for idp " <> i
-  where
-    testPasswordGrantType ::
-      ( HasDemoLoginUser i
-      , FromJSON (IdpUserInfo i)
-      ) =>
-      IdpApplication i ResourceOwnerPasswordApplication ->
-      ActionM ()
-    testPasswordGrantType idpApp = do
-      exceptToActionM $ do
+testPasswordGrantTypeH idps = do
+  midp <- paramValueMaybe "idp" <$> params
+  exceptToActionM $ do
+    case midp of
+      Nothing -> throwE "[testPasswordGrantTypeH] no idp parameter in the password grant type login request"
+      Just idpName -> do
+        (DemoIdp idp) <- findIdp idps idpName
+        idpApp <- createResourceOwnerPasswordApp idp idpName
         mgr <- liftIO $ newManager tlsManagerSettings
         token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
         user <- tryFetchUser mgr token idpApp
-        liftIO $ print user
-      redirectToHomeM
+        liftIO $ do
+          putStrLn "=== testPasswordGrantTypeH ==="
+          print user
+  redirectToHomeM
 
 testClientCredentialGrantTypeH ::
   (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
@@ -209,7 +203,7 @@ testDeviceCodeGrantTypeH idps = do
 
 --------------------------------------------------
 
-exceptToActionM :: (Show a) => ExceptT Text IO a -> ActionM a
+exceptToActionM :: Show a => ExceptT Text IO a -> ActionM a
 exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
@@ -253,7 +247,7 @@ fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpA
               (ExchangeToken $ TL.toStrict exchangeTokenText, fromJust authorizePkceCodeVerifier)
         else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr (ExchangeToken $ TL.toStrict exchangeTokenText)
 
-    updateIdp :: (MonadIO m) => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
+    updateIdp :: MonadIO m => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
     updateIdp c1 (DemoAppEnv iApp sData) luser token =
       upsertDemoAppEnv
         c1
