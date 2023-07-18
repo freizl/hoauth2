@@ -9,12 +9,12 @@
         {{#idps}}
         <section class="login-with">
             {{^isLogin}}
-            <a href="{{codeFlowUri}}">Sign in with {{idpAppName}}</a>
+            <a href="{{codeFlowUri}}">Sign in with {{idpName}}</a>
             {{/isLogin}}
             {{#isLogin}}
-            <h2>Welcome to {{idpAppName}}</h2>
+            <h2>Welcome to {{idpName}}</h2>
             {{#user}}
-            <div class="result">Hello, {{idpAppName}}</div>
+            <div class="result">Hello, {{idpName}}</div>
             {{/user}}
             <a href="/logout?idp={{idpAppName}}">Logout</a>
             <a href="/refresh?idp={{idpAppName}}">Refresh</a>
@@ -57,7 +57,7 @@
         {{#idps}}
         {{#isSupportDeviceGrant}}
         <section class="login-with">
-             <a href="/login/device-code?idp={{idpAppName}}">Try Device flow of on {{idpAppName}}</a>
+             <a href="/login/device-code?idp={{idpAppName}}">Test Device flow of on {{idpName}}</a>
         </section>
         {{/isSupportDeviceGrant}}
         {{/idps}}

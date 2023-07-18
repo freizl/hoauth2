@@ -178,11 +178,13 @@ instance ToMustache DemoAppEnv where
     -- FIXME: find another way to determine device-app
     -- Often time the App is different with AuthorizationCodeApp
     let idpAppName = getIdpAppName (application idpAppConfig)
+        idpName = (TL.split (== '-' ) idpAppName) !! 1
         supportDeviceGrant = any (`TL.isInfixOf` idpAppName) ["okta", "github", "auth0", "azure", "google"]
     M.object
       [ "codeFlowUri" ~> authorizeAbsUri
       , "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
+      , "idpName" ~> idpName
       , "idpAppName" ~> TL.unpack idpAppName
       , "isSupportDeviceGrant" ~> supportDeviceGrant
       ]

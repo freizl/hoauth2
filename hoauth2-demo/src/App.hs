@@ -185,7 +185,7 @@ testDeviceCodeGrantTypeH :: CacheStore -> ActionM ()
 testDeviceCodeGrantTypeH cache = do
   (DemoAppEnv (DemoAuthorizationApp idpApp) _) <- readIdpParam cache
   exceptToActionM $ do
-    let testApp = createDeviceAuthApp idpApp
+    testApp <- createDeviceAuthApp (idp idpApp) (acName $ application idpApp)
     mgr <- liftIO $ newManager tlsManagerSettings
     deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
     liftIO $ do
