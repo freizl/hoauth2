@@ -123,7 +123,7 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
-oktaPasswordGrantApp :: Idp IOkta.Okta -> IdpApplication IOkta.Okta ResourceOwnerPasswordApplication
+oktaPasswordGrantApp :: Idp i -> IdpApplication i ResourceOwnerPasswordApplication
 oktaPasswordGrantApp i =
   IdpApplication
     { idp = i
@@ -172,7 +172,7 @@ oktaClientCredentialsGrantApp i = do
     Left e -> Prelude.error e
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
-auth0PasswordGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ResourceOwnerPasswordApplication
+auth0PasswordGrantApp :: Idp i -> IdpApplication i ResourceOwnerPasswordApplication
 auth0PasswordGrantApp i =
   IdpApplication
     { idp = i
@@ -189,7 +189,7 @@ auth0PasswordGrantApp i =
     }
 
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
-auth0ClientCredentialsGrantApp :: Idp IAuth0.Auth0 -> IdpApplication IAuth0.Auth0 ClientCredentialsApplication
+auth0ClientCredentialsGrantApp :: Idp i -> IdpApplication i ClientCredentialsApplication
 auth0ClientCredentialsGrantApp i =
   IdpApplication
     { idp = i
