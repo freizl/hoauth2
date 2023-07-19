@@ -10,6 +10,7 @@ import Data.HashMap.Strict qualified as Map
 import Data.Text.Lazy qualified as TL
 import Network.OAuth2.Experiment
 import Types
+import Idp
 
 type AuthorizationGrantUserStore = MVar (Map.HashMap TL.Text DemoAppPerAppSessionData)
 

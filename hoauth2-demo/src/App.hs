@@ -101,7 +101,7 @@ loginH s idps = do
     authCodeApp <- createAuthorizationCodeApp idp idpName
     (authorizationUri, codeVerifier) <-
       liftIO $
-        if isSupportPkce idp
+        if isSupportPkce idpName
           then fmap (second Just) (mkPkceAuthorizeRequest authCodeApp)
           else pure (mkAuthorizationRequest authCodeApp, Nothing)
     insertCodeVerifier s idpName codeVerifier
@@ -270,7 +270,7 @@ fetchTokenAndUser c idps idpData@(DemoAppPerAppSessionData {..}) exchangeToken =
       ExchangeToken ->
       ExceptT Text IO OAuth2Token
     tryFetchAccessToken idpApp mgr exchangeTokenText = do
-      if isSupportPkce (idp idpApp)
+      if isSupportPkce idpName
         then do
           when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
           withExceptT oauth2ErrorToText $

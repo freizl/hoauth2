@@ -131,24 +131,6 @@ data DemoIdp
 
 -------------------------------------------------------------------------------
 
-supportedIdps :: [Text]
-supportedIdps =
-  [ "auth0"
-  , "azure-ad"
-  , "dropbox"
-  , "facebook"
-  , "fitbit"
-  , "github"
-  , "google"
-  , "linkedin"
-  , "okta"
-  , "slack"
-  , "stack-exchange"
-  , "twitter"
-  , "weibo"
-  , "zoho"
-  ]
-
 data DemoAppPerAppSessionData = DemoAppPerAppSessionData
   { idpName :: Text
   , loginUser :: Maybe DemoLoginUser
@@ -156,8 +138,6 @@ data DemoAppPerAppSessionData = DemoAppPerAppSessionData
   , authorizePkceCodeVerifier :: Maybe CodeVerifier
   , authorizeAbsUri :: TL.Text
   }
-
--- data DemoAppEnv = DemoAppEnv DemoAuthorizationApp DemoAppPerAppSessionData
 
 instance Default DemoAppPerAppSessionData where
   def =

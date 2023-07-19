@@ -19,7 +19,6 @@ import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import Env qualified
 import Jose.Jwt
-import Lens.Micro
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
@@ -46,7 +45,7 @@ defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 loadCredentialFromConfig ::
-  MonadIO m =>
+  (MonadIO m) =>
   Text ->
   -- | Idp Application name
   ExceptT Text m (ClientId, ClientSecret, Set.Set Scope)
@@ -64,7 +63,7 @@ loadCredentialFromConfig idpAppName = do
       )
 
 loadCredentialFromConfig2 ::
-  MonadIO m =>
+  (MonadIO m) =>
   Text ->
   ExceptT Text m Env.EnvConfigAuthParams
 loadCredentialFromConfig2 idpAppName = do
@@ -283,7 +282,7 @@ googleServiceAccountApp = do
 type TenantBasedIdps = (Idp IAuth0.Auth0, Idp IOkta.Okta)
 
 findIdp ::
-  MonadIO m =>
+  (MonadIO m) =>
   TenantBasedIdps ->
   Text ->
   ExceptT Text m DemoIdp
@@ -304,27 +303,42 @@ findIdp (myAuth0Idp, myOktaIdp) idpName = case idpName of
   "stackexchange" -> pure (DemoIdp IStackExchange.defaultStackExchangeIdp)
   _ -> throwE ("Unable to find Idp for: " <> idpName)
 
-isSupportPkce :: Idp i -> Bool
-isSupportPkce idp =
-  let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
-   in any
-        (`BS.isInfixOf` hostStr)
-        [ "auth0.com"
-        , "okta.com"
-        , "google.com"
-        , "twitter.com"
-        ]
+supportedIdps :: [Text]
+supportedIdps =
+  [ "auth0"
+  , "azure-ad"
+  , "dropbox"
+  , "facebook"
+  , "fitbit"
+  , "github"
+  , "google"
+  , "linkedin"
+  , "okta"
+  , "slack"
+  , "stack-exchange"
+  , "twitter"
+  , "weibo"
+  , "zoho"
+  ]
+
+isSupportPkce :: Text -> Bool
+isSupportPkce idpName =
+  idpName
+    `elem` [ "auth0"
+           , "okta"
+           , "google"
+           , "twitter"
+           ]
 
 envFilePath :: String
 envFilePath = ".env.json"
 
-readEnvFile :: MonadIO m => ExceptT Text m Env.EnvConfig
+readEnvFile :: (MonadIO m) => ExceptT Text m Env.EnvConfig
 readEnvFile = liftIO $ do
   pwd <- getCurrentDirectory
   envFileE <- doesFileExist (pwd <> "/" <> envFilePath)
   if envFileE
     then do
-      putStrLn "Found .env.json"
       fileContent <- BS.readFile envFilePath
       case Aeson.eitherDecodeStrict fileContent of
         Left err -> print err >> Prelude.error "Unable to parse .env.json"

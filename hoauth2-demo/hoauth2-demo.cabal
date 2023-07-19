@@ -62,7 +62,6 @@ executable hoauth2-demo
     , http-conduit           >=2.1    && <2.4
     , http-types             >=0.11   && <0.13
     , jose-jwt               >=0.9.4  && <0.10
-    , microlens              ^>=0.4.0
     , mustache               >=2.2.3  && <2.5.0
     , parsec                 >=3.1.11 && <3.2.0
     , scotty                 >=0.10.0 && <0.13
