@@ -11,7 +11,6 @@ import Data.Aeson.KeyMap qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.Contrib
-import Data.Default
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set qualified as Set
@@ -37,7 +36,6 @@ import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
-import Session
 import System.Directory
 import Types
 import URI.ByteString
@@ -75,41 +73,6 @@ loadCredentialFromConfig2 idpAppName = do
   case mConfigs of
     Nothing -> throwE $ "[ loadCredentialFromConfig2 ] unable to load config for " <> idpAppName
     Just x -> pure x
-
-createAuthorizationApps ::
-  MonadIO m =>
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
-  ExceptT Text m [DemoAuthorizationApp]
-createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
-  sequence
-    [ initIdpAppConfig IAzureAD.defaultAzureADIdp IAzureAD.sampleAzureADAuthorizationCodeApp
-    , initIdpAppConfig myAuth0Idp IAuth0.sampleAuth0AuthorizationCodeApp
-    , initIdpAppConfig IFacebook.defaultFacebookIdp IFacebook.sampleFacebookAuthorizationCodeApp
-    , initIdpAppConfig IFitbit.defaultFitbitIdp IFitbit.sampleFitbitAuthorizationCodeApp
-    , initIdpAppConfig IGithub.defaultGithubIdp IGithub.sampleGithubAuthorizationCodeApp
-    , initIdpAppConfig IDropbox.defaultDropboxIdp IDropbox.sampleDropboxAuthorizationCodeApp
-    , initIdpAppConfig IGoogle.defaultGoogleIdp IGoogle.sampleGoogleAuthorizationCodeApp
-    , initIdpAppConfig ILinkedin.defaultLinkedinIdp ILinkedin.sampleLinkedinAuthorizationCodeApp
-    , initIdpAppConfig myOktaIdp IOkta.sampleOktaAuthorizationCodeApp
-    , initIdpAppConfig ITwitter.defaultTwitterIdp ITwitter.sampleTwitterAuthorizationCodeApp
-    , initIdpAppConfig ISlack.defaultSlackIdp ISlack.sampleSlackAuthorizationCodeApp
-    , initIdpAppConfig IWeibo.defaultWeiboIdp IWeibo.sampleWeiboAuthorizationCodeApp
-    , initIdpAppConfig IZOHO.defaultZohoIdp IZOHO.sampleZohoAuthorizationCodeApp
-    , initIdpAppConfig IStackExchange.defaultStackExchangeIdp IStackExchange.sampleStackExchangeAuthorizationCodeApp
-    ]
-  where
-    initIdpAppConfig :: (MonadIO m, HasDemoLoginUser i, Aeson.FromJSON (IdpUserInfo i)) => Idp i -> AuthorizationCodeApplication -> ExceptT Text m DemoAuthorizationApp
-    initIdpAppConfig i idpApplication = do
-      (cid, csecret, cscopes) <- loadCredentialFromConfig (getIdpAppName idpApplication)
-      let newApp =
-            idpApplication
-              { acClientId = cid
-              , acClientSecret = csecret
-              , acRedirectUri = defaultOAuth2RedirectUri
-              , acScope = Set.unions [acScope idpApplication, cscopes]
-              , acAuthorizeState = AuthorizeState (acName idpApplication <> ".hoauth2-demo-app-123")
-              }
-      pure (DemoAuthorizationApp $ IdpApplication {idp = i, application = newApp})
 
 createAuthorizationCodeApp ::
   Idp i ->
@@ -367,27 +330,3 @@ readEnvFile = liftIO $ do
         Left err -> print err >> Prelude.error "Unable to parse .env.json"
         Right ec -> return ec
     else return Aeson.empty
-
-initIdps ::
-  MonadIO m =>
-  CacheStore ->
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
-  ExceptT Text m ()
-initIdps c is = do
-  idps <- createAuthorizationApps is
-  mapM mkDemoAppEnv idps >>= mapM_ (upsertDemoAppEnv c)
-
-mkDemoAppEnv :: MonadIO m => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
-mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
-  re <-
-    if isSupportPkce (idp idpAppConfig)
-      then fmap (second Just) (mkPkceAuthorizeRequest idpAppConfig)
-      else pure (mkAuthorizationRequest idpAppConfig, Nothing)
-  pure $
-    DemoAppEnv
-      ia
-      ( def
-          { authorizeAbsUri = TL.fromStrict $ uriToText (fst re)
-          , authorizePkceCodeVerifier = snd re
-          }
-      )

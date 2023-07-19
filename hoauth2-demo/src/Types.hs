@@ -7,7 +7,6 @@ module Types where
 import Data.Aeson
 import Data.Default
 import Data.Maybe
-import Data.Ord
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
@@ -119,16 +118,6 @@ instance HasDemoLoginUser IStackExchange.StackExchange where
 
 -------------------------------------------------------------------------------
 
--- | Use for creating list of IDPs
--- Heterogenous collections
--- https://wiki.haskell.org/Heterogenous_collections
-data DemoAuthorizationApp
-  = forall i.
-    ( HasDemoLoginUser i
-    , FromJSON (IdpUserInfo i)
-    ) =>
-    DemoAuthorizationApp (IdpApplication i AuthorizationCodeApplication)
-
 data DemoIdp
   = forall i.
     ( HasDemoLoginUser i
@@ -168,7 +157,7 @@ data DemoAppPerAppSessionData = DemoAppPerAppSessionData
   , authorizeAbsUri :: TL.Text
   }
 
-data DemoAppEnv = DemoAppEnv DemoAuthorizationApp DemoAppPerAppSessionData
+-- data DemoAppEnv = DemoAppEnv DemoAuthorizationApp DemoAppPerAppSessionData
 
 instance Default DemoAppPerAppSessionData where
   def =
@@ -179,20 +168,6 @@ instance Default DemoAppPerAppSessionData where
       , authorizePkceCodeVerifier = Nothing
       , authorizeAbsUri = ""
       }
-
-instance Show DemoAppEnv where
-  show :: DemoAppEnv -> String
-  show = TL.unpack . toLabel
-
-toLabel :: DemoAppEnv -> TL.Text
-toLabel (DemoAppEnv (DemoAuthorizationApp idpAppConfig) _) = getIdpAppName (application idpAppConfig)
-
--- simplify use case to only allow one idp instance for now.
-instance Eq DemoAppEnv where
-  a == b = toLabel a == toLabel b
-
-instance Ord DemoAppEnv where
-  a `compare` b = toLabel a `compare` toLabel b
 
 newtype TemplateData = TemplateData
   { idpSessionData :: [DemoAppPerAppSessionData]
@@ -224,24 +199,3 @@ instance ToMustache TemplateData where
     M.object
       [ "idps" ~> idpSessionData td'
       ]
-
--------------------------------------------------------------------------------
-
--- * HasIdpAppName
-
--------------------------------------------------------------------------------
-
-class HasIdpAppName a where
-  getIdpAppName :: a -> Text
-
-instance HasIdpAppName ClientCredentialsApplication where
-  getIdpAppName :: ClientCredentialsApplication -> Text
-  getIdpAppName ClientCredentialsApplication {..} = ccName
-
-instance HasIdpAppName ResourceOwnerPasswordApplication where
-  getIdpAppName :: ResourceOwnerPasswordApplication -> Text
-  getIdpAppName ResourceOwnerPasswordApplication {..} = ropName
-
-instance HasIdpAppName AuthorizationCodeApplication where
-  getIdpAppName :: AuthorizationCodeApplication -> Text
-  getIdpAppName AuthorizationCodeApplication {..} = acName

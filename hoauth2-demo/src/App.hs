@@ -46,31 +46,20 @@ app =
 
 waiApp :: IO WAI.Application
 waiApp = do
-  cache <- initCacheStore
   re <- runExceptT $ do
     myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
     myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
     -- myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
-    -- For the sake of simplicity for this demo App,
-    -- I store user data in MVar in server side.
-    -- It means user session shared across browsers.
-    -- which simplify my testing cross browsers.
-    -- I am sure you don't want to this for your production services.
-    -- initIdps cache (myAuth0Idp, myOktaIdp)
     pure (myAuth0Idp, myOktaIdp)
   case re of
-    Left e -> Prelude.error $ TL.unpack $ "unable to init cache: " <> e
-    Right r -> do
-      putStrLn "global cache has been initialized."
-      initApp cache r
+    Left e -> Prelude.error $ TL.unpack $ "unable to init idp via oidc well-known endpoint " <> e
+    Right r -> initUserStore >>= initApp r
 
 initApp ::
-  CacheStore ->
   (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
+  AuthorizationGrantUserStore ->
   IO WAI.Application
-initApp _cache idps = do
-  userStore <- initUserStore
-
+initApp idps userStore = do
   scottyApp $ do
     middleware $ staticPolicy (addBase "public/assets")
     defaultHandler globalErrorHandler
@@ -85,7 +74,7 @@ initApp _cache idps = do
     get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
 
     get "/login/jwt-grant" testJwtBearerGrantTypeH
-    get "/login/device-auth-grant" (testDeviceCodeGrantTypeH idps)
+    get "/login/device-auth-grant" $ testDeviceCodeGrantTypeH idps
 
 --------------------------------------------------
 
@@ -124,7 +113,7 @@ loginH s idps = do
 logoutH :: AuthorizationGrantUserStore -> ActionM ()
 logoutH s = do
   runActionWithIdp "logoutH" $ \idpName -> do
-    liftIO (removeKey2 s idpName)
+    liftIO (removeKey s idpName)
   redirectToHomeM
 
 callbackH ::
@@ -141,7 +130,7 @@ callbackH s idps = do
   when (null codeP) (raise "callbackH: no code from callback request")
   let idpName = TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupKey2 s idpName
+    idpData <- lookupKey s idpName
     fetchTokenAndUser s idps idpData (ExchangeToken $ TL.toStrict $ head codeP)
   redirectToHomeM
 
@@ -153,7 +142,7 @@ refreshTokenH c idps = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- findIdp idps idpName
     authCodeApp <- createAuthorizationCodeApp idp idpName
-    idpData <- lookupKey2 c idpName
+    idpData <- lookupKey c idpName
     newToken <- doRefreshToken authCodeApp idpData
     liftIO $ do
       putStrLn "=== refreshTokenH === got new token"
