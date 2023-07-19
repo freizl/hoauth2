@@ -3,18 +3,18 @@
         <link href="/main.css" rel="stylesheet"/>
     </head>
     <body>
-        <h1>HOAuth2 Demo Server</h1>
+        <h1>HOAuth2 Demo</h1>
 
         <h2>Authorization Code flow</h2>
         {{#idps}}
         <section class="login-with">
             {{^isLogin}}
-            <a href="{{codeFlowUri}}">Sign in with {{idpAppName}}</a>
+            <a href="{{codeFlowUri}}">Sign in with {{idpName}}</a>
             {{/isLogin}}
             {{#isLogin}}
-            <h2>Welcome to {{idpAppName}}</h2>
+            <h2>Welcome to {{idpName}}</h2>
             {{#user}}
-            <div class="result">Hello, {{idpAppName}}</div>
+            <div class="result">Hello, {{idpName}}</div>
             {{/user}}
             <a href="/logout?idp={{idpAppName}}">Logout</a>
             <a href="/refresh?idp={{idpAppName}}">Refresh</a>
@@ -23,24 +23,25 @@
         {{/idps}}
 
         <h2>Password flow</h2>
+        {{#idps}}
+        {{#isSupportPasswordGrant}}
         <section class="login-with">
-            <a href="/login/password-grant?i=auth0">Test Password Grant Type flow-auth0</a>
+            <a href="/login/password-grant?idp={{idpName}}">Sign-in with {{idpName}}</a>
         </section>
-        <section class="login-with">
-            <a href="/login/password-grant?i=okta">Test Password Grant Type flow-okta</a>
-        </section>
-
+        {{/isSupportPasswordGrant}}
+        {{/idps}}
         <ul>
             <li>Check console for login success</li>
         </ul>
 
         <h2>Client Credentials flow</h2>
+        {{#idps}}
+        {{#isSupportClientCredentialsGrant}}
         <section class="login-with">
-            <a href="/login/cc-grant?i=auth0">Test Client Credentials Grant Type flow (auth0)</a>
+            <a href="/login/cc-grant?idp={{idpName}}">Sign-in with {{idpName}}</a>
         </section>
-        <section class="login-with">
-            <a href="/login/cc-grant?i=okta">Test Client Credentials Grant Type flow (okta)</a>
-        </section>
+        {{/isSupportClientCredentialsGrant}}
+        {{/idps}}
         <ul>
             <li>Check console for login success</li>
         </ul>
@@ -57,7 +58,7 @@
         {{#idps}}
         {{#isSupportDeviceGrant}}
         <section class="login-with">
-             <a href="/login/device-code?idp={{idpAppName}}">Try Device flow of on {{idpAppName}}</a>
+             <a href="/login/device-auth-grant?idp={{idpName}}">Test Device flow of on {{idpName}}</a>
         </section>
         {{/isSupportDeviceGrant}}
         {{/idps}}

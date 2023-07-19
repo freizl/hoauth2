@@ -128,6 +128,13 @@ data DemoAuthorizationApp
     ) =>
     DemoAuthorizationApp (IdpApplication i AuthorizationCodeApplication)
 
+data DemoIdp
+  = forall i.
+    ( HasDemoLoginUser i
+    , FromJSON (IdpUserInfo i)
+    ) =>
+    DemoIdp (Idp i)
+
 -------------------------------------------------------------------------------
 
 -- * Env
@@ -178,13 +185,19 @@ instance ToMustache DemoAppEnv where
     -- FIXME: find another way to determine device-app
     -- Often time the App is different with AuthorizationCodeApp
     let idpAppName = getIdpAppName (application idpAppConfig)
-        supportDeviceGrant = any (`TL.isInfixOf` idpAppName) ["okta", "github", "auth0", "azure", "google"]
+        idpName = TL.split (== '-') idpAppName !! 1
+        isSupportDeviceGrant = any (`TL.isInfixOf` idpAppName) ["okta", "github", "auth0", "azure", "google"]
+        isSupportClientCredentialsGrant = any (`TL.isInfixOf` idpAppName) ["okta", "auth0"]
+        isSupportPasswordGrant = any (`TL.isInfixOf` idpAppName) ["okta", "auth0"]
     M.object
       [ "codeFlowUri" ~> authorizeAbsUri
       , "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
+      , "idpName" ~> idpName
       , "idpAppName" ~> TL.unpack idpAppName
-      , "isSupportDeviceGrant" ~> supportDeviceGrant
+      , "isSupportDeviceGrant" ~> isSupportDeviceGrant
+      , "isSupportClientCredentialsGrant" ~> isSupportClientCredentialsGrant
+      , "isSupportPasswordGrant" ~> isSupportPasswordGrant
       ]
 
 instance ToMustache DemoLoginUser where

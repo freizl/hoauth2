@@ -38,6 +38,7 @@ instance HasTokenRequest ClientCredentialsApplication where
     { trScope :: Set Scope
     , trGrantType :: GrantTypeValue
     , trClientSecret :: ClientSecret
+    , trClientId :: ClientId
     , trExtraParams :: Map Text Text
     , trClientAuthenticationMethod :: ClientAuthenticationMethod
     }
@@ -50,22 +51,25 @@ instance HasTokenRequest ClientCredentialsApplication where
       , trClientSecret = ccClientSecret
       , trClientAuthenticationMethod = ccTokenRequestAuthenticationMethod
       , trExtraParams = ccTokenRequestExtraParams
+      , trClientId = ccClientId
       }
 
 instance ToQueryParam (TokenRequest ClientCredentialsApplication) where
   toQueryParam :: TokenRequest ClientCredentialsApplication -> Map Text Text
   toQueryParam ClientCredentialsTokenRequest {..} =
-    let clientAssertion =
+    let jwtAssertionBody =
           if trClientAuthenticationMethod == ClientAssertionJwt
             then
-              Map.fromList
-                [ ("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-                , ("client_assertion", bs8ToLazyText $ tlToBS $ unClientSecret trClientSecret)
-                ]
-            else Map.empty
-     in Map.unions
+              [ toQueryParam trClientId
+              , Map.fromList
+                  [ ("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+                  , ("client_assertion", bs8ToLazyText $ tlToBS $ unClientSecret trClientSecret)
+                  ]
+              ]
+            else []
+     in Map.unions $
           [ toQueryParam trGrantType
           , toQueryParam trScope
           , trExtraParams
-          , clientAssertion
           ]
+            ++ jwtAssertionBody

@@ -11,7 +11,7 @@ import Data.Bifunctor
 import Data.ByteString.Contrib
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
-import Data.Text.Lazy (Text)
+import Data.Text.Lazy as TL
 import Data.Time
 import GHC.Generics
 import Jose.Jwa
@@ -59,8 +59,8 @@ mkOktaIdp domain = do
 mkOktaClientCredentialAppJwt ::
   Jwk ->
   ClientId ->
-  Idp Okta ->
-  IO (Either String Jwt)
+  Idp i ->
+  IO (Either Text Jwt)
 mkOktaClientCredentialAppJwt jwk cid idp = do
   now <- getCurrentTime
   let cidStr = unClientId cid
@@ -68,13 +68,13 @@ mkOktaClientCredentialAppJwt jwk cid idp = do
         bsToStrict $
           Aeson.encode $
             Aeson.object
-              [ "iss" .= cidStr
-              , "sub" .= cidStr
-              , "aud" .= idpTokenEndpoint idp
+              [ "aud" .= idpTokenEndpoint idp
               , "exp" .= tToSeconds (addUTCTime (secondsToNominalDiffTime 300) now) -- 5 minutes expiration time
               , "iat" .= tToSeconds now
+              , "iss" .= cidStr
+              , "sub" .= cidStr
               ]
-  first show <$> jwkEncode RS256 jwk (Claims payload)
+  first (TL.pack . show) <$> jwkEncode RS256 jwk (Claims payload)
   where
     tToSeconds = formatTime defaultTimeLocale "%s"
 

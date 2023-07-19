@@ -57,7 +57,7 @@ sampleGoogleAuthorizationCodeApp =
 sampleServiceAccountApp :: Jwt -> JwtBearerApplication
 sampleServiceAccountApp jwt =
   JwtBearerApplication
-    { jbName = "google-sa-app"
+    { jbName = "sample-google-service-account-app"
     , jbJwtAssertion = unJwt jwt
     }
 
