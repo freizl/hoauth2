@@ -127,38 +127,51 @@ callbackH c = do
 
 testPasswordGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
 testPasswordGrantTypeH idps = do
-  midp <- paramValueMaybe "idp" <$> params
-  exceptToActionM $ do
-    case midp of
-      Nothing -> throwE "[testPasswordGrantTypeH] no idp parameter in the password grant type login request"
-      Just idpName -> do
-        (DemoIdp idp) <- findIdp idps idpName
-        idpApp <- createResourceOwnerPasswordApp idp idpName
-        mgr <- liftIO $ newManager tlsManagerSettings
-        token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
-        user <- tryFetchUser mgr token idpApp
-        liftIO $ do
-          putStrLn "=== testPasswordGrantTypeH ==="
-          print user
+  runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
+    (DemoIdp idp) <- findIdp idps idpName
+    idpApp <- createResourceOwnerPasswordApp idp idpName
+    mgr <- liftIO $ newManager tlsManagerSettings
+    token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
+    user <- tryFetchUser mgr token idpApp
+    liftIO $ do
+      putStrLn "=== testPasswordGrantTypeH find token ==="
+      print user
   redirectToHomeM
 
 testClientCredentialGrantTypeH ::
   (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
 testClientCredentialGrantTypeH idps = do
-  midp <- paramValueMaybe "idp" <$> params
-  exceptToActionM $ do
-    case midp of
-      Nothing -> throwE "[testClientCredentialsGrantTypeH] no idp parameter in the password grant type login request"
-      Just idpName -> do
-        (DemoIdp idp) <- findIdp idps idpName
-        idpApp <- createClientCredentialsApp idp idpName
-        mgr <- liftIO $ newManager tlsManagerSettings
-        -- client credentials flow is meant for machine to machine
-        -- hence wont be able to hit /userinfo endpoint
-        tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
-        liftIO $ do
-          putStrLn "=== [testClientCredentialGrantTypeH] ==="
-          print tokenResp
+  runActionWithIdp "testClientCredentialsGrantTypeH" $ \idpName -> do
+    (DemoIdp idp) <- findIdp idps idpName
+    idpApp <- createClientCredentialsApp idp idpName
+    mgr <- liftIO $ newManager tlsManagerSettings
+    -- client credentials flow is meant for machine to machine
+    -- hence wont be able to hit /userinfo endpoint
+    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
+    liftIO $ do
+      putStrLn "=== testClientCredentialGrantTypeH find token ==="
+      print tokenResp
+  redirectToHomeM
+
+testDeviceCodeGrantTypeH ::
+  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
+  ActionM ()
+testDeviceCodeGrantTypeH idps = do
+  runActionWithIdp "testDeviceCodeGrantTypeH" $ \idpName -> do
+    (DemoIdp idp) <- findIdp idps idpName
+    testApp <- createDeviceAuthApp idp idpName
+    mgr <- liftIO $ newManager tlsManagerSettings
+    deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
+    liftIO $ do
+      putStr "Please visit this URL to redeem the code: "
+      TL.putStr $ userCode deviceAuthResp <> "\n"
+      TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
+    atoken <- withExceptT oauth2ErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
+    liftIO $ do
+      putStrLn "=== testDeviceCodeGrantTypeH found token ==="
+      print atoken
+    luser <- tryFetchUser mgr atoken testApp
+    liftIO $ print luser
   redirectToHomeM
 
 -- Only testing google for now
@@ -172,31 +185,6 @@ testJwtBearerGrantTypeH = do
     liftIO $ print user
   redirectToHomeM
 
-testDeviceCodeGrantTypeH ::
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
-  ActionM ()
-testDeviceCodeGrantTypeH idps = do
-  midp <- paramValueMaybe "idp" <$> params
-  case midp of
-    Just idpName -> do
-      exceptToActionM $ do
-        (DemoIdp idp) <- findIdp idps idpName
-        testApp <- createDeviceAuthApp idp idpName
-        mgr <- liftIO $ newManager tlsManagerSettings
-        deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
-        liftIO $ do
-          putStr "Please visit this URL to redeem the code: "
-          TL.putStr $ userCode deviceAuthResp <> "\n"
-          TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
-        atoken <- withExceptT oauth2ErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
-        liftIO $ do
-          putStrLn "[Device Authorization Flow] Found access token"
-          print atoken
-        luser <- tryFetchUser mgr atoken testApp
-        liftIO $ print luser
-      redirectToHomeM
-    Nothing -> raise "[testDeviceCodeGrantTypeH] Expects 'idp' parameter but found nothing"
-
 --------------------------------------------------
 
 -- * Services
@@ -207,6 +195,19 @@ exceptToActionM :: Show a => ExceptT Text IO a -> ActionM a
 exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
+
+-- (Idp IAuth0.Auth0, Idp IOkta.Okta)
+runActionWithIdp ::
+  forall a.
+  Show a =>
+  Text ->
+  (Text -> ExceptT Text IO a) ->
+  ActionM a
+runActionWithIdp funcName action = do
+  midp <- paramValueMaybe "idp" <$> params
+  case midp of
+    Just idpName -> exceptToActionM (action idpName)
+    Nothing -> raise $ "[" <> funcName <> "] Expects 'idp' parameter but found nothing"
 
 readIdpParam :: CacheStore -> ActionM DemoAppEnv
 readIdpParam c = do
