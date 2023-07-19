@@ -51,11 +51,12 @@ loadCredentialFromConfig ::
   MonadIO m =>
   Text ->
   -- | Idp Application name
-  ExceptT Text m (Maybe (ClientId, ClientSecret, Set.Set Scope))
+  ExceptT Text m (ClientId, ClientSecret, Set.Set Scope)
 loadCredentialFromConfig idpAppName = do
-  configParams <- readEnvFile
-  let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
-  pure (fmap toResult mConfigs)
+  env <- loadCredentialFromConfig2 idpAppName
+  -- configParams <- readEnvFile
+  -- let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
+  pure (toResult env)
   where
     toResult :: Env.EnvConfigAuthParams -> (ClientId, ClientSecret, Set.Set Scope)
     toResult env =
@@ -67,11 +68,13 @@ loadCredentialFromConfig idpAppName = do
 loadCredentialFromConfig2 ::
   MonadIO m =>
   Text ->
-  ExceptT Text m (Maybe Env.EnvConfigAuthParams)
+  ExceptT Text m Env.EnvConfigAuthParams
 loadCredentialFromConfig2 idpAppName = do
   configParams <- readEnvFile
   let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
-  pure mConfigs
+  case mConfigs of
+    Nothing -> throwE $ "[ loadCredentialFromConfig2 ] unable to load config for " <> idpAppName
+    Just x -> pure x
 
 createAuthorizationApps ::
   MonadIO m =>
@@ -97,43 +100,60 @@ createAuthorizationApps (myAuth0Idp, myOktaIdp) = do
   where
     initIdpAppConfig :: (MonadIO m, HasDemoLoginUser i, Aeson.FromJSON (IdpUserInfo i)) => Idp i -> AuthorizationCodeApplication -> ExceptT Text m DemoAuthorizationApp
     initIdpAppConfig i idpApplication = do
-      resp <- loadCredentialFromConfig (getIdpAppName idpApplication)
-      let newApp = case resp of
-            Nothing -> idpApplication
-            Just (cid, csecret, cscopes) ->
-              idpApplication
-                { acClientId = cid
-                , acClientSecret = csecret
-                , acRedirectUri = defaultOAuth2RedirectUri
-                , acScope = Set.unions [acScope idpApplication, cscopes]
-                , acAuthorizeState = AuthorizeState (acName idpApplication <> ".hoauth2-demo-app-123")
-                }
+      (cid, csecret, cscopes) <- loadCredentialFromConfig (getIdpAppName idpApplication)
+      let newApp =
+            idpApplication
+              { acClientId = cid
+              , acClientSecret = csecret
+              , acRedirectUri = defaultOAuth2RedirectUri
+              , acScope = Set.unions [acScope idpApplication, cscopes]
+              , acAuthorizeState = AuthorizeState (acName idpApplication <> ".hoauth2-demo-app-123")
+              }
       pure (DemoAuthorizationApp $ IdpApplication {idp = i, application = newApp})
 
-googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearerApplication)
-googleServiceAccountApp = do
-  IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
-  pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
-  jwt <-
-    withExceptT
-      TL.pack
-      ( ExceptT $
-          IGoogle.mkJwt
-            pkey
-            clientEmail
-            Nothing
-            ( Set.fromList
-                [ "https://www.googleapis.com/auth/userinfo.email"
-                , "https://www.googleapis.com/auth/userinfo.profile"
-                ]
-            )
-            IGoogle.defaultGoogleIdp
-      )
-  pure $
-    IdpApplication
-      { idp = IGoogle.defaultGoogleIdp
-      , application = IGoogle.sampleServiceAccountApp jwt
-      }
+createAuthorizationCodeApp ::
+  Idp i ->
+  Text ->
+  ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
+createAuthorizationCodeApp idp idpName = do
+  let newAppName = "sample-" <> idpName <> "-authorization-code-app"
+  let defaultApp =
+        AuthorizationCodeApplication
+          { acClientId = ""
+          , acClientSecret = ""
+          , acScope = Set.empty
+          , acAuthorizeState = ""
+          , acRedirectUri = [uri|http://localhost|]
+          , acName = newAppName
+          , acAuthorizeRequestExtraParams = Map.empty
+          , acTokenRequestAuthenticationMethod = ClientSecretBasic
+          }
+  let newApp = case idpName of
+        "azure-ad" -> IAzureAD.sampleAzureADAuthorizationCodeApp
+        "auth0" -> IAuth0.sampleAuth0AuthorizationCodeApp
+        "facebook" -> IFacebook.sampleFacebookAuthorizationCodeApp
+        "fitbit" -> IFitbit.sampleFitbitAuthorizationCodeApp
+        "github" -> IGithub.sampleGithubAuthorizationCodeApp
+        "dropbox" -> IDropbox.sampleDropboxAuthorizationCodeApp
+        "google" -> IGoogle.sampleGoogleAuthorizationCodeApp
+        "linkedin" -> ILinkedin.sampleLinkedinAuthorizationCodeApp
+        "okta" -> IOkta.sampleOktaAuthorizationCodeApp
+        "twitter" -> ITwitter.sampleTwitterAuthorizationCodeApp
+        "slack" -> ISlack.sampleSlackAuthorizationCodeApp
+        "weibo" -> IWeibo.sampleWeiboAuthorizationCodeApp
+        "zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
+        "stack-exchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
+        _ -> defaultApp
+  (cid, cs, cscopes) <- loadCredentialFromConfig newAppName
+  let newApp' =
+        newApp
+          { acClientId = cid
+          , acClientSecret = cs
+          , acScope = if Set.null cscopes then acScope newApp else cscopes
+          , acRedirectUri = defaultOAuth2RedirectUri
+          , acAuthorizeState = AuthorizeState (idpName <> ".hoauth2-demo-app-123")
+          }
+  pure IdpApplication {idp = idp, application = newApp'}
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 createResourceOwnerPasswordApp ::
@@ -152,20 +172,17 @@ createResourceOwnerPasswordApp i idpName = do
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
           }
-  resp <- loadCredentialFromConfig2 newAppName
-  newApp' <- case resp of
-    Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load config for " <> idpName)
-    Just env ->
-      case Env.user env of
-        Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
-        Just userConfig ->
-          pure
-            defaultApp
-              { ropClientId = ClientId (Env.clientId env)
-              , ropClientSecret = ClientSecret (Env.clientSecret env)
-              , ropUserName = Username (Env.username userConfig)
-              , ropPassword = Password (Env.password userConfig)
-              }
+  env <- loadCredentialFromConfig2 newAppName
+  newApp' <- case Env.user env of
+    Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
+    Just userConfig ->
+      pure
+        defaultApp
+          { ropClientId = ClientId (Env.clientId env)
+          , ropClientSecret = ClientSecret (Env.clientSecret env)
+          , ropUserName = Username (Env.username userConfig)
+          , ropPassword = Password (Env.password userConfig)
+          }
   pure $
     IdpApplication
       { idp = i
@@ -189,7 +206,7 @@ createClientCredentialsApp i idpName = do
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  resp <- loadCredentialFromConfig newAppName
+  (cid, cc, cs) <- loadCredentialFromConfig newAppName
   newApp <- case idpName of
     "auth0" ->
       pure
@@ -198,15 +215,13 @@ createClientCredentialsApp i idpName = do
           }
     -- "okta" -> createOktaClientCredentialsGrantAppJwt i resp
     _ -> pure defaultApp
-  let newApp' = case resp of
-        Nothing -> newApp
-        Just (cid, cc, cs) ->
-          newApp
-            { ccClientId = cid
-            , ccClientSecret = cc
-            , ccScope = cs
-            , ccName = newAppName
-            }
+  let newApp' =
+        newApp
+          { ccClientId = cid
+          , ccClientSecret = cc
+          , ccScope = cs
+          , ccName = newAppName
+          }
   pure $
     IdpApplication
       { idp = i
@@ -264,24 +279,49 @@ createDeviceAuthApp i idpName = do
           , daAuthorizationRequestExtraParam = extraParams
           , daAuthorizationRequestAuthenticationMethod = authMethod
           }
-  resp <- loadCredentialFromConfig newAppName
-  let newApp' = case resp of
-        Nothing -> newApp
-        Just (cid, cc, cs) ->
-          newApp
-            { daClientId = cid
-            , daClientSecret = cc
-            , daScope = cs
-            }
+  (cid, cc, cs) <- loadCredentialFromConfig newAppName
+  let newApp' =
+        newApp
+          { daClientId = cid
+          , daClientSecret = cc
+          , daScope = cs
+          }
   pure $
     IdpApplication
       { idp = i
       , application = newApp'
       }
 
+googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearerApplication)
+googleServiceAccountApp = do
+  IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
+  pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
+  jwt <-
+    withExceptT
+      TL.pack
+      ( ExceptT $
+          IGoogle.mkJwt
+            pkey
+            clientEmail
+            Nothing
+            ( Set.fromList
+                [ "https://www.googleapis.com/auth/userinfo.email"
+                , "https://www.googleapis.com/auth/userinfo.profile"
+                ]
+            )
+            IGoogle.defaultGoogleIdp
+      )
+  pure $
+    IdpApplication
+      { idp = IGoogle.defaultGoogleIdp
+      , application = IGoogle.sampleServiceAccountApp jwt
+      }
+
+type TenantBasedIdps = (Idp IAuth0.Auth0, Idp IOkta.Okta)
+
 findIdp ::
   MonadIO m =>
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
+  TenantBasedIdps ->
   Text ->
   ExceptT Text m DemoIdp
 findIdp (myAuth0Idp, myOktaIdp) idpName = case idpName of
@@ -301,8 +341,8 @@ findIdp (myAuth0Idp, myOktaIdp) idpName = case idpName of
   "stackexchange" -> pure (DemoIdp IStackExchange.defaultStackExchangeIdp)
   _ -> throwE ("Unable to find Idp for: " <> idpName)
 
-isSupportPkce :: IdpApplication a i -> Bool
-isSupportPkce IdpApplication {..} =
+isSupportPkce :: Idp i -> Bool
+isSupportPkce idp =
   let hostStr = idpAuthorizeEndpoint idp ^. (authorityL . _Just . authorityHostL . hostBSL)
    in any
         (`BS.isInfixOf` hostStr)
@@ -340,7 +380,7 @@ initIdps c is = do
 mkDemoAppEnv :: MonadIO m => DemoAuthorizationApp -> ExceptT Text m DemoAppEnv
 mkDemoAppEnv ia@(DemoAuthorizationApp idpAppConfig) = do
   re <-
-    if isSupportPkce idpAppConfig
+    if isSupportPkce (idp idpAppConfig)
       then fmap (second Just) (mkPkceAuthorizeRequest idpAppConfig)
       else pure (mkAuthorizationRequest idpAppConfig, Nothing)
   pure $

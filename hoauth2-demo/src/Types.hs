@@ -7,6 +7,7 @@ module Types where
 import Data.Aeson
 import Data.Default
 import Data.Maybe
+import Data.Ord
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
@@ -141,8 +142,27 @@ data DemoIdp
 
 -------------------------------------------------------------------------------
 
+supportedIdps :: [Text]
+supportedIdps =
+  [ "auth0"
+  , "azure-ad"
+  , "dropbox"
+  , "facebook"
+  , "fitbit"
+  , "github"
+  , "google"
+  , "linkedin"
+  , "okta"
+  , "slack"
+  , "stack-exchange"
+  , "twitter"
+  , "weibo"
+  , "zoho"
+  ]
+
 data DemoAppPerAppSessionData = DemoAppPerAppSessionData
-  { loginUser :: Maybe DemoLoginUser
+  { idpName :: Text
+  , loginUser :: Maybe DemoLoginUser
   , oauth2Token :: Maybe OAuth2Token
   , authorizePkceCodeVerifier :: Maybe CodeVerifier
   , authorizeAbsUri :: TL.Text
@@ -153,7 +173,8 @@ data DemoAppEnv = DemoAppEnv DemoAuthorizationApp DemoAppPerAppSessionData
 instance Default DemoAppPerAppSessionData where
   def =
     DemoAppPerAppSessionData
-      { loginUser = Nothing
+      { idpName = ""
+      , loginUser = Nothing
       , oauth2Token = Nothing
       , authorizePkceCodeVerifier = Nothing
       , authorizeAbsUri = ""
@@ -174,30 +195,23 @@ instance Ord DemoAppEnv where
   a `compare` b = toLabel a `compare` toLabel b
 
 newtype TemplateData = TemplateData
-  { idpTemplateData :: [DemoAppEnv]
+  { idpSessionData :: [DemoAppPerAppSessionData]
   }
-  deriving (Eq)
 
 -- * Mustache instances
 
-instance ToMustache DemoAppEnv where
-  toMustache (DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
-    -- FIXME: find another way to determine device-app
-    -- Often time the App is different with AuthorizationCodeApp
-    let idpAppName = getIdpAppName (application idpAppConfig)
-        idpName = TL.split (== '-') idpAppName !! 1
-        isSupportDeviceGrant = any (`TL.isInfixOf` idpAppName) ["okta", "github", "auth0", "azure", "google"]
-        isSupportClientCredentialsGrant = any (`TL.isInfixOf` idpAppName) ["okta", "auth0"]
-        isSupportPasswordGrant = any (`TL.isInfixOf` idpAppName) ["okta", "auth0"]
+instance ToMustache DemoAppPerAppSessionData where
+  toMustache (DemoAppPerAppSessionData {..}) = do
+    let hasDeviceGrant = idpName `elem` ["okta", "github", "auth0", "azure-ad", "google"]
+        hasClientCredentialsGrant = idpName `elem` ["okta", "auth0"]
+        hasPasswordGrant = idpName `elem` ["okta", "auth0"]
     M.object
-      [ "codeFlowUri" ~> authorizeAbsUri
-      , "isLogin" ~> isJust loginUser
+      [ "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
       , "idpName" ~> idpName
-      , "idpAppName" ~> TL.unpack idpAppName
-      , "isSupportDeviceGrant" ~> isSupportDeviceGrant
-      , "isSupportClientCredentialsGrant" ~> isSupportClientCredentialsGrant
-      , "isSupportPasswordGrant" ~> isSupportPasswordGrant
+      , "hasDeviceGrant" ~> hasDeviceGrant
+      , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
+      , "hasPasswordGrant" ~> hasPasswordGrant
       ]
 
 instance ToMustache DemoLoginUser where
@@ -208,7 +222,7 @@ instance ToMustache DemoLoginUser where
 instance ToMustache TemplateData where
   toMustache td' =
     M.object
-      [ "idps" ~> idpTemplateData td'
+      [ "idps" ~> idpSessionData td'
       ]
 
 -------------------------------------------------------------------------------

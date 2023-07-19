@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
+import Data.Bifunctor
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -27,6 +28,7 @@ import Types
 import Utils
 import Views
 import Web.Scotty
+import Web.Scotty qualified as Scotty
 import Prelude
 
 ------------------------------
@@ -54,7 +56,7 @@ waiApp = do
     -- It means user session shared across browsers.
     -- which simplify my testing cross browsers.
     -- I am sure you don't want to this for your production services.
-    initIdps cache (myAuth0Idp, myOktaIdp)
+    -- initIdps cache (myAuth0Idp, myOktaIdp)
     pure (myAuth0Idp, myOktaIdp)
   case re of
     Left e -> Prelude.error $ TL.unpack $ "unable to init cache: " <> e
@@ -66,20 +68,24 @@ initApp ::
   CacheStore ->
   (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
   IO WAI.Application
-initApp cache idps = scottyApp $ do
-  middleware $ staticPolicy (addBase "public/assets")
-  defaultHandler globalErrorHandler
-  get "/" $ indexH cache
-  get "/oauth2/callback" $ callbackH cache
-  get "/logout" $ logoutH cache
-  get "/refresh" $ refreshH cache
+initApp _cache idps = do
+  userStore <- initUserStore
 
-  get "/login/password-grant" $ testPasswordGrantTypeH idps
-  get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
+  scottyApp $ do
+    middleware $ staticPolicy (addBase "public/assets")
+    defaultHandler globalErrorHandler
 
-  get "/login/jwt-grant" testJwtBearerGrantTypeH
+    get "/" $ indexH userStore
+    get "/login" $ loginH userStore idps
+    get "/oauth2/callback" $ callbackH userStore idps
+    get "/logout" $ logoutH userStore
+    get "/refresh-token" $ refreshTokenH userStore idps
 
-  get "/login/device-auth-grant" (testDeviceCodeGrantTypeH idps)
+    get "/login/password-grant" $ testPasswordGrantTypeH idps
+    get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
+
+    get "/login/jwt-grant" testJwtBearerGrantTypeH
+    get "/login/device-auth-grant" (testDeviceCodeGrantTypeH idps)
 
 --------------------------------------------------
 
@@ -93,26 +99,39 @@ redirectToHomeM = redirect "/"
 globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status500 >> html t
 
-refreshH :: CacheStore -> ActionM ()
-refreshH c = do
-  idpData@(DemoAppEnv idp sData) <- readIdpParam c
-  exceptToActionM $ do
-    newToken <- doRefreshToken idpData
-    liftIO $ putStrLn ">>>>>> got new token"
-    upsertDemoAppEnv c (DemoAppEnv idp (sData {oauth2Token = Just newToken}))
+indexH ::
+  AuthorizationGrantUserStore ->
+  ActionM ()
+indexH store = do
+  liftIO (allValues store) >>= overviewTpl
+
+loginH :: AuthorizationGrantUserStore -> TenantBasedIdps -> ActionM ()
+loginH s idps = do
+  authRequestUri <- runActionWithIdp "loginH" $ \idpName -> do
+    (DemoIdp idp) <- findIdp idps idpName
+    authCodeApp <- createAuthorizationCodeApp idp idpName
+    (authorizationUri, codeVerifier) <-
+      liftIO $
+        if isSupportPkce idp
+          then fmap (second Just) (mkPkceAuthorizeRequest authCodeApp)
+          else pure (mkAuthorizationRequest authCodeApp, Nothing)
+    insertCodeVerifier s idpName codeVerifier
+    pure authorizationUri
+  liftIO (print $ uriToText authRequestUri)
+  Scotty.setHeader "Location" (TL.fromStrict $ uriToText authRequestUri)
+  Scotty.status status302
+
+logoutH :: AuthorizationGrantUserStore -> ActionM ()
+logoutH s = do
+  runActionWithIdp "logoutH" $ \idpName -> do
+    liftIO (removeKey2 s idpName)
   redirectToHomeM
 
-logoutH :: CacheStore -> ActionM ()
-logoutH c = do
-  idpData <- readIdpParam c
-  liftIO (removeKey c (toLabel idpData))
-  redirectToHomeM
-
-indexH :: CacheStore -> ActionM ()
-indexH c = liftIO (allValues c) >>= overviewTpl
-
-callbackH :: CacheStore -> ActionM ()
-callbackH c = do
+callbackH ::
+  AuthorizationGrantUserStore ->
+  TenantBasedIdps ->
+  ActionM ()
+callbackH s idps = do
   -- https://hackage.haskell.org/package/scotty-0.12/docs/Web-Scotty.html#t:Param
   -- (Text, Text)
   pas <- params
@@ -120,9 +139,26 @@ callbackH c = do
   when (null stateP) (raise "callbackH: no state from callback request")
   let codeP = paramValue "code" pas
   when (null codeP) (raise "callbackH: no code from callback request")
+  let idpName = TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupKey c (TL.takeWhile (/= '.') (head stateP))
-    fetchTokenAndUser c (head codeP) idpData
+    idpData <- lookupKey2 s idpName
+    fetchTokenAndUser s idps idpData (ExchangeToken $ TL.toStrict $ head codeP)
+  redirectToHomeM
+
+refreshTokenH ::
+  AuthorizationGrantUserStore ->
+  TenantBasedIdps ->
+  ActionM ()
+refreshTokenH c idps = do
+  runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
+    (DemoIdp idp) <- findIdp idps idpName
+    authCodeApp <- createAuthorizationCodeApp idp idpName
+    idpData <- lookupKey2 c idpName
+    newToken <- doRefreshToken authCodeApp idpData
+    liftIO $ do
+      putStrLn "=== refreshTokenH === got new token"
+      print newToken
+      upsertDemoUserData c idpName (idpData {oauth2Token = Just newToken})
   redirectToHomeM
 
 testPasswordGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
@@ -191,15 +227,15 @@ testJwtBearerGrantTypeH = do
 
 --------------------------------------------------
 
-exceptToActionM :: Show a => ExceptT Text IO a -> ActionM a
+exceptToActionM :: ExceptT Text IO a -> ActionM a
 exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
 
 -- (Idp IAuth0.Auth0, Idp IOkta.Okta)
 runActionWithIdp ::
-  forall a.
-  Show a =>
+  -- forall a.
+  -- Show a =>
   Text ->
   (Text -> ExceptT Text IO a) ->
   ActionM a
@@ -209,50 +245,51 @@ runActionWithIdp funcName action = do
     Just idpName -> exceptToActionM (action idpName)
     Nothing -> raise $ "[" <> funcName <> "] Expects 'idp' parameter but found nothing"
 
-readIdpParam :: CacheStore -> ActionM DemoAppEnv
-readIdpParam c = do
-  pas <- params
-  let idpP = paramValue "idp" pas
-  when (null idpP) redirectToHomeM
-  exceptToActionM $ lookupKey c (head idpP)
+-- readIdpParam :: CacheStore -> ActionM DemoAppEnv
+-- readIdpParam c = do
+--   pas <- params
+--   let idpP = paramValue "idp" pas
+--   when (null idpP) redirectToHomeM
+--   exceptToActionM $ lookupKey c (head idpP)
 
 fetchTokenAndUser ::
-  CacheStore ->
-  Text ->
-  DemoAppEnv ->
+  AuthorizationGrantUserStore ->
+  TenantBasedIdps ->
+  DemoAppPerAppSessionData ->
+  -- | Session Data
+  ExchangeToken ->
   ExceptT Text IO ()
-fetchTokenAndUser c exchangeToken idpData@(DemoAppEnv (DemoAuthorizationApp idpAppConfig) DemoAppPerAppSessionData {..}) = do
+fetchTokenAndUser c idps idpData@(DemoAppPerAppSessionData {..}) exchangeToken = do
+  (DemoIdp idp) <- findIdp idps idpName
+  authCodeIdpApp <- createAuthorizationCodeApp idp idpName
   mgr <- liftIO $ newManager tlsManagerSettings
-  token <- tryFetchAccessToken idpAppConfig mgr exchangeToken
+  token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
   liftIO $ do
     putStrLn "[Authorization Code Flow] Found access token"
     print token
-  luser <- tryFetchUser mgr token idpAppConfig
+  luser <- tryFetchUser mgr token authCodeIdpApp
   liftIO $ do
     print luser
-  updateIdp c idpData luser token
+    upsertDemoUserData
+      c
+      idpName
+      (idpData {loginUser = Just luser, oauth2Token = Just token})
   where
     tryFetchAccessToken ::
       IdpApplication i AuthorizationCodeApplication ->
       Manager ->
-      Text ->
+      ExchangeToken ->
       ExceptT Text IO OAuth2Token
     tryFetchAccessToken idpApp mgr exchangeTokenText = do
-      if isSupportPkce idpApp
+      if isSupportPkce (idp idpApp)
         then do
           when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
           withExceptT oauth2ErrorToText $
             conduitPkceTokenRequest
               idpApp
               mgr
-              (ExchangeToken $ TL.toStrict exchangeTokenText, fromJust authorizePkceCodeVerifier)
-        else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr (ExchangeToken $ TL.toStrict exchangeTokenText)
-
-    updateIdp :: MonadIO m => CacheStore -> DemoAppEnv -> DemoLoginUser -> OAuth2Token -> ExceptT Text m ()
-    updateIdp c1 (DemoAppEnv iApp sData) luser token =
-      upsertDemoAppEnv
-        c1
-        (DemoAppEnv iApp $ sData {loginUser = Just luser, oauth2Token = Just token})
+              (exchangeTokenText, fromJust authorizePkceCodeVerifier)
+        else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr exchangeTokenText
 
 oauth2ErrorToText :: TokenRequestError -> Text
 oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
@@ -268,8 +305,11 @@ tryFetchUser mgr at idpAppConfig = do
   user <- withExceptT bslToText $ conduitUserInfoRequest idpAppConfig mgr (accessToken at)
   pure $ toLoginUser @i user
 
-doRefreshToken :: DemoAppEnv -> ExceptT Text IO OAuth2Token
-doRefreshToken (DemoAppEnv (DemoAuthorizationApp idpAppConfig) (DemoAppPerAppSessionData {..})) = do
+doRefreshToken ::
+  IdpApplication i AuthorizationCodeApplication ->
+  DemoAppPerAppSessionData ->
+  ExceptT Text IO OAuth2Token
+doRefreshToken idpAppConfig (DemoAppPerAppSessionData {..}) = do
   at <- maybe (throwE "no token response found for idp") pure oauth2Token
   rt <- maybe (throwE "no refresh token found for idp") pure (OAuth2.refreshToken at)
   withExceptT (TL.pack . show) $ do
