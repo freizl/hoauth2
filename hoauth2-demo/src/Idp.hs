@@ -62,20 +62,20 @@ createAuthorizationCodeApp idp (IdpName idpName) = do
           , acTokenRequestAuthenticationMethod = ClientSecretBasic
           }
   let newApp = case idpName of
-        "azure-ad" -> IAzureAD.sampleAzureADAuthorizationCodeApp
-        "auth0" -> IAuth0.sampleAuth0AuthorizationCodeApp
-        "facebook" -> IFacebook.sampleFacebookAuthorizationCodeApp
-        "fitbit" -> IFitbit.sampleFitbitAuthorizationCodeApp
-        "github" -> IGithub.sampleGithubAuthorizationCodeApp
-        "dropbox" -> IDropbox.sampleDropboxAuthorizationCodeApp
-        "google" -> IGoogle.sampleGoogleAuthorizationCodeApp
-        "linkedin" -> ILinkedin.sampleLinkedinAuthorizationCodeApp
-        "okta" -> IOkta.sampleOktaAuthorizationCodeApp
-        "twitter" -> ITwitter.sampleTwitterAuthorizationCodeApp
-        "slack" -> ISlack.sampleSlackAuthorizationCodeApp
-        "weibo" -> IWeibo.sampleWeiboAuthorizationCodeApp
-        "zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
-        "stack-exchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
+        "AzureAD" -> IAzureAD.sampleAzureADAuthorizationCodeApp
+        "Auth0" -> IAuth0.sampleAuth0AuthorizationCodeApp
+        "Facebook" -> IFacebook.sampleFacebookAuthorizationCodeApp
+        "Fitbit" -> IFitbit.sampleFitbitAuthorizationCodeApp
+        "GitHub" -> IGithub.sampleGithubAuthorizationCodeApp
+        "DropBox" -> IDropbox.sampleDropboxAuthorizationCodeApp
+        "Google" -> IGoogle.sampleGoogleAuthorizationCodeApp
+        "LinkedIn" -> ILinkedin.sampleLinkedinAuthorizationCodeApp
+        "Okta" -> IOkta.sampleOktaAuthorizationCodeApp
+        "Twitter" -> ITwitter.sampleTwitterAuthorizationCodeApp
+        "Slack" -> ISlack.sampleSlackAuthorizationCodeApp
+        "Weibo" -> IWeibo.sampleWeiboAuthorizationCodeApp
+        "Zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
+        "StackExchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
         _ -> defaultApp
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
@@ -141,7 +141,7 @@ createClientCredentialsApp i (IdpName idpName) = do
 
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp <- case idpName of
-    "auth0" ->
+    "Auth0" ->
       pure
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
@@ -195,11 +195,11 @@ createDeviceAuthApp ::
   ExceptT Text IO (IdpApplication i DeviceAuthorizationApplication)
 createDeviceAuthApp i (IdpName idpName) = do
   let authMethod =
-        if "okta" `TL.isInfixOf` idpName
+        if "Okta" `TL.isInfixOf` idpName
           then Just ClientSecretBasic
           else Nothing
       extraParams =
-        if "azuread" `TL.isInfixOf` idpName
+        if "AzureAD" `TL.isInfixOf` idpName
           then Map.singleton "tenant" "/common"
           else Map.empty
   let newAppName = "sample-" <> idpName <> "-device-authorization-app"
@@ -259,51 +259,32 @@ data DemoIdp
     ) =>
     DemoIdp (Idp i)
 
-findIdp ::
-  MonadIO m =>
+initSupportedIdps ::
   TenantBasedIdps ->
-  IdpName ->
-  ExceptT Text m DemoIdp
-findIdp (myAuth0Idp, myOktaIdp) (IdpName idpName) = case idpName of
-  "azuread" -> pure (DemoIdp IAzureAD.defaultAzureADIdp)
-  "auth0" -> pure (DemoIdp myAuth0Idp)
-  "okta" -> pure (DemoIdp myOktaIdp)
-  "facebook" -> pure (DemoIdp IFacebook.defaultFacebookIdp)
-  "fitbit" -> pure (DemoIdp IFitbit.defaultFitbitIdp)
-  "github" -> pure (DemoIdp IGithub.defaultGithubIdp)
-  "dropbox" -> pure (DemoIdp IDropbox.defaultDropboxIdp)
-  "google" -> pure (DemoIdp IGoogle.defaultGoogleIdp)
-  "linkedin" -> pure (DemoIdp ILinkedin.defaultLinkedinIdp)
-  "twitter" -> pure (DemoIdp ITwitter.defaultTwitterIdp)
-  "slack" -> pure (DemoIdp ISlack.defaultSlackIdp)
-  "weibo" -> pure (DemoIdp IWeibo.defaultWeiboIdp)
-  "zoho" -> pure (DemoIdp IZOHO.defaultZohoIdp)
-  "stackexchange" -> pure (DemoIdp IStackExchange.defaultStackExchangeIdp)
-  _ -> throwE ("Unable to find Idp for: " <> idpName)
-
-supportedIdps :: [IdpName]
-supportedIdps =
-  [ "auth0"
-  , "azure-ad"
-  , "dropbox"
-  , "facebook"
-  , "fitbit"
-  , "github"
-  , "google"
-  , "linkedin"
-  , "okta"
-  , "slack"
-  , "stack-exchange"
-  , "twitter"
-  , "weibo"
-  , "zoho"
-  ]
+  Map.Map IdpName DemoIdp
+initSupportedIdps (myAuth0Idp, myOktaIdp) =
+  Map.fromList
+    [ ("AzureAD", DemoIdp IAzureAD.defaultAzureADIdp)
+    , ("Auth0", DemoIdp myAuth0Idp)
+    , ("Okta", DemoIdp myOktaIdp)
+    , ("Facebook", DemoIdp IFacebook.defaultFacebookIdp)
+    , ("Fitbit", DemoIdp IFitbit.defaultFitbitIdp)
+    , ("GitHub", DemoIdp IGithub.defaultGithubIdp)
+    , ("DropBox", DemoIdp IDropbox.defaultDropboxIdp)
+    , ("Google", DemoIdp IGoogle.defaultGoogleIdp)
+    , ("LinkedIn", DemoIdp ILinkedin.defaultLinkedinIdp)
+    , ("Twitter", DemoIdp ITwitter.defaultTwitterIdp)
+    , ("Slack", DemoIdp ISlack.defaultSlackIdp)
+    , ("Weibo", DemoIdp IWeibo.defaultWeiboIdp)
+    , ("Zoho", DemoIdp IZOHO.defaultZohoIdp)
+    , ("StackExchange", DemoIdp IStackExchange.defaultStackExchangeIdp)
+    ]
 
 isSupportPkce :: IdpName -> Bool
 isSupportPkce idpName =
   idpName
-    `elem` [ "auth0"
-           , "okta"
-           , "google"
-           , "twitter"
+    `elem` [ "Auth0"
+           , "Okta"
+           , "Google"
+           , "Twitter"
            ]

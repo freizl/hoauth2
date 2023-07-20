@@ -3,6 +3,7 @@
 
 module App (app) where
 
+import AppEnv
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
@@ -12,6 +13,7 @@ import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.IO qualified as TL
+import Env
 import Idp
 import Network.HTTP.Conduit
 import Network.HTTP.Types
@@ -51,36 +53,39 @@ waiApp = do
     myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
     myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
     -- myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
-    pure (myAuth0Idp, myOktaIdp)
+    let oidcIdps = (myAuth0Idp, myOktaIdp)
+    let allIdps = initSupportedIdps oidcIdps
+    oauthAppSettings <- readEnvFile
+    sessionStore <- liftIO (initUserStore $ getIdpNames allIdps)
+    pure AppEnv {..}
   case re of
-    Left e -> Prelude.error $ TL.unpack $ "unable to init idp via oidc well-known endpoint: \n" <> e
-    Right r -> initUserStore >>= initApp r
+    Left e -> Prelude.error $ TL.unpack $ "unable to init demo server: \n" <> e
+    Right r -> initApp r
 
 initApp ::
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
-  AuthorizationGrantUserStore ->
+  AppEnv ->
   IO WAI.Application
-initApp idps userStore = do
+initApp appEnv = do
   scottyApp $ do
     middleware $ staticPolicy (addBase "public/assets")
     defaultHandler globalErrorHandler
 
-    get "/" $ indexH userStore
+    get "/" $ indexH appEnv
 
     -- Authorization Code Grant
-    get "/login" $ loginH userStore idps
-    get "/logout" $ logoutH userStore
-    get "/oauth2/callback" $ callbackH userStore idps
-    get "/refresh-token" $ refreshTokenH userStore idps
+    get "/login" $ loginH appEnv
+    get "/logout" $ logoutH appEnv
+    get "/oauth2/callback" $ callbackH appEnv
+    get "/refresh-token" $ refreshTokenH appEnv
 
     -- Resource Owner Password Grant
-    get "/login/password-grant" $ testPasswordGrantTypeH idps
+    get "/login/password-grant" $ testPasswordGrantTypeH appEnv
 
     -- Client Credentials Grant
-    get "/login/cc-grant" $ testClientCredentialGrantTypeH idps
+    get "/login/cc-grant" $ testClientCredentialGrantTypeH appEnv
 
     -- Device Authorization Grant
-    get "/login/device-auth-grant" $ testDeviceCodeGrantTypeH idps
+    get "/login/device-auth-grant" $ testDeviceCodeGrantTypeH appEnv
 
     -- JWT Grant
     get "/login/jwt-grant" testJwtBearerGrantTypeH
@@ -96,37 +101,40 @@ globalErrorHandler :: Text -> ActionM ()
 globalErrorHandler t = status status500 >> html t
 
 indexH ::
-  AuthorizationGrantUserStore ->
+  AppEnv ->
   ActionM ()
-indexH store = do
-  liftIO (allAppSessionData store) >>= overviewTpl
+indexH AppEnv {..} = do
+  liftIO (allAppSessionData sessionStore) >>= overviewTpl
 
-loginH :: AuthorizationGrantUserStore -> TenantBasedIdps -> ActionM ()
-loginH s idps = do
+loginH ::
+  AppEnv ->
+  ActionM ()
+loginH appEnv@AppEnv {..} = do
   authRequestUri <- runActionWithIdp "loginH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp idps idpName
+    (DemoIdp idp) <- findIdp appEnv idpName
     authCodeApp <- createAuthorizationCodeApp idp idpName
     (authorizationUri, codeVerifier) <-
       liftIO $
         if isSupportPkce idpName
           then fmap (second Just) (mkPkceAuthorizeRequest authCodeApp)
           else pure (mkAuthorizationRequest authCodeApp, Nothing)
-    insertCodeVerifier s idpName codeVerifier
+    insertCodeVerifier sessionStore idpName codeVerifier
     pure authorizationUri
   Scotty.setHeader "Location" (TL.fromStrict $ uriToText authRequestUri)
   Scotty.status status302
 
-logoutH :: AuthorizationGrantUserStore -> ActionM ()
-logoutH s = do
+logoutH ::
+  AppEnv ->
+  ActionM ()
+logoutH AppEnv {..} = do
   runActionWithIdp "logoutH" $ \idpName -> do
-    liftIO (removeAppSessionData s idpName)
+    liftIO (removeAppSessionData sessionStore idpName)
   redirectToHomeM
 
 callbackH ::
-  AuthorizationGrantUserStore ->
-  TenantBasedIdps ->
+  AppEnv ->
   ActionM ()
-callbackH s idps = do
+callbackH appEnv@AppEnv {..} = do
   -- https://hackage.haskell.org/package/scotty-0.12/docs/Web-Scotty.html#t:Param
   -- (Text, Text)
   pas <- params
@@ -136,30 +144,31 @@ callbackH s idps = do
   when (null codeP) (raise "callbackH: no code from callback request")
   let idpName = TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupAppSessionData s (IdpName idpName)
-    fetchTokenAndUser s idps idpData (ExchangeToken $ TL.toStrict $ head codeP)
+    idpData <- lookupAppSessionData sessionStore (IdpName idpName)
+    fetchTokenAndUser appEnv idpData (ExchangeToken $ TL.toStrict $ head codeP)
   redirectToHomeM
 
 refreshTokenH ::
-  AuthorizationGrantUserStore ->
-  TenantBasedIdps ->
+  AppEnv ->
   ActionM ()
-refreshTokenH c idps = do
+refreshTokenH appEnv@AppEnv {..} = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp idps idpName
+    (DemoIdp idp) <- findIdp appEnv idpName
     authCodeApp <- createAuthorizationCodeApp idp idpName
-    idpData <- lookupAppSessionData c idpName
+    idpData <- lookupAppSessionData sessionStore idpName
     newToken <- doRefreshToken authCodeApp idpData
     liftIO $ do
       putStrLn "=== refreshTokenH === got new token"
       print newToken
-      upsertAppSessionData c idpName (idpData {oauth2Token = Just newToken})
+      upsertAppSessionData sessionStore idpName (idpData {oauth2Token = Just newToken})
   redirectToHomeM
 
-testPasswordGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
-testPasswordGrantTypeH idps = do
+testPasswordGrantTypeH ::
+  AppEnv ->
+  ActionM ()
+testPasswordGrantTypeH appEnv = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp idps idpName
+    (DemoIdp idp) <- findIdp appEnv idpName
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
@@ -170,10 +179,11 @@ testPasswordGrantTypeH idps = do
   redirectToHomeM
 
 testClientCredentialGrantTypeH ::
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
-testClientCredentialGrantTypeH idps = do
+  AppEnv ->
+  ActionM ()
+testClientCredentialGrantTypeH appEnv = do
   runActionWithIdp "testClientCredentialsGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp idps idpName
+    (DemoIdp idp) <- findIdp appEnv idpName
     idpApp <- createClientCredentialsApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     -- client credentials flow is meant for machine to machine
@@ -185,11 +195,11 @@ testClientCredentialGrantTypeH idps = do
   redirectToHomeM
 
 testDeviceCodeGrantTypeH ::
-  (Idp IAuth0.Auth0, Idp IOkta.Okta) ->
+  AppEnv ->
   ActionM ()
-testDeviceCodeGrantTypeH idps = do
+testDeviceCodeGrantTypeH appEnv = do
   runActionWithIdp "testDeviceCodeGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp idps idpName
+    (DemoIdp idp) <- findIdp appEnv idpName
     testApp <- createDeviceAuthApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
@@ -236,14 +246,13 @@ runActionWithIdp funcName action = do
     Nothing -> raise $ "[" <> funcName <> "] Expects 'idp' parameter but found nothing"
 
 fetchTokenAndUser ::
-  AuthorizationGrantUserStore ->
-  TenantBasedIdps ->
+  AppEnv ->
   IdpAuthorizationCodeAppSessionData ->
   -- | Session Data
   ExchangeToken ->
   ExceptT Text IO ()
-fetchTokenAndUser c idps idpData@(IdpAuthorizationCodeAppSessionData {..}) exchangeToken = do
-  (DemoIdp idp) <- findIdp idps idpName
+fetchTokenAndUser appEnv@AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) exchangeToken = do
+  (DemoIdp idp) <- findIdp appEnv idpName
   authCodeIdpApp <- createAuthorizationCodeApp idp idpName
   mgr <- liftIO $ newManager tlsManagerSettings
   token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
@@ -254,7 +263,7 @@ fetchTokenAndUser c idps idpData@(IdpAuthorizationCodeAppSessionData {..}) excha
   liftIO $ do
     print luser
     upsertAppSessionData
-      c
+      sessionStore
       idpName
       (idpData {loginUser = Just luser, oauth2Token = Just token})
   where

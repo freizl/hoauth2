@@ -9,7 +9,6 @@ import Data.Default
 import Data.HashMap.Strict qualified as Map
 import Data.Maybe
 import Data.Text.Lazy qualified as TL
-import Idp
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Text.Mustache ((~>))
@@ -39,9 +38,9 @@ instance Default IdpAuthorizationCodeAppSessionData where
 
 instance M.ToMustache IdpAuthorizationCodeAppSessionData where
   toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
-    let hasDeviceGrant = idpName `elem` ["okta", "github", "auth0", "azure-ad", "google"]
-        hasClientCredentialsGrant = idpName `elem` ["okta", "auth0"]
-        hasPasswordGrant = idpName `elem` ["okta", "auth0"]
+    let hasDeviceGrant = idpName `elem` ["Okta", "GitHub", "Auth0", "AzureAD", "Google"]
+        hasClientCredentialsGrant = idpName `elem` ["Okta", "Auth0"]
+        hasPasswordGrant = idpName `elem` ["Okta", "Auth0"]
     M.object
       [ "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
@@ -57,8 +56,9 @@ instance M.ToMustache IdpAuthorizationCodeAppSessionData where
 -- which simplify my testing cross browsers.
 -- I am sure you don't want to this for your production services.
 initUserStore ::
+  [IdpName] ->
   IO AuthorizationGrantUserStore
-initUserStore = do
+initUserStore supportedIdps = do
   let allIdps = fmap (\idpName -> (idpName, def {idpName = idpName})) supportedIdps
   AuthorizationGrantUserStore <$> newMVar (Map.fromList allIdps)
 
