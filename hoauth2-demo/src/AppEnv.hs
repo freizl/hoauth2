@@ -20,7 +20,6 @@ data AppEnv = AppEnv
   { oauthAppSettings :: OAuthAppSettings
   , allIdps :: Map.Map IdpName DemoIdp
   , sessionStore :: AuthorizationGrantUserStore
-  , oidcIdps :: (Idp IAuth0.Auth0, Idp IOkta.Okta)
   }
 
 getIdpNames :: Map.Map IdpName DemoIdp -> [IdpName]
@@ -31,9 +30,9 @@ findIdp ::
   AppEnv ->
   IdpName ->
   ExceptT Text m DemoIdp
-findIdp AppEnv {..} idpName@(IdpName name) =
+findIdp AppEnv {..} idpName =
   except $
     maybe
-      (Left $ "Unable to lookup idp: " <> name)
+      (Left $ "Unable to lookup idp: " <> toText idpName)
       Right
       (Map.lookup idpName allIdps)

@@ -45,15 +45,14 @@ defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 createAuthorizationCodeApp ::
   (Aeson.FromJSON (IdpUserInfo i), HasDemoLoginUser i) =>
-  TenantBasedIdps ->
   Idp i ->
   IdpName ->
   ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
-createAuthorizationCodeApp oidcIdps idp (IdpName idpName) = do
-  let newAppName = "sample-" <> idpName <> "-authorization-code-app"
-  newApp <- case findAuthorizationAppByIdp oidcIdps (DemoIdp idp) of
+createAuthorizationCodeApp idp idpName = do
+  let newAppName = "sample-" <> toText idpName <> "-authorization-code-app"
+  newApp <- case Map.lookup idpName sampleAuthorizationCodeApps of
     Just a -> pure a
-    Nothing -> throwE ("Unable to create authorization app for idp: " <> idpName)
+    Nothing -> throwE ("Unable to create authorization app for idp: " <> toText idpName)
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
         newApp
@@ -61,38 +60,17 @@ createAuthorizationCodeApp oidcIdps idp (IdpName idpName) = do
           , acClientSecret = clientSecret
           , acScope = if Set.null scopes then acScope newApp else scopes
           , acRedirectUri = defaultOAuth2RedirectUri
-          , acAuthorizeState = AuthorizeState (idpName <> ".hoauth2-demo-app-123")
+          , acAuthorizeState = AuthorizeState (toText idpName <> ".hoauth2-demo-app-123")
           }
   pure IdpApplication {idp = idp, application = newApp'}
-
-findAuthorizationAppByIdp ::
-  TenantBasedIdps ->
-  DemoIdp ->
-  Maybe AuthorizationCodeApplication
-findAuthorizationAppByIdp (myAuth0Idp, myOktaIdp) idp
-  | idp == DemoIdp myAuth0Idp = Just IAuth0.sampleAuth0AuthorizationCodeApp
-  | idp == DemoIdp myOktaIdp = Just IOkta.sampleOktaAuthorizationCodeApp
-  | idp == DemoIdp IAzureAD.defaultAzureADIdp = Just IAzureAD.sampleAzureADAuthorizationCodeApp
-  | idp == DemoIdp IFacebook.defaultFacebookIdp = Just IFacebook.sampleFacebookAuthorizationCodeApp
-  | idp == DemoIdp IFitbit.defaultFitbitIdp = Just IFitbit.sampleFitbitAuthorizationCodeApp
-  | idp == DemoIdp IGithub.defaultGithubIdp = Just IGithub.sampleGithubAuthorizationCodeApp
-  | idp == DemoIdp IDropbox.defaultDropboxIdp = Just IDropbox.sampleDropboxAuthorizationCodeApp
-  | idp == DemoIdp IGoogle.defaultGoogleIdp = Just IGoogle.sampleGoogleAuthorizationCodeApp
-  | idp == DemoIdp ILinkedin.defaultLinkedinIdp = Just ILinkedin.sampleLinkedinAuthorizationCodeApp
-  | idp == DemoIdp ITwitter.defaultTwitterIdp = Just ITwitter.sampleTwitterAuthorizationCodeApp
-  | idp == DemoIdp ISlack.defaultSlackIdp = Just ISlack.sampleSlackAuthorizationCodeApp
-  | idp == DemoIdp IWeibo.defaultWeiboIdp = Just IWeibo.sampleWeiboAuthorizationCodeApp
-  | idp == DemoIdp IZOHO.defaultZohoIdp = Just IZOHO.sampleZohoAuthorizationCodeApp
-  | idp == DemoIdp IStackExchange.defaultStackExchangeIdp = Just IStackExchange.sampleStackExchangeAuthorizationCodeApp
-  | otherwise = Nothing
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 createResourceOwnerPasswordApp ::
   Idp i ->
   IdpName ->
   ExceptT Text IO (IdpApplication i ResourceOwnerPasswordApplication)
-createResourceOwnerPasswordApp i (IdpName idpName) = do
-  let newAppName = "sample-" <> idpName <> "-resource-owner-app"
+createResourceOwnerPasswordApp i idpName = do
+  let newAppName = "sample-" <> toText idpName <> "-resource-owner-app"
   let defaultApp =
         ResourceOwnerPasswordApplication
           { ropClientId = ""
@@ -105,7 +83,7 @@ createResourceOwnerPasswordApp i (IdpName idpName) = do
           }
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp' <- case user of
-    Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
+    Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> toText idpName)
     Just userConfig ->
       pure
         defaultApp
@@ -125,8 +103,8 @@ createClientCredentialsApp ::
   Idp i ->
   IdpName ->
   ExceptT Text IO (IdpApplication i ClientCredentialsApplication)
-createClientCredentialsApp i (IdpName idpName) = do
-  let newAppName = "sample-" <> idpName <> "-client-credentials-app"
+createClientCredentialsApp i idpName = do
+  let newAppName = "sample-" <> toText idpName <> "-client-credentials-app"
   let defaultApp =
         ClientCredentialsApplication
           { ccClientId = ""
@@ -139,7 +117,7 @@ createClientCredentialsApp i (IdpName idpName) = do
 
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp <- case idpName of
-    "Auth0" ->
+    Auth0 ->
       pure
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
@@ -165,7 +143,7 @@ createClientCredentialsApp i (IdpName idpName) = do
 -- But with Org AS, has to use jwt athentication method otherwise got error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
--- TODO: get error from Okta about parsing assertion error
+-- FIXME: get error from Okta about parsing assertion error
 createOktaClientCredentialsGrantAppJwt ::
   Idp i ->
   Maybe (ClientId, ClientSecret, Set.Set Scope) ->
@@ -191,16 +169,16 @@ createDeviceAuthApp ::
   Idp i ->
   IdpName ->
   ExceptT Text IO (IdpApplication i DeviceAuthorizationApplication)
-createDeviceAuthApp i (IdpName idpName) = do
+createDeviceAuthApp i idpName = do
   let authMethod =
-        if "Okta" `TL.isInfixOf` idpName
+        if Okta == idpName
           then Just ClientSecretBasic
           else Nothing
       extraParams =
-        if "AzureAD" `TL.isInfixOf` idpName
+        if AzureAD == idpName
           then Map.singleton "tenant" "/common"
           else Map.empty
-  let newAppName = "sample-" <> idpName <> "-device-authorization-app"
+  let newAppName = "sample-" <> toText idpName <> "-device-authorization-app"
       newApp =
         DeviceAuthorizationApplication
           { daClientId = ""
@@ -253,27 +231,46 @@ initSupportedIdps ::
   Map.Map IdpName DemoIdp
 initSupportedIdps (myAuth0Idp, myOktaIdp) =
   Map.fromList
-    [ ("AzureAD", DemoIdp IAzureAD.defaultAzureADIdp)
-    , ("Auth0", DemoIdp myAuth0Idp)
-    , ("Okta", DemoIdp myOktaIdp)
-    , ("Facebook", DemoIdp IFacebook.defaultFacebookIdp)
-    , ("Fitbit", DemoIdp IFitbit.defaultFitbitIdp)
-    , ("GitHub", DemoIdp IGithub.defaultGithubIdp)
-    , ("DropBox", DemoIdp IDropbox.defaultDropboxIdp)
-    , ("Google", DemoIdp IGoogle.defaultGoogleIdp)
-    , ("LinkedIn", DemoIdp ILinkedin.defaultLinkedinIdp)
-    , ("Twitter", DemoIdp ITwitter.defaultTwitterIdp)
-    , ("Slack", DemoIdp ISlack.defaultSlackIdp)
-    , ("Weibo", DemoIdp IWeibo.defaultWeiboIdp)
-    , ("Zoho", DemoIdp IZOHO.defaultZohoIdp)
-    , ("StackExchange", DemoIdp IStackExchange.defaultStackExchangeIdp)
+    [ (AzureAD, DemoIdp IAzureAD.defaultAzureADIdp)
+    , (Auth0, DemoIdp myAuth0Idp)
+    , (Okta, DemoIdp myOktaIdp)
+    , (Facebook, DemoIdp IFacebook.defaultFacebookIdp)
+    , (Fitbit, DemoIdp IFitbit.defaultFitbitIdp)
+    , (GitHub, DemoIdp IGithub.defaultGithubIdp)
+    , (DropBox, DemoIdp IDropbox.defaultDropboxIdp)
+    , (Google, DemoIdp IGoogle.defaultGoogleIdp)
+    , (LinkedIn, DemoIdp ILinkedin.defaultLinkedinIdp)
+    , (Twitter, DemoIdp ITwitter.defaultTwitterIdp)
+    , (Slack, DemoIdp ISlack.defaultSlackIdp)
+    , (Weibo, DemoIdp IWeibo.defaultWeiboIdp)
+    , (ZOHO, DemoIdp IZOHO.defaultZohoIdp)
+    , (StackExchange, DemoIdp IStackExchange.defaultStackExchangeIdp)
+    ]
+
+sampleAuthorizationCodeApps :: Map.Map IdpName AuthorizationCodeApplication
+sampleAuthorizationCodeApps =
+  Map.fromList
+    [ (Auth0, IAuth0.sampleAuth0AuthorizationCodeApp)
+    , (Okta, IOkta.sampleOktaAuthorizationCodeApp)
+    , (AzureAD, IAzureAD.sampleAzureADAuthorizationCodeApp)
+    , (Facebook, IFacebook.sampleFacebookAuthorizationCodeApp)
+    , (Fitbit, IFitbit.sampleFitbitAuthorizationCodeApp)
+    , (GitHub, IGithub.sampleGithubAuthorizationCodeApp)
+    , (DropBox, IDropbox.sampleDropboxAuthorizationCodeApp)
+    , (Google, IGoogle.sampleGoogleAuthorizationCodeApp)
+    , (LinkedIn, ILinkedin.sampleLinkedinAuthorizationCodeApp)
+    , (Twitter, ITwitter.sampleTwitterAuthorizationCodeApp)
+    , (Slack, ISlack.sampleSlackAuthorizationCodeApp)
+    , (Weibo, IWeibo.sampleWeiboAuthorizationCodeApp)
+    , (ZOHO, IZOHO.sampleZohoAuthorizationCodeApp)
+    , (StackExchange, IStackExchange.sampleStackExchangeAuthorizationCodeApp)
     ]
 
 isSupportPkce :: IdpName -> Bool
 isSupportPkce idpName =
   idpName
-    `elem` [ "Auth0"
-           , "Okta"
-           , "Google"
-           , "Twitter"
+    `elem` [ Auth0
+           , Okta
+           , Google
+           , Twitter
            ]

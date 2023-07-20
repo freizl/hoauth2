@@ -29,7 +29,7 @@ data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
 instance Default IdpAuthorizationCodeAppSessionData where
   def =
     IdpAuthorizationCodeAppSessionData
-      { idpName = ""
+      { idpName = Okta
       , loginUser = Nothing
       , oauth2Token = Nothing
       , authorizePkceCodeVerifier = Nothing
@@ -38,9 +38,9 @@ instance Default IdpAuthorizationCodeAppSessionData where
 
 instance M.ToMustache IdpAuthorizationCodeAppSessionData where
   toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
-    let hasDeviceGrant = idpName `elem` ["Okta", "GitHub", "Auth0", "AzureAD", "Google"]
-        hasClientCredentialsGrant = idpName `elem` ["Okta", "Auth0"]
-        hasPasswordGrant = idpName `elem` ["Okta", "Auth0"]
+    let hasDeviceGrant = idpName `elem` [Okta, GitHub, Auth0, AzureAD, Google]
+        hasClientCredentialsGrant = idpName `elem` [Okta, Auth0]
+        hasPasswordGrant = idpName `elem` [Okta, Auth0]
     M.object
       [ "isLogin" ~> isJust loginUser
       , "user" ~> loginUser
@@ -101,7 +101,7 @@ lookupAppSessionData ::
   AuthorizationGrantUserStore ->
   IdpName ->
   ExceptT TL.Text IO IdpAuthorizationCodeAppSessionData
-lookupAppSessionData (AuthorizationGrantUserStore store) idpName@(IdpName name) = do
+lookupAppSessionData (AuthorizationGrantUserStore store) idpName = do
   mm <- liftIO $ tryReadMVar store
   m1 <-
     except $
@@ -111,6 +111,6 @@ lookupAppSessionData (AuthorizationGrantUserStore store) idpName@(IdpName name) 
         mm
   except $
     maybe
-      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> name)
+      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> toText idpName)
       Right
       (Map.lookup idpName m1)
