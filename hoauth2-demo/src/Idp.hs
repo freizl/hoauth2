@@ -22,12 +22,12 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
-import Network.OAuth2.Provider.Dropbox qualified as IDropbox
+import Network.OAuth2.Provider.Dropbox qualified as IDropBox
 import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
-import Network.OAuth2.Provider.GitHub qualified as IGithub
+import Network.OAuth2.Provider.GitHub qualified as IGitHub
 import Network.OAuth2.Provider.Google qualified as IGoogle
-import Network.OAuth2.Provider.LinkedIn qualified as ILinkedin
+import Network.OAuth2.Provider.LinkedIn qualified as ILinkedIn
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
@@ -236,10 +236,10 @@ initSupportedIdps (myAuth0Idp, myOktaIdp) =
     , (Okta, DemoIdp myOktaIdp)
     , (Facebook, DemoIdp IFacebook.defaultFacebookIdp)
     , (Fitbit, DemoIdp IFitbit.defaultFitbitIdp)
-    , (GitHub, DemoIdp IGithub.defaultGithubIdp)
-    , (DropBox, DemoIdp IDropbox.defaultDropBoxIdp)
+    , (GitHub, DemoIdp IGitHub.defaultGithubIdp)
+    , (DropBox, DemoIdp IDropBox.defaultDropBoxIdp)
     , (Google, DemoIdp IGoogle.defaultGoogleIdp)
-    , (LinkedIn, DemoIdp ILinkedin.defaultLinkedInIdp)
+    , (LinkedIn, DemoIdp ILinkedIn.defaultLinkedInIdp)
     , (Twitter, DemoIdp ITwitter.defaultTwitterIdp)
     , (Slack, DemoIdp ISlack.defaultSlackIdp)
     , (Weibo, DemoIdp IWeibo.defaultWeiboIdp)
@@ -255,10 +255,10 @@ sampleAuthorizationCodeApps =
     , (AzureAD, IAzureAD.sampleAzureADAuthorizationCodeApp)
     , (Facebook, IFacebook.sampleFacebookAuthorizationCodeApp)
     , (Fitbit, IFitbit.sampleFitbitAuthorizationCodeApp)
-    , (GitHub, IGithub.sampleGithubAuthorizationCodeApp)
-    , (DropBox, IDropbox.sampleDropBoxAuthorizationCodeApp)
+    , (GitHub, IGitHub.sampleGithubAuthorizationCodeApp)
+    , (DropBox, IDropBox.sampleDropBoxAuthorizationCodeApp)
     , (Google, IGoogle.sampleGoogleAuthorizationCodeApp)
-    , (LinkedIn, ILinkedin.sampleLinkedInAuthorizationCodeApp)
+    , (LinkedIn, ILinkedIn.sampleLinkedInAuthorizationCodeApp)
     , (Twitter, ITwitter.sampleTwitterAuthorizationCodeApp)
     , (Slack, ISlack.sampleSlackAuthorizationCodeApp)
     , (Weibo, IWeibo.sampleWeiboAuthorizationCodeApp)

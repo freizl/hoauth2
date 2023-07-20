@@ -7,12 +7,12 @@ import Data.Text.Lazy qualified as TL
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
-import Network.OAuth2.Provider.Dropbox qualified as IDropbox
+import Network.OAuth2.Provider.Dropbox qualified as IDropBox
 import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
-import Network.OAuth2.Provider.GitHub qualified as IGithub
+import Network.OAuth2.Provider.GitHub qualified as IGitHub
 import Network.OAuth2.Provider.Google qualified as IGoogle
-import Network.OAuth2.Provider.LinkedIn qualified as ILinkedin
+import Network.OAuth2.Provider.LinkedIn qualified as ILinkedIn
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
@@ -64,8 +64,8 @@ instance HasDemoLoginUser Weibo where
   toLoginUser ouser = DemoLoginUser {loginUserName = TL.pack $ show $ IWeibo.uid ouser}
 
 instance HasDemoLoginUser DropBox where
-  toLoginUser :: IDropbox.DropBoxUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IDropbox.displayName $ IDropbox.name ouser}
+  toLoginUser :: IDropBox.DropBoxUser -> DemoLoginUser
+  toLoginUser ouser = DemoLoginUser {loginUserName = IDropBox.displayName $ IDropBox.name ouser}
 
 instance HasDemoLoginUser Facebook where
   toLoginUser :: IFacebook.FacebookUser -> DemoLoginUser
@@ -76,12 +76,12 @@ instance HasDemoLoginUser Fitbit where
   toLoginUser ouser = DemoLoginUser {loginUserName = IFitbit.userName ouser}
 
 instance HasDemoLoginUser GitHub where
-  toLoginUser :: IGithub.GitHubUser -> DemoLoginUser
-  toLoginUser guser = DemoLoginUser {loginUserName = IGithub.name guser}
+  toLoginUser :: IGitHub.GitHubUser -> DemoLoginUser
+  toLoginUser guser = DemoLoginUser {loginUserName = IGitHub.name guser}
 
 instance HasDemoLoginUser LinkedIn where
-  toLoginUser :: ILinkedin.LinkedInUser -> DemoLoginUser
-  toLoginUser ILinkedin.LinkedInUser {..} =
+  toLoginUser :: ILinkedIn.LinkedInUser -> DemoLoginUser
+  toLoginUser ILinkedIn.LinkedInUser {..} =
     DemoLoginUser
       { loginUserName = localizedFirstName <> " " <> localizedLastName
       }
