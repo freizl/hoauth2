@@ -31,9 +31,9 @@ import Web.Scotty
 import Web.Scotty qualified as Scotty
 import Prelude
 
-------------------------------
--- App
-------------------------------
+-------------------------------------------------------------------------------
+--                                    App                                    --
+-------------------------------------------------------------------------------
 
 myServerPort :: Int
 myServerPort = 9988
@@ -52,7 +52,7 @@ waiApp = do
     -- myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
     pure (myAuth0Idp, myOktaIdp)
   case re of
-    Left e -> Prelude.error $ TL.unpack $ "unable to init idp via oidc well-known endpoint " <> e
+    Left e -> Prelude.error $ TL.unpack $ "unable to init idp via oidc well-known endpoint: \n" <> e
     Right r -> initUserStore >>= initApp r
 
 initApp ::
@@ -65,22 +65,28 @@ initApp idps userStore = do
     defaultHandler globalErrorHandler
 
     get "/" $ indexH userStore
+
+    -- Authorization Code Grant
     get "/login" $ loginH userStore idps
-    get "/oauth2/callback" $ callbackH userStore idps
     get "/logout" $ logoutH userStore
+    get "/oauth2/callback" $ callbackH userStore idps
     get "/refresh-token" $ refreshTokenH userStore idps
 
+    -- Resource Owner Password Grant
     get "/login/password-grant" $ testPasswordGrantTypeH idps
-    get "/login/cc-grant" (testClientCredentialGrantTypeH idps)
 
-    get "/login/jwt-grant" testJwtBearerGrantTypeH
+    -- Client Credentials Grant
+    get "/login/cc-grant" $ testClientCredentialGrantTypeH idps
+
+    -- Device Authorization Grant
     get "/login/device-auth-grant" $ testDeviceCodeGrantTypeH idps
 
---------------------------------------------------
+    -- JWT Grant
+    get "/login/jwt-grant" testJwtBearerGrantTypeH
 
--- * Handlers
-
---------------------------------------------------
+-------------------------------------------------------------------------------
+--                                  Handlers                                 --
+-------------------------------------------------------------------------------
 
 redirectToHomeM :: ActionM ()
 redirectToHomeM = redirect "/"
@@ -156,7 +162,7 @@ testPasswordGrantTypeH idps = do
     (DemoIdp idp) <- findIdp idps idpName
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
-    token <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
+    token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
     user <- tryFetchUser mgr token idpApp
     liftIO $ do
       putStrLn "=== testPasswordGrantTypeH find token ==="
@@ -172,7 +178,7 @@ testClientCredentialGrantTypeH idps = do
     mgr <- liftIO $ newManager tlsManagerSettings
     -- client credentials flow is meant for machine to machine
     -- hence wont be able to hit /userinfo endpoint
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
+    tokenResp <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
     liftIO $ do
       putStrLn "=== testClientCredentialGrantTypeH find token ==="
       print tokenResp
@@ -191,7 +197,7 @@ testDeviceCodeGrantTypeH idps = do
       putStr "Please visit this URL to redeem the code: "
       TL.putStr $ userCode deviceAuthResp <> "\n"
       TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
-    atoken <- withExceptT oauth2ErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
+    atoken <- withExceptT tokenRequestErrorErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
     liftIO $ do
       putStrLn "=== testDeviceCodeGrantTypeH found token ==="
       print atoken
@@ -205,26 +211,21 @@ testJwtBearerGrantTypeH = do
   exceptToActionM $ do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
-    tokenResp <- withExceptT oauth2ErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
+    tokenResp <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
     user <- tryFetchUser mgr tokenResp testApp
     liftIO $ print user
   redirectToHomeM
 
---------------------------------------------------
-
--- * Services
-
---------------------------------------------------
+-------------------------------------------------------------------------------
+--                                  Services                                 --
+-------------------------------------------------------------------------------
 
 exceptToActionM :: ExceptT Text IO a -> ActionM a
 exceptToActionM e = do
   result <- liftIO $ runExceptT e
   either raise return result
 
--- (Idp IAuth0.Auth0, Idp IOkta.Okta)
 runActionWithIdp ::
-  -- forall a.
-  -- Show a =>
   Text ->
   (Text -> ExceptT Text IO a) ->
   ActionM a
@@ -233,13 +234,6 @@ runActionWithIdp funcName action = do
   case midp of
     Just idpName -> exceptToActionM (action idpName)
     Nothing -> raise $ "[" <> funcName <> "] Expects 'idp' parameter but found nothing"
-
--- readIdpParam :: CacheStore -> ActionM DemoAppEnv
--- readIdpParam c = do
---   pas <- params
---   let idpP = paramValue "idp" pas
---   when (null idpP) redirectToHomeM
---   exceptToActionM $ lookupKey c (head idpP)
 
 fetchTokenAndUser ::
   AuthorizationGrantUserStore ->
@@ -273,15 +267,15 @@ fetchTokenAndUser c idps idpData@(DemoAppPerAppSessionData {..}) exchangeToken =
       if isSupportPkce idpName
         then do
           when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
-          withExceptT oauth2ErrorToText $
+          withExceptT tokenRequestErrorErrorToText $
             conduitPkceTokenRequest
               idpApp
               mgr
               (exchangeTokenText, fromJust authorizePkceCodeVerifier)
-        else withExceptT oauth2ErrorToText $ conduitTokenRequest idpApp mgr exchangeTokenText
+        else withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr exchangeTokenText
 
-oauth2ErrorToText :: TokenRequestError -> Text
-oauth2ErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
+tokenRequestErrorErrorToText :: TokenRequestError -> Text
+tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::
   forall i a.

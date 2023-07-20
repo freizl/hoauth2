@@ -8,11 +8,11 @@ import Control.Monad.Trans.Except
 import Data.Default
 import Data.HashMap.Strict qualified as Map
 import Data.Text.Lazy qualified as TL
+import Idp
 import Network.OAuth2.Experiment
 import Types
-import Idp
 
-type AuthorizationGrantUserStore = MVar (Map.HashMap TL.Text DemoAppPerAppSessionData)
+newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap TL.Text DemoAppPerAppSessionData))
 
 -- For the sake of simplicity for this demo App,
 -- I store user data in MVar in server side.
@@ -23,7 +23,7 @@ initUserStore ::
   IO AuthorizationGrantUserStore
 initUserStore = do
   let allIdps = fmap (\idpName -> (idpName, def {idpName = idpName})) supportedIdps
-  newMVar $ Map.fromList allIdps
+  AuthorizationGrantUserStore <$> newMVar (Map.fromList allIdps)
 
 insertCodeVerifier ::
   AuthorizationGrantUserStore ->
@@ -34,6 +34,25 @@ insertCodeVerifier store idpName val = do
   sdata <- lookupKey store idpName
   let newData = sdata {authorizePkceCodeVerifier = val}
   liftIO $ upsertDemoUserData store idpName newData
+
+upsertDemoUserData ::
+  AuthorizationGrantUserStore ->
+  TL.Text ->
+  -- | idpName
+  DemoAppPerAppSessionData ->
+  IO ()
+upsertDemoUserData (AuthorizationGrantUserStore store) idpName val = do
+  m1 <- takeMVar store
+  let m2 =
+        if Map.member idpName m1
+          then Map.adjust (const val) idpName m1
+          else Map.insert idpName val m1
+  putMVar store m2
+
+allValues :: AuthorizationGrantUserStore -> IO [DemoAppPerAppSessionData]
+allValues (AuthorizationGrantUserStore store) = do
+  m1 <- tryReadMVar store
+  return $ maybe [] Map.elems m1
 
 removeKey ::
   AuthorizationGrantUserStore ->
@@ -46,7 +65,7 @@ lookupKey ::
   AuthorizationGrantUserStore ->
   TL.Text ->
   ExceptT TL.Text IO DemoAppPerAppSessionData
-lookupKey store idpName = do
+lookupKey (AuthorizationGrantUserStore store) idpName = do
   mm <- liftIO $ tryReadMVar store
   case mm of
     Nothing -> throwE "[lookupKey] store (mvar) is empty"
@@ -54,22 +73,3 @@ lookupKey store idpName = do
       case Map.lookup idpName m1 of
         Nothing -> throwE ("[lookupKey] unable to find cache data for idp " <> idpName)
         Just appData -> pure appData
-
-upsertDemoUserData ::
-  AuthorizationGrantUserStore ->
-  TL.Text ->
-  -- | idpName
-  DemoAppPerAppSessionData ->
-  IO ()
-upsertDemoUserData store idpName val = do
-  m1 <- takeMVar store
-  let m2 =
-        if Map.member idpName m1
-          then Map.adjust (const val) idpName m1
-          else Map.insert idpName val m1
-  putMVar store m2
-
-allValues :: AuthorizationGrantUserStore -> IO [DemoAppPerAppSessionData]
-allValues store = do
-  m1 <- tryReadMVar store
-  return $ maybe [] Map.elems m1
