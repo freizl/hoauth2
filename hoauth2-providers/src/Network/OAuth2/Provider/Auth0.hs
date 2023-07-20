@@ -19,8 +19,8 @@ import Network.OAuth2.Experiment
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
-data Auth0 = Auth0
-  deriving (Show, Eq)
+-- data Auth0 = Auth0
+--   deriving (Show, Eq)
 
 type instance IdpUserInfo Auth0 = Auth0User
 

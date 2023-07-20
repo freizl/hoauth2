@@ -43,6 +43,7 @@ executable hoauth2-demo
     Views
 
   default-extensions:
+    DataKinds
     DeriveGeneric
     DerivingStrategies
     ImportQualifiedPost

@@ -33,7 +33,7 @@ import URI.ByteString.QQ
 To test at google playground, set redirect uri to "https://developers.google.com/oauthplayground"
 -}
 
-data Google = Google deriving (Eq, Show)
+-- data Google = Google deriving (Eq, Show)
 
 type instance IdpUserInfo Google = GoogleUser
 

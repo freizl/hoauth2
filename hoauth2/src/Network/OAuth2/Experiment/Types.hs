@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RankNTypes #-}
@@ -16,6 +17,7 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
+import GHC.Generics
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
@@ -29,11 +31,28 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-type family IdpUserInfo a
+data IdpName
+  = Auth0
+  | AzureAD
+  | DropBox
+  | Facebook
+  | Fitbit
+  | GitHub
+  | Google
+  | LinkedIn
+  | Okta
+  | Slack
+  | StackExchange
+  | Twitter
+  | Weibo
+  | ZOHO
+  deriving (Eq, Ord, Show, Generic)
+
+type family IdpUserInfo (name :: IdpName)
 
 -- NOTE: maybe worth data type to distinguish authorize and token endpoint
 -- as I made mistake at passing to Authorize and Token Request
-data Idp i = Idp
+data Idp (name :: IdpName) = Idp
   { idpUserInfoEndpoint :: URI
   -- ^ Userinfo Endpoint
   , idpAuthorizeEndpoint :: URI
@@ -44,15 +63,15 @@ data Idp i = Idp
   -- ^ Apparently not all IdP support device code flow
   , idpFetchUserInfo ::
       forall m.
-      (FromJSON (IdpUserInfo i), MonadIO m) =>
+      (FromJSON (IdpUserInfo name), MonadIO m) =>
       Manager ->
       AccessToken ->
       URI ->
-      ExceptT BSL.ByteString m (IdpUserInfo i)
+      ExceptT BSL.ByteString m (IdpUserInfo name)
   }
 
-data IdpApplication i a = IdpApplication
-  { idp :: Idp i
+data IdpApplication (name :: IdpName) a = IdpApplication
+  { idp :: Idp name
   , application :: a
   }
 

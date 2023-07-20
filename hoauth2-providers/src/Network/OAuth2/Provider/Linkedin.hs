@@ -12,12 +12,12 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data Linkedin = Linkedin deriving (Eq, Show)
+-- data Linkedin = Linkedin deriving (Eq, Show)
 
-type instance IdpUserInfo Linkedin = LinkedinUser
+type instance IdpUserInfo LinkedIn = LinkedInUser
 
-sampleLinkedinAuthorizationCodeApp :: AuthorizationCodeApplication
-sampleLinkedinAuthorizationCodeApp =
+sampleLinkedInAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleLinkedInAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -29,20 +29,20 @@ sampleLinkedinAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
-defaultLinkedinIdp :: Idp Linkedin
-defaultLinkedinIdp =
+defaultLinkedInIdp :: Idp LinkedIn
+defaultLinkedInIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Linkedin)
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo LinkedIn)
     , idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
     , idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|]
     , idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
     , idpDeviceAuthorizationEndpoint = Nothing
     }
 
-data LinkedinUser = LinkedinUser
+data LinkedInUser = LinkedInUser
   { localizedFirstName :: Text
   , localizedLastName :: Text
   }
   deriving (Show, Generic, Eq)
 
-instance FromJSON LinkedinUser
+instance FromJSON LinkedInUser

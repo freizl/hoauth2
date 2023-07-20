@@ -36,69 +36,69 @@ instance M.ToMustache DemoLoginUser where
 class HasDemoLoginUser a where
   toLoginUser :: IdpUserInfo a -> DemoLoginUser
 
-instance HasDemoLoginUser IAuth0.Auth0 where
+instance HasDemoLoginUser Auth0 where
   toLoginUser :: IAuth0.Auth0User -> DemoLoginUser
   toLoginUser IAuth0.Auth0User {..} = DemoLoginUser {loginUserName = name}
 
-instance HasDemoLoginUser IGoogle.Google where
+instance HasDemoLoginUser Google where
   toLoginUser :: IGoogle.GoogleUser -> DemoLoginUser
   toLoginUser IGoogle.GoogleUser {..} = DemoLoginUser {loginUserName = name}
 
-instance HasDemoLoginUser IZOHO.ZOHO where
-  toLoginUser :: IdpUserInfo IZOHO.ZOHO -> DemoLoginUser
+instance HasDemoLoginUser ZOHO where
+  toLoginUser :: IdpUserInfo ZOHO -> DemoLoginUser
   toLoginUser resp =
     let us = IZOHO.users resp
      in case us of
           [] -> DemoLoginUser {loginUserName = "ZOHO: no user found"}
           (a : _) -> DemoLoginUser {loginUserName = IZOHO.fullName a}
 
-instance HasDemoLoginUser IAzureAD.AzureAD where
+instance HasDemoLoginUser AzureAD where
   toLoginUser :: IAzureAD.AzureADUser -> DemoLoginUser
   toLoginUser ouser =
     DemoLoginUser
       { loginUserName = IAzureAD.email ouser <> " " <> IAzureAD.name ouser
       }
 
-instance HasDemoLoginUser IWeibo.Weibo where
+instance HasDemoLoginUser Weibo where
   toLoginUser :: IWeibo.WeiboUID -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = TL.pack $ show $ IWeibo.uid ouser}
 
-instance HasDemoLoginUser IDropbox.Dropbox where
-  toLoginUser :: IDropbox.DropboxUser -> DemoLoginUser
+instance HasDemoLoginUser DropBox where
+  toLoginUser :: IDropbox.DropBoxUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IDropbox.displayName $ IDropbox.name ouser}
 
-instance HasDemoLoginUser IFacebook.Facebook where
+instance HasDemoLoginUser Facebook where
   toLoginUser :: IFacebook.FacebookUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IFacebook.name ouser}
 
-instance HasDemoLoginUser IFitbit.Fitbit where
+instance HasDemoLoginUser Fitbit where
   toLoginUser :: IFitbit.FitbitUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IFitbit.userName ouser}
 
-instance HasDemoLoginUser IGithub.Github where
+instance HasDemoLoginUser GitHub where
   toLoginUser :: IGithub.GithubUser -> DemoLoginUser
   toLoginUser guser = DemoLoginUser {loginUserName = IGithub.name guser}
 
-instance HasDemoLoginUser ILinkedin.Linkedin where
-  toLoginUser :: ILinkedin.LinkedinUser -> DemoLoginUser
-  toLoginUser ILinkedin.LinkedinUser {..} =
+instance HasDemoLoginUser LinkedIn where
+  toLoginUser :: ILinkedin.LinkedInUser -> DemoLoginUser
+  toLoginUser ILinkedin.LinkedInUser {..} =
     DemoLoginUser
       { loginUserName = localizedFirstName <> " " <> localizedLastName
       }
 
-instance HasDemoLoginUser ITwitter.Twitter where
+instance HasDemoLoginUser Twitter where
   toLoginUser :: ITwitter.TwitterUserResp -> DemoLoginUser
   toLoginUser ITwitter.TwitterUserResp {..} = DemoLoginUser {loginUserName = ITwitter.name twitterUserRespData}
 
-instance HasDemoLoginUser IOkta.Okta where
+instance HasDemoLoginUser Okta where
   toLoginUser :: IOkta.OktaUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IOkta.name ouser}
 
-instance HasDemoLoginUser ISlack.Slack where
+instance HasDemoLoginUser Slack where
   toLoginUser :: ISlack.SlackUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = ISlack.name ouser}
 
-instance HasDemoLoginUser IStackExchange.StackExchange where
+instance HasDemoLoginUser StackExchange where
   toLoginUser :: IStackExchange.StackExchangeResp -> DemoLoginUser
   toLoginUser IStackExchange.StackExchangeResp {..} =
     case items of

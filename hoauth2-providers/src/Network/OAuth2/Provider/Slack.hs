@@ -14,7 +14,7 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data Slack = Slack deriving (Show, Eq)
+-- data Slack = Slack deriving (Show, Eq)
 
 type instance IdpUserInfo Slack = SlackUser
 

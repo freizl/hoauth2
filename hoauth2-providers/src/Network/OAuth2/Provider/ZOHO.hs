@@ -12,7 +12,7 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data ZOHO = ZOHO deriving (Eq, Show)
+-- data ZOHO = ZOHO deriving (Eq, Show)
 
 type instance IdpUserInfo ZOHO = ZOHOUserResp
 

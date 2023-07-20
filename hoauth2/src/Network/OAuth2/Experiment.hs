@@ -142,6 +142,7 @@ import Network.OAuth2.Experiment.Types (
   ClientSecret (..),
   Idp (..),
   IdpApplication (..),
+  IdpName (..),
   IdpUserInfo,
   Password (..),
   RedirectUri (..),

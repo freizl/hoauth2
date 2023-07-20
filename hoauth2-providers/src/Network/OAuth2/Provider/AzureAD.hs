@@ -15,7 +15,7 @@ import Network.OAuth2.Experiment
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
-data AzureAD = AzureAD deriving (Eq, Show)
+-- data AzureAD = AzureAD deriving (Eq, Show)
 
 type instance IdpUserInfo AzureAD = AzureADUser
 

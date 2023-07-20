@@ -12,12 +12,10 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data Dropbox = Dropbox deriving (Eq, Show)
+type instance IdpUserInfo DropBox = DropBoxUser
 
-type instance IdpUserInfo Dropbox = DropboxUser
-
-sampleDropboxAuthorizationCodeApp :: AuthorizationCodeApplication
-sampleDropboxAuthorizationCodeApp =
+sampleDropBoxAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleDropBoxAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -29,26 +27,26 @@ sampleDropboxAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
-defaultDropboxIdp :: Idp Dropbox
-defaultDropboxIdp =
+defaultDropBoxIdp :: Idp DropBox
+defaultDropBoxIdp =
   Idp
-    { idpFetchUserInfo = \mgr at url -> authPostJSON @(IdpUserInfo Dropbox) mgr at url []
+    { idpFetchUserInfo = \mgr at url -> authPostJSON @(IdpUserInfo DropBox) mgr at url []
     , idpAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
     , idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
     , idpDeviceAuthorizationEndpoint = Nothing
     }
 
-newtype DropboxUserName = DropboxUserName {displayName :: Text}
+newtype DropBoxUserName = DropBoxUserName {displayName :: Text}
   deriving (Show, Generic)
 
-data DropboxUser = DropboxUser
+data DropBoxUser = DropBoxUser
   { email :: Text
-  , name :: DropboxUserName
+  , name :: DropBoxUserName
   }
   deriving (Show, Generic)
 
-instance FromJSON DropboxUserName where
+instance FromJSON DropBoxUserName where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
-instance FromJSON DropboxUser
+instance FromJSON DropBoxUser

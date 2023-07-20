@@ -12,7 +12,7 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data Weibo = Weibo deriving (Eq, Show)
+-- data Weibo = Weibo deriving (Eq, Show)
 
 type instance IdpUserInfo Weibo = WeiboUID
 

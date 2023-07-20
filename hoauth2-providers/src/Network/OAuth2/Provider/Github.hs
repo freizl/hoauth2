@@ -12,9 +12,9 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data Github = Github deriving (Eq, Show)
+-- data Github = Github deriving (Eq, Show)
 
-type instance IdpUserInfo Github = GithubUser
+type instance IdpUserInfo GitHub = GithubUser
 
 sampleGithubAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleGithubAuthorizationCodeApp =
@@ -29,10 +29,10 @@ sampleGithubAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
-defaultGithubIdp :: Idp Github
+defaultGithubIdp :: Idp GitHub
 defaultGithubIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Github)
+    { idpFetchUserInfo = authGetJSON @(IdpUserInfo GitHub)
     , idpUserInfoEndpoint = [uri|https://api.github.com/user|]
     , idpAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
     , idpTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]

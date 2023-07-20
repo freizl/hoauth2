@@ -201,7 +201,7 @@ createDeviceAuthApp i idpName = do
       , application = newApp'
       }
 
-googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearerApplication)
+googleServiceAccountApp :: ExceptT Text IO (IdpApplication Google JwtBearerApplication)
 googleServiceAccountApp = do
   IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
   pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
@@ -237,9 +237,9 @@ initSupportedIdps (myAuth0Idp, myOktaIdp) =
     , (Facebook, DemoIdp IFacebook.defaultFacebookIdp)
     , (Fitbit, DemoIdp IFitbit.defaultFitbitIdp)
     , (GitHub, DemoIdp IGithub.defaultGithubIdp)
-    , (DropBox, DemoIdp IDropbox.defaultDropboxIdp)
+    , (DropBox, DemoIdp IDropbox.defaultDropBoxIdp)
     , (Google, DemoIdp IGoogle.defaultGoogleIdp)
-    , (LinkedIn, DemoIdp ILinkedin.defaultLinkedinIdp)
+    , (LinkedIn, DemoIdp ILinkedin.defaultLinkedInIdp)
     , (Twitter, DemoIdp ITwitter.defaultTwitterIdp)
     , (Slack, DemoIdp ISlack.defaultSlackIdp)
     , (Weibo, DemoIdp IWeibo.defaultWeiboIdp)
@@ -256,9 +256,9 @@ sampleAuthorizationCodeApps =
     , (Facebook, IFacebook.sampleFacebookAuthorizationCodeApp)
     , (Fitbit, IFitbit.sampleFitbitAuthorizationCodeApp)
     , (GitHub, IGithub.sampleGithubAuthorizationCodeApp)
-    , (DropBox, IDropbox.sampleDropboxAuthorizationCodeApp)
+    , (DropBox, IDropbox.sampleDropBoxAuthorizationCodeApp)
     , (Google, IGoogle.sampleGoogleAuthorizationCodeApp)
-    , (LinkedIn, ILinkedin.sampleLinkedinAuthorizationCodeApp)
+    , (LinkedIn, ILinkedin.sampleLinkedInAuthorizationCodeApp)
     , (Twitter, ITwitter.sampleTwitterAuthorizationCodeApp)
     , (Slack, ISlack.sampleSlackAuthorizationCodeApp)
     , (Weibo, IWeibo.sampleWeiboAuthorizationCodeApp)

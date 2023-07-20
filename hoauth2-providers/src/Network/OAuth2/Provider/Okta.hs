@@ -23,7 +23,7 @@ import Network.OAuth2.Experiment
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
-data Okta = Okta deriving (Eq, Show)
+-- data Okta = Okta deriving (Eq, Show)
 
 type instance IdpUserInfo Okta = OktaUser
 

@@ -13,7 +13,7 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
-data Twitter = Twitter deriving (Eq, Show)
+-- data Twitter = Twitter deriving (Eq, Show)
 
 type instance IdpUserInfo Twitter = TwitterUserResp
 
