@@ -6,8 +6,6 @@ module Idp where
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson qualified as Aeson
-import Data.Aeson.Key qualified as Aeson
-import Data.Aeson.KeyMap qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.Contrib
@@ -35,7 +33,6 @@ import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
 import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
-import System.Directory
 import Types
 import URI.ByteString
 import URI.ByteString.QQ (uri)
@@ -55,7 +52,7 @@ loadCredentialFromConfig idpAppName = do
   -- let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
   pure (toResult env)
   where
-    toResult :: Env.EnvConfigAuthParams -> (ClientId, ClientSecret, Set.Set Scope)
+    toResult :: Env.OAuthAppSettings -> (ClientId, ClientSecret, Set.Set Scope)
     toResult env =
       ( ClientId $ Env.clientId env
       , ClientSecret $ Env.clientSecret env
@@ -65,13 +62,13 @@ loadCredentialFromConfig idpAppName = do
 loadCredentialFromConfig2 ::
   (MonadIO m) =>
   Text ->
-  ExceptT Text m Env.EnvConfigAuthParams
+  ExceptT Text m Env.OAuthAppSettings
 loadCredentialFromConfig2 idpAppName = do
-  configParams <- readEnvFile
-  let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
-  case mConfigs of
-    Nothing -> throwE $ "[ loadCredentialFromConfig2 ] unable to load config for " <> idpAppName
-    Just x -> pure x
+  mConfigs <- Env.lookup idpAppName
+  maybe
+    (throwE $ "[ loadCredentialFromConfig2 ] unable to load config for " <> idpAppName)
+    pure
+    mConfigs
 
 createAuthorizationCodeApp ::
   Idp i ->
@@ -329,18 +326,3 @@ isSupportPkce idpName =
            , "google"
            , "twitter"
            ]
-
-envFilePath :: String
-envFilePath = ".env.json"
-
-readEnvFile :: (MonadIO m) => ExceptT Text m Env.EnvConfig
-readEnvFile = liftIO $ do
-  pwd <- getCurrentDirectory
-  envFileE <- doesFileExist (pwd <> "/" <> envFilePath)
-  if envFileE
-    then do
-      fileContent <- BS.readFile envFilePath
-      case Aeson.eitherDecodeStrict fileContent of
-        Left err -> print err >> Prelude.error "Unable to parse .env.json"
-        Right ec -> return ec
-    else return Aeson.empty

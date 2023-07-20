@@ -19,7 +19,7 @@ tpl f =
 
 tplS ::
   FilePath ->
-  [DemoAppPerAppSessionData] ->
+  [IdpAuthorizationCodeAppSessionData] ->
   IO TL.Text
 tplS path xs = do
   template <- tpl path
@@ -32,12 +32,12 @@ tplS path xs = do
 
 tplH ::
   FilePath ->
-  [DemoAppPerAppSessionData] ->
+  [IdpAuthorizationCodeAppSessionData] ->
   -- | List of Idps
   ActionM ()
 tplH path xs = do
   s <- liftIO (tplS path xs)
   html s
 
-overviewTpl :: [DemoAppPerAppSessionData] -> ActionM ()
+overviewTpl :: [IdpAuthorizationCodeAppSessionData] -> ActionM ()
 overviewTpl = tplH "index"

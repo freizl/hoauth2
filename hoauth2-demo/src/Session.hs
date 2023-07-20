@@ -12,7 +12,7 @@ import Idp
 import Network.OAuth2.Experiment
 import Types
 
-newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap TL.Text DemoAppPerAppSessionData))
+newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap TL.Text IdpAuthorizationCodeAppSessionData))
 
 -- For the sake of simplicity for this demo App,
 -- I store user data in MVar in server side.
@@ -39,7 +39,7 @@ upsertDemoUserData ::
   AuthorizationGrantUserStore ->
   TL.Text ->
   -- | idpName
-  DemoAppPerAppSessionData ->
+  IdpAuthorizationCodeAppSessionData ->
   IO ()
 upsertDemoUserData (AuthorizationGrantUserStore store) idpName val = do
   m1 <- takeMVar store
@@ -49,7 +49,7 @@ upsertDemoUserData (AuthorizationGrantUserStore store) idpName val = do
           else Map.insert idpName val m1
   putMVar store m2
 
-allValues :: AuthorizationGrantUserStore -> IO [DemoAppPerAppSessionData]
+allValues :: AuthorizationGrantUserStore -> IO [IdpAuthorizationCodeAppSessionData]
 allValues (AuthorizationGrantUserStore store) = do
   m1 <- tryReadMVar store
   return $ maybe [] Map.elems m1
@@ -64,7 +64,7 @@ removeKey store idpName = do
 lookupKey ::
   AuthorizationGrantUserStore ->
   TL.Text ->
-  ExceptT TL.Text IO DemoAppPerAppSessionData
+  ExceptT TL.Text IO IdpAuthorizationCodeAppSessionData
 lookupKey (AuthorizationGrantUserStore store) idpName = do
   mm <- liftIO $ tryReadMVar store
   case mm of

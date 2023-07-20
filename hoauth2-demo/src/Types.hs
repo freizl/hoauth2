@@ -131,7 +131,7 @@ data DemoIdp
 
 -------------------------------------------------------------------------------
 
-data DemoAppPerAppSessionData = DemoAppPerAppSessionData
+data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
   { idpName :: Text
   , loginUser :: Maybe DemoLoginUser
   , oauth2Token :: Maybe OAuth2Token
@@ -139,9 +139,9 @@ data DemoAppPerAppSessionData = DemoAppPerAppSessionData
   , authorizeAbsUri :: TL.Text
   }
 
-instance Default DemoAppPerAppSessionData where
+instance Default IdpAuthorizationCodeAppSessionData where
   def =
-    DemoAppPerAppSessionData
+    IdpAuthorizationCodeAppSessionData
       { idpName = ""
       , loginUser = Nothing
       , oauth2Token = Nothing
@@ -150,13 +150,13 @@ instance Default DemoAppPerAppSessionData where
       }
 
 newtype TemplateData = TemplateData
-  { idpSessionData :: [DemoAppPerAppSessionData]
+  { idpSessionData :: [IdpAuthorizationCodeAppSessionData]
   }
 
 -- * Mustache instances
 
-instance ToMustache DemoAppPerAppSessionData where
-  toMustache (DemoAppPerAppSessionData {..}) = do
+instance ToMustache IdpAuthorizationCodeAppSessionData where
+  toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
     let hasDeviceGrant = idpName `elem` ["okta", "github", "auth0", "azure-ad", "google"]
         hasClientCredentialsGrant = idpName `elem` ["okta", "auth0"]
         hasPasswordGrant = idpName `elem` ["okta", "auth0"]

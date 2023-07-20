@@ -112,7 +112,6 @@ loginH s idps = do
           else pure (mkAuthorizationRequest authCodeApp, Nothing)
     insertCodeVerifier s idpName codeVerifier
     pure authorizationUri
-  liftIO (print $ uriToText authRequestUri)
   Scotty.setHeader "Location" (TL.fromStrict $ uriToText authRequestUri)
   Scotty.status status302
 
@@ -238,11 +237,11 @@ runActionWithIdp funcName action = do
 fetchTokenAndUser ::
   AuthorizationGrantUserStore ->
   TenantBasedIdps ->
-  DemoAppPerAppSessionData ->
+  IdpAuthorizationCodeAppSessionData ->
   -- | Session Data
   ExchangeToken ->
   ExceptT Text IO ()
-fetchTokenAndUser c idps idpData@(DemoAppPerAppSessionData {..}) exchangeToken = do
+fetchTokenAndUser c idps idpData@(IdpAuthorizationCodeAppSessionData {..}) exchangeToken = do
   (DemoIdp idp) <- findIdp idps idpName
   authCodeIdpApp <- createAuthorizationCodeApp idp idpName
   mgr <- liftIO $ newManager tlsManagerSettings
@@ -290,9 +289,9 @@ tryFetchUser mgr at idpAppConfig = do
 
 doRefreshToken ::
   IdpApplication i AuthorizationCodeApplication ->
-  DemoAppPerAppSessionData ->
+  IdpAuthorizationCodeAppSessionData ->
   ExceptT Text IO OAuth2Token
-doRefreshToken idpAppConfig (DemoAppPerAppSessionData {..}) = do
+doRefreshToken idpAppConfig (IdpAuthorizationCodeAppSessionData {..}) = do
   at <- maybe (throwE "no token response found for idp") pure oauth2Token
   rt <- maybe (throwE "no refresh token found for idp") pure (OAuth2.refreshToken at)
   withExceptT (TL.pack . show) $ do
