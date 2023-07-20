@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -21,8 +22,9 @@ import Network.OAuth.OAuth2 (
   TokenRequestError,
  )
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Auth0 (Auth0, Auth0User (..), mkAuth0Idp)
-import Network.OAuth2.Provider.Google (Google, GoogleUser (..))
+import Network.OAuth2.Provider.Auth0 (Auth0User (..), mkAuth0Idp)
+import Network.OAuth2.Provider.Core.Types
+import Network.OAuth2.Provider.Google (GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
 import URI.ByteString.QQ (uri)
 import Web.Scotty (ActionM, scotty)

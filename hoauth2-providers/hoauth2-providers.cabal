@@ -28,6 +28,7 @@ library
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
+    PolyKinds
     RecordWildCards
     TypeApplications
     TypeFamilies

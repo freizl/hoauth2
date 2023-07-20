@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Network.OAuth2.Experiment.Types where
@@ -31,11 +30,17 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-type family IdpUserInfo (a :: k) :: Type
+type family IdpUserInfo (i :: k) :: Type
 
--- NOTE: maybe worth data type to distinguish authorize and token endpoint
+-- TODO:
+-- Maybe worth data type to distinguish authorize and token endpoint
 -- as I made mistake at passing to Authorize and Token Request
-data Idp i = Idp
+--
+-- NOTE:
+-- The 'i' is being PolyKinds. Hence whenever 'Idp i' or 'IdpApplication i a'
+-- is used as function parameter, PolyKinds shall be enabled.
+--
+data Idp (i :: k) = Idp
   { idpUserInfoEndpoint :: URI
   -- ^ Userinfo Endpoint
   , idpAuthorizeEndpoint :: URI
@@ -51,9 +56,10 @@ data Idp i = Idp
       AccessToken ->
       URI ->
       ExceptT BSL.ByteString m (IdpUserInfo i)
+  -- ^ The way to fetch userinfo. IdP may use different approach rather than just GET.
   }
 
-data IdpApplication i a = IdpApplication
+data IdpApplication (i :: k) a = IdpApplication
   { idp :: Idp i
   , application :: a
   }

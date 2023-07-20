@@ -49,6 +49,7 @@ executable hoauth2-demo
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
+    PolyKinds
     RecordWildCards
     TypeApplications
 

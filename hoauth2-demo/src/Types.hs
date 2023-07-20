@@ -11,6 +11,7 @@ import Data.Hashable
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider.Core.Types
 import Text.Mustache qualified as M
 import User
 

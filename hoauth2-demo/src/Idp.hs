@@ -22,6 +22,7 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
+import Network.OAuth2.Provider.Core.Types
 import Network.OAuth2.Provider.Dropbox qualified as IDropBox
 import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
@@ -115,14 +116,14 @@ createClientCredentialsApp i idpName = do
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  Env.OAuthAppSetting {..} <- Env.lookup newAppName
+  appSetting@Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp <- case idpName of
     Auth0 ->
       pure
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
           }
-    -- "okta" -> createOktaClientCredentialsGrantAppJwt i resp
+    Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
     _ -> pure defaultApp
   let newApp' =
         newApp
@@ -146,12 +147,12 @@ createClientCredentialsApp i idpName = do
 -- FIXME: get error from Okta about parsing assertion error
 createOktaClientCredentialsGrantAppJwt ::
   Idp i ->
-  Maybe (ClientId, ClientSecret, Set.Set Scope) ->
+  Env.OAuthAppSetting ->
   ExceptT Text IO ClientCredentialsApplication
-createOktaClientCredentialsGrantAppJwt i mresp = do
-  clientId <- case mresp of
-    Nothing -> throwE "createOktaClientCredentialsGrantApp failed: missing client_id"
-    Just (a, _, _) -> pure a
+createOktaClientCredentialsGrantAppJwt i Env.OAuthAppSetting {..} = do
+  -- clientId <- case mresp of
+  --   Nothing -> throwE "createOktaClientCredentialsGrantApp failed: missing client_id"
+  --   Just (a, _, _) -> pure a
   keyJsonStr <- liftIO $ BS.readFile ".okta-key.json"
   jwk <- except (first TL.pack $ Aeson.eitherDecodeStrict keyJsonStr)
   jwt <- ExceptT $ IOkta.mkOktaClientCredentialAppJwt jwk clientId i
