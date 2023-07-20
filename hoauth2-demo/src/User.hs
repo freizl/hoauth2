@@ -3,13 +3,7 @@
 
 module User where
 
--- import Data.Default
--- import Data.Hashable
--- import Data.Maybe
--- import Data.String
--- import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
--- import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
