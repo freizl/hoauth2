@@ -112,7 +112,7 @@ loginH ::
 loginH appEnv@AppEnv {..} = do
   authRequestUri <- runActionWithIdp "loginH" $ \idpName -> do
     (DemoIdp idp) <- findIdp appEnv idpName
-    authCodeApp <- createAuthorizationCodeApp idp idpName
+    authCodeApp <- createAuthorizationCodeApp oidcIdps idp idpName
     (authorizationUri, codeVerifier) <-
       liftIO $
         if isSupportPkce idpName
@@ -154,7 +154,7 @@ refreshTokenH ::
 refreshTokenH appEnv@AppEnv {..} = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- findIdp appEnv idpName
-    authCodeApp <- createAuthorizationCodeApp idp idpName
+    authCodeApp <- createAuthorizationCodeApp oidcIdps idp idpName
     idpData <- lookupAppSessionData sessionStore idpName
     newToken <- doRefreshToken authCodeApp idpData
     liftIO $ do
@@ -253,7 +253,7 @@ fetchTokenAndUser ::
   ExceptT Text IO ()
 fetchTokenAndUser appEnv@AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) exchangeToken = do
   (DemoIdp idp) <- findIdp appEnv idpName
-  authCodeIdpApp <- createAuthorizationCodeApp idp idpName
+  authCodeIdpApp <- createAuthorizationCodeApp oidcIdps idp idpName
   mgr <- liftIO $ newManager tlsManagerSettings
   token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
   liftIO $ do

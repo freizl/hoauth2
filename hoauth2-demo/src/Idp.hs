@@ -1,12 +1,11 @@
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Idp where
 
+import AppEnv
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
-import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
@@ -45,38 +44,16 @@ defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 createAuthorizationCodeApp ::
+  (Aeson.FromJSON (IdpUserInfo i), HasDemoLoginUser i) =>
+  TenantBasedIdps ->
   Idp i ->
   IdpName ->
   ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
-createAuthorizationCodeApp idp (IdpName idpName) = do
+createAuthorizationCodeApp oidcIdps idp (IdpName idpName) = do
   let newAppName = "sample-" <> idpName <> "-authorization-code-app"
-  let defaultApp =
-        AuthorizationCodeApplication
-          { acClientId = ""
-          , acClientSecret = ""
-          , acScope = Set.empty
-          , acAuthorizeState = ""
-          , acRedirectUri = [uri|http://localhost|]
-          , acName = newAppName
-          , acAuthorizeRequestExtraParams = Map.empty
-          , acTokenRequestAuthenticationMethod = ClientSecretBasic
-          }
-  let newApp = case idpName of
-        "AzureAD" -> IAzureAD.sampleAzureADAuthorizationCodeApp
-        "Auth0" -> IAuth0.sampleAuth0AuthorizationCodeApp
-        "Facebook" -> IFacebook.sampleFacebookAuthorizationCodeApp
-        "Fitbit" -> IFitbit.sampleFitbitAuthorizationCodeApp
-        "GitHub" -> IGithub.sampleGithubAuthorizationCodeApp
-        "DropBox" -> IDropbox.sampleDropboxAuthorizationCodeApp
-        "Google" -> IGoogle.sampleGoogleAuthorizationCodeApp
-        "LinkedIn" -> ILinkedin.sampleLinkedinAuthorizationCodeApp
-        "Okta" -> IOkta.sampleOktaAuthorizationCodeApp
-        "Twitter" -> ITwitter.sampleTwitterAuthorizationCodeApp
-        "Slack" -> ISlack.sampleSlackAuthorizationCodeApp
-        "Weibo" -> IWeibo.sampleWeiboAuthorizationCodeApp
-        "Zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
-        "StackExchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
-        _ -> defaultApp
+  newApp <- case findAuthorizationAppByIdp oidcIdps (DemoIdp idp) of
+    Just a -> pure a
+    Nothing -> throwE ("Unable to create authorization app for idp: " <> idpName)
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
         newApp
@@ -87,6 +64,27 @@ createAuthorizationCodeApp idp (IdpName idpName) = do
           , acAuthorizeState = AuthorizeState (idpName <> ".hoauth2-demo-app-123")
           }
   pure IdpApplication {idp = idp, application = newApp'}
+
+findAuthorizationAppByIdp ::
+  TenantBasedIdps ->
+  DemoIdp ->
+  Maybe AuthorizationCodeApplication
+findAuthorizationAppByIdp (myAuth0Idp, myOktaIdp) idp
+  | idp == DemoIdp myAuth0Idp = Just IAuth0.sampleAuth0AuthorizationCodeApp
+  | idp == DemoIdp myOktaIdp = Just IOkta.sampleOktaAuthorizationCodeApp
+  | idp == DemoIdp IAzureAD.defaultAzureADIdp = Just IAzureAD.sampleAzureADAuthorizationCodeApp
+  | idp == DemoIdp IFacebook.defaultFacebookIdp = Just IFacebook.sampleFacebookAuthorizationCodeApp
+  | idp == DemoIdp IFitbit.defaultFitbitIdp = Just IFitbit.sampleFitbitAuthorizationCodeApp
+  | idp == DemoIdp IGithub.defaultGithubIdp = Just IGithub.sampleGithubAuthorizationCodeApp
+  | idp == DemoIdp IDropbox.defaultDropboxIdp = Just IDropbox.sampleDropboxAuthorizationCodeApp
+  | idp == DemoIdp IGoogle.defaultGoogleIdp = Just IGoogle.sampleGoogleAuthorizationCodeApp
+  | idp == DemoIdp ILinkedin.defaultLinkedinIdp = Just ILinkedin.sampleLinkedinAuthorizationCodeApp
+  | idp == DemoIdp ITwitter.defaultTwitterIdp = Just ITwitter.sampleTwitterAuthorizationCodeApp
+  | idp == DemoIdp ISlack.defaultSlackIdp = Just ISlack.sampleSlackAuthorizationCodeApp
+  | idp == DemoIdp IWeibo.defaultWeiboIdp = Just IWeibo.sampleWeiboAuthorizationCodeApp
+  | idp == DemoIdp IZOHO.defaultZohoIdp = Just IZOHO.sampleZohoAuthorizationCodeApp
+  | idp == DemoIdp IStackExchange.defaultStackExchangeIdp = Just IStackExchange.sampleStackExchangeAuthorizationCodeApp
+  | otherwise = Nothing
 
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 createResourceOwnerPasswordApp ::
@@ -249,15 +247,6 @@ googleServiceAccountApp = do
       { idp = IGoogle.defaultGoogleIdp
       , application = IGoogle.sampleServiceAccountApp jwt
       }
-
-type TenantBasedIdps = (Idp IAuth0.Auth0, Idp IOkta.Okta)
-
-data DemoIdp
-  = forall i.
-    ( HasDemoLoginUser i
-    , FromJSON (IdpUserInfo i)
-    ) =>
-    DemoIdp (Idp i)
 
 initSupportedIdps ::
   TenantBasedIdps ->
