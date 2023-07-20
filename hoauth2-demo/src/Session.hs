@@ -12,7 +12,7 @@ import Idp
 import Network.OAuth2.Experiment
 import Types
 
-newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap TL.Text IdpAuthorizationCodeAppSessionData))
+newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap IdpName IdpAuthorizationCodeAppSessionData))
 
 -- For the sake of simplicity for this demo App,
 -- I store user data in MVar in server side.
@@ -27,7 +27,7 @@ initUserStore = do
 
 insertCodeVerifier ::
   AuthorizationGrantUserStore ->
-  TL.Text ->
+  IdpName ->
   Maybe CodeVerifier ->
   ExceptT TL.Text IO ()
 insertCodeVerifier store idpName val = do
@@ -37,8 +37,7 @@ insertCodeVerifier store idpName val = do
 
 upsertAppSessionData ::
   AuthorizationGrantUserStore ->
-  TL.Text ->
-  -- | idpName
+  IdpName ->
   IdpAuthorizationCodeAppSessionData ->
   IO ()
 upsertAppSessionData (AuthorizationGrantUserStore store) idpName val = do
@@ -56,16 +55,16 @@ allAppSessionData (AuthorizationGrantUserStore store) = do
 
 removeAppSessionData ::
   AuthorizationGrantUserStore ->
-  TL.Text ->
+  IdpName ->
   IO ()
 removeAppSessionData store idpName = do
   upsertAppSessionData store idpName (def {idpName = idpName})
 
 lookupAppSessionData ::
   AuthorizationGrantUserStore ->
-  TL.Text ->
+  IdpName ->
   ExceptT TL.Text IO IdpAuthorizationCodeAppSessionData
-lookupAppSessionData (AuthorizationGrantUserStore store) idpName = do
+lookupAppSessionData (AuthorizationGrantUserStore store) idpName@(IdpName name) = do
   mm <- liftIO $ tryReadMVar store
   m1 <-
     except $
@@ -75,6 +74,6 @@ lookupAppSessionData (AuthorizationGrantUserStore store) idpName = do
         mm
   except $
     maybe
-      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> idpName)
+      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> name)
       Right
       (Map.lookup idpName m1)

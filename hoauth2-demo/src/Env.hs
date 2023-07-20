@@ -45,7 +45,7 @@ instance FromJSON UserConfig
 envFilePath :: String
 envFilePath = ".env.json"
 
-readEnvFile :: (MonadIO m) => ExceptT Text m AppEnv
+readEnvFile :: MonadIO m => ExceptT Text m AppEnv
 readEnvFile = do
   withExceptT wrapError $
     ExceptT $
@@ -56,7 +56,7 @@ readEnvFile = do
     wrapError :: String -> Text
     wrapError = TL.pack . ("Error when try to load .env.json\n" <>)
 
-lookup :: (MonadIO m) => Text -> ExceptT Text m OAuthAppSettings
+lookup :: MonadIO m => Text -> ExceptT Text m OAuthAppSettings
 lookup idpAppName = do
   (AppEnv val) <- readEnvFile
   let key = Aeson.fromString $ TL.unpack $ TL.toLower idpAppName

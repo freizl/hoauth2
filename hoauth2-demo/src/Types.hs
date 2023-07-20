@@ -1,12 +1,16 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Types where
 
 import Data.Aeson
 import Data.Default
+import Data.Hashable
 import Data.Maybe
+import Data.String
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2 hiding (RefreshToken)
@@ -42,6 +46,10 @@ data DemoIdp
     ) =>
     DemoIdp (Idp i)
 
+newtype IdpName = IdpName Text
+  deriving (IsString)
+  deriving newtype (Hashable, Ord, Eq)
+
 -------------------------------------------------------------------------------
 
 -- * Env
@@ -49,7 +57,7 @@ data DemoIdp
 -------------------------------------------------------------------------------
 
 data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
-  { idpName :: Text
+  { idpName :: IdpName
   , loginUser :: Maybe DemoLoginUser
   , oauth2Token :: Maybe OAuth2Token
   , authorizePkceCodeVerifier :: Maybe CodeVerifier
@@ -93,6 +101,9 @@ instance ToMustache IdpAuthorizationCodeAppSessionData where
       , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
       , "hasPasswordGrant" ~> hasPasswordGrant
       ]
+
+instance ToMustache IdpName where
+  toMustache (IdpName n) = M.toMustache n
 
 instance ToMustache DemoLoginUser where
   toMustache t' =

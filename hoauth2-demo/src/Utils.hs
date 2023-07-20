@@ -3,7 +3,7 @@ module Utils where
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import Web.Scotty ( Param )
+import Web.Scotty (Param)
 
 bslToText :: BSL.ByteString -> Text
 bslToText = TL.pack . BSL.unpack
@@ -18,4 +18,3 @@ paramValueMaybe key xs = case filter (hasParam key) xs of
 
 hasParam :: Text -> Param -> Bool
 hasParam t = (== t) . fst
-

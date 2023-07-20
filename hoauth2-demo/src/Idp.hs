@@ -43,9 +43,9 @@ defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 createAuthorizationCodeApp ::
   Idp i ->
-  Text ->
+  IdpName ->
   ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
-createAuthorizationCodeApp idp idpName = do
+createAuthorizationCodeApp idp (IdpName idpName) = do
   let newAppName = "sample-" <> idpName <> "-authorization-code-app"
   let defaultApp =
         AuthorizationCodeApplication
@@ -74,7 +74,7 @@ createAuthorizationCodeApp idp idpName = do
         "zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
         "stack-exchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
         _ -> defaultApp
-  Env.OAuthAppSettings{..} <- Env.lookup newAppName
+  Env.OAuthAppSettings {..} <- Env.lookup newAppName
   let newApp' =
         newApp
           { acClientId = clientId
@@ -88,9 +88,9 @@ createAuthorizationCodeApp idp idpName = do
 -- | https://auth0.com/docs/api/authentication#resource-owner-password
 createResourceOwnerPasswordApp ::
   Idp i ->
-  Text ->
+  IdpName ->
   ExceptT Text IO (IdpApplication i ResourceOwnerPasswordApplication)
-createResourceOwnerPasswordApp i idpName = do
+createResourceOwnerPasswordApp i (IdpName idpName) = do
   let newAppName = "sample-" <> idpName <> "-resource-owner-app"
   let defaultApp =
         ResourceOwnerPasswordApplication
@@ -102,7 +102,7 @@ createResourceOwnerPasswordApp i idpName = do
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
           }
-  Env.OAuthAppSettings{..} <- Env.lookup newAppName
+  Env.OAuthAppSettings {..} <- Env.lookup newAppName
   newApp' <- case user of
     Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
     Just userConfig ->
@@ -122,9 +122,9 @@ createResourceOwnerPasswordApp i idpName = do
 -- | https://auth0.com/docs/api/authentication#client-credentials-flow
 createClientCredentialsApp ::
   Idp i ->
-  Text ->
+  IdpName ->
   ExceptT Text IO (IdpApplication i ClientCredentialsApplication)
-createClientCredentialsApp i idpName = do
+createClientCredentialsApp i (IdpName idpName) = do
   let newAppName = "sample-" <> idpName <> "-client-credentials-app"
   let defaultApp =
         ClientCredentialsApplication
@@ -136,7 +136,7 @@ createClientCredentialsApp i idpName = do
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  Env.OAuthAppSettings{..} <- Env.lookup newAppName
+  Env.OAuthAppSettings {..} <- Env.lookup newAppName
   newApp <- case idpName of
     "auth0" ->
       pure
@@ -188,9 +188,9 @@ createOktaClientCredentialsGrantAppJwt i mresp = do
 
 createDeviceAuthApp ::
   Idp i ->
-  Text ->
+  IdpName ->
   ExceptT Text IO (IdpApplication i DeviceAuthorizationApplication)
-createDeviceAuthApp i idpName = do
+createDeviceAuthApp i (IdpName idpName) = do
   let authMethod =
         if "okta" `TL.isInfixOf` idpName
           then Just ClientSecretBasic
@@ -209,7 +209,7 @@ createDeviceAuthApp i idpName = do
           , daAuthorizationRequestExtraParam = extraParams
           , daAuthorizationRequestAuthenticationMethod = authMethod
           }
-  Env.OAuthAppSettings{..} <- Env.lookup newAppName
+  Env.OAuthAppSettings {..} <- Env.lookup newAppName
   let newApp' =
         newApp
           { daClientId = clientId
@@ -250,11 +250,11 @@ googleServiceAccountApp = do
 type TenantBasedIdps = (Idp IAuth0.Auth0, Idp IOkta.Okta)
 
 findIdp ::
-  (MonadIO m) =>
+  MonadIO m =>
   TenantBasedIdps ->
-  Text ->
+  IdpName ->
   ExceptT Text m DemoIdp
-findIdp (myAuth0Idp, myOktaIdp) idpName = case idpName of
+findIdp (myAuth0Idp, myOktaIdp) (IdpName idpName) = case idpName of
   "azuread" -> pure (DemoIdp IAzureAD.defaultAzureADIdp)
   "auth0" -> pure (DemoIdp myAuth0Idp)
   "okta" -> pure (DemoIdp myOktaIdp)
@@ -271,7 +271,7 @@ findIdp (myAuth0Idp, myOktaIdp) idpName = case idpName of
   "stackexchange" -> pure (DemoIdp IStackExchange.defaultStackExchangeIdp)
   _ -> throwE ("Unable to find Idp for: " <> idpName)
 
-supportedIdps :: [Text]
+supportedIdps :: [IdpName]
 supportedIdps =
   [ "auth0"
   , "azure-ad"
@@ -289,7 +289,7 @@ supportedIdps =
   , "zoho"
   ]
 
-isSupportPkce :: Text -> Bool
+isSupportPkce :: IdpName -> Bool
 isSupportPkce idpName =
   idpName
     `elem` [ "auth0"

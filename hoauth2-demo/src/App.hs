@@ -135,7 +135,7 @@ callbackH s idps = do
   when (null codeP) (raise "callbackH: no code from callback request")
   let idpName = TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupAppSessionData s idpName
+    idpData <- lookupAppSessionData s (IdpName idpName)
     fetchTokenAndUser s idps idpData (ExchangeToken $ TL.toStrict $ head codeP)
   redirectToHomeM
 
@@ -226,12 +226,12 @@ exceptToActionM e = do
 
 runActionWithIdp ::
   Text ->
-  (Text -> ExceptT Text IO a) ->
+  (IdpName -> ExceptT Text IO a) ->
   ActionM a
 runActionWithIdp funcName action = do
   midp <- paramValueMaybe "idp" <$> params
   case midp of
-    Just idpName -> exceptToActionM (action idpName)
+    Just idpName -> exceptToActionM (action $ IdpName idpName)
     Nothing -> raise $ "[" <> funcName <> "] Expects 'idp' parameter but found nothing"
 
 fetchTokenAndUser ::
