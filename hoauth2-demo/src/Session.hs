@@ -31,17 +31,17 @@ insertCodeVerifier ::
   Maybe CodeVerifier ->
   ExceptT TL.Text IO ()
 insertCodeVerifier store idpName val = do
-  sdata <- lookupKey store idpName
+  sdata <- lookupAppSessionData store idpName
   let newData = sdata {authorizePkceCodeVerifier = val}
-  liftIO $ upsertDemoUserData store idpName newData
+  liftIO $ upsertAppSessionData store idpName newData
 
-upsertDemoUserData ::
+upsertAppSessionData ::
   AuthorizationGrantUserStore ->
   TL.Text ->
   -- | idpName
   IdpAuthorizationCodeAppSessionData ->
   IO ()
-upsertDemoUserData (AuthorizationGrantUserStore store) idpName val = do
+upsertAppSessionData (AuthorizationGrantUserStore store) idpName val = do
   m1 <- takeMVar store
   let m2 =
         if Map.member idpName m1
@@ -49,27 +49,32 @@ upsertDemoUserData (AuthorizationGrantUserStore store) idpName val = do
           else Map.insert idpName val m1
   putMVar store m2
 
-allValues :: AuthorizationGrantUserStore -> IO [IdpAuthorizationCodeAppSessionData]
-allValues (AuthorizationGrantUserStore store) = do
+allAppSessionData :: AuthorizationGrantUserStore -> IO [IdpAuthorizationCodeAppSessionData]
+allAppSessionData (AuthorizationGrantUserStore store) = do
   m1 <- tryReadMVar store
   return $ maybe [] Map.elems m1
 
-removeKey ::
+removeAppSessionData ::
   AuthorizationGrantUserStore ->
   TL.Text ->
   IO ()
-removeKey store idpName = do
-  upsertDemoUserData store idpName (def {idpName = idpName})
+removeAppSessionData store idpName = do
+  upsertAppSessionData store idpName (def {idpName = idpName})
 
-lookupKey ::
+lookupAppSessionData ::
   AuthorizationGrantUserStore ->
   TL.Text ->
   ExceptT TL.Text IO IdpAuthorizationCodeAppSessionData
-lookupKey (AuthorizationGrantUserStore store) idpName = do
+lookupAppSessionData (AuthorizationGrantUserStore store) idpName = do
   mm <- liftIO $ tryReadMVar store
-  case mm of
-    Nothing -> throwE "[lookupKey] store (mvar) is empty"
-    Just m1 ->
-      case Map.lookup idpName m1 of
-        Nothing -> throwE ("[lookupKey] unable to find cache data for idp " <> idpName)
-        Just appData -> pure appData
+  m1 <-
+    except $
+      maybe
+        (Left "[lookupAppSessionData] store (mvar) is empty")
+        Right
+        mm
+  except $
+    maybe
+      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> idpName)
+      Right
+      (Map.lookup idpName m1)

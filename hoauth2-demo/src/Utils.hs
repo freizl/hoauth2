@@ -1,10 +1,9 @@
 module Utils where
 
-import Data.Aeson qualified as Aeson
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import Web.Scotty.Internal.Types
+import Web.Scotty ( Param )
 
 bslToText :: BSL.ByteString -> Text
 bslToText = TL.pack . BSL.unpack
@@ -20,8 +19,3 @@ paramValueMaybe key xs = case filter (hasParam key) xs of
 hasParam :: Text -> Param -> Bool
 hasParam t = (== t) . fst
 
-parseValue :: Aeson.FromJSON a => Maybe Aeson.Value -> Maybe a
-parseValue Nothing = Nothing
-parseValue (Just a) = case Aeson.fromJSON a of
-  Aeson.Error _ -> Nothing
-  Aeson.Success b -> Just b

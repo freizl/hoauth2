@@ -31,6 +31,76 @@ import Prelude hiding (id)
 
 -------------------------------------------------------------------------------
 
+-- * IdP
+
+-------------------------------------------------------------------------------
+
+data DemoIdp
+  = forall i.
+    ( HasDemoLoginUser i
+    , FromJSON (IdpUserInfo i)
+    ) =>
+    DemoIdp (Idp i)
+
+-------------------------------------------------------------------------------
+
+-- * Env
+
+-------------------------------------------------------------------------------
+
+data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
+  { idpName :: Text
+  , loginUser :: Maybe DemoLoginUser
+  , oauth2Token :: Maybe OAuth2Token
+  , authorizePkceCodeVerifier :: Maybe CodeVerifier
+  , authorizeAbsUri :: TL.Text
+  }
+
+instance Default IdpAuthorizationCodeAppSessionData where
+  def =
+    IdpAuthorizationCodeAppSessionData
+      { idpName = ""
+      , loginUser = Nothing
+      , oauth2Token = Nothing
+      , authorizePkceCodeVerifier = Nothing
+      , authorizeAbsUri = ""
+      }
+
+newtype TemplateData = TemplateData
+  { idpSessionData :: [IdpAuthorizationCodeAppSessionData]
+  }
+
+-------------------------------------------------------------------------------
+--                             Mustache instances                            --
+-------------------------------------------------------------------------------
+
+instance ToMustache TemplateData where
+  toMustache td' =
+    M.object
+      [ "idps" ~> idpSessionData td'
+      ]
+
+instance ToMustache IdpAuthorizationCodeAppSessionData where
+  toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
+    let hasDeviceGrant = idpName `elem` ["okta", "github", "auth0", "azure-ad", "google"]
+        hasClientCredentialsGrant = idpName `elem` ["okta", "auth0"]
+        hasPasswordGrant = idpName `elem` ["okta", "auth0"]
+    M.object
+      [ "isLogin" ~> isJust loginUser
+      , "user" ~> loginUser
+      , "idpName" ~> idpName
+      , "hasDeviceGrant" ~> hasDeviceGrant
+      , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
+      , "hasPasswordGrant" ~> hasPasswordGrant
+      ]
+
+instance ToMustache DemoLoginUser where
+  toMustache t' =
+    M.object
+      ["name" ~> loginUserName t']
+
+-------------------------------------------------------------------------------
+
 -- * Demo Login User
 
 -------------------------------------------------------------------------------
@@ -111,71 +181,3 @@ instance HasDemoLoginUser IStackExchange.StackExchange where
     case items of
       [] -> DemoLoginUser {loginUserName = TL.pack "Cannot find stackexchange user"}
       (user : _) -> DemoLoginUser {loginUserName = IStackExchange.displayName user}
-
--------------------------------------------------------------------------------
-
--- * Authorization Apps
-
--------------------------------------------------------------------------------
-
-data DemoIdp
-  = forall i.
-    ( HasDemoLoginUser i
-    , FromJSON (IdpUserInfo i)
-    ) =>
-    DemoIdp (Idp i)
-
--------------------------------------------------------------------------------
-
--- * Env
-
--------------------------------------------------------------------------------
-
-data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
-  { idpName :: Text
-  , loginUser :: Maybe DemoLoginUser
-  , oauth2Token :: Maybe OAuth2Token
-  , authorizePkceCodeVerifier :: Maybe CodeVerifier
-  , authorizeAbsUri :: TL.Text
-  }
-
-instance Default IdpAuthorizationCodeAppSessionData where
-  def =
-    IdpAuthorizationCodeAppSessionData
-      { idpName = ""
-      , loginUser = Nothing
-      , oauth2Token = Nothing
-      , authorizePkceCodeVerifier = Nothing
-      , authorizeAbsUri = ""
-      }
-
-newtype TemplateData = TemplateData
-  { idpSessionData :: [IdpAuthorizationCodeAppSessionData]
-  }
-
--- * Mustache instances
-
-instance ToMustache IdpAuthorizationCodeAppSessionData where
-  toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
-    let hasDeviceGrant = idpName `elem` ["okta", "github", "auth0", "azure-ad", "google"]
-        hasClientCredentialsGrant = idpName `elem` ["okta", "auth0"]
-        hasPasswordGrant = idpName `elem` ["okta", "auth0"]
-    M.object
-      [ "isLogin" ~> isJust loginUser
-      , "user" ~> loginUser
-      , "idpName" ~> idpName
-      , "hasDeviceGrant" ~> hasDeviceGrant
-      , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
-      , "hasPasswordGrant" ~> hasPasswordGrant
-      ]
-
-instance ToMustache DemoLoginUser where
-  toMustache t' =
-    M.object
-      ["name" ~> loginUserName t']
-
-instance ToMustache TemplateData where
-  toMustache td' =
-    M.object
-      [ "idps" ~> idpSessionData td'
-      ]

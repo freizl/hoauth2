@@ -41,35 +41,6 @@ import Prelude hiding (id)
 defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
-loadCredentialFromConfig ::
-  (MonadIO m) =>
-  Text ->
-  -- | Idp Application name
-  ExceptT Text m (ClientId, ClientSecret, Set.Set Scope)
-loadCredentialFromConfig idpAppName = do
-  env <- loadCredentialFromConfig2 idpAppName
-  -- configParams <- readEnvFile
-  -- let mConfigs = Aeson.lookup (Aeson.fromString $ TL.unpack $ TL.toLower idpAppName) configParams
-  pure (toResult env)
-  where
-    toResult :: Env.OAuthAppSettings -> (ClientId, ClientSecret, Set.Set Scope)
-    toResult env =
-      ( ClientId $ Env.clientId env
-      , ClientSecret $ Env.clientSecret env
-      , Set.map Scope (Set.fromList (fromMaybe [] (Env.scopes env)))
-      )
-
-loadCredentialFromConfig2 ::
-  (MonadIO m) =>
-  Text ->
-  ExceptT Text m Env.OAuthAppSettings
-loadCredentialFromConfig2 idpAppName = do
-  mConfigs <- Env.lookup idpAppName
-  maybe
-    (throwE $ "[ loadCredentialFromConfig2 ] unable to load config for " <> idpAppName)
-    pure
-    mConfigs
-
 createAuthorizationCodeApp ::
   Idp i ->
   Text ->
@@ -103,12 +74,12 @@ createAuthorizationCodeApp idp idpName = do
         "zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
         "stack-exchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
         _ -> defaultApp
-  (cid, cs, cscopes) <- loadCredentialFromConfig newAppName
+  Env.OAuthAppSettings{..} <- Env.lookup newAppName
   let newApp' =
         newApp
-          { acClientId = cid
-          , acClientSecret = cs
-          , acScope = if Set.null cscopes then acScope newApp else cscopes
+          { acClientId = clientId
+          , acClientSecret = clientSecret
+          , acScope = if Set.null scopes then acScope newApp else scopes
           , acRedirectUri = defaultOAuth2RedirectUri
           , acAuthorizeState = AuthorizeState (idpName <> ".hoauth2-demo-app-123")
           }
@@ -131,14 +102,14 @@ createResourceOwnerPasswordApp i idpName = do
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
           }
-  env <- loadCredentialFromConfig2 newAppName
-  newApp' <- case Env.user env of
+  Env.OAuthAppSettings{..} <- Env.lookup newAppName
+  newApp' <- case user of
     Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
     Just userConfig ->
       pure
         defaultApp
-          { ropClientId = ClientId (Env.clientId env)
-          , ropClientSecret = ClientSecret (Env.clientSecret env)
+          { ropClientId = clientId
+          , ropClientSecret = clientSecret
           , ropUserName = Username (Env.username userConfig)
           , ropPassword = Password (Env.password userConfig)
           }
@@ -165,7 +136,7 @@ createClientCredentialsApp i idpName = do
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  (cid, cc, cs) <- loadCredentialFromConfig newAppName
+  Env.OAuthAppSettings{..} <- Env.lookup newAppName
   newApp <- case idpName of
     "auth0" ->
       pure
@@ -176,9 +147,9 @@ createClientCredentialsApp i idpName = do
     _ -> pure defaultApp
   let newApp' =
         newApp
-          { ccClientId = cid
-          , ccClientSecret = cc
-          , ccScope = cs
+          { ccClientId = clientId
+          , ccClientSecret = clientSecret
+          , ccScope = scopes
           , ccName = newAppName
           }
   pure $
@@ -238,12 +209,12 @@ createDeviceAuthApp i idpName = do
           , daAuthorizationRequestExtraParam = extraParams
           , daAuthorizationRequestAuthenticationMethod = authMethod
           }
-  (cid, cc, cs) <- loadCredentialFromConfig newAppName
+  Env.OAuthAppSettings{..} <- Env.lookup newAppName
   let newApp' =
         newApp
-          { daClientId = cid
-          , daClientSecret = cc
-          , daScope = cs
+          { daClientId = clientId
+          , daClientSecret = clientSecret
+          , daScope = scopes
           }
   pure $
     IdpApplication

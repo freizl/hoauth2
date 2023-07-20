@@ -9,8 +9,6 @@ import Text.Parsec.Error
 import Types
 import Web.Scotty
 
-type CookieUser = String
-
 tpl :: FilePath -> IO (Either ParseError Template)
 tpl f =
   -- TODO: can work with cabal v2-run demo-server but not v2-exec
@@ -33,7 +31,6 @@ tplS path xs = do
 tplH ::
   FilePath ->
   [IdpAuthorizationCodeAppSessionData] ->
-  -- | List of Idps
   ActionM ()
 tplH path xs = do
   s <- liftIO (tplS path xs)

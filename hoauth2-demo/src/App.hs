@@ -98,7 +98,7 @@ indexH ::
   AuthorizationGrantUserStore ->
   ActionM ()
 indexH store = do
-  liftIO (allValues store) >>= overviewTpl
+  liftIO (allAppSessionData store) >>= overviewTpl
 
 loginH :: AuthorizationGrantUserStore -> TenantBasedIdps -> ActionM ()
 loginH s idps = do
@@ -118,7 +118,7 @@ loginH s idps = do
 logoutH :: AuthorizationGrantUserStore -> ActionM ()
 logoutH s = do
   runActionWithIdp "logoutH" $ \idpName -> do
-    liftIO (removeKey s idpName)
+    liftIO (removeAppSessionData s idpName)
   redirectToHomeM
 
 callbackH ::
@@ -135,7 +135,7 @@ callbackH s idps = do
   when (null codeP) (raise "callbackH: no code from callback request")
   let idpName = TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupKey s idpName
+    idpData <- lookupAppSessionData s idpName
     fetchTokenAndUser s idps idpData (ExchangeToken $ TL.toStrict $ head codeP)
   redirectToHomeM
 
@@ -147,12 +147,12 @@ refreshTokenH c idps = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- findIdp idps idpName
     authCodeApp <- createAuthorizationCodeApp idp idpName
-    idpData <- lookupKey c idpName
+    idpData <- lookupAppSessionData c idpName
     newToken <- doRefreshToken authCodeApp idpData
     liftIO $ do
       putStrLn "=== refreshTokenH === got new token"
       print newToken
-      upsertDemoUserData c idpName (idpData {oauth2Token = Just newToken})
+      upsertAppSessionData c idpName (idpData {oauth2Token = Just newToken})
   redirectToHomeM
 
 testPasswordGrantTypeH :: (Idp IAuth0.Auth0, Idp IOkta.Okta) -> ActionM ()
@@ -252,7 +252,7 @@ fetchTokenAndUser c idps idpData@(IdpAuthorizationCodeAppSessionData {..}) excha
   luser <- tryFetchUser mgr token authCodeIdpApp
   liftIO $ do
     print luser
-    upsertDemoUserData
+    upsertAppSessionData
       c
       idpName
       (idpData {loginUser = Just luser, oauth2Token = Just token})
