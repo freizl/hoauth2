@@ -32,16 +32,19 @@ executable hoauth2-demo
   autogen-modules:    Paths_hoauth2_demo
   other-modules:
     App
+    AppEnv
     Env
     Idp
     Paths_hoauth2_demo
     Session
     Types
+    User
     Utils
     Views
 
   default-extensions:
     DeriveGeneric
+    DerivingStrategies
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
@@ -57,12 +60,12 @@ executable hoauth2-demo
     , containers             ^>=0.6
     , data-default           ^>=0.7
     , directory              ^>=1.3
+    , hashable               ^>=1.4.2
     , hoauth2                >=2.7    && <2.9
     , hoauth2-providers      >=0.2    && <0.3
     , http-conduit           >=2.1    && <2.4
     , http-types             >=0.11   && <0.13
     , jose-jwt               >=0.9.4  && <0.10
-    , microlens              ^>=0.4.0
     , mustache               >=2.2.3  && <2.5.0
     , parsec                 >=3.1.11 && <3.2.0
     , scotty                 >=0.10.0 && <0.13
@@ -75,5 +78,5 @@ executable hoauth2-demo
     , warp                   >=3.2    && <3.4
 
   ghc-options:
-    -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Wwarnings-deprecations -Werror
+    -Wall -Wextra -Wtabs -Wno-unused-do-bind -Wpartial-fields
+    -Wunused-packages -Wwarnings-deprecations -Werror

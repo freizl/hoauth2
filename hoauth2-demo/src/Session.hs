@@ -5,42 +5,112 @@ module Session where
 import Control.Concurrent.MVar
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
+import Data.Default
 import Data.HashMap.Strict qualified as Map
+import Data.Maybe
 import Data.Text.Lazy qualified as TL
+import Network.OAuth.OAuth2
+import Network.OAuth2.Experiment
+import Text.Mustache ((~>))
+import Text.Mustache qualified as M
 import Types
+import User
 
-type CacheStore = MVar (Map.HashMap TL.Text DemoAppEnv)
+newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap IdpName IdpAuthorizationCodeAppSessionData))
 
-initCacheStore :: IO CacheStore
-initCacheStore = newMVar Map.empty
+data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
+  { idpName :: IdpName
+  , loginUser :: Maybe DemoLoginUser
+  , oauth2Token :: Maybe OAuth2Token
+  , authorizePkceCodeVerifier :: Maybe CodeVerifier
+  , authorizeAbsUri :: TL.Text
+  }
 
-allValues :: CacheStore -> IO [DemoAppEnv]
-allValues store = do
+instance Default IdpAuthorizationCodeAppSessionData where
+  def =
+    IdpAuthorizationCodeAppSessionData
+      { idpName = Okta
+      , loginUser = Nothing
+      , oauth2Token = Nothing
+      , authorizePkceCodeVerifier = Nothing
+      , authorizeAbsUri = ""
+      }
+
+instance M.ToMustache IdpAuthorizationCodeAppSessionData where
+  toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
+    let hasDeviceGrant = idpName `elem` [Okta, GitHub, Auth0, AzureAD, Google]
+        hasClientCredentialsGrant = idpName `elem` [Okta, Auth0]
+        hasPasswordGrant = idpName `elem` [Okta, Auth0]
+    M.object
+      [ "isLogin" ~> isJust loginUser
+      , "user" ~> loginUser
+      , "idpName" ~> idpName
+      , "hasDeviceGrant" ~> hasDeviceGrant
+      , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
+      , "hasPasswordGrant" ~> hasPasswordGrant
+      ]
+
+-- For the sake of simplicity for this demo App,
+-- I store user data in MVar in server side.
+-- It means user session shared across browsers.
+-- which simplify my testing cross browsers.
+-- I am sure you don't want to this for your production services.
+initUserStore ::
+  [IdpName] ->
+  IO AuthorizationGrantUserStore
+initUserStore supportedIdps = do
+  let allIdps = fmap (\idpName -> (idpName, def {idpName = idpName})) supportedIdps
+  AuthorizationGrantUserStore <$> newMVar (Map.fromList allIdps)
+
+insertCodeVerifier ::
+  AuthorizationGrantUserStore ->
+  IdpName ->
+  Maybe CodeVerifier ->
+  ExceptT TL.Text IO ()
+insertCodeVerifier store idpName val = do
+  sdata <- lookupAppSessionData store idpName
+  let newData = sdata {authorizePkceCodeVerifier = val}
+  liftIO $ upsertAppSessionData store idpName newData
+
+upsertAppSessionData ::
+  AuthorizationGrantUserStore ->
+  IdpName ->
+  IdpAuthorizationCodeAppSessionData ->
+  IO ()
+upsertAppSessionData (AuthorizationGrantUserStore store) idpName val = do
+  m1 <- takeMVar store
+  let m2 =
+        if Map.member idpName m1
+          then Map.adjust (const val) idpName m1
+          else Map.insert idpName val m1
+  putMVar store m2
+
+allAppSessionData :: AuthorizationGrantUserStore -> IO [IdpAuthorizationCodeAppSessionData]
+allAppSessionData (AuthorizationGrantUserStore store) = do
   m1 <- tryReadMVar store
   return $ maybe [] Map.elems m1
 
-removeKey :: CacheStore -> TL.Text -> IO ()
-removeKey store idpKey = do
-  m1 <- takeMVar store
-  let m2 = Map.update updateIdpData idpKey m1
-  putMVar store m2
-  where
-    updateIdpData (DemoAppEnv app sessionD) = Just (DemoAppEnv app sessionD {loginUser = Nothing})
+removeAppSessionData ::
+  AuthorizationGrantUserStore ->
+  IdpName ->
+  IO ()
+removeAppSessionData store idpName = do
+  upsertAppSessionData store idpName (def {idpName = idpName})
 
-lookupKey ::
-  MonadIO m =>
-  CacheStore ->
-  TL.Text ->
-  ExceptT TL.Text m DemoAppEnv
-lookupKey store idpKey = ExceptT $ do
-  m1 <- liftIO $ tryReadMVar store
-  return $ maybe (Left ("unknown Idp " <> idpKey)) Right (Map.lookup idpKey =<< m1)
-
-upsertDemoAppEnv :: MonadIO m => CacheStore -> DemoAppEnv -> ExceptT TL.Text m ()
-upsertDemoAppEnv store val = liftIO $ do
-  m1 <- takeMVar store
-  let m2 =
-        if Map.member (toLabel val) m1
-          then Map.adjust (const val) (toLabel val) m1
-          else Map.insert (toLabel val) val m1
-  putMVar store m2
+lookupAppSessionData ::
+  AuthorizationGrantUserStore ->
+  IdpName ->
+  ExceptT TL.Text IO IdpAuthorizationCodeAppSessionData
+lookupAppSessionData (AuthorizationGrantUserStore store) idpName = do
+  mm <- liftIO $ tryReadMVar store
+  m1 <-
+    except $
+      maybe
+        (Left "[lookupAppSessionData] store (mvar) is empty")
+        Right
+        mm
+  except $
+    maybe
+      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> toText idpName)
+      Right
+      (Map.lookup idpName m1)
