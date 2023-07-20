@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 -- | [LinkedIn Authenticating with OAuth 2.0 Overview](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext)
-module Network.OAuth2.Provider.Linkedin where
+module Network.OAuth2.Provider.LinkedIn where
 
 import Data.Aeson
 import Data.Map.Strict qualified as Map
@@ -11,8 +11,6 @@ import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
-
--- data Linkedin = Linkedin deriving (Eq, Show)
 
 type instance IdpUserInfo LinkedIn = LinkedInUser
 

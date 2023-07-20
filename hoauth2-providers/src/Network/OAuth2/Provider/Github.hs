@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 -- | [Github build oauth applications guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
-module Network.OAuth2.Provider.Github where
+module Network.OAuth2.Provider.GitHub where
 
 import Data.Aeson
 import Data.Map.Strict qualified as Map
@@ -12,9 +12,7 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
--- data Github = Github deriving (Eq, Show)
-
-type instance IdpUserInfo GitHub = GithubUser
+type instance IdpUserInfo GitHub = GitHubUser
 
 sampleGithubAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleGithubAuthorizationCodeApp =
@@ -39,10 +37,10 @@ defaultGithubIdp =
     , idpDeviceAuthorizationEndpoint = Just [uri|https://github.com/login/device/code|]
     }
 
-data GithubUser = GithubUser
+data GitHubUser = GitHubUser
   { name :: Text
   , id :: Integer
   }
   deriving (Show, Generic)
 
-instance FromJSON GithubUser
+instance FromJSON GitHubUser

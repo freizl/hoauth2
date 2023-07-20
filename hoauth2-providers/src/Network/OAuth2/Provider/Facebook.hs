@@ -12,8 +12,6 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
--- data Facebook = Facebook deriving (Eq, Show)
-
 type instance IdpUserInfo Facebook = FacebookUser
 
 sampleFacebookAuthorizationCodeApp :: AuthorizationCodeApplication

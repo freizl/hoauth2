@@ -39,9 +39,9 @@ library
     Network.OAuth2.Provider.Dropbox
     Network.OAuth2.Provider.Facebook
     Network.OAuth2.Provider.Fitbit
-    Network.OAuth2.Provider.Github
+    Network.OAuth2.Provider.GitHub
     Network.OAuth2.Provider.Google
-    Network.OAuth2.Provider.Linkedin
+    Network.OAuth2.Provider.LinkedIn
     Network.OAuth2.Provider.Okta
     Network.OAuth2.Provider.Slack
     Network.OAuth2.Provider.StackExchange

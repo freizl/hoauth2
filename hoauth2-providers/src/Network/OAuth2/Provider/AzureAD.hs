@@ -15,8 +15,6 @@ import Network.OAuth2.Experiment
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 
--- data AzureAD = AzureAD deriving (Eq, Show)
-
 type instance IdpUserInfo AzureAD = AzureADUser
 
 -- Create app at https://go.microsoft.com/fwlink/?linkid=2083908

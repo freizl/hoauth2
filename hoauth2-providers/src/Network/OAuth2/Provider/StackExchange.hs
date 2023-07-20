@@ -30,8 +30,6 @@ userInfoEndpoint =
     ]
     [uri|https://api.stackexchange.com/2.2/me|]
 
--- data StackExchange = StackExchange deriving (Eq, Show)
-
 type instance IdpUserInfo StackExchange = StackExchangeResp
 
 sampleStackExchangeAuthorizationCodeApp :: AuthorizationCodeApplication

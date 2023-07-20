@@ -12,8 +12,6 @@ import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
 import URI.ByteString.QQ
 
--- data Fitbit = Fitbit deriving (Eq, Show)
-
 type instance IdpUserInfo Fitbit = FitbitUser
 
 sampleFitbitAuthorizationCodeApp :: AuthorizationCodeApplication
