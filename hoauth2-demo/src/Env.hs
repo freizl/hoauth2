@@ -13,26 +13,26 @@ import GHC.Generics
 import Network.OAuth2.Experiment
 import System.Directory
 
-newtype AppEnv = AppEnv (Aeson.KeyMap OAuthAppSettings)
+newtype OAuthAppSettings = OAuthAppSettings (Aeson.KeyMap OAuthAppSetting)
   deriving (Generic)
 
-instance FromJSON AppEnv
+instance FromJSON OAuthAppSettings
 
-data OAuthAppSettings = OAuthAppSettings
+data OAuthAppSetting = OAuthAppSetting
   { clientId :: ClientId
   , clientSecret :: ClientSecret
   , scopes :: Set.Set Scope
   , user :: Maybe UserConfig
   }
 
-instance FromJSON OAuthAppSettings where
-  parseJSON = withObject "parseJSON OAuthAppSettings" $ \t -> do
+instance FromJSON OAuthAppSetting where
+  parseJSON = withObject "parseJSON OAuthAppSetting" $ \t -> do
     clientId <- ClientId <$> t .: "client_id"
     clientSecret <- ClientSecret <$> t .: "client_secret"
     scopeTexts <- t .:? "scopes"
     user <- t .:? "user"
     let scopes = Set.map Scope (Set.fromList (fromMaybe [] scopeTexts))
-    pure OAuthAppSettings {..}
+    pure OAuthAppSetting {..}
 
 data UserConfig = UserConfig
   { username :: Text
@@ -45,7 +45,7 @@ instance FromJSON UserConfig
 envFilePath :: String
 envFilePath = ".env.json"
 
-readEnvFile :: MonadIO m => ExceptT Text m AppEnv
+readEnvFile :: MonadIO m => ExceptT Text m OAuthAppSettings
 readEnvFile = do
   withExceptT wrapError $
     ExceptT $
@@ -56,9 +56,9 @@ readEnvFile = do
     wrapError :: String -> Text
     wrapError = TL.pack . ("Error when try to load .env.json\n" <>)
 
-lookup :: MonadIO m => Text -> ExceptT Text m OAuthAppSettings
+lookup :: MonadIO m => Text -> ExceptT Text m OAuthAppSetting
 lookup idpAppName = do
-  (AppEnv val) <- readEnvFile
+  (OAuthAppSettings val) <- readEnvFile
   let key = Aeson.fromString $ TL.unpack $ TL.toLower idpAppName
       resp = Aeson.lookup key val
   except $
