@@ -25,6 +25,7 @@ import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
 import Session
 import Types
+import User
 import Utils
 import Views
 import Web.Scotty

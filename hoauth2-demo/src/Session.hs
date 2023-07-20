@@ -7,12 +7,49 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Default
 import Data.HashMap.Strict qualified as Map
+import Data.Maybe
 import Data.Text.Lazy qualified as TL
 import Idp
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Text.Mustache ((~>))
+import Text.Mustache qualified as M
 import Types
+import User
 
 newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap IdpName IdpAuthorizationCodeAppSessionData))
+
+data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
+  { idpName :: IdpName
+  , loginUser :: Maybe DemoLoginUser
+  , oauth2Token :: Maybe OAuth2Token
+  , authorizePkceCodeVerifier :: Maybe CodeVerifier
+  , authorizeAbsUri :: TL.Text
+  }
+
+instance Default IdpAuthorizationCodeAppSessionData where
+  def =
+    IdpAuthorizationCodeAppSessionData
+      { idpName = ""
+      , loginUser = Nothing
+      , oauth2Token = Nothing
+      , authorizePkceCodeVerifier = Nothing
+      , authorizeAbsUri = ""
+      }
+
+instance M.ToMustache IdpAuthorizationCodeAppSessionData where
+  toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
+    let hasDeviceGrant = idpName `elem` ["okta", "github", "auth0", "azure-ad", "google"]
+        hasClientCredentialsGrant = idpName `elem` ["okta", "auth0"]
+        hasPasswordGrant = idpName `elem` ["okta", "auth0"]
+    M.object
+      [ "isLogin" ~> isJust loginUser
+      , "user" ~> loginUser
+      , "idpName" ~> idpName
+      , "hasDeviceGrant" ~> hasDeviceGrant
+      , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
+      , "hasPasswordGrant" ~> hasPasswordGrant
+      ]
 
 -- For the sake of simplicity for this demo App,
 -- I store user data in MVar in server side.

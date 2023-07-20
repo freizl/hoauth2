@@ -1,3 +1,4 @@
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE QuasiQuotes #-}
 
@@ -5,6 +6,7 @@ module Idp where
 
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
+import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
@@ -36,6 +38,7 @@ import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Types
 import URI.ByteString
 import URI.ByteString.QQ (uri)
+import User
 import Prelude hiding (id)
 
 defaultOAuth2RedirectUri :: URI
@@ -74,7 +77,7 @@ createAuthorizationCodeApp idp (IdpName idpName) = do
         "zoho" -> IZOHO.sampleZohoAuthorizationCodeApp
         "stack-exchange" -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
         _ -> defaultApp
-  Env.OAuthAppSettings {..} <- Env.lookup newAppName
+  Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
         newApp
           { acClientId = clientId
@@ -102,7 +105,7 @@ createResourceOwnerPasswordApp i (IdpName idpName) = do
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
           }
-  Env.OAuthAppSettings {..} <- Env.lookup newAppName
+  Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp' <- case user of
     Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> idpName)
     Just userConfig ->
@@ -136,7 +139,7 @@ createClientCredentialsApp i (IdpName idpName) = do
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  Env.OAuthAppSettings {..} <- Env.lookup newAppName
+  Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp <- case idpName of
     "auth0" ->
       pure
@@ -209,7 +212,7 @@ createDeviceAuthApp i (IdpName idpName) = do
           , daAuthorizationRequestExtraParam = extraParams
           , daAuthorizationRequestAuthenticationMethod = authMethod
           }
-  Env.OAuthAppSettings {..} <- Env.lookup newAppName
+  Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
         newApp
           { daClientId = clientId
@@ -248,6 +251,13 @@ googleServiceAccountApp = do
       }
 
 type TenantBasedIdps = (Idp IAuth0.Auth0, Idp IOkta.Okta)
+
+data DemoIdp
+  = forall i.
+    ( HasDemoLoginUser i
+    , FromJSON (IdpUserInfo i)
+    ) =>
+    DemoIdp (Idp i)
 
 findIdp ::
   MonadIO m =>

@@ -58,7 +58,11 @@ readEnvFile = do
 
 lookup :: MonadIO m => Text -> ExceptT Text m OAuthAppSetting
 lookup idpAppName = do
-  (OAuthAppSettings val) <- readEnvFile
+  envs <- readEnvFile
+  lookupWith envs idpAppName
+
+lookupWith :: MonadIO m => OAuthAppSettings -> Text -> ExceptT Text m OAuthAppSetting
+lookupWith (OAuthAppSettings val) idpAppName = do
   let key = Aeson.fromString $ TL.unpack $ TL.toLower idpAppName
       resp = Aeson.lookup key val
   except $

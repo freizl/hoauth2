@@ -32,16 +32,19 @@ executable hoauth2-demo
   autogen-modules:    Paths_hoauth2_demo
   other-modules:
     App
+    AppEnv
     Env
     Idp
     Paths_hoauth2_demo
     Session
     Types
+    User
     Utils
     Views
 
   default-extensions:
     DeriveGeneric
+    DerivingStrategies
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings

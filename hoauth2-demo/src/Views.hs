@@ -4,10 +4,21 @@ import Control.Monad.IO.Class (liftIO)
 import Data.List
 import Data.Text.Lazy qualified as TL
 import Paths_hoauth2_demo
+import Session
 import Text.Mustache
+import Text.Mustache qualified as M
 import Text.Parsec.Error
-import Types
 import Web.Scotty
+
+newtype TemplateData = TemplateData
+  { idpSessionData :: [IdpAuthorizationCodeAppSessionData]
+  }
+
+instance ToMustache TemplateData where
+  toMustache td' =
+    M.object
+      [ "idps" ~> idpSessionData td'
+      ]
 
 tpl :: FilePath -> IO (Either ParseError Template)
 tpl f =
