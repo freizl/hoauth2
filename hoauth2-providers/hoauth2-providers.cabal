@@ -36,6 +36,7 @@ library
     Data.ByteString.Contrib
     Network.OAuth2.Provider.Auth0
     Network.OAuth2.Provider.AzureAD
+    Network.OAuth2.Provider.Core.Types
     Network.OAuth2.Provider.Dropbox
     Network.OAuth2.Provider.Facebook
     Network.OAuth2.Provider.Fitbit

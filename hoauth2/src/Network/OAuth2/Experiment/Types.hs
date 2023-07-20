@@ -1,6 +1,6 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Network.OAuth2.Experiment.Types where
@@ -10,6 +10,7 @@ import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson (FromJSON)
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Default (Default (def))
+import Data.Kind
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
@@ -17,7 +18,6 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import GHC.Generics
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
@@ -31,28 +31,11 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-data IdpName
-  = Auth0
-  | AzureAD
-  | DropBox
-  | Facebook
-  | Fitbit
-  | GitHub
-  | Google
-  | LinkedIn
-  | Okta
-  | Slack
-  | StackExchange
-  | Twitter
-  | Weibo
-  | ZOHO
-  deriving (Eq, Ord, Show, Generic)
-
-type family IdpUserInfo (name :: IdpName)
+type family IdpUserInfo (a :: k) :: Type
 
 -- NOTE: maybe worth data type to distinguish authorize and token endpoint
 -- as I made mistake at passing to Authorize and Token Request
-data Idp (name :: IdpName) = Idp
+data Idp i = Idp
   { idpUserInfoEndpoint :: URI
   -- ^ Userinfo Endpoint
   , idpAuthorizeEndpoint :: URI
@@ -63,15 +46,15 @@ data Idp (name :: IdpName) = Idp
   -- ^ Apparently not all IdP support device code flow
   , idpFetchUserInfo ::
       forall m.
-      (FromJSON (IdpUserInfo name), MonadIO m) =>
+      (FromJSON (IdpUserInfo i), MonadIO m) =>
       Manager ->
       AccessToken ->
       URI ->
-      ExceptT BSL.ByteString m (IdpUserInfo name)
+      ExceptT BSL.ByteString m (IdpUserInfo i)
   }
 
-data IdpApplication (name :: IdpName) a = IdpApplication
-  { idp :: Idp name
+data IdpApplication i a = IdpApplication
+  { idp :: Idp i
   , application :: a
   }
 

@@ -10,6 +10,7 @@ import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider.Core.Types
 import URI.ByteString.QQ
 
 type instance IdpUserInfo Fitbit = FitbitUser

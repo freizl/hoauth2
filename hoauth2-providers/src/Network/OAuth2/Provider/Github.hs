@@ -10,6 +10,7 @@ import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider.Core.Types
 import URI.ByteString.QQ
 
 type instance IdpUserInfo GitHub = GitHubUser
