@@ -3,15 +3,20 @@
 -- | [LinkedIn Authenticating with OAuth 2.0 Overview](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext)
 module Network.OAuth2.Provider.LinkedIn where
 
-import Data.Aeson
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
+import Data.Aeson (FromJSON)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import URI.ByteString.QQ
+import URI.ByteString (URI)
+import URI.ByteString.QQ (uri)
 
 type instance IdpUserInfo LinkedIn = LinkedInUser
 
@@ -28,11 +33,18 @@ sampleLinkedInAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
+fetchUserInfoMethod ::
+  (FromJSON a, MonadIO m) =>
+  Manager ->
+  AccessToken ->
+  URI ->
+  ExceptT BSL.ByteString m a
+fetchUserInfoMethod = authGetJSON
+
 defaultLinkedInIdp :: Idp LinkedIn
 defaultLinkedInIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo LinkedIn)
-    , idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
+    { idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
     , idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|]
     , idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
     , idpDeviceAuthorizationEndpoint = Nothing

@@ -4,10 +4,10 @@
 
 module Network.OAuth2.Experiment.Types where
 
-import Control.Monad.IO.Class (MonadIO (..))
-import Control.Monad.Trans.Except (ExceptT (..))
-import Data.Aeson (FromJSON)
-import Data.ByteString.Lazy.Char8 qualified as BSL
+-- import Control.Monad.IO.Class (MonadIO (..))
+-- import Control.Monad.Trans.Except (ExceptT (..))
+-- import Data.Aeson (FromJSON)
+-- import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Default (Default (def))
 import Data.Kind
 import Data.Map.Strict (Map)
@@ -17,7 +17,7 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import Network.HTTP.Conduit
+-- import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Pkce
@@ -49,13 +49,13 @@ data Idp (i :: k) = Idp
   -- ^ Token Endpoint
   , idpDeviceAuthorizationEndpoint :: Maybe URI
   -- ^ Apparently not all IdP support device code flow
-  , idpFetchUserInfo ::
-      forall m.
-      (FromJSON (IdpUserInfo i), MonadIO m) =>
-      Manager ->
-      AccessToken ->
-      URI ->
-      ExceptT BSL.ByteString m (IdpUserInfo i)
+  -- , idpFetchUserInfo ::
+  --     forall m.
+  --     (FromJSON (IdpUserInfo i), MonadIO m) =>
+  --     Manager ->
+  --     AccessToken ->
+  --     URI ->
+  --     ExceptT BSL.ByteString m (IdpUserInfo i)
   -- ^ The way to fetch userinfo. IdP may use different approach rather than just GET.
   }
 

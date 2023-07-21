@@ -3,14 +3,19 @@
 -- | [微博授权机制](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6)
 module Network.OAuth2.Provider.Weibo where
 
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
+import URI.ByteString (URI)
 import URI.ByteString.QQ
 
 type instance IdpUserInfo Weibo = WeiboUID
@@ -28,11 +33,18 @@ sampleWeiboAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfoMethod ::
+  (FromJSON a, MonadIO m) =>
+  Manager ->
+  AccessToken ->
+  URI ->
+  ExceptT BSL.ByteString m a
+fetchUserInfoMethod = authGetJSONWithAuthMethod AuthInRequestQuery
+
 defaultWeiboIdp :: Idp Weibo
 defaultWeiboIdp =
   Idp
-    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo Weibo) AuthInRequestQuery
-    , idpUserInfoEndpoint = [uri|https://api.weibo.com/2/account/get_uid.json|]
+    { idpUserInfoEndpoint = [uri|https://api.weibo.com/2/account/get_uid.json|]
     , idpAuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
     , idpDeviceAuthorizationEndpoint = Nothing

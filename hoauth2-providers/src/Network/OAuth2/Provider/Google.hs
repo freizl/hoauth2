@@ -3,11 +3,14 @@
 -- | [Google build oauth2 web server application](https://developers.google.com/identity/protocols/oauth2/web-server)
 module Network.OAuth2.Provider.Google where
 
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Crypto.PubKey.RSA.Types
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString.Contrib
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set qualified as Set
@@ -19,7 +22,8 @@ import GHC.Generics
 import Jose.Jwa
 import Jose.Jws
 import Jose.Jwt
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import OpenSSL.EVP.PKey (toKeyPair)
@@ -28,6 +32,7 @@ import OpenSSL.PEM (
   readPrivateKey,
  )
 import OpenSSL.RSA
+import URI.ByteString (URI)
 import URI.ByteString.QQ
 
 {-
@@ -135,11 +140,18 @@ readPemRsaKey pemStr = do
 
 -- * IDP
 
+fetchUserInfoMethod ::
+  (FromJSON a, MonadIO m) =>
+  Manager ->
+  AccessToken ->
+  URI ->
+  ExceptT BSL.ByteString m a
+fetchUserInfoMethod = authGetJSON
+
 defaultGoogleIdp :: Idp Google
 defaultGoogleIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google)
-    , idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|]
+    { idpAuthorizeEndpoint = [uri|https://accounts.google.com/o/oauth2/v2/auth|]
     , idpTokenEndpoint = [uri|https://oauth2.googleapis.com/token|]
     , idpUserInfoEndpoint = [uri|https://www.googleapis.com/oauth2/v2/userinfo|]
     , idpDeviceAuthorizationEndpoint = Just [uri|https://oauth2.googleapis.com/device/code|]

@@ -33,7 +33,8 @@ library
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
     -Wwarnings-deprecations
-  if impl (ghc < 9.4)
+
+  if impl(ghc <9.4)
     ghc-options: -Wno-unticked-promoted-constructors
 
 executable hoauth2-providers-tutorial

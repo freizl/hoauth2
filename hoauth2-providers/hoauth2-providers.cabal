@@ -35,9 +35,9 @@ library
 
   exposed-modules:
     Data.ByteString.Contrib
+    Network.OAuth2.Provider
     Network.OAuth2.Provider.Auth0
     Network.OAuth2.Provider.AzureAD
-    Network.OAuth2.Provider
     Network.OAuth2.Provider.DropBox
     Network.OAuth2.Provider.Facebook
     Network.OAuth2.Provider.Fitbit
@@ -72,8 +72,10 @@ library
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Werror -Wwarnings-deprecations
-  if impl (ghc < 9.4)
+    -Wwarn -Wwarnings-deprecations
+
+  -- -Wno-missing-signatures
+  if impl(ghc <9.4)
     ghc-options: -Wno-unticked-promoted-constructors
 
 test-suite hoauth-providers-tests

@@ -3,14 +3,19 @@
 -- | [Github build oauth applications guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
 module Network.OAuth2.Provider.GitHub where
 
-import Data.Aeson
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
+import Data.Aeson (FromJSON)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
+import URI.ByteString (URI)
 import URI.ByteString.QQ
 
 type instance IdpUserInfo GitHub = GitHubUser
@@ -28,11 +33,18 @@ sampleGithubAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfoMethod ::
+  (FromJSON a, MonadIO m) =>
+  Manager ->
+  AccessToken ->
+  URI ->
+  ExceptT BSL.ByteString m a
+fetchUserInfoMethod = authGetJSON
+
 defaultGithubIdp :: Idp GitHub
 defaultGithubIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo GitHub)
-    , idpUserInfoEndpoint = [uri|https://api.github.com/user|]
+    { idpUserInfoEndpoint = [uri|https://api.github.com/user|]
     , idpAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
     , idpTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
     , idpDeviceAuthorizationEndpoint = Just [uri|https://github.com/login/device/code|]

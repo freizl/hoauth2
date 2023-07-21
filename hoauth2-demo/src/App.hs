@@ -20,8 +20,8 @@ import Network.HTTP.Types
 import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider
+import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)

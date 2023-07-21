@@ -3,14 +3,19 @@
 -- | [DropBox oauth guide](https://developers.dropbox.com/oauth-guide)
 module Network.OAuth2.Provider.DropBox where
 
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
+import URI.ByteString (URI)
 import URI.ByteString.QQ
 
 type instance IdpUserInfo DropBox = DropBoxUser
@@ -28,13 +33,21 @@ sampleDropBoxAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfoMethod ::
+  (FromJSON a, MonadIO m) =>
+  Manager ->
+  AccessToken ->
+  URI ->
+  ExceptT BSL.ByteString m a
+fetchUserInfoMethod mgr at url = authPostJSON mgr at url []
+
 defaultDropBoxIdp :: Idp DropBox
 defaultDropBoxIdp =
   Idp
-    { idpFetchUserInfo = \mgr at url -> authPostJSON @(IdpUserInfo DropBox) mgr at url []
-    , idpAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
+    { idpAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
-    , idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
+    , -- https://www.dropbox.com/developers/documentation/http/documentation#users-get_current_account
+      idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
     , idpDeviceAuthorizationEndpoint = Nothing
     }
 

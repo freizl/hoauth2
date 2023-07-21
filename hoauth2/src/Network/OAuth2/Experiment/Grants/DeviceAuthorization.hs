@@ -39,7 +39,7 @@ data DeviceAuthorizationApplication = DeviceAuthorizationApplication
   }
 
 pollDeviceTokenRequest ::
-  (MonadIO m) =>
+  MonadIO m =>
   IdpApplication i DeviceAuthorizationApplication ->
   Manager ->
   DeviceAuthorizationResponse ->
@@ -52,7 +52,7 @@ pollDeviceTokenRequest idpApp mgr deviceAuthResp = do
     (fromMaybe 5 $ interval deviceAuthResp)
 
 pollDeviceTokenRequestInternal ::
-  (MonadIO m) =>
+  MonadIO m =>
   IdpApplication i DeviceAuthorizationApplication ->
   Manager ->
   DeviceCode ->
