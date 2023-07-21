@@ -73,7 +73,8 @@ library
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
     -Werror -Wwarnings-deprecations
-    -Wno-unticked-promoted-constructors
+  if impl (ghc < 9.4)
+    ghc-options: -Wno-unticked-promoted-constructors
 
 test-suite hoauth-providers-tests
   type:               exitcode-stdio-1.0

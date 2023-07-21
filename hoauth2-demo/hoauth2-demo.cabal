@@ -82,4 +82,5 @@ executable hoauth2-demo
   ghc-options:
     -Wall -Wextra -Wtabs -Wno-unused-do-bind -Wpartial-fields
     -Wunused-packages -Wwarnings-deprecations -Werror
-    -Wno-unticked-promoted-constructors
+  if impl (ghc < 9.4)
+    ghc-options: -Wno-unticked-promoted-constructors
