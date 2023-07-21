@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 -- | [DropBox oauth guide](https://developers.dropbox.com/oauth-guide)
-module Network.OAuth2.Provider.Dropbox where
+module Network.OAuth2.Provider.DropBox where
 
 import Data.Aeson
 import Data.Map.Strict qualified as Map
