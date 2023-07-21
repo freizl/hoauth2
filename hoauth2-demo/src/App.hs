@@ -9,7 +9,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Bifunctor
-import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -22,8 +21,8 @@ import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import Network.OAuth2.Provider.Auth0 qualified as IAuth0
-import Network.OAuth2.Provider.Okta qualified as IOkta
+import Network.OAuth2.Provider.Auth0 qualified as Auth0
+import Network.OAuth2.Provider.Okta qualified as Okta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
@@ -52,9 +51,9 @@ app =
 waiApp :: IO WAI.Application
 waiApp = do
   re <- runExceptT $ do
-    myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
-    myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
-    -- myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
+    myAuth0Idp <- Auth0.mkAuth0Idp "freizl.auth0.com"
+    myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com"
+    -- myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
     let oidcIdps = (myAuth0Idp, myOktaIdp)
     let allIdps = initSupportedIdps oidcIdps
     oauthAppSettings <- readEnvFile
@@ -174,7 +173,7 @@ testPasswordGrantTypeH appEnv = do
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
-    user <- tryFetchUser idpName mgr token idpApp
+    user <- tryFetchUser idpName idpApp mgr token
     liftIO $ do
       putStrLn "=== testPasswordGrantTypeH find token ==="
       print user
@@ -202,18 +201,18 @@ testDeviceCodeGrantTypeH ::
 testDeviceCodeGrantTypeH appEnv = do
   runActionWithIdp "testDeviceCodeGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- findIdp appEnv idpName
-    testApp <- createDeviceAuthApp idp idpName
+    deviceAuthApp <- createDeviceAuthApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
-    deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
+    deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest deviceAuthApp mgr
     liftIO $ do
       putStr "Please visit this URL to redeem the code: "
       TL.putStr $ userCode deviceAuthResp <> "\n"
       TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
-    atoken <- withExceptT tokenRequestErrorErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
+    atoken <- withExceptT tokenRequestErrorErrorToText (pollDeviceTokenRequest deviceAuthApp mgr deviceAuthResp)
     liftIO $ do
       putStrLn "=== testDeviceCodeGrantTypeH found token ==="
       print atoken
-    luser <- tryFetchUser idpName mgr atoken testApp
+    luser <- tryFetchUser idpName deviceAuthApp mgr atoken
     liftIO $ print luser
   redirectToHomeM
 
@@ -224,7 +223,7 @@ testJwtBearerGrantTypeH = do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
-    user <- tryFetchUser Google mgr tokenResp testApp
+    user <- tryFetchUser Google testApp mgr tokenResp
     liftIO $ print user
   redirectToHomeM
 
@@ -261,7 +260,7 @@ fetchTokenAndUser appEnv@AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData
   liftIO $ do
     putStrLn "[Authorization Code Flow] Found access token"
     print token
-  luser <- tryFetchUser idpName mgr token authCodeIdpApp
+  luser <- tryFetchUser idpName authCodeIdpApp mgr token
   liftIO $ do
     print luser
     upsertAppSessionData
@@ -292,17 +291,14 @@ tryFetchUser ::
   forall i a.
   (HasUserInfoRequest a, HasDemoLoginUser i, FromJSON (IdpUserInfo i)) =>
   IdpName ->
+  IdpApplication i a ->
   Manager ->
   OAuth2Token ->
-  IdpApplication i a ->
   ExceptT Text IO DemoLoginUser
-tryFetchUser idpName mgr at idpAppConfig = do
-  let mFetchMethod = Map.lookup idpName sampleUserInfoMethods
-  user <- case mFetchMethod of
-    Nothing -> throwE ("Unable to find fetchUserInfo method for idp: " <> toText idpName)
-    Just fetchMethod -> do
-      withExceptT bslToText $ do
-        fetchMethod idpAppConfig mgr (accessToken at)
+tryFetchUser idpName idpAppConfig mgr at = do
+  let fetchMethod = findFetchUserInfoMethod idpName
+  user <- withExceptT bslToText $ do
+    fetchMethod idpAppConfig mgr (accessToken at)
   pure $ toLoginUser @i user
 
 doRefreshToken ::

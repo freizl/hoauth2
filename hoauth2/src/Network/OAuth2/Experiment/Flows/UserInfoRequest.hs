@@ -24,7 +24,7 @@ conduitUserInfoRequest ::
   Manager ->
   AccessToken ->
   ExceptT BSL.ByteString m b
-conduitUserInfoRequest = conduitUserInfoRequest
+conduitUserInfoRequest = conduitUserInfoRequestWithCustomMethod authGetJSON
 
 -- | Usually 'conduitUserInfoRequest' is good enough.
 -- But some IdP has different approach to fetch user information rather than GET.

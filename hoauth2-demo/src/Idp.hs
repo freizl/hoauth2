@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 
@@ -55,15 +56,13 @@ createAuthorizationCodeApp ::
   ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
 createAuthorizationCodeApp idp idpName = do
   let newAppName = "sample-" <> toText idpName <> "-authorization-code-app"
-  newApp <- case Map.lookup idpName sampleAuthorizationCodeApps of
-    Just a -> pure a
-    Nothing -> throwE ("Unable to create authorization app for idp: " <> toText idpName)
+  let sampleApp = findAuthorizationCodeSampleApp idpName
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
-        newApp
+        sampleApp
           { acClientId = clientId
           , acClientSecret = clientSecret
-          , acScope = if Set.null scopes then acScope newApp else scopes
+          , acScope = if Set.null scopes then acScope sampleApp else scopes
           , acRedirectUri = defaultOAuth2RedirectUri
           , acAuthorizeState = AuthorizeState (toText idpName <> ".hoauth2-demo-app-123")
           }
@@ -231,6 +230,9 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
+-- TODO:
+-- use TH to create all possible idpnames for UI to render
+-- then create a search method to find `Idp i` object.
 initSupportedIdps ::
   TenantBasedIdps ->
   Map.Map IdpName DemoIdp
@@ -252,51 +254,46 @@ initSupportedIdps (myAuth0Idp, myOktaIdp) =
     , (StackExchange, DemoIdp IStackExchange.defaultStackExchangeIdp)
     ]
 
-sampleAuthorizationCodeApps :: Map.Map IdpName AuthorizationCodeApplication
-sampleAuthorizationCodeApps =
-  Map.fromList
-    [ (Auth0, IAuth0.sampleAuth0AuthorizationCodeApp)
-    , (Okta, IOkta.sampleOktaAuthorizationCodeApp)
-    , (AzureAD, IAzureAD.sampleAzureADAuthorizationCodeApp)
-    , (Facebook, IFacebook.sampleFacebookAuthorizationCodeApp)
-    , (Fitbit, IFitbit.sampleFitbitAuthorizationCodeApp)
-    , (GitHub, IGitHub.sampleGithubAuthorizationCodeApp)
-    , (DropBox, IDropBox.sampleDropBoxAuthorizationCodeApp)
-    , (Google, IGoogle.sampleGoogleAuthorizationCodeApp)
-    , (LinkedIn, ILinkedIn.sampleLinkedInAuthorizationCodeApp)
-    , (Twitter, ITwitter.sampleTwitterAuthorizationCodeApp)
-    , (Slack, ISlack.sampleSlackAuthorizationCodeApp)
-    , (Weibo, IWeibo.sampleWeiboAuthorizationCodeApp)
-    , (ZOHO, IZOHO.sampleZohoAuthorizationCodeApp)
-    , (StackExchange, IStackExchange.sampleStackExchangeAuthorizationCodeApp)
-    ]
+findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
+findAuthorizationCodeSampleApp = \case
+  Auth0 -> IAuth0.sampleAuth0AuthorizationCodeApp
+  Okta -> IOkta.sampleOktaAuthorizationCodeApp
+  AzureAD -> IAzureAD.sampleAzureADAuthorizationCodeApp
+  Facebook -> IFacebook.sampleFacebookAuthorizationCodeApp
+  Fitbit -> IFitbit.sampleFitbitAuthorizationCodeApp
+  GitHub -> IGitHub.sampleGithubAuthorizationCodeApp
+  DropBox -> IDropBox.sampleDropBoxAuthorizationCodeApp
+  Google -> IGoogle.sampleGoogleAuthorizationCodeApp
+  LinkedIn -> ILinkedIn.sampleLinkedInAuthorizationCodeApp
+  Twitter -> ITwitter.sampleTwitterAuthorizationCodeApp
+  Slack -> ISlack.sampleSlackAuthorizationCodeApp
+  Weibo -> IWeibo.sampleWeiboAuthorizationCodeApp
+  ZOHO -> IZOHO.sampleZohoAuthorizationCodeApp
+  StackExchange -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
 
-sampleUserInfoMethods ::
+findFetchUserInfoMethod ::
   (MonadIO m, HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
-  Map.Map
-    IdpName
-    ( IdpApplication i a ->
-      Manager ->
-      AccessToken ->
-      ExceptT BSL.ByteString m (IdpUserInfo i)
-    )
-sampleUserInfoMethods =
-  Map.fromList
-    [ (Auth0, IAuth0.fetchUserInfo)
-    , (Okta, IOkta.fetchUserInfo)
-    , (AzureAD, IAzureAD.fetchUserInfo)
-    , (Facebook, IFacebook.fetchUserInfo)
-    , (Fitbit, IFitbit.fetchUserInfo)
-    , (GitHub, IGitHub.fetchUserInfo)
-    , (DropBox, IDropBox.fetchUserInfo)
-    , (Google, IGoogle.fetchUserInfo)
-    , (LinkedIn, ILinkedIn.fetchUserInfo)
-    , (Twitter, ITwitter.fetchUserInfo)
-    , (Slack, ISlack.fetchUserInfo)
-    , (Weibo, IWeibo.fetchUserInfo)
-    , (ZOHO, IZOHO.fetchUserInfo)
-    , (StackExchange, IStackExchange.fetchUserInfo)
-    ]
+  IdpName ->
+  ( IdpApplication i a ->
+    Manager ->
+    AccessToken ->
+    ExceptT BSL.ByteString m (IdpUserInfo i)
+  )
+findFetchUserInfoMethod = \case
+  Auth0 -> IAuth0.fetchUserInfo
+  Okta -> IOkta.fetchUserInfo
+  AzureAD -> IAzureAD.fetchUserInfo
+  Facebook -> IFacebook.fetchUserInfo
+  Fitbit -> IFitbit.fetchUserInfo
+  GitHub -> IGitHub.fetchUserInfo
+  DropBox -> IDropBox.fetchUserInfo
+  Google -> IGoogle.fetchUserInfo
+  LinkedIn -> ILinkedIn.fetchUserInfo
+  Twitter -> ITwitter.fetchUserInfo
+  Slack -> ISlack.fetchUserInfo
+  Weibo -> IWeibo.fetchUserInfo
+  ZOHO -> IZOHO.fetchUserInfo
+  StackExchange -> IStackExchange.fetchUserInfo
 
 -- TODO: looks like dropbox also support. test it out.
 isSupportPkce :: IdpName -> Bool
