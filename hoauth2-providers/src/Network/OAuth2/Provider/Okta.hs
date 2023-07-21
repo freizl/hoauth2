@@ -1,5 +1,9 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+-- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
+-- Okta Org AS doesn't support consent
+-- Okta Custom AS does support consent via config (what scope shall prompt consent)
+
 -- | [Okta OIDC & OAuth2 API](https://developer.okta.com/docs/reference/api/oidc/)
 module Network.OAuth2.Provider.Okta where
 
@@ -77,9 +81,6 @@ mkOktaClientCredentialAppJwt jwk cid idp = do
   where
     tToSeconds = formatTime defaultTimeLocale "%s"
 
--- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
--- Okta Org AS doesn't support consent
--- Okta Custom AS does support consent via config (what scope shall prompt consent)
 data OktaUser = OktaUser
   { name :: Text
   , preferredUsername :: Text
