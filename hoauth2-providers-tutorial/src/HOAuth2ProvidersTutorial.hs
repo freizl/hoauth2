@@ -189,7 +189,7 @@ handleAuth0Callback ::
 handleAuth0Callback idpApp code = do
   mgr <- liftIO $ newManager tlsManagerSettings
   tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
-  Auth0User {..} <- withExceptT bslToText $ conduitUserInfoRequest Auth0.fetchUserInfoMethod idpApp mgr (accessToken tokenResp)
+  Auth0User {..} <- withExceptT bslToText $ Auth0.fetchUserInfo idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
 handleGoogleCallback ::
@@ -199,7 +199,7 @@ handleGoogleCallback ::
 handleGoogleCallback idpApp code = do
   mgr <- liftIO $ newManager tlsManagerSettings
   tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
-  GoogleUser {..} <- withExceptT bslToText $ conduitUserInfoRequest Google.fetchUserInfoMethod idpApp mgr (accessToken tokenResp)
+  GoogleUser {..} <- withExceptT bslToText $ Google.fetchUserInfo idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
 ------------------------------

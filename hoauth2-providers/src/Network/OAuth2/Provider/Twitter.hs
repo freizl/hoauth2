@@ -6,7 +6,6 @@ module Network.OAuth2.Provider.Twitter where
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
-import Data.Aeson (FromJSON)
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Char (toLower)
 import Data.Map.Strict qualified as Map
@@ -17,10 +16,7 @@ import Network.HTTP.Conduit (Manager)
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import URI.ByteString (URI)
 import URI.ByteString.QQ
-
-type instance IdpUserInfo Twitter = TwitterUserResp
 
 sampleTwitterAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleTwitterAuthorizationCodeApp =
@@ -35,13 +31,13 @@ sampleTwitterAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     }
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSON
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
 
 defaultTwitterIdp :: Idp Twitter
 defaultTwitterIdp =

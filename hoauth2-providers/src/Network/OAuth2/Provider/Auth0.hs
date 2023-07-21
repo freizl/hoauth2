@@ -20,10 +20,7 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
-import URI.ByteString (URI)
 import URI.ByteString.QQ
-
-type instance IdpUserInfo Auth0 = Auth0User
 
 sampleAuth0AuthorizationCodeApp :: AuthorizationCodeApplication
 sampleAuth0AuthorizationCodeApp =
@@ -38,15 +35,13 @@ sampleAuth0AuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
-  -- | HTTP connection manager.
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  -- | Response as JSON
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSON
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
 
 mkAuth0Idp ::
   MonadIO m =>

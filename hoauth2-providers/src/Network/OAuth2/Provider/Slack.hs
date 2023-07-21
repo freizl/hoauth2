@@ -17,10 +17,7 @@ import Network.HTTP.Conduit (Manager)
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import URI.ByteString (URI)
 import URI.ByteString.QQ (uri)
-
-type instance IdpUserInfo Slack = SlackUser
 
 sampleSlackAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleSlackAuthorizationCodeApp =
@@ -35,13 +32,13 @@ sampleSlackAuthorizationCodeApp =
     , acName = "sample-slack-authorization-code-app"
     }
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSON
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
 
 -- https://slack.com/.well-known/openid-configuration
 defaultSlackIdp :: Idp Slack

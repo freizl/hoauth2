@@ -271,23 +271,31 @@ sampleAuthorizationCodeApps =
     , (StackExchange, IStackExchange.sampleStackExchangeAuthorizationCodeApp)
     ]
 
-sampleUserInfoMethods :: (FromJSON a, MonadIO m) => Map.Map IdpName (Manager -> AccessToken -> URI -> ExceptT BSL.ByteString m a)
+sampleUserInfoMethods ::
+  (MonadIO m, HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
+  Map.Map
+    IdpName
+    ( IdpApplication i a ->
+      Manager ->
+      AccessToken ->
+      ExceptT BSL.ByteString m (IdpUserInfo i)
+    )
 sampleUserInfoMethods =
   Map.fromList
-    [ (Auth0, IAuth0.fetchUserInfoMethod)
-    , (Okta, IOkta.fetchUserInfoMethod)
-    , (AzureAD, IAzureAD.fetchUserInfoMethod)
-    , (Facebook, IFacebook.fetchUserInfoMethod)
-    , (Fitbit, IFitbit.fetchUserInfoMethod)
-    , (GitHub, IGitHub.fetchUserInfoMethod)
-    , (DropBox, IDropBox.fetchUserInfoMethod)
-    , (Google, IGoogle.fetchUserInfoMethod)
-    , (LinkedIn, ILinkedIn.fetchUserInfoMethod)
-    , (Twitter, ITwitter.fetchUserInfoMethod)
-    , (Slack, ISlack.fetchUserInfoMethod)
-    , (Weibo, IWeibo.fetchUserInfoMethod)
-    , (ZOHO, IZOHO.fetchUserInfoMethod)
-    , (StackExchange, IStackExchange.fetchUserInfoMethod)
+    [ (Auth0, IAuth0.fetchUserInfo)
+    , (Okta, IOkta.fetchUserInfo)
+    , (AzureAD, IAzureAD.fetchUserInfo)
+    , (Facebook, IFacebook.fetchUserInfo)
+    , (Fitbit, IFitbit.fetchUserInfo)
+    , (GitHub, IGitHub.fetchUserInfo)
+    , (DropBox, IDropBox.fetchUserInfo)
+    , (Google, IGoogle.fetchUserInfo)
+    , (LinkedIn, ILinkedIn.fetchUserInfo)
+    , (Twitter, ITwitter.fetchUserInfo)
+    , (Slack, ISlack.fetchUserInfo)
+    , (Weibo, IWeibo.fetchUserInfo)
+    , (ZOHO, IZOHO.fetchUserInfo)
+    , (StackExchange, IStackExchange.fetchUserInfo)
     ]
 
 -- TODO: looks like dropbox also support. test it out.

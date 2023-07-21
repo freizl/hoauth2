@@ -32,14 +32,11 @@ import OpenSSL.PEM (
   readPrivateKey,
  )
 import OpenSSL.RSA
-import URI.ByteString (URI)
 import URI.ByteString.QQ
 
 {-
 To test at google playground, set redirect uri to "https://developers.google.com/oauthplayground"
 -}
-
-type instance IdpUserInfo Google = GoogleUser
 
 -- * Authorization Code flow
 
@@ -140,13 +137,13 @@ readPemRsaKey pemStr = do
 
 -- * IDP
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSON
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
 
 defaultGoogleIdp :: Idp Google
 defaultGoogleIdp =

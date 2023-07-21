@@ -9,7 +9,6 @@ module Network.OAuth2.Experiment.Types where
 -- import Data.Aeson (FromJSON)
 -- import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Default (Default (def))
-import Data.Kind
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
@@ -30,8 +29,6 @@ import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
 
-type family IdpUserInfo (i :: k) :: Type
-
 -- TODO:
 -- Maybe worth data type to distinguish authorize and token endpoint
 -- as I made mistake at passing to Authorize and Token Request
@@ -49,14 +46,6 @@ data Idp (i :: k) = Idp
   -- ^ Token Endpoint
   , idpDeviceAuthorizationEndpoint :: Maybe URI
   -- ^ Apparently not all IdP support device code flow
-  -- , idpFetchUserInfo ::
-  --     forall m.
-  --     (FromJSON (IdpUserInfo i), MonadIO m) =>
-  --     Manager ->
-  --     AccessToken ->
-  --     URI ->
-  --     ExceptT BSL.ByteString m (IdpUserInfo i)
-  -- ^ The way to fetch userinfo. IdP may use different approach rather than just GET.
   }
 
 data IdpApplication (i :: k) a = IdpApplication

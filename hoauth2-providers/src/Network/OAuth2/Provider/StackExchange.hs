@@ -34,8 +34,6 @@ userInfoEndpoint =
     ]
     [uri|https://api.stackexchange.com/2.2/me|]
 
-type instance IdpUserInfo StackExchange = StackExchangeResp
-
 sampleStackExchangeAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleStackExchangeAuthorizationCodeApp =
   AuthorizationCodeApplication
@@ -49,13 +47,13 @@ sampleStackExchangeAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSONWithAuthMethod AuthInRequestQuery
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequestWithCustomMethod (authGetJSONWithAuthMethod AuthInRequestQuery)
 
 defaultStackExchangeIdp :: Idp StackExchange
 defaultStackExchangeIdp =

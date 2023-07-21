@@ -17,17 +17,28 @@ import URI.ByteString (URI)
 
 class HasUserInfoRequest a
 
+-- | Standard approach of fetching /userinfo
 conduitUserInfoRequest ::
+  (HasUserInfoRequest a, FromJSON b, MonadIO m) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+conduitUserInfoRequest = conduitUserInfoRequest
+
+-- | Usually 'conduitUserInfoRequest' is good enough.
+-- But some IdP has different approach to fetch user information rather than GET.
+-- This method gives the flexiblity.
+conduitUserInfoRequestWithCustomMethod ::
   (HasUserInfoRequest a, FromJSON b, MonadIO m) =>
   ( Manager ->
     AccessToken ->
     URI ->
     ExceptT BSL.ByteString m b
   ) ->
-  -- | The way to fetch userinfo. IdP may use different approach rather than just GET.
   IdpApplication i a ->
   Manager ->
   AccessToken ->
   ExceptT BSL.ByteString m b
-conduitUserInfoRequest fetchMethod IdpApplication {..} mgr at =
+conduitUserInfoRequestWithCustomMethod fetchMethod IdpApplication {..} mgr at =
   fetchMethod mgr at (idpUserInfoEndpoint idp)

@@ -15,10 +15,7 @@ import Network.HTTP.Conduit (Manager)
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import URI.ByteString (URI)
 import URI.ByteString.QQ
-
-type instance IdpUserInfo Facebook = FacebookUser
 
 sampleFacebookAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleFacebookAuthorizationCodeApp =
@@ -33,13 +30,13 @@ sampleFacebookAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSON
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
 
 defaultFacebookIdp :: Idp Facebook
 defaultFacebookIdp =

@@ -15,10 +15,7 @@ import Network.HTTP.Conduit (Manager)
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import URI.ByteString (URI)
 import URI.ByteString.QQ
-
-type instance IdpUserInfo Weibo = WeiboUID
 
 sampleWeiboAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleWeiboAuthorizationCodeApp =
@@ -33,13 +30,13 @@ sampleWeiboAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
-fetchUserInfoMethod ::
-  (FromJSON a, MonadIO m) =>
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
   Manager ->
   AccessToken ->
-  URI ->
-  ExceptT BSL.ByteString m a
-fetchUserInfoMethod = authGetJSONWithAuthMethod AuthInRequestQuery
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequestWithCustomMethod (authGetJSONWithAuthMethod AuthInRequestQuery)
 
 defaultWeiboIdp :: Idp Weibo
 defaultWeiboIdp =

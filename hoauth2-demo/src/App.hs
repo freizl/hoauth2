@@ -290,7 +290,7 @@ tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch a
 
 tryFetchUser ::
   forall i a.
-  (HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
+  (HasUserInfoRequest a, HasDemoLoginUser i, FromJSON (IdpUserInfo i)) =>
   IdpName ->
   Manager ->
   OAuth2Token ->
@@ -302,7 +302,7 @@ tryFetchUser idpName mgr at idpAppConfig = do
     Nothing -> throwE ("Unable to find fetchUserInfo method for idp: " <> toText idpName)
     Just fetchMethod -> do
       withExceptT bslToText $ do
-        conduitUserInfoRequest fetchMethod idpAppConfig mgr (accessToken at)
+        fetchMethod idpAppConfig mgr (accessToken at)
   pure $ toLoginUser @i user
 
 doRefreshToken ::
