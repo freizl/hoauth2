@@ -23,7 +23,7 @@ import Network.OAuth.OAuth2 (
  )
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider.Auth0 (Auth0User (..), mkAuth0Idp)
-import Network.OAuth2.Provider.Core.Types
+import Network.OAuth2.Provider
 import Network.OAuth2.Provider.Google (GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
 import URI.ByteString.QQ (uri)

@@ -1,4 +1,4 @@
-module Network.OAuth2.Provider.Core.Types where
+module Network.OAuth2.Provider where
 
 import GHC.Generics (Generic)
 

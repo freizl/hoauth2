@@ -20,7 +20,7 @@ import Jose.Jws
 import Jose.Jwt
 import Network.OAuth.OAuth2.HttpClient
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Core.Types
+import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
 

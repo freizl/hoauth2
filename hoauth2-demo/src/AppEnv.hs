@@ -6,7 +6,7 @@ import Data.Map.Strict qualified as Map
 import Data.Text.Lazy (Text)
 import Env
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Core.Types
+import Network.OAuth2.Provider
 import Session
 import Types
 
