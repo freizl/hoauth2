@@ -1,15 +1,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Idp where
 
 import AppEnv
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
+import Data.Aeson (FromJSON)
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.Contrib
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set qualified as Set
@@ -18,6 +21,7 @@ import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import Env qualified
 import Jose.Jwt
+import Network.HTTP.Conduit
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
@@ -36,7 +40,7 @@ import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Types
-import URI.ByteString
+import URI.ByteString (URI)
 import URI.ByteString.QQ (uri)
 import User
 import Prelude hiding (id)
@@ -265,6 +269,25 @@ sampleAuthorizationCodeApps =
     , (Weibo, IWeibo.sampleWeiboAuthorizationCodeApp)
     , (ZOHO, IZOHO.sampleZohoAuthorizationCodeApp)
     , (StackExchange, IStackExchange.sampleStackExchangeAuthorizationCodeApp)
+    ]
+
+sampleUserInfoMethods :: (FromJSON a, MonadIO m) => Map.Map IdpName (Manager -> AccessToken -> URI -> ExceptT BSL.ByteString m a)
+sampleUserInfoMethods =
+  Map.fromList
+    [ (Auth0, IAuth0.fetchUserInfoMethod)
+    , (Okta, IOkta.fetchUserInfoMethod)
+    , (AzureAD, IAzureAD.fetchUserInfoMethod)
+    , (Facebook, IFacebook.fetchUserInfoMethod)
+    , (Fitbit, IFitbit.fetchUserInfoMethod)
+    , (GitHub, IGitHub.fetchUserInfoMethod)
+    , (DropBox, IDropBox.fetchUserInfoMethod)
+    , (Google, IGoogle.fetchUserInfoMethod)
+    , (LinkedIn, ILinkedIn.fetchUserInfoMethod)
+    , (Twitter, ITwitter.fetchUserInfoMethod)
+    , (Slack, ISlack.fetchUserInfoMethod)
+    , (Weibo, IWeibo.fetchUserInfoMethod)
+    , (ZOHO, IZOHO.fetchUserInfoMethod)
+    , (StackExchange, IStackExchange.fetchUserInfoMethod)
     ]
 
 -- TODO: looks like dropbox also support. test it out.

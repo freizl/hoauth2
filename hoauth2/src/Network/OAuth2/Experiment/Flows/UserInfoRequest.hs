@@ -9,6 +9,7 @@ import Data.ByteString.Lazy.Char8 qualified as BSL
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment.Types
+import URI.ByteString (URI)
 
 -------------------------------------------------------------------------------
 --                             User Info Request                             --
@@ -17,25 +18,16 @@ import Network.OAuth2.Experiment.Types
 class HasUserInfoRequest a
 
 conduitUserInfoRequest ::
-  (HasUserInfoRequest a, FromJSON (IdpUserInfo i), MonadIO m) =>
+  (HasUserInfoRequest a, FromJSON b, MonadIO m) =>
+  ( Manager ->
+    AccessToken ->
+    URI ->
+    ExceptT BSL.ByteString m b
+  ) ->
+  -- | The way to fetch userinfo. IdP may use different approach rather than just GET.
   IdpApplication i a ->
   Manager ->
   AccessToken ->
-  ExceptT BSL.ByteString m (IdpUserInfo i)
-conduitUserInfoRequest IdpApplication {..} mgr at =
-  authGetJSON mgr at (idpUserInfoEndpoint idp)
-
--- conduitUserInfoRequestWithFetchMethod ::
---   (HasUserInfoRequest a, FromJSON (IdpUserInfo i), MonadIO m) =>
---    (
---       Manager ->
---       AccessToken ->
---       URI ->
---       ExceptT BSL.ByteString m (IdpUserInfo i)
---    )
---   IdpApplication i a ->
---   Manager ->
---   AccessToken ->
---   ExceptT BSL.ByteString m (IdpUserInfo i)
--- conduitUserInfoRequestWithFetchMethod func IdpApplication {..} mgr at =
---   func mgr at (idpUserInfoEndpoint idp)
+  ExceptT BSL.ByteString m b
+conduitUserInfoRequest fetchMethod IdpApplication {..} mgr at =
+  fetchMethod mgr at (idpUserInfoEndpoint idp)

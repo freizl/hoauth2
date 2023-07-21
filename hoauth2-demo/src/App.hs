@@ -9,6 +9,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Bifunctor
+import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -143,9 +144,9 @@ callbackH appEnv@AppEnv {..} = do
   when (null stateP) (raise "callbackH: no state from callback request")
   let codeP = paramValue "code" pas
   when (null codeP) (raise "callbackH: no code from callback request")
-  let idpName = TL.takeWhile (/= '.') (head stateP)
+  let idpName = fromText $ TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupAppSessionData sessionStore (fromText idpName)
+    idpData <- lookupAppSessionData sessionStore idpName
     fetchTokenAndUser appEnv idpData (ExchangeToken $ TL.toStrict $ head codeP)
   redirectToHomeM
 
@@ -173,7 +174,7 @@ testPasswordGrantTypeH appEnv = do
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
-    user <- tryFetchUser mgr token idpApp
+    user <- tryFetchUser idpName mgr token idpApp
     liftIO $ do
       putStrLn "=== testPasswordGrantTypeH find token ==="
       print user
@@ -212,7 +213,7 @@ testDeviceCodeGrantTypeH appEnv = do
     liftIO $ do
       putStrLn "=== testDeviceCodeGrantTypeH found token ==="
       print atoken
-    luser <- tryFetchUser mgr atoken testApp
+    luser <- tryFetchUser idpName mgr atoken testApp
     liftIO $ print luser
   redirectToHomeM
 
@@ -223,7 +224,7 @@ testJwtBearerGrantTypeH = do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
-    user <- tryFetchUser mgr tokenResp testApp
+    user <- tryFetchUser Google mgr tokenResp testApp
     liftIO $ print user
   redirectToHomeM
 
@@ -260,7 +261,7 @@ fetchTokenAndUser appEnv@AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData
   liftIO $ do
     putStrLn "[Authorization Code Flow] Found access token"
     print token
-  luser <- tryFetchUser mgr token authCodeIdpApp
+  luser <- tryFetchUser idpName mgr token authCodeIdpApp
   liftIO $ do
     print luser
     upsertAppSessionData
@@ -290,12 +291,18 @@ tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch a
 tryFetchUser ::
   forall i a.
   (HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
+  IdpName ->
   Manager ->
   OAuth2Token ->
   IdpApplication i a ->
   ExceptT Text IO DemoLoginUser
-tryFetchUser mgr at idpAppConfig = do
-  user <- withExceptT bslToText $ conduitUserInfoRequest idpAppConfig mgr (accessToken at)
+tryFetchUser idpName mgr at idpAppConfig = do
+  let mFetchMethod = Map.lookup idpName sampleUserInfoMethods
+  user <- case mFetchMethod of
+    Nothing -> throwE ("Unable to find fetchUserInfo method for idp: " <> toText idpName)
+    Just fetchMethod -> do
+      withExceptT bslToText $ do
+        conduitUserInfoRequest fetchMethod idpAppConfig mgr (accessToken at)
   pure $ toLoginUser @i user
 
 doRefreshToken ::

@@ -24,6 +24,7 @@ import Network.OAuth.OAuth2 (
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OAuth2.Provider.Auth0 (Auth0User (..), mkAuth0Idp)
+import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
 import URI.ByteString.QQ (uri)
@@ -188,7 +189,7 @@ handleAuth0Callback ::
 handleAuth0Callback idpApp code = do
   mgr <- liftIO $ newManager tlsManagerSettings
   tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
-  Auth0User {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
+  Auth0User {..} <- withExceptT bslToText $ conduitUserInfoRequest Auth0.fetchUserInfoMethod idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
 handleGoogleCallback ::
@@ -198,7 +199,7 @@ handleGoogleCallback ::
 handleGoogleCallback idpApp code = do
   mgr <- liftIO $ newManager tlsManagerSettings
   tokenResp <- withExceptT oauth2ErrorToText (conduitTokenRequest idpApp mgr code)
-  GoogleUser {..} <- withExceptT bslToText $ conduitUserInfoRequest idpApp mgr (accessToken tokenResp)
+  GoogleUser {..} <- withExceptT bslToText $ conduitUserInfoRequest Google.fetchUserInfoMethod idpApp mgr (accessToken tokenResp)
   pure (DemoUser name (Just email))
 
 ------------------------------
