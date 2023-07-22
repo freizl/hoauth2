@@ -1,7 +1,7 @@
 module Network.OAuth2.Provider where
 
-import GHC.Generics (Generic)
 import Data.Hashable
+import GHC.Generics (Generic)
 
 data IdpName
   = Auth0

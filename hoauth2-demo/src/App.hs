@@ -168,7 +168,7 @@ refreshTokenH AppEnv {..} = do
 testPasswordGrantTypeH ::
   AppEnv ->
   ActionM ()
-testPasswordGrantTypeH AppEnv{..} = do
+testPasswordGrantTypeH AppEnv {..} = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- pure (findIdpByName idpName)
     idpApp <- createResourceOwnerPasswordApp idp idpName
@@ -183,7 +183,7 @@ testPasswordGrantTypeH AppEnv{..} = do
 testClientCredentialGrantTypeH ::
   AppEnv ->
   ActionM ()
-testClientCredentialGrantTypeH AppEnv{..} = do
+testClientCredentialGrantTypeH AppEnv {..} = do
   runActionWithIdp "testClientCredentialsGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- pure (findIdpByName idpName)
     idpApp <- createClientCredentialsApp idp idpName
@@ -199,7 +199,7 @@ testClientCredentialGrantTypeH AppEnv{..} = do
 testDeviceCodeGrantTypeH ::
   AppEnv ->
   ActionM ()
-testDeviceCodeGrantTypeH AppEnv{..} = do
+testDeviceCodeGrantTypeH AppEnv {..} = do
   runActionWithIdp "testDeviceCodeGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- pure (findIdpByName idpName)
     deviceAuthApp <- createDeviceAuthApp idp idpName
