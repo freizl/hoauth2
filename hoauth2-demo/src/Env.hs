@@ -63,10 +63,10 @@ lookup idpAppName = do
 
 lookupWith :: MonadIO m => OAuthAppSettings -> Text -> ExceptT Text m OAuthAppSetting
 lookupWith (OAuthAppSettings val) idpAppName = do
-  let key = Aeson.fromString $ TL.unpack $ TL.toLower idpAppName
-      resp = Aeson.lookup key val
+  let key = TL.toLower idpAppName
+      resp = Aeson.lookup (Aeson.fromString $ TL.unpack key) val
   except $
     maybe
-      (Left $ "[ Env.lookupWith ] Unable to load config for " <> idpAppName)
+      (Left $ "[ Env.lookupWith ] Unable to load config for " <> key)
       Right
       resp
