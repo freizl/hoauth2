@@ -4,10 +4,6 @@
 
 module Network.OAuth2.Experiment.Types where
 
--- import Control.Monad.IO.Class (MonadIO (..))
--- import Control.Monad.Trans.Except (ExceptT (..))
--- import Data.Aeson (FromJSON)
--- import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Default (Default (def))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
@@ -16,12 +12,11 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
--- import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Utils
-import URI.ByteString hiding (UserInfo)
+import URI.ByteString (URI, serializeURIRef')
 
 -------------------------------------------------------------------------------
 
@@ -34,8 +29,9 @@ import URI.ByteString hiding (UserInfo)
 -- as I made mistake at passing to Authorize and Token Request
 --
 -- NOTE:
--- The 'i' is being PolyKinds. Hence whenever 'Idp i' or 'IdpApplication i a'
--- is used as function parameter, PolyKinds shall be enabled.
+-- The 'i' is being PolyKinds.
+-- Hence whenever 'Idp i' or 'IdpApplication i a' is used as function parameter,
+-- PolyKinds need to be enabled.
 --
 data Idp (i :: k) = Idp
   { idpUserInfoEndpoint :: URI

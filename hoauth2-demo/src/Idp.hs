@@ -119,14 +119,14 @@ createClientCredentialsApp i idpName = do
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  appSetting@Env.OAuthAppSetting {..} <- Env.lookup newAppName
+  Env.OAuthAppSetting {..} <- Env.lookup newAppName
   newApp <- case idpName of
     Auth0 ->
       pure
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
           }
-    Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
+    -- Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
     _ -> pure defaultApp
   let newApp' =
         newApp
@@ -153,9 +153,6 @@ createOktaClientCredentialsGrantAppJwt ::
   Env.OAuthAppSetting ->
   ExceptT Text IO ClientCredentialsApplication
 createOktaClientCredentialsGrantAppJwt i Env.OAuthAppSetting {..} = do
-  -- clientId <- case mresp of
-  --   Nothing -> throwE "createOktaClientCredentialsGrantApp failed: missing client_id"
-  --   Just (a, _, _) -> pure a
   keyJsonStr <- liftIO $ BS.readFile ".okta-key.json"
   jwk <- except (first TL.pack $ Aeson.eitherDecodeStrict keyJsonStr)
   jwt <- ExceptT $ IOkta.mkOktaClientCredentialAppJwt jwk clientId i
@@ -231,7 +228,7 @@ googleServiceAccountApp = do
       }
 
 -- TODO:
--- use TH to create all possible idpnames for UI to render
+-- use TemplateHaskell to create all possible idpnames for UI to render
 -- then create a search method to find `Idp i` object.
 initSupportedIdps ::
   TenantBasedIdps ->
@@ -295,7 +292,6 @@ findFetchUserInfoMethod = \case
   ZOHO -> IZOHO.fetchUserInfo
   StackExchange -> IStackExchange.fetchUserInfo
 
--- TODO: looks like dropbox also support. test it out.
 isSupportPkce :: IdpName -> Bool
 isSupportPkce idpName =
   idpName
