@@ -9,12 +9,12 @@
 2. Some type class only has one instance, probably will be only forever.
    Maybe shall consider to ditch/simplify it.
 
-3. limitation on the ~TokenRequestError~
+3. limitation on the ~TokenResponseError~
    - Device Authorization Grant expand the error code.
    - But I don't know a good way to model such in Haskell
-     - use ~TokenRequestError~ for typical token request
-     - use ~DeviceTokenRequestError~ for device token request
-     - ~DeviceTokenRequestError~ shall be just extend from ~TokenRequestError~ in terms of enum and ~FromJSON~ implementation.
+     - use ~TokenResponseError~ for typical token request
+     - use ~DeviceTokenResponseError~ for device token request
+     - ~DeviceTokenResponseError~ shall be just extend from ~TokenResponseError~ in terms of enum and ~FromJSON~ implementation.
 
 4. Applications from Identify Provider often model as
    - One Application could support multiple grant types.

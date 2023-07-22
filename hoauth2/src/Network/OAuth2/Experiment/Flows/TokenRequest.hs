@@ -40,7 +40,7 @@ conduitTokenRequest ::
   IdpApplication i a ->
   Manager ->
   ExchangeTokenInfo a ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
   let tokenReq = mkTokenRequestParam application exchangeToken
       body = unionMapsToQueryParams [toQueryParam tokenReq]
@@ -66,7 +66,7 @@ conduitPkceTokenRequest ::
   IdpApplication i a ->
   Manager ->
   (ExchangeTokenInfo a, CodeVerifier) ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 conduitPkceTokenRequest IdpApplication {..} mgr (exchangeToken, codeVerifier) =
   let req = mkTokenRequestParam application exchangeToken
       key = mkOAuth2Key application

@@ -26,15 +26,15 @@ import Prelude hiding (error)
 
 -- FIXME: `error` conliates with Prelude.error
 -- which is annoying. Add reasonable prefix.
-data TokenRequestError = TokenRequestError
-  { error :: TokenRequestErrorCode
-  , errorDescription :: Maybe Text
-  , errorUri :: Maybe (URIRef Absolute)
+data TokenResponseError = TokenResponseError
+  { tokenResponseError :: TokenResponseErrorCode
+  , tokenResponseErrorDescription :: Maybe Text
+  , tokenResponseErrorUri :: Maybe (URIRef Absolute)
   }
   deriving (Show, Eq)
 
 -- | Token Error Responses https://tools.ietf.org/html/rfc6749#section-5.2
-data TokenRequestErrorCode
+data TokenResponseErrorCode
   = InvalidRequest
   | InvalidClient
   | InvalidGrant
@@ -44,8 +44,8 @@ data TokenRequestErrorCode
   | UnknownErrorCode Text
   deriving (Show, Eq)
 
-instance FromJSON TokenRequestErrorCode where
-  parseJSON = withText "parseJSON TokenRequestErrorCode" $ \t ->
+instance FromJSON TokenResponseErrorCode where
+  parseJSON = withText "parseJSON TokenResponseErrorCode" $ \t ->
     pure $ case t of
       "invalid_request" -> InvalidRequest
       "invalid_client" -> InvalidClient
@@ -55,22 +55,22 @@ instance FromJSON TokenRequestErrorCode where
       "invalid_scope" -> InvalidScope
       _ -> UnknownErrorCode t
 
-instance FromJSON TokenRequestError where
-  parseJSON = withObject "parseJSON TokenRequestError" $ \t -> do
-    error <- t .: "error"
-    errorDescription <- t .:? "error_description"
-    errorUri <- t .:? "error_uri"
-    pure TokenRequestError {..}
+instance FromJSON TokenResponseError where
+  parseJSON = withObject "parseJSON TokenResponseError" $ \t -> do
+    tokenResponseError <- t .: "error"
+    tokenResponseErrorDescription <- t .:? "error_description"
+    tokenResponseErrorUri <- t .:? "error_uri"
+    pure TokenResponseError {..}
 
-parseTokeRequestError :: BSL.ByteString -> TokenRequestError
-parseTokeRequestError string =
+parseTokeResponseError :: BSL.ByteString -> TokenResponseError
+parseTokeResponseError string =
   either (mkDecodeOAuth2Error string) id (eitherDecode string)
   where
-    mkDecodeOAuth2Error :: BSL.ByteString -> String -> TokenRequestError
+    mkDecodeOAuth2Error :: BSL.ByteString -> String -> TokenResponseError
     mkDecodeOAuth2Error response err =
-      TokenRequestError
+      TokenResponseError
         (UnknownErrorCode "")
-        (Just $ T.pack $ "Decode TokenRequestError failed: " <> err <> "\n Original Response:\n" <> show (T.decodeUtf8 $ BSL.toStrict response))
+        (Just $ T.pack $ "Decode TokenResponseError failed: " <> err <> "\n Original Response:\n" <> show (T.decodeUtf8 $ BSL.toStrict response))
         Nothing
 
 --------------------------------------------------
@@ -126,7 +126,7 @@ fetchAccessToken ::
   -- | OAuth2 Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
 fetchAccessToken2 ::
@@ -138,7 +138,7 @@ fetchAccessToken2 ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -152,7 +152,7 @@ fetchAccessTokenInternal ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 {-# DEPRECATED fetchAccessTokenInternal "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -178,7 +178,7 @@ fetchAccessTokenWithAuthMethod ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 fetchAccessTokenWithAuthMethod authMethod manager oa code = do
   let (uri, body) = accessTokenUrl oa code
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
@@ -193,7 +193,7 @@ refreshAccessToken ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
 
 refreshAccessToken2 ::
@@ -204,7 +204,7 @@ refreshAccessToken2 ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -217,7 +217,7 @@ refreshAccessTokenInternal ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 {-# DEPRECATED refreshAccessTokenInternal "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -242,7 +242,7 @@ refreshAccessTokenWithAuthMethod ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 refreshAccessTokenWithAuthMethod authMethod manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
@@ -266,7 +266,7 @@ doJSONPostRequest ::
   -- | request body
   PostBody ->
   -- | Response as JSON
-  ExceptT TokenRequestError m a
+  ExceptT TokenResponseError m a
 doJSONPostRequest manager oa uri body = do
   resp <- doSimplePostRequest manager oa uri body
   case parseResponseFlexible resp of
@@ -285,7 +285,7 @@ doSimplePostRequest ::
   -- | Request body.
   PostBody ->
   -- | Response as ByteString
-  ExceptT TokenRequestError m BSL.ByteString
+  ExceptT TokenResponseError m BSL.ByteString
 doSimplePostRequest manager oa url body =
   ExceptT . liftIO $ fmap handleOAuth2TokenResponse go
   where
@@ -295,17 +295,17 @@ doSimplePostRequest manager oa url body =
       httpLbs (urlEncodedBody body req') manager
 
 -- | Gets response body from a @Response@ if 200 otherwise assume 'OAuth2Error'
-handleOAuth2TokenResponse :: Response BSL.ByteString -> Either TokenRequestError BSL.ByteString
+handleOAuth2TokenResponse :: Response BSL.ByteString -> Either TokenResponseError BSL.ByteString
 handleOAuth2TokenResponse rsp =
   if HT.statusIsSuccessful (responseStatus rsp)
     then Right $ responseBody rsp
-    else Left $ parseTokeRequestError (responseBody rsp)
+    else Left $ parseTokeResponseError (responseBody rsp)
 
 -- | Try to parses response as JSON, if failed, try to parse as like query string.
 parseResponseFlexible ::
   FromJSON a =>
   BSL.ByteString ->
-  Either TokenRequestError a
+  Either TokenResponseError a
 parseResponseFlexible r = case eitherDecode r of
   Left _ -> parseResponseString r
   Right x -> Right x
@@ -314,7 +314,7 @@ parseResponseFlexible r = case eitherDecode r of
 parseResponseString ::
   FromJSON a =>
   BSL.ByteString ->
-  Either TokenRequestError a
+  Either TokenResponseError a
 parseResponseString b = case parseQuery $ BSL.toStrict b of
   [] -> Left errorMessage
   a -> case fromJSON $ queryToValue a of
@@ -323,7 +323,7 @@ parseResponseString b = case parseQuery $ BSL.toStrict b of
   where
     queryToValue = Object . KeyMap.fromList . map paramToPair
     paramToPair (k, mv) = (Key.fromText $ T.decodeUtf8 k, maybe Null (String . T.decodeUtf8) mv)
-    errorMessage = parseTokeRequestError b
+    errorMessage = parseTokeResponseError b
 
 -- | Add Basic Authentication header using client_id and client_secret.
 addBasicAuth :: OAuth2 -> Request -> Request

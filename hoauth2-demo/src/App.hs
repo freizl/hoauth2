@@ -285,7 +285,7 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
               (exchangeTokenText, fromJust authorizePkceCodeVerifier)
         else withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr exchangeTokenText
 
-tokenRequestErrorErrorToText :: TokenRequestError -> Text
+tokenRequestErrorErrorToText :: TokenResponseError -> Text
 tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
 
 tryFetchUser ::

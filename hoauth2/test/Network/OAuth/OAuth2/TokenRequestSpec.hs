@@ -10,7 +10,7 @@ import Prelude hiding (error)
 
 spec :: Spec
 spec = do
-  describe "parseJSON TokenRequestErrorCode" $ do
+  describe "parseJSON TokenResponseErrorCode" $ do
     it "invalid_request" $ do
       Aeson.eitherDecode "\"invalid_request\"" `shouldBe` Right InvalidRequest
     it "invalid_client" $ do
@@ -26,11 +26,11 @@ spec = do
     it "foo_code" $ do
       Aeson.eitherDecode "\"foo_code\"" `shouldBe` Right (UnknownErrorCode "foo_code")
 
-  describe "parseJSON TokenRequestError" $ do
+  describe "parseJSON TokenResponseError" $ do
     it "parse error" $ do
       Aeson.eitherDecode "{\"error\": \"invalid_request\"}"
         `shouldBe` Right
-          ( TokenRequestError
+          ( TokenResponseError
               { error = InvalidRequest
               , errorDescription = Nothing
               , errorUri = Nothing
@@ -39,7 +39,7 @@ spec = do
     it "parse error_description" $ do
       Aeson.eitherDecode "{\"error\": \"invalid_request\", \"error_description\": \"token request error foo1\"}"
         `shouldBe` Right
-          ( TokenRequestError
+          ( TokenResponseError
               { error = InvalidRequest
               , errorDescription = Just "token request error foo1"
               , errorUri = Nothing
@@ -48,7 +48,7 @@ spec = do
     it "parse error_uri" $ do
       Aeson.eitherDecode "{\"error\": \"invalid_request\", \"error_uri\": \"https://example.com\"}"
         `shouldBe` Right
-          ( TokenRequestError
+          ( TokenResponseError
               { error = InvalidRequest
               , errorDescription = Nothing
               , errorUri = Just [uri|https://example.com|]

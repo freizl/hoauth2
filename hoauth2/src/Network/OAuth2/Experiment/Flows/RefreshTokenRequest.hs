@@ -29,7 +29,7 @@ conduitRefreshTokenRequest ::
   IdpApplication i a ->
   Manager ->
   OAuth2.RefreshToken ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 conduitRefreshTokenRequest IdpApplication {..} mgr rt =
   let tokenReq = mkRefreshTokenRequestParam application rt
       body = unionMapsToQueryParams [toQueryParam tokenReq]

@@ -43,7 +43,7 @@ pollDeviceTokenRequest ::
   IdpApplication i DeviceAuthorizationApplication ->
   Manager ->
   DeviceAuthorizationResponse ->
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 pollDeviceTokenRequest idpApp mgr deviceAuthResp = do
   pollDeviceTokenRequestInternal
     idpApp
@@ -58,12 +58,12 @@ pollDeviceTokenRequestInternal ::
   DeviceCode ->
   Int ->
   -- | Polling Interval
-  ExceptT TokenRequestError m OAuth2Token
+  ExceptT TokenResponseError m OAuth2Token
 pollDeviceTokenRequestInternal idpApp mgr deviceCode intervalSeconds = do
   resp <- runExceptT (conduitTokenRequest idpApp mgr deviceCode)
   case resp of
     Left trRespError -> do
-      case error trRespError of
+      case tokenResponseError trRespError of
         -- TODO: Didn't have a good idea to expand the error code
         -- specifically for device token request flow
         -- Device Token Response additional error code: https://www.rfc-editor.org/rfc/rfc8628#section-3.5
