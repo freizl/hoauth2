@@ -43,11 +43,9 @@ publish: dist
 ### CI - nix build
 ####################
 
-ci-build:
-	nix-build
+ci: rb l
+	cabal test all
 
-ci-lint:
-	nix-shell --command 'make hlint'
 
 ###############################################################################
 #                                    HIEDB                                    #
