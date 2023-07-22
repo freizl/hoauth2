@@ -67,6 +67,6 @@ lookupWith (OAuthAppSettings val) idpAppName = do
       resp = Aeson.lookup key val
   except $
     maybe
-      (Left $ "[ loadCredentialFromConfig2 ] unable to load config for " <> idpAppName)
+      (Left $ "[ Env.lookupWith ] Unable to load config for " <> idpAppName)
       Right
       resp
