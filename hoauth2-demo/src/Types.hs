@@ -1,6 +1,7 @@
-{-# LANGUAGE RankNTypes, DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -10,7 +11,6 @@ import Control.Concurrent.MVar
 import Data.Aeson
 import Data.Default
 import Data.HashMap.Strict qualified as Map
-import Data.Hashable
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -87,12 +87,6 @@ instance M.ToMustache IdpAuthorizationCodeAppSessionData where
 -------------------------------------------------------------------------------
 --                             IdpName extension                             --
 -------------------------------------------------------------------------------
-
-deriving instance Hashable IdpName
-
-deriving instance Enum IdpName
-
-deriving instance Bounded IdpName
 
 allIdpNames :: [IdpName]
 allIdpNames = [minBound .. maxBound]
