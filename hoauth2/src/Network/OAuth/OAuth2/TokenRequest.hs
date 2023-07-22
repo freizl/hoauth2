@@ -24,8 +24,6 @@ import Prelude hiding (error)
 
 --------------------------------------------------
 
--- FIXME: `error` conliates with Prelude.error
--- which is annoying. Add reasonable prefix.
 data TokenResponseError = TokenResponseError
   { tokenResponseError :: TokenResponseErrorCode
   , tokenResponseErrorDescription :: Maybe Text
