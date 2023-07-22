@@ -26,11 +26,13 @@ import URI.ByteString (URI, serializeURIRef')
 
 -- TODO: Distinct type per endpoint
 -- Because I made mistake at passing to Authorize and Token Request
+
+-- | 'Idp i' house hold various endpoints endpoints.
 --
--- NOTE:
--- The 'i' is being PolyKinds.
+-- The `i` is actually phantom type for information only at this moment.
+-- And it is PolyKinds.
 -- Hence whenever 'Idp i' or 'IdpApplication i a' is used as function parameter,
--- PolyKinds need to be enabled.
+-- PolyKinds might need to be enabled.
 --
 data Idp (i :: k) = Idp
   { idpUserInfoEndpoint :: URI
