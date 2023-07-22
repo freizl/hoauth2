@@ -48,7 +48,6 @@ defaultOAuth2RedirectUri :: URI
 defaultOAuth2RedirectUri = [uri|http://localhost:9988/oauth2/callback|]
 
 createAuthorizationCodeApp ::
-  (Aeson.FromJSON (IdpUserInfo i), HasDemoLoginUser i) =>
   Idp i ->
   IdpName ->
   ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
@@ -145,7 +144,7 @@ createClientCredentialsApp i idpName = do
 -- But with Org AS, has to use jwt athentication method otherwise got error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
--- FIXME: get error from Okta about parsing assertion error
+-- FIXME: Get error from Okta about parsing assertion error
 createOktaClientCredentialsGrantAppJwt ::
   Idp i ->
   Env.OAuthAppSetting ->
@@ -263,12 +262,12 @@ findAuthorizationCodeSampleApp = \case
   StackExchange -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
 
 findFetchUserInfoMethod ::
-  (MonadIO m, HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
+  (MonadIO m, HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUser i)) =>
   IdpName ->
   ( IdpApplication i a ->
     Manager ->
     AccessToken ->
-    ExceptT BSL.ByteString m (IdpUserInfo i)
+    ExceptT BSL.ByteString m (IdpUser i)
   )
 findFetchUserInfoMethod = \case
   Auth0 -> IAuth0.fetchUserInfo

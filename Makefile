@@ -27,8 +27,9 @@ format-cabal:
 	cabal-fmt -i hoauth2-providers-tutorial/hoauth2-providers-tutorial.cabal
 	cabal-fmt -i hoauth2-demo/hoauth2-demo.cabal
 
-## FIXME: can run directly from cli but 'make format'
+## TODO: can run directly from cli but 'make format'
 format-hs:
+	# no luck either: fourmolu -i "$$(fd -e hs)"
 	fourmolu -i $(fd -e hs)
 
 ## install ghcid globally: `cabal install ghcid`

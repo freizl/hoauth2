@@ -290,7 +290,7 @@ tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch a
 
 tryFetchUser ::
   forall i a.
-  (HasUserInfoRequest a, HasDemoLoginUser i, FromJSON (IdpUserInfo i)) =>
+  (HasUserInfoRequest a, HasDemoLoginUser i, FromJSON (IdpUser i)) =>
   IdpName ->
   IdpApplication i a ->
   Manager ->

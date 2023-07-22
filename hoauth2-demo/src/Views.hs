@@ -22,7 +22,7 @@ instance ToMustache TemplateData where
 
 tpl :: FilePath -> IO (Either ParseError Template)
 tpl f =
-  -- TODO: can work with cabal v2-run demo-server but not v2-exec
+  -- NOTE: can work with cabal v2-run demo-server but not v2-exec
   getDataFileName ("public/templates/" ++ f ++ ".mustache")
     >>= localAutomaticCompile
 

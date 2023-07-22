@@ -20,7 +20,7 @@ data AuthorizationRequestParam = AuthorizationRequestParam
   { arScope :: Set Scope
   , arState :: AuthorizeState
   , arClientId :: ClientId
-  , arRedirectUri :: Maybe RedirectUri -- TODO: why redirect uri is optional?
+  , arRedirectUri :: Maybe RedirectUri -- FIXME: why redirect uri is optional?
   , arResponseType :: ResponseType
   , arExtraParams :: Map Text Text
   }
@@ -40,8 +40,6 @@ class HasAuthorizeRequest a where
   -- | Constructs Authorization Code request parameters
   -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
   mkAuthorizationRequestParam :: a -> AuthorizationRequestParam
-
--- FIXME: rename to mkAuthorizationRequest. similar to other cases.
 
 -- | Constructs Authorization Code request URI
 -- https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1

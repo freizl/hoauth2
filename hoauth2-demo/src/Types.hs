@@ -26,12 +26,10 @@ import User
 --                                  DemoIdp                                  --
 -------------------------------------------------------------------------------
 
--- wrapper around `Idp i` which has userinfo
--- FIXME: seem incorrect since UserInfo is per Application instead of Idp
 data DemoIdp
   = forall i.
     ( HasDemoLoginUser i
-    , FromJSON (IdpUserInfo i)
+    , FromJSON (IdpUser i)
     ) =>
     DemoIdp (Idp i)
 

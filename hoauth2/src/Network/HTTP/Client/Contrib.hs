@@ -10,7 +10,7 @@ import Network.HTTP.Types qualified as HT
 handleResponse :: Response BSL.ByteString -> Either BSL.ByteString BSL.ByteString
 handleResponse rsp
   | HT.statusIsSuccessful (responseStatus rsp) = Right (responseBody rsp)
-  -- FIXME: better to surface up entire resp so that client can decide what to do when error happens.
+  -- TODO: better to surface up entire resp so that client can decide what to do when error happens.
   -- e.g. when 404, the response body could be empty hence library user has no idea what's happening.
   -- Which will be breaking changes.
   -- The current work around is surface up entire response as string.

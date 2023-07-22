@@ -24,9 +24,8 @@ import URI.ByteString (URI, serializeURIRef')
 
 -------------------------------------------------------------------------------
 
--- TODO:
--- Maybe worth data type to distinguish authorize and token endpoint
--- as I made mistake at passing to Authorize and Token Request
+-- TODO: Distinct type per endpoint
+-- Because I made mistake at passing to Authorize and Token Request
 --
 -- NOTE:
 -- The 'i' is being PolyKinds.
@@ -55,7 +54,9 @@ data IdpApplication (i :: k) a = IdpApplication
 
 -------------------------------------------------------------------------------
 
--- TODO: following data type is not ideal as Idp would have lots of 'Custom Text'
+-- TODO: What's best type for Scope?
+-- Use 'Text' isn't super type safe. All cannot specify some standard scopes like openid, email etc.
+-- But Following data type is not ideal as Idp would have lots of 'Custom Text'
 --
 -- @
 -- data Scope = OPENID | PROFILE | EMAIL | OFFLINE_ACCESS | Custom Text
