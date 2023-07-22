@@ -31,26 +31,26 @@ spec = do
       Aeson.eitherDecode "{\"error\": \"invalid_request\"}"
         `shouldBe` Right
           ( TokenResponseError
-              { error = InvalidRequest
-              , errorDescription = Nothing
-              , errorUri = Nothing
+              { tokenResponseError = InvalidRequest
+              , tokenResponseErrorDescription = Nothing
+              , tokenResponseErrorUri = Nothing
               }
           )
     it "parse error_description" $ do
       Aeson.eitherDecode "{\"error\": \"invalid_request\", \"error_description\": \"token request error foo1\"}"
         `shouldBe` Right
           ( TokenResponseError
-              { error = InvalidRequest
-              , errorDescription = Just "token request error foo1"
-              , errorUri = Nothing
+              { tokenResponseError = InvalidRequest
+              , tokenResponseErrorDescription = Just "token request error foo1"
+              , tokenResponseErrorUri = Nothing
               }
           )
     it "parse error_uri" $ do
       Aeson.eitherDecode "{\"error\": \"invalid_request\", \"error_uri\": \"https://example.com\"}"
         `shouldBe` Right
           ( TokenResponseError
-              { error = InvalidRequest
-              , errorDescription = Nothing
-              , errorUri = Just [uri|https://example.com|]
+              { tokenResponseError = InvalidRequest
+              , tokenResponseErrorDescription = Nothing
+              , tokenResponseErrorUri = Just [uri|https://example.com|]
               }
           )
