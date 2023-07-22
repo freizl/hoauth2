@@ -5,18 +5,19 @@
 --   * [Using OAuth 2.0](https://api.slack.com/legacy/oauth)
 module Network.OAuth2.Provider.Slack where
 
-import Data.Aeson
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
+import Data.Aeson (FromJSON)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
-import URI.ByteString.QQ
-
-data Slack = Slack deriving (Show, Eq)
-
-type instance IdpUserInfo Slack = SlackUser
+import Network.OAuth2.Provider
+import URI.ByteString.QQ (uri)
 
 sampleSlackAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleSlackAuthorizationCodeApp =
@@ -31,12 +32,19 @@ sampleSlackAuthorizationCodeApp =
     , acName = "sample-slack-authorization-code-app"
     }
 
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
+
 -- https://slack.com/.well-known/openid-configuration
 defaultSlackIdp :: Idp Slack
 defaultSlackIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Slack)
-    , idpUserInfoEndpoint = [uri|https://slack.com/api/openid.connect.userInfo|]
+    { idpUserInfoEndpoint = [uri|https://slack.com/api/openid.connect.userInfo|]
     , idpAuthorizeEndpoint = [uri|https://slack.com/openid/connect/authorize|]
     , idpTokenEndpoint = [uri|https://slack.com/api/openid.connect.token|]
     , idpDeviceAuthorizationEndpoint = Nothing

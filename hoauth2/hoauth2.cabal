@@ -59,6 +59,7 @@ library
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
+    PolyKinds
     RecordWildCards
     TypeFamilies
 

@@ -1,18 +1,19 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module User where
 
 import Data.Text.Lazy qualified as TL
-import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
-import Network.OAuth2.Provider.Dropbox qualified as IDropbox
+import Network.OAuth2.Provider.DropBox qualified as IDropBox
 import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
-import Network.OAuth2.Provider.Github qualified as IGithub
+import Network.OAuth2.Provider.GitHub qualified as IGitHub
 import Network.OAuth2.Provider.Google qualified as IGoogle
-import Network.OAuth2.Provider.Linkedin qualified as ILinkedin
+import Network.OAuth2.Provider.LinkedIn qualified as ILinkedIn
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
@@ -34,71 +35,86 @@ instance M.ToMustache DemoLoginUser where
       ["name" ~> loginUserName t']
 
 class HasDemoLoginUser a where
+  type IdpUserInfo a
   toLoginUser :: IdpUserInfo a -> DemoLoginUser
 
-instance HasDemoLoginUser IAuth0.Auth0 where
+instance HasDemoLoginUser Auth0 where
+  type IdpUserInfo Auth0 = IAuth0.Auth0User
   toLoginUser :: IAuth0.Auth0User -> DemoLoginUser
   toLoginUser IAuth0.Auth0User {..} = DemoLoginUser {loginUserName = name}
 
-instance HasDemoLoginUser IGoogle.Google where
+instance HasDemoLoginUser Google where
+  type IdpUserInfo Google = IGoogle.GoogleUser
   toLoginUser :: IGoogle.GoogleUser -> DemoLoginUser
   toLoginUser IGoogle.GoogleUser {..} = DemoLoginUser {loginUserName = name}
 
-instance HasDemoLoginUser IZOHO.ZOHO where
-  toLoginUser :: IdpUserInfo IZOHO.ZOHO -> DemoLoginUser
+instance HasDemoLoginUser ZOHO where
+  type IdpUserInfo ZOHO = IZOHO.ZOHOUserResp
+  toLoginUser :: IdpUserInfo ZOHO -> DemoLoginUser
   toLoginUser resp =
     let us = IZOHO.users resp
      in case us of
           [] -> DemoLoginUser {loginUserName = "ZOHO: no user found"}
           (a : _) -> DemoLoginUser {loginUserName = IZOHO.fullName a}
 
-instance HasDemoLoginUser IAzureAD.AzureAD where
+instance HasDemoLoginUser AzureAD where
+  type IdpUserInfo AzureAD = IAzureAD.AzureADUser
   toLoginUser :: IAzureAD.AzureADUser -> DemoLoginUser
   toLoginUser ouser =
     DemoLoginUser
       { loginUserName = IAzureAD.email ouser <> " " <> IAzureAD.name ouser
       }
 
-instance HasDemoLoginUser IWeibo.Weibo where
+instance HasDemoLoginUser Weibo where
+  type IdpUserInfo Weibo = IWeibo.WeiboUID
   toLoginUser :: IWeibo.WeiboUID -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = TL.pack $ show $ IWeibo.uid ouser}
 
-instance HasDemoLoginUser IDropbox.Dropbox where
-  toLoginUser :: IDropbox.DropboxUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IDropbox.displayName $ IDropbox.name ouser}
+instance HasDemoLoginUser DropBox where
+  type IdpUserInfo DropBox = IDropBox.DropBoxUser
+  toLoginUser :: IDropBox.DropBoxUser -> DemoLoginUser
+  toLoginUser ouser = DemoLoginUser {loginUserName = IDropBox.displayName $ IDropBox.name ouser}
 
-instance HasDemoLoginUser IFacebook.Facebook where
+instance HasDemoLoginUser Facebook where
+  type IdpUserInfo Facebook = IFacebook.FacebookUser
   toLoginUser :: IFacebook.FacebookUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IFacebook.name ouser}
 
-instance HasDemoLoginUser IFitbit.Fitbit where
+instance HasDemoLoginUser Fitbit where
+  type IdpUserInfo Fitbit = IFitbit.FitbitUser
   toLoginUser :: IFitbit.FitbitUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IFitbit.userName ouser}
 
-instance HasDemoLoginUser IGithub.Github where
-  toLoginUser :: IGithub.GithubUser -> DemoLoginUser
-  toLoginUser guser = DemoLoginUser {loginUserName = IGithub.name guser}
+instance HasDemoLoginUser GitHub where
+  type IdpUserInfo GitHub = IGitHub.GitHubUser
+  toLoginUser :: IGitHub.GitHubUser -> DemoLoginUser
+  toLoginUser guser = DemoLoginUser {loginUserName = IGitHub.name guser}
 
-instance HasDemoLoginUser ILinkedin.Linkedin where
-  toLoginUser :: ILinkedin.LinkedinUser -> DemoLoginUser
-  toLoginUser ILinkedin.LinkedinUser {..} =
+instance HasDemoLoginUser LinkedIn where
+  type IdpUserInfo LinkedIn = ILinkedIn.LinkedInUser
+  toLoginUser :: ILinkedIn.LinkedInUser -> DemoLoginUser
+  toLoginUser ILinkedIn.LinkedInUser {..} =
     DemoLoginUser
       { loginUserName = localizedFirstName <> " " <> localizedLastName
       }
 
-instance HasDemoLoginUser ITwitter.Twitter where
+instance HasDemoLoginUser Twitter where
+  type IdpUserInfo Twitter = ITwitter.TwitterUserResp
   toLoginUser :: ITwitter.TwitterUserResp -> DemoLoginUser
   toLoginUser ITwitter.TwitterUserResp {..} = DemoLoginUser {loginUserName = ITwitter.name twitterUserRespData}
 
-instance HasDemoLoginUser IOkta.Okta where
+instance HasDemoLoginUser Okta where
+  type IdpUserInfo Okta = IOkta.OktaUser
   toLoginUser :: IOkta.OktaUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = IOkta.name ouser}
 
-instance HasDemoLoginUser ISlack.Slack where
+instance HasDemoLoginUser Slack where
+  type IdpUserInfo Slack = ISlack.SlackUser
   toLoginUser :: ISlack.SlackUser -> DemoLoginUser
   toLoginUser ouser = DemoLoginUser {loginUserName = ISlack.name ouser}
 
-instance HasDemoLoginUser IStackExchange.StackExchange where
+instance HasDemoLoginUser StackExchange where
+  type IdpUserInfo StackExchange = IStackExchange.StackExchangeResp
   toLoginUser :: IStackExchange.StackExchangeResp -> DemoLoginUser
   toLoginUser IStackExchange.StackExchangeResp {..} =
     case items of

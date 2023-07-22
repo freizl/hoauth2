@@ -1,14 +1,19 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+-- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
+-- Okta Org AS doesn't support consent
+-- Okta Custom AS does support consent via config (what scope shall prompt consent)
+
 -- | [Okta OIDC & OAuth2 API](https://developer.okta.com/docs/reference/api/oidc/)
 module Network.OAuth2.Provider.Okta where
 
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Except
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString.Contrib
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy as TL
@@ -18,14 +23,12 @@ import Jose.Jwa
 import Jose.Jwk
 import Jose.Jws
 import Jose.Jwt
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
-
-data Okta = Okta deriving (Eq, Show)
-
-type instance IdpUserInfo Okta = OktaUser
 
 sampleOktaAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleOktaAuthorizationCodeApp =
@@ -40,6 +43,14 @@ sampleOktaAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
+
 mkOktaIdp ::
   MonadIO m =>
   -- | Full domain with no http protocol. e.g. @foo.okta.com@
@@ -49,8 +60,7 @@ mkOktaIdp domain = do
   OpenIDConfiguration {..} <- fetchWellKnown domain
   pure $
     Idp
-      { idpFetchUserInfo = authGetJSON @(IdpUserInfo Okta)
-      , idpUserInfoEndpoint = userinfoEndpoint
+      { idpUserInfoEndpoint = userinfoEndpoint
       , idpAuthorizeEndpoint = authorizationEndpoint
       , idpTokenEndpoint = tokenEndpoint
       , idpDeviceAuthorizationEndpoint = Just deviceAuthorizationEndpoint
@@ -78,9 +88,6 @@ mkOktaClientCredentialAppJwt jwk cid idp = do
   where
     tToSeconds = formatTime defaultTimeLocale "%s"
 
--- https://developer.okta.com/docs/reference/api/oidc/#request-parameters
--- Okta Org AS doesn't support consent
--- Okta Custom AS does support consent via config (what scope shall prompt consent)
 data OktaUser = OktaUser
   { name :: Text
   , preferredUsername :: Text

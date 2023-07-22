@@ -22,25 +22,28 @@ library
   hs-source-dirs:     src
   default-language:   Haskell2010
   default-extensions:
+    DataKinds
     DeriveGeneric
     GeneralizedNewtypeDeriving
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
+    PolyKinds
     RecordWildCards
     TypeApplications
     TypeFamilies
 
   exposed-modules:
     Data.ByteString.Contrib
+    Network.OAuth2.Provider
     Network.OAuth2.Provider.Auth0
     Network.OAuth2.Provider.AzureAD
-    Network.OAuth2.Provider.Dropbox
+    Network.OAuth2.Provider.DropBox
     Network.OAuth2.Provider.Facebook
     Network.OAuth2.Provider.Fitbit
-    Network.OAuth2.Provider.Github
+    Network.OAuth2.Provider.GitHub
     Network.OAuth2.Provider.Google
-    Network.OAuth2.Provider.Linkedin
+    Network.OAuth2.Provider.LinkedIn
     Network.OAuth2.Provider.Okta
     Network.OAuth2.Provider.Slack
     Network.OAuth2.Provider.StackExchange
@@ -69,7 +72,11 @@ library
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Werror -Wwarnings-deprecations
+    -Wwarn -Wwarnings-deprecations
+
+  -- -Wno-missing-signatures
+  if impl(ghc <9.4)
+    ghc-options: -Wno-unticked-promoted-constructors
 
 test-suite hoauth-providers-tests
   type:               exitcode-stdio-1.0

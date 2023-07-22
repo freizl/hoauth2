@@ -4,17 +4,18 @@
 module Network.OAuth2.Provider.Fitbit where
 
 import Control.Monad (mzero)
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import URI.ByteString.QQ
-
-data Fitbit = Fitbit deriving (Eq, Show)
-
-type instance IdpUserInfo Fitbit = FitbitUser
 
 sampleFitbitAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleFitbitAuthorizationCodeApp =
@@ -29,11 +30,18 @@ sampleFitbitAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
+
 defaultFitbitIdp :: Idp Fitbit
 defaultFitbitIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Fitbit)
-    , idpUserInfoEndpoint = [uri|https://api.fitbit.com/1/user/-/profile.json|]
+    { idpUserInfoEndpoint = [uri|https://api.fitbit.com/1/user/-/profile.json|]
     , idpAuthorizeEndpoint = [uri|https://www.fitbit.com/oauth2/authorize|]
     , idpTokenEndpoint = [uri|https://api.fitbit.com/oauth2/token|]
     , idpDeviceAuthorizationEndpoint = Nothing

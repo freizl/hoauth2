@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
--- | [微博授权机制](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6)
-module Network.OAuth2.Provider.Weibo where
+-- | [DropBox oauth guide](https://developers.dropbox.com/oauth-guide)
+module Network.OAuth2.Provider.DropBox where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..))
@@ -17,16 +17,16 @@ import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import URI.ByteString.QQ
 
-sampleWeiboAuthorizationCodeApp :: AuthorizationCodeApplication
-sampleWeiboAuthorizationCodeApp =
+sampleDropBoxAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleDropBoxAuthorizationCodeApp =
   AuthorizationCodeApplication
-    { acName = "sample-weibo-authorization-code-app"
-    , acClientId = ""
+    { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.empty
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
+    , acName = "sample-dropbox-authorization-code-app"
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
@@ -36,29 +36,28 @@ fetchUserInfo ::
   Manager ->
   AccessToken ->
   ExceptT BSL.ByteString m b
-fetchUserInfo = conduitUserInfoRequestWithCustomMethod (authGetJSONWithAuthMethod AuthInRequestQuery)
+fetchUserInfo = conduitUserInfoRequestWithCustomMethod (\mgr at url -> authPostJSON mgr at url [])
 
-defaultWeiboIdp :: Idp Weibo
-defaultWeiboIdp =
+defaultDropBoxIdp :: Idp DropBox
+defaultDropBoxIdp =
   Idp
-    { idpUserInfoEndpoint = [uri|https://api.weibo.com/2/account/get_uid.json|]
-    , idpAuthorizeEndpoint = [uri|https://api.weibo.com/oauth2/authorize|]
-    , idpTokenEndpoint = [uri|https://api.weibo.com/oauth2/access_token|]
+    { idpAuthorizeEndpoint = [uri|https://www.dropbox.com/1/oauth2/authorize|]
+    , idpTokenEndpoint = [uri|https://api.dropboxapi.com/oauth2/token|]
+    , -- https://www.dropbox.com/developers/documentation/http/documentation#users-get_current_account
+      idpUserInfoEndpoint = [uri|https://api.dropboxapi.com/2/users/get_current_account|]
     , idpDeviceAuthorizationEndpoint = Nothing
     }
 
--- | http://open.weibo.com/wiki/2/users/show
-data WeiboUser = WeiboUser
-  { id :: Integer
-  , name :: Text
-  , screenName :: Text
+newtype DropBoxUserName = DropBoxUserName {displayName :: Text}
+  deriving (Show, Generic)
+
+data DropBoxUser = DropBoxUser
+  { email :: Text
+  , name :: DropBoxUserName
   }
   deriving (Show, Generic)
 
-newtype WeiboUID = WeiboUID {uid :: Integer}
-  deriving (Show, Generic)
-
-instance FromJSON WeiboUID
-
-instance FromJSON WeiboUser where
+instance FromJSON DropBoxUserName where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
+
+instance FromJSON DropBoxUser

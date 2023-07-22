@@ -1,23 +1,24 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 -- | [LinkedIn Authenticating with OAuth 2.0 Overview](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext)
-module Network.OAuth2.Provider.Linkedin where
+module Network.OAuth2.Provider.LinkedIn where
 
-import Data.Aeson
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
+import Data.Aeson (FromJSON)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
-import URI.ByteString.QQ
+import Network.OAuth2.Provider
+import URI.ByteString.QQ (uri)
 
-data Linkedin = Linkedin deriving (Eq, Show)
-
-type instance IdpUserInfo Linkedin = LinkedinUser
-
-sampleLinkedinAuthorizationCodeApp :: AuthorizationCodeApplication
-sampleLinkedinAuthorizationCodeApp =
+sampleLinkedInAuthorizationCodeApp :: AuthorizationCodeApplication
+sampleLinkedInAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
@@ -29,20 +30,27 @@ sampleLinkedinAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
-defaultLinkedinIdp :: Idp Linkedin
-defaultLinkedinIdp =
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
+
+defaultLinkedInIdp :: Idp LinkedIn
+defaultLinkedInIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo Linkedin)
-    , idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
+    { idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
     , idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|]
     , idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
     , idpDeviceAuthorizationEndpoint = Nothing
     }
 
-data LinkedinUser = LinkedinUser
+data LinkedInUser = LinkedInUser
   { localizedFirstName :: Text
   , localizedLastName :: Text
   }
   deriving (Show, Generic, Eq)
 
-instance FromJSON LinkedinUser
+instance FromJSON LinkedInUser

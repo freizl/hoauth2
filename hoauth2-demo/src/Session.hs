@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.Text.Lazy qualified as TL
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import Text.Mustache ((~>))
 import Text.Mustache qualified as M
 import Types

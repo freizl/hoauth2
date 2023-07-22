@@ -3,21 +3,20 @@
 -- | [AzureAD oauth2 flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
 module Network.OAuth2.Provider.AzureAD where
 
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Except
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
-
-data AzureAD = AzureAD deriving (Eq, Show)
-
-type instance IdpUserInfo AzureAD = AzureADUser
 
 -- Create app at https://go.microsoft.com/fwlink/?linkid=2083908
 --
@@ -36,6 +35,14 @@ sampleAzureADAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
+
 -- | https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
 -- It's supporse to resue 'mkAzureIdp'
 --
@@ -48,8 +55,7 @@ sampleAzureADAuthorizationCodeApp =
 defaultAzureADIdp :: Idp AzureAD
 defaultAzureADIdp =
   Idp
-    { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
-    , idpAuthorizeEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/authorize|]
+    { idpAuthorizeEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/authorize|]
     , idpTokenEndpoint = [uri|https://login.microsoftonline.com/common/oauth2/v2.0/token|]
     , idpUserInfoEndpoint = [uri|https://graph.microsoft.com/oidc/userinfo|]
     , idpDeviceAuthorizationEndpoint = Just [uri|https://login.microsoftonline.com/common/oauth2/v2.0/devicecode|]
@@ -64,8 +70,7 @@ mkAzureIdp domain = do
   OpenIDConfiguration {..} <- fetchWellKnown ("login.microsoftonline.com/" <> domain <> "/v2.0")
   pure $
     Idp
-      { idpFetchUserInfo = authGetJSON @(IdpUserInfo AzureAD)
-      , idpUserInfoEndpoint = userinfoEndpoint
+      { idpUserInfoEndpoint = userinfoEndpoint
       , idpAuthorizeEndpoint = authorizationEndpoint
       , idpTokenEndpoint = tokenEndpoint
       , idpDeviceAuthorizationEndpoint = Just deviceAuthorizationEndpoint

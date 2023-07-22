@@ -5,34 +5,34 @@
 --    * [StackExchange Apps page](https://stackapps.com/apps/oauth)
 module Network.OAuth2.Provider.StackExchange where
 
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
 import Data.Aeson
 import Data.ByteString (ByteString)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2 (appendQueryParams)
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit (Manager)
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
-import URI.ByteString
-import URI.ByteString.QQ
+import Network.OAuth2.Provider
+import URI.ByteString (URI)
+import URI.ByteString.QQ (uri)
 
 -- fix key from your application edit page
 -- https://stackapps.com/apps/oauth
 stackexchangeAppKey :: ByteString
 stackexchangeAppKey = ""
 
-userInfoEndpoint :: URIRef Absolute
+userInfoEndpoint :: URI
 userInfoEndpoint =
   appendQueryParams
     [ ("key", stackexchangeAppKey)
     , ("site", "stackoverflow")
     ]
     [uri|https://api.stackexchange.com/2.2/me|]
-
-data StackExchange = StackExchange deriving (Eq, Show)
-
-type instance IdpUserInfo StackExchange = StackExchangeResp
 
 sampleStackExchangeAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleStackExchangeAuthorizationCodeApp =
@@ -47,11 +47,18 @@ sampleStackExchangeAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequestWithCustomMethod (authGetJSONWithAuthMethod AuthInRequestQuery)
+
 defaultStackExchangeIdp :: Idp StackExchange
 defaultStackExchangeIdp =
   Idp
-    { idpFetchUserInfo = authGetJSONWithAuthMethod @_ @(IdpUserInfo StackExchange) AuthInRequestQuery
-    , -- Only StackExchange has such specical app key which has to be append in userinfo uri.
+    { -- Only StackExchange has such specical app key which has to be append in userinfo uri.
       -- I feel it's not worth to invent a way to read from config
       -- file which would break the generic of Idp data type.
       -- Until discover a easier way, hard code for now.

@@ -43,11 +43,13 @@ executable hoauth2-demo
     Views
 
   default-extensions:
+    DataKinds
     DeriveGeneric
     DerivingStrategies
     ImportQualifiedPost
     InstanceSigs
     OverloadedStrings
+    PolyKinds
     RecordWildCards
     TypeApplications
 
@@ -80,3 +82,6 @@ executable hoauth2-demo
   ghc-options:
     -Wall -Wextra -Wtabs -Wno-unused-do-bind -Wpartial-fields
     -Wunused-packages -Wwarnings-deprecations -Werror
+
+  if impl(ghc <9.4)
+    ghc-options: -Wno-unticked-promoted-constructors

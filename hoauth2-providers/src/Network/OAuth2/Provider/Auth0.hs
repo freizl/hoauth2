@@ -7,22 +7,20 @@
 --   * [OAuth 2.0 Authorization Framework](https://auth0.com/docs/authenticate/protocols/oauth)
 module Network.OAuth2.Provider.Auth0 where
 
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Except
-import Data.Aeson
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.Trans.Except (ExceptT (..))
+import Data.Aeson (FromJSON)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
-import Network.OAuth.OAuth2.HttpClient
+import Network.HTTP.Conduit
+import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
 import URI.ByteString.QQ
-
-data Auth0 = Auth0
-  deriving (Show, Eq)
-
-type instance IdpUserInfo Auth0 = Auth0User
 
 sampleAuth0AuthorizationCodeApp :: AuthorizationCodeApplication
 sampleAuth0AuthorizationCodeApp =
@@ -37,6 +35,14 @@ sampleAuth0AuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretBasic
     }
 
+fetchUserInfo ::
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
+  IdpApplication i a ->
+  Manager ->
+  AccessToken ->
+  ExceptT BSL.ByteString m b
+fetchUserInfo = conduitUserInfoRequest
+
 mkAuth0Idp ::
   MonadIO m =>
   -- | Full domain with no http protocol. e.g. @foo.auth0.com@
@@ -46,8 +52,7 @@ mkAuth0Idp domain = do
   OpenIDConfiguration {..} <- fetchWellKnown domain
   pure
     ( Idp
-        { idpFetchUserInfo = authGetJSON @(IdpUserInfo Auth0)
-        , --  https://auth0.com/docs/api/authentication#user-profile
+        { --  https://auth0.com/docs/api/authentication#user-profile
           idpUserInfoEndpoint = userinfoEndpoint
         , -- https://auth0.com/docs/api/authentication#authorization-code-flow
           idpAuthorizeEndpoint = authorizationEndpoint

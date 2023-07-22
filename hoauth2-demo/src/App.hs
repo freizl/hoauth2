@@ -20,8 +20,9 @@ import Network.HTTP.Types
 import Network.OAuth.OAuth2
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
-import Network.OAuth2.Provider.Auth0 qualified as IAuth0
-import Network.OAuth2.Provider.Okta qualified as IOkta
+import Network.OAuth2.Provider
+import Network.OAuth2.Provider.Auth0 qualified as Auth0
+import Network.OAuth2.Provider.Okta qualified as Okta
 import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
@@ -50,9 +51,9 @@ app =
 waiApp :: IO WAI.Application
 waiApp = do
   re <- runExceptT $ do
-    myAuth0Idp <- IAuth0.mkAuth0Idp "freizl.auth0.com"
-    myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com"
-    -- myOktaIdp <- IOkta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
+    myAuth0Idp <- Auth0.mkAuth0Idp "freizl.auth0.com"
+    myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com"
+    -- myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
     let oidcIdps = (myAuth0Idp, myOktaIdp)
     let allIdps = initSupportedIdps oidcIdps
     oauthAppSettings <- readEnvFile
@@ -142,9 +143,9 @@ callbackH appEnv@AppEnv {..} = do
   when (null stateP) (raise "callbackH: no state from callback request")
   let codeP = paramValue "code" pas
   when (null codeP) (raise "callbackH: no code from callback request")
-  let idpName = TL.takeWhile (/= '.') (head stateP)
+  let idpName = fromText $ TL.takeWhile (/= '.') (head stateP)
   exceptToActionM $ do
-    idpData <- lookupAppSessionData sessionStore (fromText idpName)
+    idpData <- lookupAppSessionData sessionStore idpName
     fetchTokenAndUser appEnv idpData (ExchangeToken $ TL.toStrict $ head codeP)
   redirectToHomeM
 
@@ -172,7 +173,7 @@ testPasswordGrantTypeH appEnv = do
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
-    user <- tryFetchUser mgr token idpApp
+    user <- tryFetchUser idpName idpApp mgr token
     liftIO $ do
       putStrLn "=== testPasswordGrantTypeH find token ==="
       print user
@@ -200,18 +201,18 @@ testDeviceCodeGrantTypeH ::
 testDeviceCodeGrantTypeH appEnv = do
   runActionWithIdp "testDeviceCodeGrantTypeH" $ \idpName -> do
     (DemoIdp idp) <- findIdp appEnv idpName
-    testApp <- createDeviceAuthApp idp idpName
+    deviceAuthApp <- createDeviceAuthApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
-    deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest testApp mgr
+    deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest deviceAuthApp mgr
     liftIO $ do
       putStr "Please visit this URL to redeem the code: "
       TL.putStr $ userCode deviceAuthResp <> "\n"
       TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
-    atoken <- withExceptT tokenRequestErrorErrorToText (pollDeviceTokenRequest testApp mgr deviceAuthResp)
+    atoken <- withExceptT tokenRequestErrorErrorToText (pollDeviceTokenRequest deviceAuthApp mgr deviceAuthResp)
     liftIO $ do
       putStrLn "=== testDeviceCodeGrantTypeH found token ==="
       print atoken
-    luser <- tryFetchUser mgr atoken testApp
+    luser <- tryFetchUser idpName deviceAuthApp mgr atoken
     liftIO $ print luser
   redirectToHomeM
 
@@ -222,7 +223,7 @@ testJwtBearerGrantTypeH = do
     testApp <- googleServiceAccountApp
     mgr <- liftIO $ newManager tlsManagerSettings
     tokenResp <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest testApp mgr NoNeedExchangeToken
-    user <- tryFetchUser mgr tokenResp testApp
+    user <- tryFetchUser Google testApp mgr tokenResp
     liftIO $ print user
   redirectToHomeM
 
@@ -259,7 +260,7 @@ fetchTokenAndUser appEnv@AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData
   liftIO $ do
     putStrLn "[Authorization Code Flow] Found access token"
     print token
-  luser <- tryFetchUser mgr token authCodeIdpApp
+  luser <- tryFetchUser idpName authCodeIdpApp mgr token
   liftIO $ do
     print luser
     upsertAppSessionData
@@ -288,13 +289,16 @@ tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch a
 
 tryFetchUser ::
   forall i a.
-  (HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
+  (HasUserInfoRequest a, HasDemoLoginUser i, FromJSON (IdpUserInfo i)) =>
+  IdpName ->
+  IdpApplication i a ->
   Manager ->
   OAuth2Token ->
-  IdpApplication i a ->
   ExceptT Text IO DemoLoginUser
-tryFetchUser mgr at idpAppConfig = do
-  user <- withExceptT bslToText $ conduitUserInfoRequest idpAppConfig mgr (accessToken at)
+tryFetchUser idpName idpAppConfig mgr at = do
+  let fetchMethod = findFetchUserInfoMethod idpName
+  user <- withExceptT bslToText $ do
+    fetchMethod idpAppConfig mgr (accessToken at)
   pure $ toLoginUser @i user
 
 doRefreshToken ::

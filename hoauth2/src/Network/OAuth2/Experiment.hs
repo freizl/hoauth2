@@ -39,8 +39,7 @@
 -- googleIdp :: Idp Google
 -- googleIdp =
 --   Idp
---     { idpFetchUserInfo = authGetJSON @(IdpUserInfo Google)
---     , idpAuthorizeEndpoint = [uri|https:\/\/accounts.google.com\/o\/oauth2\/v2\/auth|]
+--     { idpAuthorizeEndpoint = [uri|https:\/\/accounts.google.com\/o\/oauth2\/v2\/auth|]
 --     , idpTokenEndpoint = [uri|https:\/\/oauth2.googleapis.com\/token|]
 --     , idpUserInfoEndpoint = [uri|https:\/\/www.googleapis.com\/oauth2\/v2\/userinfo|]
 --     , idpDeviceAuthorizationEndpoint = Just [uri|https:\/\/oauth2.googleapis.com\/device\/code|]
@@ -131,6 +130,7 @@ import Network.OAuth2.Experiment.Flows.TokenRequest (
 import Network.OAuth2.Experiment.Flows.UserInfoRequest (
   HasUserInfoRequest,
   conduitUserInfoRequest,
+  conduitUserInfoRequestWithCustomMethod,
  )
 import Network.OAuth2.Experiment.Grants
 import Network.OAuth2.Experiment.Pkce (
@@ -142,7 +142,6 @@ import Network.OAuth2.Experiment.Types (
   ClientSecret (..),
   Idp (..),
   IdpApplication (..),
-  IdpUserInfo,
   Password (..),
   RedirectUri (..),
   Scope (..),

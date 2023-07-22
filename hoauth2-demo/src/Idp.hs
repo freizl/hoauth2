@@ -1,15 +1,19 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Idp where
 
 import AppEnv
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
+import Data.Aeson (FromJSON)
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.Contrib
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set qualified as Set
@@ -18,16 +22,18 @@ import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import Env qualified
 import Jose.Jwt
+import Network.HTTP.Conduit
 import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
+import Network.OAuth2.Provider
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0
 import Network.OAuth2.Provider.AzureAD qualified as IAzureAD
-import Network.OAuth2.Provider.Dropbox qualified as IDropbox
+import Network.OAuth2.Provider.DropBox qualified as IDropBox
 import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
-import Network.OAuth2.Provider.Github qualified as IGithub
+import Network.OAuth2.Provider.GitHub qualified as IGitHub
 import Network.OAuth2.Provider.Google qualified as IGoogle
-import Network.OAuth2.Provider.Linkedin qualified as ILinkedin
+import Network.OAuth2.Provider.LinkedIn qualified as ILinkedIn
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
 import Network.OAuth2.Provider.StackExchange qualified as IStackExchange
@@ -35,7 +41,7 @@ import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Types
-import URI.ByteString
+import URI.ByteString (URI)
 import URI.ByteString.QQ (uri)
 import User
 import Prelude hiding (id)
@@ -50,15 +56,13 @@ createAuthorizationCodeApp ::
   ExceptT Text IO (IdpApplication i AuthorizationCodeApplication)
 createAuthorizationCodeApp idp idpName = do
   let newAppName = "sample-" <> toText idpName <> "-authorization-code-app"
-  newApp <- case Map.lookup idpName sampleAuthorizationCodeApps of
-    Just a -> pure a
-    Nothing -> throwE ("Unable to create authorization app for idp: " <> toText idpName)
+  let sampleApp = findAuthorizationCodeSampleApp idpName
   Env.OAuthAppSetting {..} <- Env.lookup newAppName
   let newApp' =
-        newApp
+        sampleApp
           { acClientId = clientId
           , acClientSecret = clientSecret
-          , acScope = if Set.null scopes then acScope newApp else scopes
+          , acScope = if Set.null scopes then acScope sampleApp else scopes
           , acRedirectUri = defaultOAuth2RedirectUri
           , acAuthorizeState = AuthorizeState (toText idpName <> ".hoauth2-demo-app-123")
           }
@@ -122,7 +126,7 @@ createClientCredentialsApp i idpName = do
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
           }
-    -- "okta" -> createOktaClientCredentialsGrantAppJwt i resp
+    -- Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
     _ -> pure defaultApp
   let newApp' =
         newApp
@@ -146,12 +150,9 @@ createClientCredentialsApp i idpName = do
 -- FIXME: get error from Okta about parsing assertion error
 createOktaClientCredentialsGrantAppJwt ::
   Idp i ->
-  Maybe (ClientId, ClientSecret, Set.Set Scope) ->
+  Env.OAuthAppSetting ->
   ExceptT Text IO ClientCredentialsApplication
-createOktaClientCredentialsGrantAppJwt i mresp = do
-  clientId <- case mresp of
-    Nothing -> throwE "createOktaClientCredentialsGrantApp failed: missing client_id"
-    Just (a, _, _) -> pure a
+createOktaClientCredentialsGrantAppJwt i Env.OAuthAppSetting {..} = do
   keyJsonStr <- liftIO $ BS.readFile ".okta-key.json"
   jwk <- except (first TL.pack $ Aeson.eitherDecodeStrict keyJsonStr)
   jwt <- ExceptT $ IOkta.mkOktaClientCredentialAppJwt jwk clientId i
@@ -201,7 +202,7 @@ createDeviceAuthApp i idpName = do
       , application = newApp'
       }
 
-googleServiceAccountApp :: ExceptT Text IO (IdpApplication IGoogle.Google JwtBearerApplication)
+googleServiceAccountApp :: ExceptT Text IO (IdpApplication Google JwtBearerApplication)
 googleServiceAccountApp = do
   IGoogle.GoogleServiceAccountKey {..} <- withExceptT TL.pack (ExceptT $ Aeson.eitherDecodeFileStrict ".google-sa.json")
   pkey <- withExceptT TL.pack (ExceptT $ IGoogle.readPemRsaKey privateKey)
@@ -226,6 +227,9 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
+-- TODO:
+-- use TemplateHaskell to create all possible idpnames for UI to render
+-- then create a search method to find `Idp i` object.
 initSupportedIdps ::
   TenantBasedIdps ->
   Map.Map IdpName DemoIdp
@@ -236,10 +240,10 @@ initSupportedIdps (myAuth0Idp, myOktaIdp) =
     , (Okta, DemoIdp myOktaIdp)
     , (Facebook, DemoIdp IFacebook.defaultFacebookIdp)
     , (Fitbit, DemoIdp IFitbit.defaultFitbitIdp)
-    , (GitHub, DemoIdp IGithub.defaultGithubIdp)
-    , (DropBox, DemoIdp IDropbox.defaultDropboxIdp)
+    , (GitHub, DemoIdp IGitHub.defaultGithubIdp)
+    , (DropBox, DemoIdp IDropBox.defaultDropBoxIdp)
     , (Google, DemoIdp IGoogle.defaultGoogleIdp)
-    , (LinkedIn, DemoIdp ILinkedin.defaultLinkedinIdp)
+    , (LinkedIn, DemoIdp ILinkedIn.defaultLinkedInIdp)
     , (Twitter, DemoIdp ITwitter.defaultTwitterIdp)
     , (Slack, DemoIdp ISlack.defaultSlackIdp)
     , (Weibo, DemoIdp IWeibo.defaultWeiboIdp)
@@ -247,24 +251,46 @@ initSupportedIdps (myAuth0Idp, myOktaIdp) =
     , (StackExchange, DemoIdp IStackExchange.defaultStackExchangeIdp)
     ]
 
-sampleAuthorizationCodeApps :: Map.Map IdpName AuthorizationCodeApplication
-sampleAuthorizationCodeApps =
-  Map.fromList
-    [ (Auth0, IAuth0.sampleAuth0AuthorizationCodeApp)
-    , (Okta, IOkta.sampleOktaAuthorizationCodeApp)
-    , (AzureAD, IAzureAD.sampleAzureADAuthorizationCodeApp)
-    , (Facebook, IFacebook.sampleFacebookAuthorizationCodeApp)
-    , (Fitbit, IFitbit.sampleFitbitAuthorizationCodeApp)
-    , (GitHub, IGithub.sampleGithubAuthorizationCodeApp)
-    , (DropBox, IDropbox.sampleDropboxAuthorizationCodeApp)
-    , (Google, IGoogle.sampleGoogleAuthorizationCodeApp)
-    , (LinkedIn, ILinkedin.sampleLinkedinAuthorizationCodeApp)
-    , (Twitter, ITwitter.sampleTwitterAuthorizationCodeApp)
-    , (Slack, ISlack.sampleSlackAuthorizationCodeApp)
-    , (Weibo, IWeibo.sampleWeiboAuthorizationCodeApp)
-    , (ZOHO, IZOHO.sampleZohoAuthorizationCodeApp)
-    , (StackExchange, IStackExchange.sampleStackExchangeAuthorizationCodeApp)
-    ]
+findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
+findAuthorizationCodeSampleApp = \case
+  Auth0 -> IAuth0.sampleAuth0AuthorizationCodeApp
+  Okta -> IOkta.sampleOktaAuthorizationCodeApp
+  AzureAD -> IAzureAD.sampleAzureADAuthorizationCodeApp
+  Facebook -> IFacebook.sampleFacebookAuthorizationCodeApp
+  Fitbit -> IFitbit.sampleFitbitAuthorizationCodeApp
+  GitHub -> IGitHub.sampleGithubAuthorizationCodeApp
+  DropBox -> IDropBox.sampleDropBoxAuthorizationCodeApp
+  Google -> IGoogle.sampleGoogleAuthorizationCodeApp
+  LinkedIn -> ILinkedIn.sampleLinkedInAuthorizationCodeApp
+  Twitter -> ITwitter.sampleTwitterAuthorizationCodeApp
+  Slack -> ISlack.sampleSlackAuthorizationCodeApp
+  Weibo -> IWeibo.sampleWeiboAuthorizationCodeApp
+  ZOHO -> IZOHO.sampleZohoAuthorizationCodeApp
+  StackExchange -> IStackExchange.sampleStackExchangeAuthorizationCodeApp
+
+findFetchUserInfoMethod ::
+  (MonadIO m, HasDemoLoginUser i, HasUserInfoRequest a, FromJSON (IdpUserInfo i)) =>
+  IdpName ->
+  ( IdpApplication i a ->
+    Manager ->
+    AccessToken ->
+    ExceptT BSL.ByteString m (IdpUserInfo i)
+  )
+findFetchUserInfoMethod = \case
+  Auth0 -> IAuth0.fetchUserInfo
+  Okta -> IOkta.fetchUserInfo
+  AzureAD -> IAzureAD.fetchUserInfo
+  Facebook -> IFacebook.fetchUserInfo
+  Fitbit -> IFitbit.fetchUserInfo
+  GitHub -> IGitHub.fetchUserInfo
+  DropBox -> IDropBox.fetchUserInfo
+  Google -> IGoogle.fetchUserInfo
+  LinkedIn -> ILinkedIn.fetchUserInfo
+  Twitter -> ITwitter.fetchUserInfo
+  Slack -> ISlack.fetchUserInfo
+  Weibo -> IWeibo.fetchUserInfo
+  ZOHO -> IZOHO.fetchUserInfo
+  StackExchange -> IStackExchange.fetchUserInfo
 
 isSupportPkce :: IdpName -> Bool
 isSupportPkce idpName =
