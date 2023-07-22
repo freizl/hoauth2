@@ -25,14 +25,14 @@ import Prelude hiding (error)
 -- hence no way for this library to parse error response.
 -- In other words, @/authorize@ ends up with 4xx or 5xx.
 -- Revisit this whenever find a case OAuth2 provider redirects back to Relying party with errors.
-data AuthorizationRequestError = AuthorizationRequestError
-  { error :: AuthorizationRequestErrorCode
-  , errorDescription :: Maybe Text
-  , errorUri :: Maybe (URIRef Absolute)
+data AuthorizationResponseError = AuthorizationResponseError
+  { authorizationResponseError :: AuthorizationResponseErrorCode
+  , authorizationResponseErrorDescription :: Maybe Text
+  , authorizationResponseErrorUri :: Maybe (URIRef Absolute)
   }
   deriving (Show, Eq)
 
-data AuthorizationRequestErrorCode
+data AuthorizationResponseErrorCode
   = InvalidRequest
   | UnauthorizedClient
   | AccessDenied
@@ -43,8 +43,8 @@ data AuthorizationRequestErrorCode
   | UnknownErrorCode Text
   deriving (Show, Eq)
 
-instance FromJSON AuthorizationRequestErrorCode where
-  parseJSON = withText "parseJSON TokenRequestErrorCode" $ \t ->
+instance FromJSON AuthorizationResponseErrorCode where
+  parseJSON = withText "parseJSON AuthorizationResponseErrorCode" $ \t ->
     pure $ case t of
       "invalid_request" -> InvalidRequest
       "unauthorized_client" -> UnauthorizedClient
@@ -55,12 +55,12 @@ instance FromJSON AuthorizationRequestErrorCode where
       "temporarily_unavailable" -> TemporarilyUnavailable
       _ -> UnknownErrorCode t
 
-instance FromJSON AuthorizationRequestError where
-  parseJSON = withObject "parseJSON AuthorizationRequestError" $ \t -> do
-    error <- t .: "error"
-    errorDescription <- t .:? "error_description"
-    errorUri <- t .:? "error_uri"
-    pure AuthorizationRequestError {..}
+instance FromJSON AuthorizationResponseError where
+  parseJSON = withObject "parseJSON AuthorizationResponseError" $ \t -> do
+    authorizationResponseError <- t .: "error"
+    authorizationResponseErrorDescription <- t .:? "error_description"
+    authorizationResponseErrorUri <- t .:? "error_uri"
+    pure AuthorizationResponseError {..}
 
 --------------------------------------------------
 
