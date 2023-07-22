@@ -19,7 +19,7 @@ class HasUserInfoRequest a
 
 -- | Standard approach of fetching /userinfo
 conduitUserInfoRequest ::
-  (HasUserInfoRequest a, FromJSON b, MonadIO m) =>
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
   IdpApplication i a ->
   Manager ->
   AccessToken ->
@@ -30,7 +30,7 @@ conduitUserInfoRequest = conduitUserInfoRequestWithCustomMethod authGetJSON
 -- But some IdP has different approach to fetch user information rather than GET.
 -- This method gives the flexiblity.
 conduitUserInfoRequestWithCustomMethod ::
-  (HasUserInfoRequest a, FromJSON b, MonadIO m) =>
+  (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
   ( Manager ->
     AccessToken ->
     URI ->

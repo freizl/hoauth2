@@ -66,7 +66,7 @@ class HasAuthorizeRequest a => HasPkceAuthorizeRequest a where
 -- | Constructs Authorization Code (PKCE) request URI and the Code Verifier.
 -- https://datatracker.ietf.org/doc/html/rfc7636
 mkPkceAuthorizeRequest ::
-  (HasPkceAuthorizeRequest a, MonadIO m) =>
+  (MonadIO m, HasPkceAuthorizeRequest a) =>
   IdpApplication i a ->
   m (URI, CodeVerifier)
 mkPkceAuthorizeRequest IdpApplication {..} = do
