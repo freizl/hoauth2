@@ -1,5 +1,6 @@
 module Network.OAuth2.Provider where
 
+import Data.Hashable
 import GHC.Generics (Generic)
 
 data IdpName
@@ -17,4 +18,6 @@ data IdpName
   | Twitter
   | Weibo
   | ZOHO
-  deriving (Eq, Ord, Show, Generic)
+  deriving (Eq, Ord, Show, Enum, Bounded, Generic)
+
+instance Hashable IdpName

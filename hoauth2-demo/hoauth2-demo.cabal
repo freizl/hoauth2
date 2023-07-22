@@ -32,7 +32,6 @@ executable hoauth2-demo
   autogen-modules:    Paths_hoauth2_demo
   other-modules:
     App
-    AppEnv
     Env
     Idp
     Paths_hoauth2_demo
@@ -48,6 +47,7 @@ executable hoauth2-demo
     DerivingStrategies
     ImportQualifiedPost
     InstanceSigs
+    LambdaCase
     OverloadedStrings
     PolyKinds
     RecordWildCards
@@ -62,7 +62,6 @@ executable hoauth2-demo
     , containers             ^>=0.6
     , data-default           ^>=0.7
     , directory              ^>=1.3
-    , hashable               ^>=1.4.2
     , hoauth2                >=2.7    && <2.9
     , hoauth2-providers      >=0.2    && <0.3
     , http-conduit           >=2.1    && <2.4

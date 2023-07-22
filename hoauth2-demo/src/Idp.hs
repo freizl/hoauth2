@@ -1,11 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Idp where
 
-import AppEnv
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson (FromJSON)
@@ -227,29 +225,25 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
--- TODO:
--- use TemplateHaskell to create all possible idpnames for UI to render
--- then create a search method to find `Idp i` object.
-initSupportedIdps ::
+findIdp ::
   TenantBasedIdps ->
-  Map.Map IdpName DemoIdp
-initSupportedIdps (myAuth0Idp, myOktaIdp) =
-  Map.fromList
-    [ (AzureAD, DemoIdp IAzureAD.defaultAzureADIdp)
-    , (Auth0, DemoIdp myAuth0Idp)
-    , (Okta, DemoIdp myOktaIdp)
-    , (Facebook, DemoIdp IFacebook.defaultFacebookIdp)
-    , (Fitbit, DemoIdp IFitbit.defaultFitbitIdp)
-    , (GitHub, DemoIdp IGitHub.defaultGithubIdp)
-    , (DropBox, DemoIdp IDropBox.defaultDropBoxIdp)
-    , (Google, DemoIdp IGoogle.defaultGoogleIdp)
-    , (LinkedIn, DemoIdp ILinkedIn.defaultLinkedInIdp)
-    , (Twitter, DemoIdp ITwitter.defaultTwitterIdp)
-    , (Slack, DemoIdp ISlack.defaultSlackIdp)
-    , (Weibo, DemoIdp IWeibo.defaultWeiboIdp)
-    , (ZOHO, DemoIdp IZOHO.defaultZohoIdp)
-    , (StackExchange, DemoIdp IStackExchange.defaultStackExchangeIdp)
-    ]
+  IdpName ->
+  DemoIdp
+findIdp (myAuth0Idp, myOktaIdp) = \case
+  AzureAD -> DemoIdp IAzureAD.defaultAzureADIdp
+  Auth0 -> DemoIdp myAuth0Idp
+  Okta -> DemoIdp myOktaIdp
+  Facebook -> DemoIdp IFacebook.defaultFacebookIdp
+  Fitbit -> DemoIdp IFitbit.defaultFitbitIdp
+  GitHub -> DemoIdp IGitHub.defaultGithubIdp
+  DropBox -> DemoIdp IDropBox.defaultDropBoxIdp
+  Google -> DemoIdp IGoogle.defaultGoogleIdp
+  LinkedIn -> DemoIdp ILinkedIn.defaultLinkedInIdp
+  Twitter -> DemoIdp ITwitter.defaultTwitterIdp
+  Slack -> DemoIdp ISlack.defaultSlackIdp
+  Weibo -> DemoIdp IWeibo.defaultWeiboIdp
+  ZOHO -> DemoIdp IZOHO.defaultZohoIdp
+  StackExchange -> DemoIdp IStackExchange.defaultStackExchangeIdp
 
 findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
 findAuthorizationCodeSampleApp = \case
