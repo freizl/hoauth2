@@ -3,7 +3,6 @@
 
 module App (app) where
 
-import AppEnv
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
@@ -55,9 +54,8 @@ waiApp = do
     myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com"
     -- myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
     let oidcIdps = (myAuth0Idp, myOktaIdp)
-    let allIdps = initSupportedIdps oidcIdps
     oauthAppSettings <- readEnvFile
-    sessionStore <- liftIO (initUserStore $ getIdpNames allIdps)
+    sessionStore <- liftIO (initUserStore allIdpNames)
     pure AppEnv {..}
   case re of
     Left e -> Prelude.error $ TL.unpack $ "unable to init demo server: \n" <> e

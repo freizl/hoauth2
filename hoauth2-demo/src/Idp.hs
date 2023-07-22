@@ -1,11 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Idp where
 
-import AppEnv
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson (FromJSON)
@@ -227,29 +225,29 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
--- TODO:
--- use TemplateHaskell to create all possible idpnames for UI to render
--- then create a search method to find `Idp i` object.
-initSupportedIdps ::
-  TenantBasedIdps ->
-  Map.Map IdpName DemoIdp
-initSupportedIdps (myAuth0Idp, myOktaIdp) =
-  Map.fromList
-    [ (AzureAD, DemoIdp IAzureAD.defaultAzureADIdp)
-    , (Auth0, DemoIdp myAuth0Idp)
-    , (Okta, DemoIdp myOktaIdp)
-    , (Facebook, DemoIdp IFacebook.defaultFacebookIdp)
-    , (Fitbit, DemoIdp IFitbit.defaultFitbitIdp)
-    , (GitHub, DemoIdp IGitHub.defaultGithubIdp)
-    , (DropBox, DemoIdp IDropBox.defaultDropBoxIdp)
-    , (Google, DemoIdp IGoogle.defaultGoogleIdp)
-    , (LinkedIn, DemoIdp ILinkedIn.defaultLinkedInIdp)
-    , (Twitter, DemoIdp ITwitter.defaultTwitterIdp)
-    , (Slack, DemoIdp ISlack.defaultSlackIdp)
-    , (Weibo, DemoIdp IWeibo.defaultWeiboIdp)
-    , (ZOHO, DemoIdp IZOHO.defaultZohoIdp)
-    , (StackExchange, DemoIdp IStackExchange.defaultStackExchangeIdp)
-    ]
+findIdp ::
+  MonadIO m =>
+  AppEnv ->
+  IdpName ->
+  ExceptT Text m DemoIdp
+findIdp appEnv idpName =
+  let (myAuth0Idp, myOktaIdp) = oidcIdps appEnv
+      demoIdp = case idpName of
+        AzureAD -> DemoIdp IAzureAD.defaultAzureADIdp
+        Auth0 -> DemoIdp myAuth0Idp
+        Okta -> DemoIdp myOktaIdp
+        Facebook -> DemoIdp IFacebook.defaultFacebookIdp
+        Fitbit -> DemoIdp IFitbit.defaultFitbitIdp
+        GitHub -> DemoIdp IGitHub.defaultGithubIdp
+        DropBox -> DemoIdp IDropBox.defaultDropBoxIdp
+        Google -> DemoIdp IGoogle.defaultGoogleIdp
+        LinkedIn -> DemoIdp ILinkedIn.defaultLinkedInIdp
+        Twitter -> DemoIdp ITwitter.defaultTwitterIdp
+        Slack -> DemoIdp ISlack.defaultSlackIdp
+        Weibo -> DemoIdp IWeibo.defaultWeiboIdp
+        ZOHO -> DemoIdp IZOHO.defaultZohoIdp
+        StackExchange -> DemoIdp IStackExchange.defaultStackExchangeIdp
+   in pure demoIdp
 
 findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
 findAuthorizationCodeSampleApp = \case

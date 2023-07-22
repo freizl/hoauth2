@@ -7,49 +7,10 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Default
 import Data.HashMap.Strict qualified as Map
-import Data.Maybe
 import Data.Text.Lazy qualified as TL
-import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
-import Text.Mustache ((~>))
-import Text.Mustache qualified as M
 import Types
-import User
-
-newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap IdpName IdpAuthorizationCodeAppSessionData))
-
-data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
-  { idpName :: IdpName
-  , loginUser :: Maybe DemoLoginUser
-  , oauth2Token :: Maybe OAuth2Token
-  , authorizePkceCodeVerifier :: Maybe CodeVerifier
-  , authorizeAbsUri :: TL.Text
-  }
-
-instance Default IdpAuthorizationCodeAppSessionData where
-  def =
-    IdpAuthorizationCodeAppSessionData
-      { idpName = Okta
-      , loginUser = Nothing
-      , oauth2Token = Nothing
-      , authorizePkceCodeVerifier = Nothing
-      , authorizeAbsUri = ""
-      }
-
-instance M.ToMustache IdpAuthorizationCodeAppSessionData where
-  toMustache (IdpAuthorizationCodeAppSessionData {..}) = do
-    let hasDeviceGrant = idpName `elem` [Okta, GitHub, Auth0, AzureAD, Google]
-        hasClientCredentialsGrant = idpName `elem` [Okta, Auth0]
-        hasPasswordGrant = idpName `elem` [Okta, Auth0]
-    M.object
-      [ "isLogin" ~> isJust loginUser
-      , "user" ~> loginUser
-      , "idpName" ~> idpName
-      , "hasDeviceGrant" ~> hasDeviceGrant
-      , "hasClientCredentialsGrant" ~> hasClientCredentialsGrant
-      , "hasPasswordGrant" ~> hasPasswordGrant
-      ]
 
 -- For the sake of simplicity for this demo App,
 -- I store user data in MVar in server side.
@@ -59,9 +20,11 @@ instance M.ToMustache IdpAuthorizationCodeAppSessionData where
 initUserStore ::
   [IdpName] ->
   IO AuthorizationGrantUserStore
-initUserStore supportedIdps = do
-  let allIdps = fmap (\idpName -> (idpName, def {idpName = idpName})) supportedIdps
-  AuthorizationGrantUserStore <$> newMVar (Map.fromList allIdps)
+initUserStore = do
+  fmap AuthorizationGrantUserStore
+    . newMVar
+    . Map.fromList
+    . fmap (\idpName -> (idpName, def {idpName = idpName}))
 
 insertCodeVerifier ::
   AuthorizationGrantUserStore ->
