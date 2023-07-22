@@ -47,7 +47,7 @@ import URI.ByteString (URI, URIRef, queryL, queryPairsL)
 -- | Conduct an authorized GET request and return response as JSON.
 --   Inject Access Token to Authorization Header.
 authGetJSON ::
-  (FromJSON a, MonadIO m) =>
+  (MonadIO m, FromJSON a) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -57,7 +57,7 @@ authGetJSON ::
 authGetJSON = authGetJSONWithAuthMethod AuthInRequestHeader
 
 authGetJSONInternal ::
-  (FromJSON a, MonadIO m) =>
+  (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -146,7 +146,7 @@ authGetBSWithAuthMethod authTypes manager token url = do
 -- | Conduct POST request and return response as JSON.
 --   Inject Access Token to Authorization Header.
 authPostJSON ::
-  (FromJSON a, MonadIO m) =>
+  (MonadIO m, FromJSON a) =>
   -- | HTTP connection manager.
   Manager ->
   AccessToken ->
@@ -157,7 +157,7 @@ authPostJSON ::
 authPostJSON = authPostJSONWithAuthMethod AuthInRequestHeader
 
 authPostJSONInternal ::
-  (FromJSON a, MonadIO m) =>
+  (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
@@ -174,7 +174,7 @@ authPostJSONInternal = authPostJSONWithAuthMethod
 --
 -- @since 2.6.0
 authPostJSONWithAuthMethod ::
-  (FromJSON a, MonadIO m) =>
+  (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
