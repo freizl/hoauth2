@@ -226,13 +226,24 @@ googleServiceAccountApp = do
       }
 
 findIdp ::
-  MonadIO m =>
-  AppEnv ->
+  TenantBasedIdps ->
   IdpName ->
-  ExceptT Text m DemoIdp
-findIdp appEnv idpName =
-  let (myAuth0Idp, myOktaIdp) = oidcIdps appEnv
-      demoIdp = case idpName of
+  DemoIdp
+findIdp (myAuth0Idp, myOktaIdp)  = \case
+        -- AzureAD ->  IAzureAD.defaultAzureADIdp
+        -- Auth0 ->  myAuth0Idp
+        -- Okta ->  myOktaIdp
+        -- Facebook ->  IFacebook.defaultFacebookIdp
+        -- Fitbit ->  IFitbit.defaultFitbitIdp
+        -- GitHub ->  IGitHub.defaultGithubIdp
+        -- DropBox ->  IDropBox.defaultDropBoxIdp
+        -- Google ->  IGoogle.defaultGoogleIdp
+        -- LinkedIn ->  ILinkedIn.defaultLinkedInIdp
+        -- Twitter ->  ITwitter.defaultTwitterIdp
+        -- Slack ->  ISlack.defaultSlackIdp
+        -- Weibo ->  IWeibo.defaultWeiboIdp
+        -- ZOHO ->  IZOHO.defaultZohoIdp
+        -- StackExchange ->  IStackExchange.defaultStackExchangeIdp
         AzureAD -> DemoIdp IAzureAD.defaultAzureADIdp
         Auth0 -> DemoIdp myAuth0Idp
         Okta -> DemoIdp myOktaIdp
@@ -247,7 +258,6 @@ findIdp appEnv idpName =
         Weibo -> DemoIdp IWeibo.defaultWeiboIdp
         ZOHO -> DemoIdp IZOHO.defaultZohoIdp
         StackExchange -> DemoIdp IStackExchange.defaultStackExchangeIdp
-   in pure demoIdp
 
 findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
 findAuthorizationCodeSampleApp = \case

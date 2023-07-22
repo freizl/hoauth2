@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE RankNTypes, DeriveAnyClass #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -43,6 +43,7 @@ type TenantBasedIdps = (Idp Auth0, Idp Okta)
 data AppEnv = AppEnv
   { oauthAppSettings :: OAuthAppSettings
   , oidcIdps :: TenantBasedIdps
+  , findIdpByName :: IdpName -> DemoIdp
   , sessionStore :: AuthorizationGrantUserStore
   }
 

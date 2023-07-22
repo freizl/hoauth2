@@ -56,6 +56,7 @@ waiApp = do
     let oidcIdps = (myAuth0Idp, myOktaIdp)
     oauthAppSettings <- readEnvFile
     sessionStore <- liftIO (initUserStore allIdpNames)
+    let findIdpByName = findIdp oidcIdps
     pure AppEnv {..}
   case re of
     Left e -> Prelude.error $ TL.unpack $ "unable to init demo server: \n" <> e
@@ -108,9 +109,11 @@ indexH AppEnv {..} = do
 loginH ::
   AppEnv ->
   ActionM ()
-loginH appEnv@AppEnv {..} = do
+loginH AppEnv {..} = do
   authRequestUri <- runActionWithIdp "loginH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp appEnv idpName
+    -- TODO: I dont understand why can use let here
+    -- let (DemoIdp idp) = findIdpByName idpName
+    (DemoIdp idp) <- pure (findIdpByName idpName)
     authCodeApp <- createAuthorizationCodeApp idp idpName
     (authorizationUri, codeVerifier) <-
       liftIO $
@@ -150,9 +153,9 @@ callbackH appEnv@AppEnv {..} = do
 refreshTokenH ::
   AppEnv ->
   ActionM ()
-refreshTokenH appEnv@AppEnv {..} = do
+refreshTokenH AppEnv {..} = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp appEnv idpName
+    (DemoIdp idp) <- pure (findIdpByName idpName)
     authCodeApp <- createAuthorizationCodeApp idp idpName
     idpData <- lookupAppSessionData sessionStore idpName
     newToken <- doRefreshToken authCodeApp idpData
@@ -165,9 +168,9 @@ refreshTokenH appEnv@AppEnv {..} = do
 testPasswordGrantTypeH ::
   AppEnv ->
   ActionM ()
-testPasswordGrantTypeH appEnv = do
+testPasswordGrantTypeH AppEnv{..} = do
   runActionWithIdp "testPasswordGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp appEnv idpName
+    (DemoIdp idp) <- pure (findIdpByName idpName)
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
@@ -180,9 +183,9 @@ testPasswordGrantTypeH appEnv = do
 testClientCredentialGrantTypeH ::
   AppEnv ->
   ActionM ()
-testClientCredentialGrantTypeH appEnv = do
+testClientCredentialGrantTypeH AppEnv{..} = do
   runActionWithIdp "testClientCredentialsGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp appEnv idpName
+    (DemoIdp idp) <- pure (findIdpByName idpName)
     idpApp <- createClientCredentialsApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     -- client credentials flow is meant for machine to machine
@@ -196,9 +199,9 @@ testClientCredentialGrantTypeH appEnv = do
 testDeviceCodeGrantTypeH ::
   AppEnv ->
   ActionM ()
-testDeviceCodeGrantTypeH appEnv = do
+testDeviceCodeGrantTypeH AppEnv{..} = do
   runActionWithIdp "testDeviceCodeGrantTypeH" $ \idpName -> do
-    (DemoIdp idp) <- findIdp appEnv idpName
+    (DemoIdp idp) <- pure (findIdpByName idpName)
     deviceAuthApp <- createDeviceAuthApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
     deviceAuthResp <- withExceptT bslToText $ conduitDeviceAuthorizationRequest deviceAuthApp mgr
@@ -250,8 +253,8 @@ fetchTokenAndUser ::
   -- | Session Data
   ExchangeToken ->
   ExceptT Text IO ()
-fetchTokenAndUser appEnv@AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) exchangeToken = do
-  (DemoIdp idp) <- findIdp appEnv idpName
+fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) exchangeToken = do
+  (DemoIdp idp) <- pure (findIdpByName idpName)
   authCodeIdpApp <- createAuthorizationCodeApp idp idpName
   mgr <- liftIO $ newManager tlsManagerSettings
   token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
