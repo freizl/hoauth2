@@ -29,10 +29,11 @@ import URI.ByteString (URI, serializeURIRef')
 
 -- | 'Idp i' house hold various endpoints endpoints.
 --
--- The `i` is actually phantom type for information only at this moment.
+-- The `i` is actually phantom type for information only (Idp name) at this moment.
+--
 -- And it is PolyKinds.
 -- Hence whenever 'Idp i' or 'IdpApplication i a' is used as function parameter,
--- PolyKinds might need to be enabled.
+-- PolyKinds need to be enabled.
 --
 data Idp (i :: k) = Idp
   { idpUserInfoEndpoint :: URI
@@ -45,6 +46,15 @@ data Idp (i :: k) = Idp
   -- ^ Apparently not all IdP support device code flow
   }
 
+-- | An OAuth2 Application 'a' of IdP 'i'.
+-- 'a' can be one of following type
+--
+-- * 'AuthorizationCodeApplication'
+-- * 'DeviceAuthorizationApplication'
+-- * 'ClientCredentialsApplication'
+-- * 'ResourceOwnerPasswordApplication'
+-- * 'JwtBearerApplication'
+--
 data IdpApplication (i :: k) a = IdpApplication
   { idp :: Idp i
   , application :: a
