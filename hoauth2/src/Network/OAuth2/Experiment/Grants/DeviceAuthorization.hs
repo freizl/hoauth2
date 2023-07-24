@@ -113,10 +113,10 @@ instance HasTokenRequest DeviceAuthorizationApplication where
   mkTokenRequestParam DeviceAuthorizationApplication {..} deviceCode =
     --
     -- This is a bit hacky!
-    -- The token request use 'ClientSecretBasic' by default. (has to pick up one Client Authn Method)
+    -- The token request use `ClientSecretBasic` by default. (has to pick up one Client Authn Method)
     -- ClientId shall be also be in request body per spec.
-    -- However, for some IdPs, e.g. Okta, when using 'ClientSecretBasic' to authn Client,
-    -- it doesn't allow 'client_id' in the request body
+    -- However, for some IdPs, e.g. Okta, when using `ClientSecretBasic` to authn Client,
+    -- it doesn't allow @client_id@ in the request body
     -- 'daAuthorizationRequestAuthenticationMethod' set the tone for Authorization Request,
     -- hence just follow it in the token request
     AuthorizationCodeTokenRequest

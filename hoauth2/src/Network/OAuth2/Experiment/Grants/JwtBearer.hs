@@ -21,7 +21,7 @@ data JwtBearerApplication = JwtBearerApplication
   , jbJwtAssertion :: BS.ByteString
   }
 
--- JwtBearner doesn't use client_id and client_secret for authentication.
+-- JwtBearner doesn't use @client_id@ and @client_secret@ for authentication.
 --
 -- FIXME: The ideal solution shall be do not implement `HasOAuth2Key`
 -- but it will stop to re-use the method 'conduitTokenRequest' for JwtBearer flow.

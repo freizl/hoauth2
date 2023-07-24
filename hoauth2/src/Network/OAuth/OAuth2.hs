@@ -1,10 +1,14 @@
 -- | A lightweight oauth2 Haskell binding.
 -- See Readme for more details
 module Network.OAuth.OAuth2 (
-  module Network.OAuth.OAuth2.HttpClient,
-  module Network.OAuth.OAuth2.AuthorizationRequest,
-  module Network.OAuth.OAuth2.TokenRequest,
   module Network.OAuth.OAuth2.Internal,
+
+  -- * Authorization Requset
+  module Network.OAuth.OAuth2.AuthorizationRequest,
+  -- * Token Request
+  module Network.OAuth.OAuth2.TokenRequest,
+  -- * OAuth'ed http client utilities
+  module Network.OAuth.OAuth2.HttpClient,
 ) where
 
 {-

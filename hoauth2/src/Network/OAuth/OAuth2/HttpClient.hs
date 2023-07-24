@@ -56,6 +56,7 @@ authGetJSON ::
   ExceptT BSL.ByteString m a
 authGetJSON = authGetJSONWithAuthMethod AuthInRequestHeader
 
+-- | Deprecated. Use `authGetJSONWithAuthMethod` instead.
 authGetJSONInternal ::
   (MonadIO m, FromJSON a) =>
   APIAuthenticationMethod ->
@@ -303,9 +304,9 @@ authRequest req upReq manage = ExceptT $ do
   pure (handleResponse resp)
 
 -- | Set several header values:
---   + userAgennt    : `hoauth2`
---   + accept        : `application/json`
---   + authorization : 'Bearer' `xxxxx` if 'AccessToken' provided.
+--   + userAgennt    : "hoauth2"
+--   + accept        : "application/json"
+--   + authorization : "Bearer xxxxx" if 'Network.OAuth.OAuth2.AccessToken' provided.
 updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
   let bearer = [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 (atoken (fromJust t))) | isJust t]
@@ -316,7 +317,7 @@ updateRequestHeaders t req =
 setMethod :: HT.StdMethod -> Request -> Request
 setMethod m req = req {method = HT.renderStdMethod m}
 
--- | For `GET` method API.
+-- | For @GET@ method API.
 appendAccessToken ::
   -- | Base URI
   URIRef a ->
@@ -326,6 +327,6 @@ appendAccessToken ::
   URIRef a
 appendAccessToken uri t = over (queryL . queryPairsL) (\query -> query ++ accessTokenToParam t) uri
 
--- | Create 'QueryParams' with given access token value.
+-- | Create `QueryParams` with given access token value.
 accessTokenToParam :: AccessToken -> [(BS.ByteString, BS.ByteString)]
 accessTokenToParam t = [("access_token", T.encodeUtf8 $ atoken t)]

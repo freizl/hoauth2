@@ -156,13 +156,13 @@ fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 
 -- | Exchange @code@ for an Access Token
 --
--- OAuth2 spec allows credential (`client_id`, `client_secret`) to be sent
--- either in the header (a.k.a 'ClientSecretBasic').
--- or as form/url params (a.k.a 'ClientSecretPost').
+-- OAuth2 spec allows credential (@client_id@, @client_secret@) to be sent
+-- either in the header (a.k.a `ClientSecretBasic`).
+-- or as form/url params (a.k.a `ClientSecretPost`).
 --
 -- The OAuth provider can choose to implement only one, or both.
 -- Look for API document from the OAuth provider you're dealing with.
--- If you're uncertain, try 'fetchAccessToken' which sends credential
+-- If you`re uncertain, try `fetchAccessToken` which sends credential
 -- in authorization http header, which is common case.
 --
 -- @since 2.6.0
@@ -221,7 +221,7 @@ refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 
 -- | Fetch a new AccessToken using the Refresh Token.
 --
--- OAuth2 spec allows credential (`client_id`, `client_secret`) to be sent
+-- OAuth2 spec allows credential ("client_id", "client_secret") to be sent
 -- either in the header (a.k.a 'ClientSecretBasic').
 -- or as form/url params (a.k.a 'ClientSecretPost').
 --
@@ -292,7 +292,7 @@ doSimplePostRequest manager oa url body =
       let req' = (addBasicAuth oa . addDefaultRequestHeaders) req
       httpLbs (urlEncodedBody body req') manager
 
--- | Gets response body from a @Response@ if 200 otherwise assume 'OAuth2Error'
+-- | Gets response body from a @Response@ if 200 otherwise assume 'Network.OAuth.OAuth2.TokenRequest.TokenResponseError'
 handleOAuth2TokenResponse :: Response BSL.ByteString -> Either TokenResponseError BSL.ByteString
 handleOAuth2TokenResponse rsp =
   if HT.statusIsSuccessful (responseStatus rsp)
@@ -331,8 +331,8 @@ addBasicAuth oa =
     (T.encodeUtf8 $ oauth2ClientSecret oa)
 
 -- | Set several header values:
---   + userAgennt    : `hoauth2`
---   + accept        : `application/json`
+--   + userAgennt    : "hoauth2"
+--   + accept        : "application/json"
 addDefaultRequestHeaders :: Request -> Request
 addDefaultRequestHeaders req =
   let headers = defaultRequestHeaders ++ requestHeaders req
