@@ -156,7 +156,7 @@ auth0 =
 authCodeApp :: AuthorizationCodeApplication
 authCodeApp =
   AuthorizationCodeApplication
-    { acClientId = "TZlmNRtLY9duT8M4ztgFBLsFA66aEoGs"
+    { acClientId = ""
     , acClientSecret = ""
     , acScope = Set.fromList ["openid", "profile", "email", "offline_access"]
     , acAuthorizeState = randomStateValue
