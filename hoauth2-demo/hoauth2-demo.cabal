@@ -72,7 +72,6 @@ executable hoauth2-demo
     , scotty                 >=0.10.0 && <0.13
     , text                   >=0.11   && <2.1
     , transformers           >=0.4    && <0.7
-    , unordered-containers   >=0.2.5  && <0.3
     , uri-bytestring         >=0.2.3  && <0.4
     , wai                    ^>=3.2
     , wai-middleware-static  >=0.8.1  && <0.10.0

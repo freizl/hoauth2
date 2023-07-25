@@ -69,7 +69,6 @@ library
     , transformers          >=0.4   && <0.7
     , uri-bytestring        >=0.2.3 && <0.4
     , uri-bytestring-aeson  ^>=0.1
-    , hashable               ^>=1.4.2
 
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields

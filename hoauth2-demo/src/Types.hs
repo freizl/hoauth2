@@ -9,7 +9,7 @@ module Types where
 import Control.Concurrent.MVar
 import Data.Aeson
 import Data.Default
-import Data.HashMap.Strict qualified as Map
+import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -47,7 +47,7 @@ data AppEnv = AppEnv
 -------------------------------------------------------------------------------
 --                                  Session                                  --
 -------------------------------------------------------------------------------
-newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.HashMap IdpName IdpAuthorizationCodeAppSessionData))
+newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.Map IdpName IdpAuthorizationCodeAppSessionData))
 
 data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
   { idpName :: IdpName
