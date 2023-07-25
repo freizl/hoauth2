@@ -6,7 +6,7 @@ import Control.Concurrent.MVar
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Default
-import Data.HashMap.Strict qualified as Map
+import Data.Map.Strict qualified as Map
 import Data.Text.Lazy qualified as TL
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
