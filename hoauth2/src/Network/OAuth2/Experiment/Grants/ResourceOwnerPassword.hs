@@ -69,25 +69,10 @@ instance ToQueryParam (TokenRequest ResourceOwnerPasswordApplication) where
 instance HasUserInfoRequest ResourceOwnerPasswordApplication
 
 instance HasRefreshTokenRequest ResourceOwnerPasswordApplication where
-  data RefreshTokenRequest ResourceOwnerPasswordApplication = ResourceOwnerPasswordRefreshTokenRequest
-    { rrRefreshToken :: OAuth2.RefreshToken
-    , rrGrantType :: GrantTypeValue
-    , rrScope :: Set Scope
-    }
-
-  mkRefreshTokenRequestParam :: ResourceOwnerPasswordApplication -> OAuth2.RefreshToken -> RefreshTokenRequest ResourceOwnerPasswordApplication
+  mkRefreshTokenRequestParam :: ResourceOwnerPasswordApplication -> OAuth2.RefreshToken -> RefreshTokenRequest
   mkRefreshTokenRequestParam ResourceOwnerPasswordApplication {..} rt =
-    ResourceOwnerPasswordRefreshTokenRequest
+    RefreshTokenRequest
       { rrScope = ropScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
       }
-
-instance ToQueryParam (RefreshTokenRequest ResourceOwnerPasswordApplication) where
-  toQueryParam :: RefreshTokenRequest ResourceOwnerPasswordApplication -> Map Text Text
-  toQueryParam ResourceOwnerPasswordRefreshTokenRequest {..} =
-    Map.unions
-      [ toQueryParam rrGrantType
-      , toQueryParam rrScope
-      , toQueryParam rrRefreshToken
-      ]
