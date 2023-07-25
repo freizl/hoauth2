@@ -241,7 +241,7 @@ callbackH refUser = do
 
   excepttToActionM $ do
     stateV <- ExceptT $ pure $ paramValue "state" pas
-    when (not $ isSameState randomStateValue stateV) $
+    unless (isSameState randomStateValue stateV) $
       throwE "Unable to validate state"
     codeP <- ExceptT $ pure $ paramValue "code" pas
 
