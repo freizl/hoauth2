@@ -25,7 +25,7 @@ class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasRefres
 -- | Make Refresh Token Request
 -- https://www.rfc-editor.org/rfc/rfc6749#section-6
 conduitRefreshTokenRequest ::
-  (HasRefreshTokenRequest a, ToQueryParam (RefreshTokenRequest a), MonadIO m) =>
+  (MonadIO m, HasRefreshTokenRequest a, ToQueryParam (RefreshTokenRequest a)) =>
   IdpApplication i a ->
   Manager ->
   OAuth2.RefreshToken ->

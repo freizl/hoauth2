@@ -26,10 +26,13 @@ import URI.ByteString (URI, serializeURIRef')
 
 -- TODO: Distinct type per endpoint
 -- Because I made mistake at passing to Authorize and Token Request
+
+-- | `Idp i` house hold various endpoints endpoints.
 --
--- NOTE:
--- The 'i' is being PolyKinds.
--- Hence whenever 'Idp i' or 'IdpApplication i a' is used as function parameter,
+-- The "i" is actually phantom type for information only (Idp name) at this moment.
+--
+-- And it is PolyKinds.
+-- Hence whenever `Idp i` or `IdpApplication i a` is used as function parameter,
 -- PolyKinds need to be enabled.
 --
 data Idp (i :: k) = Idp
@@ -43,6 +46,15 @@ data Idp (i :: k) = Idp
   -- ^ Apparently not all IdP support device code flow
   }
 
+-- | An OAuth2 Application "a" of IdP "i".
+-- "a" can be one of following type:
+--
+-- * `Network.OAuth2.Experiment.AuthorizationCodeApplication`
+-- * `Network.OAuth2.Experiment.DeviceAuthorizationApplication`
+-- * `Network.OAuth2.Experiment.ClientCredentialsApplication`
+-- * `Network.OAuth2.Experiment.ResourceOwnerPasswordApplication`
+-- * `Network.OAuth2.Experiment.JwtBearerApplication`
+--
 data IdpApplication (i :: k) a = IdpApplication
   { idp :: Idp i
   , application :: a

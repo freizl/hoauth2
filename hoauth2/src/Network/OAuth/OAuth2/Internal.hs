@@ -24,11 +24,9 @@ import URI.ByteString
 import URI.ByteString.Aeson ()
 import URI.ByteString.QQ
 
---------------------------------------------------
-
--- * Data Types
-
---------------------------------------------------
+-------------------------------------------------------------------------------
+-- * OAuth2 Configuration
+-------------------------------------------------------------------------------
 
 -- | Query Parameter Representation
 data OAuth2 = OAuth2
@@ -50,6 +48,10 @@ instance Default OAuth2 where
       , oauth2RedirectUri = [uri|https://www.example.com/|]
       }
 
+-------------------------------------------------------------------------------
+-- * Tokens
+-------------------------------------------------------------------------------
+
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
 
 newtype RefreshToken = RefreshToken {rtoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
@@ -59,16 +61,17 @@ newtype IdToken = IdToken {idtoken :: Text} deriving (Binary, Eq, Show, FromJSON
 -- | Authorization Code
 newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON, ToJSON)
 
+-- FIXME: rename to TokenResponse and move to that module
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
 data OAuth2Token = OAuth2Token
   { accessToken :: AccessToken
   , refreshToken :: Maybe RefreshToken
-  -- ^ Exists when @offline_access@ scope is in the 'authorizeUrl' and the provider supports Refresh Access Token.
+  -- ^ Exists when @offline_access@ scope is in the Authorization Request and the provider supports Refresh Access Token.
   , expiresIn :: Maybe Int
   , tokenType :: Maybe Text
   -- ^ See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
   , idToken :: Maybe IdToken
-  -- ^ Exists when @openid@ scope is in the 'authorizeUrl' and the provider supports OpenID.
+  -- ^ Exists when @openid@ scope is in the Authorization Request and the provider supports OpenID protocol.
   }
   deriving (Eq, Show, Generic)
 
@@ -92,6 +95,10 @@ instance ToJSON OAuth2Token where
   toJSON = genericToJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
   toEncoding = genericToEncoding defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
+-------------------------------------------------------------------------------
+-- * Client Authentication methods
+-------------------------------------------------------------------------------
+
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
 -- According to spec:
 --
@@ -101,7 +108,7 @@ instance ToJSON OAuth2Token where
 --
 -- However, in reality, I always have to include authentication in the header.
 --
--- In other words, 'ClientSecrectBasic' is always assured. 'ClientSecretPost' is optional.
+-- In other words, `ClientSecretBasic` is always assured. `ClientSecretPost` is optional.
 --
 -- Maybe consider an alternative implementation that boolean kind of data type is good enough.
 data ClientAuthenticationMethod
@@ -110,22 +117,16 @@ data ClientAuthenticationMethod
   | ClientAssertionJwt
   deriving (Eq)
 
---------------------------------------------------
+-------------------------------------------------------------------------------
+-- * Utilies for Request and URI
+-------------------------------------------------------------------------------
 
--- * Types Synonym
-
---------------------------------------------------
-
--- | type synonym of post body content
+-- | Type synonym of post body content
 type PostBody = [(BS.ByteString, BS.ByteString)]
 
+-- | Type sysnonym of request query params
 type QueryParams = [(BS.ByteString, BS.ByteString)]
 
---------------------------------------------------
-
--- * Utilies
-
---------------------------------------------------
 
 defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
 defaultRequestHeaders =
