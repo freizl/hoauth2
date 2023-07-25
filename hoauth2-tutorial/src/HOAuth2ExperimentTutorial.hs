@@ -116,7 +116,7 @@
 -- which provides a nice guide regarding what is OAuth2 and various use cases.
 module Main where
 
-import Control.Monad (void)
+import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except
 import Data.Aeson (FromJSON)
@@ -173,6 +173,9 @@ auth0DemoApp = IdpApplication {idp = auth0, application = authCodeApp}
 -- which is recommended in <https://www.rfc-editor.org/rfc/rfc6749#section-10.12>
 randomStateValue :: AuthorizeState
 randomStateValue = "random-state-to-prevent-csrf"
+
+isSameState :: AuthorizeState -> TL.Text -> Bool
+isSameState state1 = (== state1) . AuthorizeState
 
 -- | Auth0 user
 -- https://auth0.com/docs/api/authentication#get-user-info
@@ -237,7 +240,9 @@ callbackH refUser = do
   pas <- Scotty.params
 
   excepttToActionM $ do
-    void $ ExceptT $ pure $ paramValue "state" pas
+    stateV <- ExceptT $ pure $ paramValue "state" pas
+    when (not $ isSameState randomStateValue stateV) $
+      throwE "Unable to validate state"
     codeP <- ExceptT $ pure $ paramValue "code" pas
 
     mgr <- liftIO $ newManager tlsManagerSettings
