@@ -52,7 +52,7 @@ instance HasAuthorizeRequest AuthorizationCodeApplication where
       }
 
 instance HasPkceAuthorizeRequest AuthorizationCodeApplication where
-  mkPkceAuthorizeRequestParam :: MonadIO m => AuthorizationCodeApplication -> m (AuthorizationRequestParam, CodeVerifier)
+  mkPkceAuthorizeRequestParam :: (MonadIO m) => AuthorizationCodeApplication -> m (AuthorizationRequestParam, CodeVerifier)
   mkPkceAuthorizeRequestParam app = do
     PkceRequestParam {..} <- mkPkceParam
     let authReqParam = mkAuthorizationRequestParam app
@@ -93,25 +93,10 @@ instance ToQueryParam (TokenRequest AuthorizationCodeApplication) where
 instance HasUserInfoRequest AuthorizationCodeApplication
 
 instance HasRefreshTokenRequest AuthorizationCodeApplication where
-  data RefreshTokenRequest AuthorizationCodeApplication = AuthorizationCodeTokenRefreshRequest
-    { rrRefreshToken :: OAuth2.RefreshToken
-    , rrGrantType :: GrantTypeValue
-    , rrScope :: Set Scope
-    }
-
-  mkRefreshTokenRequestParam :: AuthorizationCodeApplication -> OAuth2.RefreshToken -> RefreshTokenRequest AuthorizationCodeApplication
+  mkRefreshTokenRequestParam :: AuthorizationCodeApplication -> OAuth2.RefreshToken -> RefreshTokenRequest
   mkRefreshTokenRequestParam AuthorizationCodeApplication {..} rt =
-    AuthorizationCodeTokenRefreshRequest
+    RefreshTokenRequest
       { rrScope = acScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
       }
-
-instance ToQueryParam (RefreshTokenRequest AuthorizationCodeApplication) where
-  toQueryParam :: RefreshTokenRequest AuthorizationCodeApplication -> Map Text Text
-  toQueryParam AuthorizationCodeTokenRefreshRequest {..} =
-    Map.unions
-      [ toQueryParam rrGrantType
-      , toQueryParam rrScope
-      , toQueryParam rrRefreshToken
-      ]
