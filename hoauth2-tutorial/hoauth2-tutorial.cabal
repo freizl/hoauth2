@@ -16,17 +16,12 @@ build-type:    Simple
 stability:     Beta
 tested-with:   GHC <=9.6.1
 
--- A copyright notice.
--- copyright:
--- category:
-
 source-repository head
   type:     git
   location: git://github.com/freizl/hoauth2.git
 
-library
+common common
   hs-source-dirs:   src
-  exposed-modules:  HOAuth2Tutorial
   build-depends:
     , aeson           >=2.0   && <2.2
     , base            >=4.5   && <5
@@ -45,19 +40,11 @@ library
     -Wwarnings-deprecations
 
 executable hoauth2-tutorial
-  main-is:          Main.hs
+  import: common
+  main-is:          HOAuth2Tutorial.hs
 
-  -- Modules included in this executable, other than Main.
-  -- other-modules:
-
-  -- LANGUAGE extensions used by modules in this package.
-  -- other-extensions:
+executable hoauth2-experiment-tutorial
+  import: common
+  main-is:          HOAuth2ExperimentTutorial.hs
   build-depends:
-    , base              >=4.5 && <5
-    , hoauth2-tutorial
-
-  hs-source-dirs:   app
-  default-language: Haskell2010
-  ghc-options:
-    -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
-    -Wwarnings-deprecations
+    containers ^>= 0.6
