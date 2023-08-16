@@ -21,9 +21,9 @@ data AuthorizationRequestParam = AuthorizationRequestParam
   , arState :: AuthorizeState
   , arClientId :: ClientId
   , arRedirectUri :: Maybe RedirectUri
-  -- | It could be optional there is only one redirect_uri registered.
-  -- See: https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2.3
   , arResponseType :: ResponseType
+  -- ^ It could be optional there is only one redirect_uri registered.
+  -- See: https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2.3
   , arExtraParams :: Map Text Text
   }
 

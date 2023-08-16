@@ -25,7 +25,9 @@ import URI.ByteString.Aeson ()
 import URI.ByteString.QQ
 
 -------------------------------------------------------------------------------
+
 -- * OAuth2 Configuration
+
 -------------------------------------------------------------------------------
 
 -- | Query Parameter Representation
@@ -49,7 +51,9 @@ instance Default OAuth2 where
       }
 
 -------------------------------------------------------------------------------
+
 -- * Tokens
+
 -------------------------------------------------------------------------------
 
 newtype AccessToken = AccessToken {atoken :: Text} deriving (Binary, Eq, Show, FromJSON, ToJSON)
@@ -62,6 +66,7 @@ newtype IdToken = IdToken {idtoken :: Text} deriving (Binary, Eq, Show, FromJSON
 newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON, ToJSON)
 
 -- FIXME: rename to TokenResponse and move to that module
+
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
 data OAuth2Token = OAuth2Token
   { accessToken :: AccessToken
@@ -96,7 +101,9 @@ instance ToJSON OAuth2Token where
   toEncoding = genericToEncoding defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
 -------------------------------------------------------------------------------
+
 -- * Client Authentication methods
+
 -------------------------------------------------------------------------------
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
@@ -118,7 +125,9 @@ data ClientAuthenticationMethod
   deriving (Eq)
 
 -------------------------------------------------------------------------------
+
 -- * Utilies for Request and URI
+
 -------------------------------------------------------------------------------
 
 -- | Type synonym of post body content
@@ -126,7 +135,6 @@ type PostBody = [(BS.ByteString, BS.ByteString)]
 
 -- | Type sysnonym of request query params
 type QueryParams = [(BS.ByteString, BS.ByteString)]
-
 
 defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
 defaultRequestHeaders =

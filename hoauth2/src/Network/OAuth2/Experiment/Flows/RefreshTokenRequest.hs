@@ -4,10 +4,10 @@ module Network.OAuth2.Experiment.Flows.RefreshTokenRequest where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..))
-import Data.Map.Strict qualified as Map
-import Data.Text.Lazy (Text)
 import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.Set (Set)
+import Data.Text.Lazy (Text)
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2

@@ -34,7 +34,6 @@ import URI.ByteString (URI, serializeURIRef')
 -- And it is PolyKinds.
 -- Hence whenever `Idp i` or `IdpApplication i a` is used as function parameter,
 -- PolyKinds need to be enabled.
---
 data Idp (i :: k) = Idp
   { idpUserInfoEndpoint :: URI
   -- ^ Userinfo Endpoint
@@ -54,7 +53,6 @@ data Idp (i :: k) = Idp
 -- * `Network.OAuth2.Experiment.ClientCredentialsApplication`
 -- * `Network.OAuth2.Experiment.ResourceOwnerPasswordApplication`
 -- * `Network.OAuth2.Experiment.JwtBearerApplication`
---
 data IdpApplication (i :: k) a = IdpApplication
   { idp :: Idp i
   , application :: a

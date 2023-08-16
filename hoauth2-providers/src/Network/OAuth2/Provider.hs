@@ -18,4 +18,3 @@ data IdpName
   | Weibo
   | ZOHO
   deriving (Eq, Ord, Show, Enum, Bounded, Generic)
-

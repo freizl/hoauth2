@@ -142,8 +142,8 @@ createAuthorizationUri AppEnv {..} idpName = do
   (DemoIdp idp) <- pure (findIdpByName idpName)
   authCodeApp <- createAuthorizationCodeApp idp idpName
   (authorizationUri, codeVerifier) <-
-    liftIO
-      $ if isSupportPkce idpName
+    liftIO $
+      if isSupportPkce idpName
         then fmap (second Just) (mkPkceAuthorizeRequest authCodeApp)
         else pure (mkAuthorizationRequest authCodeApp, Nothing)
   insertCodeVerifier sessionStore idpName codeVerifier
@@ -302,8 +302,8 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
       if isSupportPkce idpName
         then do
           when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
-          withExceptT tokenRequestErrorErrorToText
-            $ conduitPkceTokenRequest
+          withExceptT tokenRequestErrorErrorToText $
+            conduitPkceTokenRequest
               idpApp
               mgr
               (exchangeTokenText, fromJust authorizePkceCodeVerifier)

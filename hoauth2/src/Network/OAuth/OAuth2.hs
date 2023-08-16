@@ -5,8 +5,10 @@ module Network.OAuth.OAuth2 (
 
   -- * Authorization Requset
   module Network.OAuth.OAuth2.AuthorizationRequest,
+
   -- * Token Request
   module Network.OAuth.OAuth2.TokenRequest,
+
   -- * OAuth'ed http client utilities
   module Network.OAuth.OAuth2.HttpClient,
 ) where
