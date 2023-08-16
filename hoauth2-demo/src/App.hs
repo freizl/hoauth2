@@ -27,6 +27,7 @@ import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
 import Session
 import Types
+import URI.ByteString qualified as URI
 import User
 import Utils
 import Views
@@ -72,6 +73,8 @@ initApp appEnv = do
 
     get "/" $ indexH appEnv
 
+    get "/oauth2/sso-login" $ ssoLoginH appEnv
+
     -- Authorization Code Grant
     get "/login" $ loginH appEnv
     get "/logout" $ logoutH appEnv
@@ -106,24 +109,45 @@ indexH ::
 indexH AppEnv {..} = do
   liftIO (allAppSessionData sessionStore) >>= overviewTpl
 
+-- | IdP-init sso login
+ssoLoginH :: AppEnv -> ActionM ()
+ssoLoginH appEnv = do
+  pas <- params
+  let issP = paramValue "iss" pas
+  case issP of
+    [] -> raise "sso-login: no 'iss' from sso-login request"
+    (iss : _) -> do
+      -- FIXME
+      -- Assume it's Okta for now but shall parse iss and figure out the right IdP.
+      -- let issUri = URI.parseURI URI.strictURIParserOptions (T.encodeUtf8 $ TL.toStrict iss)
+      --
+      authRequestUri <- exceptToActionM (createAuthorizationUri appEnv Okta)
+      let authRequestUriText = TL.fromStrict (uriToText authRequestUri)
+      if iss `TL.isPrefixOf` authRequestUriText
+        then Scotty.setHeader "Location" authRequestUriText >> Scotty.status status302
+        else raise ("Unsupported issue: " <> iss)
+
 loginH ::
   AppEnv ->
   ActionM ()
-loginH AppEnv {..} = do
-  authRequestUri <- runActionWithIdp "loginH" $ \idpName -> do
-    -- TODO: I dont understand why can use let here
-    -- let (DemoIdp idp) = findIdpByName idpName
-    (DemoIdp idp) <- pure (findIdpByName idpName)
-    authCodeApp <- createAuthorizationCodeApp idp idpName
-    (authorizationUri, codeVerifier) <-
-      liftIO $
-        if isSupportPkce idpName
-          then fmap (second Just) (mkPkceAuthorizeRequest authCodeApp)
-          else pure (mkAuthorizationRequest authCodeApp, Nothing)
-    insertCodeVerifier sessionStore idpName codeVerifier
-    pure authorizationUri
+loginH appEnv = do
+  authRequestUri <- runActionWithIdp "loginH" (createAuthorizationUri appEnv)
   Scotty.setHeader "Location" (TL.fromStrict $ uriToText authRequestUri)
   Scotty.status status302
+
+createAuthorizationUri :: AppEnv -> IdpName -> ExceptT Text IO URI.URI
+createAuthorizationUri AppEnv {..} idpName = do
+  -- TODO: I dont understand why can use let here
+  -- let (DemoIdp idp) = findIdpByName idpName
+  (DemoIdp idp) <- pure (findIdpByName idpName)
+  authCodeApp <- createAuthorizationCodeApp idp idpName
+  (authorizationUri, codeVerifier) <-
+    liftIO
+      $ if isSupportPkce idpName
+        then fmap (second Just) (mkPkceAuthorizeRequest authCodeApp)
+        else pure (mkAuthorizationRequest authCodeApp, Nothing)
+  insertCodeVerifier sessionStore idpName codeVerifier
+  pure authorizationUri
 
 logoutH ::
   AppEnv ->
@@ -278,8 +302,8 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
       if isSupportPkce idpName
         then do
           when (isNothing authorizePkceCodeVerifier) (throwE "Unable to find code verifier")
-          withExceptT tokenRequestErrorErrorToText $
-            conduitPkceTokenRequest
+          withExceptT tokenRequestErrorErrorToText
+            $ conduitPkceTokenRequest
               idpApp
               mgr
               (exchangeTokenText, fromJust authorizePkceCodeVerifier)
