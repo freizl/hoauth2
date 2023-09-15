@@ -87,7 +87,7 @@ executable hoauth2-demo
     -Wunused-packages -Wwarnings-deprecations -Wwarn
 
   if flag(breakpoint)
-    build-depends: breakpoint ^>= 0.1.2
+    -- build-depends: breakpoint ^>= 0.1.2
     ghc-options: -fplugin=Debug.Breakpoint -plugin-package breakpoint
   if impl(ghc <9.4)
     ghc-options: -Wno-unticked-promoted-constructors
