@@ -27,6 +27,11 @@ source-repository head
   type:     git
   location: git://github.com/freizl/hoauth2.git
 
+flag breakpoint
+  description: Turn on breakpoint plugin
+  manual: True
+  default: False
+
 executable hoauth2-demo
   main-is:            Main.hs
   autogen-modules:    Paths_hoauth2_demo
@@ -81,5 +86,8 @@ executable hoauth2-demo
     -Wall -Wextra -Wtabs -Wno-unused-do-bind -Wpartial-fields
     -Wunused-packages -Wwarnings-deprecations -Wwarn
 
+  if flag(breakpoint)
+    build-depends: breakpoint ^>= 0.1.2
+    ghc-options: -fplugin=Debug.Breakpoint -plugin-package breakpoint
   if impl(ghc <9.4)
     ghc-options: -Wno-unticked-promoted-constructors
