@@ -115,14 +115,25 @@ module Network.OAuth2.Experiment (
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
-import Network.OAuth2.Experiment.Flows.AuthorizationRequest (mkAuthorizationRequest, mkPkceAuthorizeRequest)
+import Network.OAuth2.Experiment.Flows.AuthorizationRequest (
+  HasAuthorizeRequest,
+  mkAuthorizationRequest,
+  mkPkceAuthorizeRequest,
+ )
 import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest (
   DeviceAuthorizationResponse (..),
+  HasDeviceAuthorizationRequest,
   conduitDeviceAuthorizationRequest,
  )
-import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (conduitRefreshTokenRequest)
+import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (
+  HasRefreshTokenRequest,
+  conduitRefreshTokenRequest,
+ )
 import Network.OAuth2.Experiment.Flows.TokenRequest (
+  ExchangeTokenInfo,
+  HasTokenRequest,
   NoNeedExchangeToken (..),
+  TokenRequest,
   conduitPkceTokenRequest,
   conduitTokenRequest,
  )
@@ -139,6 +150,7 @@ import Network.OAuth2.Experiment.Types (
   AuthorizeState (..),
   ClientId (..),
   ClientSecret (..),
+  HasOAuth2Key,
   Idp (..),
   IdpApplication (..),
   Password (..),

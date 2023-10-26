@@ -113,7 +113,7 @@ instance ToJSON OAuth2Token where
 --
 -- Which means use Authorization header or Post body.
 --
--- However, in reality, I always have to include authentication in the header.
+-- However, I found I have to include authentication in the header all the time in real world.
 --
 -- In other words, `ClientSecretBasic` is always assured. `ClientSecretPost` is optional.
 --

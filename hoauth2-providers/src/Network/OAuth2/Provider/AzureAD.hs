@@ -51,7 +51,7 @@ fetchUserInfo = conduitUserInfoRequest
 -- @
 --
 -- But its issuer is "https://login.microsoftonline.com/{tenantid}/v2.0",
--- which is invalid 'URI'!!
+-- which is invalid URI!!
 defaultAzureADIdp :: Idp AzureAD
 defaultAzureADIdp =
   Idp
