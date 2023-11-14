@@ -30,7 +30,7 @@ common common
     , http-conduit    >=2.1   && <2.4
     , http-types      >=0.11  && <0.13
     , scotty          >=0.10  && <0.13
-    , text            >=0.11  && <2.1
+    , text            >=2.0   && <2.3
     , transformers    >=0.4   && <0.7
     , uri-bytestring  >=0.2.3 && <0.4
 
@@ -40,11 +40,10 @@ common common
     -Wwarnings-deprecations
 
 executable hoauth2-tutorial
-  import: common
-  main-is:          HOAuth2Tutorial.hs
+  import:  common
+  main-is: HOAuth2Tutorial.hs
 
 executable hoauth2-experiment-tutorial
-  import: common
-  main-is:          HOAuth2ExperimentTutorial.hs
-  build-depends:
-    containers ^>= 0.6
+  import:        common
+  main-is:       HOAuth2ExperimentTutorial.hs
+  build-depends: containers ^>=0.6

@@ -40,18 +40,18 @@ library
     Network.OAuth.OAuth2.HttpClient
     Network.OAuth.OAuth2.TokenRequest
     Network.OAuth2.Experiment
-    Network.OAuth2.Experiment.Grants.AuthorizationCode
-    Network.OAuth2.Experiment.Grants.ClientCredentials
-    Network.OAuth2.Experiment.Grants.DeviceAuthorization
-    Network.OAuth2.Experiment.Grants.JwtBearer
-    Network.OAuth2.Experiment.Grants.ResourceOwnerPassword
     Network.OAuth2.Experiment.Flows.AuthorizationRequest
     Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest
     Network.OAuth2.Experiment.Flows.RefreshTokenRequest
     Network.OAuth2.Experiment.Flows.TokenRequest
     Network.OAuth2.Experiment.Flows.UserInfoRequest
-    Network.OAuth2.Experiment.Types
+    Network.OAuth2.Experiment.Grants.AuthorizationCode
+    Network.OAuth2.Experiment.Grants.ClientCredentials
+    Network.OAuth2.Experiment.Grants.DeviceAuthorization
+    Network.OAuth2.Experiment.Grants.JwtBearer
+    Network.OAuth2.Experiment.Grants.ResourceOwnerPassword
     Network.OAuth2.Experiment.Pkce
+    Network.OAuth2.Experiment.Types
 
   default-extensions:
     DeriveGeneric
@@ -77,7 +77,7 @@ library
     , http-types            >=0.11   && <0.13
     , memory                ^>=0.18
     , microlens             ^>=0.4.0
-    , text                  ^>=2.0
+    , text                  >=2.0    && <2.3
     , transformers          >=0.4    && <0.7
     , uri-bytestring        >=0.2.3  && <0.4
     , uri-bytestring-aeson  ^>=0.1

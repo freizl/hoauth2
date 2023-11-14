@@ -64,7 +64,7 @@ library
     , http-types            >=0.11  && <0.13
     , jose-jwt              >=0.9.4 && <0.10
     , mtl                   >=2.0   && <2.4
-    , text                  >=0.11  && <2.1
+    , text                  >=2.0   && <2.3
     , time                  >=1.12  && <1.13
     , transformers          >=0.4   && <0.7
     , uri-bytestring        >=0.2.3 && <0.4
