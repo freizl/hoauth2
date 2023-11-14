@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name:          hoauth2-tutorial
-version:       0.3.0
+version:       0.4.0
 synopsis:      Tutorial for using hoauth2
 description:
   Tutorial to demostrate how to use hoauth2 to implement OAuth2 flow in an web Application.
