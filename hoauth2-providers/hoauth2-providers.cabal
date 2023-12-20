@@ -53,7 +53,7 @@ library
     Network.OIDC.WellKnown
 
   build-depends:
-    , aeson                 >=2.0   && <2.2
+    , aeson                 >=2.0   && <2.3
     , base                  >=4.5   && <5
     , bytestring            >=0.9   && <0.12
     , containers            ^>=0.6
@@ -84,7 +84,7 @@ test-suite hoauth-providers-tests
   hs-source-dirs:     test
   ghc-options:        -Wall
   build-depends:
-    , aeson              >=2.0   && <2.2
+    , aeson              >=2.0   && <2.3
     , base               >=4     && <5
     , hoauth2-providers
     , hspec              >=2     && <3
