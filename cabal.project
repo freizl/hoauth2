@@ -1,5 +1,5 @@
 packages: */*.cabal
-index-state: 2023-06-13T00:56:04Z
+index-state: 2023-12-20T01:31:26Z
 
 -- TODO: doesn't seem work unless add to ~/.cabal/config
 extra-include-dirs: /opt/homebrew/opt/openssl@3/include
