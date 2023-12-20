@@ -64,7 +64,7 @@ library
     TypeFamilies
 
   build-depends:
-    , aeson                 >=2.0    && <2.2
+    , aeson                 >=2.0    && <2.3
     , base                  >=4      && <5
     , base64                ^>=0.4
     , binary                ^>=0.8
@@ -92,7 +92,7 @@ test-suite hoauth-tests
   hs-source-dirs:     test
   ghc-options:        -Wall
   build-depends:
-    , aeson           >=2.0   && <2.2
+    , aeson           >=2.0   && <2.3
     , base            >=4     && <5
     , hoauth2
     , hspec           >=2     && <3
