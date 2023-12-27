@@ -46,4 +46,4 @@ executable hoauth2-tutorial
 executable hoauth2-experiment-tutorial
   import:        common
   main-is:       HOAuth2ExperimentTutorial.hs
-  build-depends: containers ^>=0.6
+  build-depends: containers >=0.6 && < 0.8
