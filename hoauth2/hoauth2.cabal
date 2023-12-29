@@ -65,7 +65,7 @@ library
 
   build-depends:
     , aeson                 >=2.0    && <2.3
-    , base                  >=4      && <5
+    , base                  >=4.11   && <5
     , base64                ^>=0.4
     , binary                >=0.8    && <0.11
     , bytestring            >=0.9    && <0.13
@@ -93,7 +93,7 @@ test-suite hoauth-tests
   ghc-options:        -Wall
   build-depends:
     , aeson           >=2.0   && <2.3
-    , base            >=4     && <5
+    , base            >=4.11  && <5
     , hoauth2
     , hspec           >=2     && <3
     , uri-bytestring  >=0.2.3 && <0.4
