@@ -9,6 +9,7 @@ module Network.OAuth2.Experiment.Pkce (
 import Control.Monad.IO.Class
 import Crypto.Hash qualified as H
 import Crypto.Random qualified as Crypto
+import Data.Base64.Types qualified as B64
 import Data.ByteArray qualified as ByteArray
 import Data.ByteString qualified as BS
 import Data.ByteString.Base64.URL qualified as B64
@@ -42,7 +43,7 @@ mkPkceParam = do
       }
 
 encodeCodeVerifier :: BS.ByteString -> Text
-encodeCodeVerifier = B64.encodeBase64Unpadded . BS.pack . ByteArray.unpack . hashSHA256
+encodeCodeVerifier = B64.extractBase64 . B64.encodeBase64Unpadded . BS.pack . ByteArray.unpack . hashSHA256
 
 genCodeVerifier :: MonadIO m => m BS.ByteString
 genCodeVerifier = liftIO $ getBytesInternal BS.empty
