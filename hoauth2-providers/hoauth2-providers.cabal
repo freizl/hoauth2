@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name:          hoauth2-providers
-version:       0.7.0
+version:       0.7.1
 synopsis:      OAuth2 Identity Providers
 description:   A few well known Identity Providers
 homepage:      https://github.com/freizl/hoauth2
