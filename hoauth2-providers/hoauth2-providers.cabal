@@ -53,21 +53,21 @@ library
     Network.OIDC.WellKnown
 
   build-depends:
-    , aeson                 >=2.0   && <2.3
-    , base                  >=4.11  && <5
-    , bytestring            >=0.9   && <0.13
+    , aeson                 >=2.0  && <2.3
+    , base                  >=4.11 && <5
+    , bytestring            >=0.9  && <0.13
     , containers            ^>=0.6
-    , crypton               >=0.32  && <1.1
-    , hoauth2               >=2.9   && <2.15
-    , HsOpenSSL             >=0.11  && <0.12
-    , http-conduit          >=2.1   && <2.4
-    , http-types            >=0.11  && <0.13
-    , jose-jwt              >=0.10  && <0.11
-    , mtl                   >=2.0   && <2.4
-    , text                  >=2.0   && <2.3
-    , time                  >=1.12  && <1.13
-    , transformers          >=0.4   && <0.7
-    , uri-bytestring        >=0.2.3 && <0.4
+    , crypton               >=0.32 && <1.1
+    , hoauth2               >=2.9  && <2.15
+    , HsOpenSSL             >=0.11 && <0.12
+    , http-conduit          >=2.1  && <2.4
+    , http-types            >=0.11 && <0.13
+    , jose-jwt              >=0.10 && <0.11
+    , mtl                   >=2.0  && <2.4
+    , text                  >=2.0  && <2.3
+    , time                  >=1.12 && <1.13
+    , transformers          >=0.4  && <0.7
+    , uri-bytestring        >=0.3  && <0.5
     , uri-bytestring-aeson  ^>=0.1
 
   ghc-options:
@@ -84,11 +84,11 @@ test-suite hoauth-providers-tests
   hs-source-dirs:     test
   ghc-options:        -Wall
   build-depends:
-    , aeson              >=2.0   && <2.3
-    , base               >=4.11  && <5
+    , aeson              >=2.0  && <2.3
+    , base               >=4.11 && <5
     , hoauth2-providers
-    , hspec              >=2     && <3
-    , uri-bytestring     >=0.2.3 && <0.4
+    , hspec              >=2    && <3
+    , uri-bytestring     >=0.3  && <0.5
 
   other-modules:      Network.OIDC.WellKnownSpec
   default-language:   Haskell2010

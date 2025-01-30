@@ -165,14 +165,16 @@ callbackH appEnv@AppEnv {..} = do
   -- (Text, Text)
   pas <- params
   let stateP = paramValue "state" pas
-  when (null stateP) (raise "callbackH: no state from callback request")
   let codeP = paramValue "code" pas
-  when (null codeP) (raise "callbackH: no code from callback request")
-  let idpName = fromText $ TL.takeWhile (/= '.') (head stateP)
-  exceptToActionM $ do
-    idpData <- lookupAppSessionData sessionStore idpName
-    fetchTokenAndUser appEnv idpData (ExchangeToken $ TL.toStrict $ head codeP)
-  redirectToHomeM
+  case (stateP, codeP) of
+    ([], _) -> raise "callbackH: no state from callback request"
+    (_, []) -> raise "callbackH: no code from callback request"
+    (state : _, code : _) -> do
+      let idpName = fromText $ TL.takeWhile (/= '.') state
+      exceptToActionM $ do
+        idpData <- lookupAppSessionData sessionStore idpName
+        fetchTokenAndUser appEnv idpData (ExchangeToken $ TL.toStrict code)
+      redirectToHomeM
 
 refreshTokenH ::
   AppEnv ->
