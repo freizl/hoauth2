@@ -218,9 +218,9 @@ paramValue ::
   [Scotty.Param] ->
   Either TL.Text TL.Text
 paramValue key params =
-  if null val
-    then Left ("No value found for param: " <> key)
-    else Right (head val)
+  case val of
+    [] -> Left ("No value found for param: " <> key)
+    (x : _) -> Right x
   where
     val = snd <$> filter (hasParam key) params
     hasParam :: TL.Text -> Scotty.Param -> Bool
