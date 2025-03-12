@@ -8,7 +8,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Bifunctor
-import Data.Binary qualified as Binary
 import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
@@ -288,11 +287,7 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
   token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
   liftIO $ do
     putStrLn "[Authorization Code Flow] Found access token"
-    -- print token
-    let be = Binary.encode token
-    putStr "\t Binary format: "
-    print be
-    print (Binary.decode @OAuth2Token be)
+    print token
   luser <- tryFetchUser idpName authCodeIdpApp mgr token
   liftIO $ do
     print luser
