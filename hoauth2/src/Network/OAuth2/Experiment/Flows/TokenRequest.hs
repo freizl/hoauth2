@@ -43,7 +43,13 @@ conduitTokenRequest ::
   ExceptT TokenResponseError m OAuth2Token
 conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
   let tokenReq = mkTokenRequestParam application exchangeToken
+      key = mkOAuth2Key application
       body = unionMapsToQueryParams [toQueryParam tokenReq]
+      clientSecretPostParam =
+        if getClientAuthenticationMethod application == ClientSecretPost
+          then clientSecretPost key
+          else []
+
   if getClientAuthenticationMethod application == ClientAssertionJwt
     then do
       resp <- ExceptT . liftIO $ do
@@ -53,7 +59,7 @@ conduitTokenRequest IdpApplication {..} mgr exchangeToken = do
       case parseResponseFlexible resp of
         Right obj -> return obj
         Left e -> throwE e
-    else doJSONPostRequest mgr (mkOAuth2Key application) (idpTokenEndpoint idp) body
+    else doJSONPostRequest mgr key (idpTokenEndpoint idp) (body ++ clientSecretPostParam)
 
 -------------------------------------------------------------------------------
 --                                    PKCE                                   --
