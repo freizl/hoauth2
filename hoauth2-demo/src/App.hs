@@ -51,7 +51,8 @@ app =
 waiApp :: IO WAI.Application
 waiApp = do
   re <- runExceptT $ do
-    myAuth0Idp <- Auth0.mkAuth0Idp "freizl.auth0.com"
+    -- FIXME: domain shall go to env.json file
+    myAuth0Idp <- Auth0.mkAuth0Idp "hw101.us.auth0.com"
     myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com"
     -- myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
     let oidcIdps = (myAuth0Idp, myOktaIdp)

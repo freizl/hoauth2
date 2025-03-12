@@ -121,7 +121,7 @@ createClientCredentialsApp i idpName = do
     Auth0 ->
       pure
         defaultApp
-          { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://freizl.auth0.com/api/v2/")]
+          { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://hw101.us.auth0.com/api/v2/")]
           }
     -- Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
     _ -> pure defaultApp
