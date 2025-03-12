@@ -74,7 +74,7 @@ data IdpApplication (i :: k) a = IdpApplication
 --
 -- Would be nice to define Enum for standard Scope, plus allow user to define their own define (per Idp) and plugin somehow.
 newtype Scope = Scope {unScope :: Text}
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 instance IsString Scope where
   fromString :: String -> Scope
@@ -201,7 +201,10 @@ instance ToQueryParam (Set Scope) where
   toQueryParam = toScopeParam . Set.map unScope
     where
       toScopeParam :: IsString a => Set Text -> Map a Text
-      toScopeParam scope = Map.singleton "scope" (TL.intercalate " " $ Set.toList scope)
+      toScopeParam scope =
+        if Set.null scope
+          then Map.empty
+          else Map.singleton "scope" (TL.intercalate " " $ Set.toList scope)
 
 instance ToQueryParam CodeVerifier where
   toQueryParam :: CodeVerifier -> Map Text Text
