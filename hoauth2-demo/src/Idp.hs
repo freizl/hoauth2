@@ -224,6 +224,10 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
+
+stackexchangeAppKey :: BS.ByteString
+stackexchangeAppKey = "rl_F6hh98fEyzUUtNjCKSCXZxMA7"
+
 findIdp ::
   TenantBasedIdps ->
   IdpName ->
@@ -242,7 +246,7 @@ findIdp (myAuth0Idp, myOktaIdp) = \case
   Slack -> DemoIdp ISlack.defaultSlackIdp
   Weibo -> DemoIdp IWeibo.defaultWeiboIdp
   ZOHO -> DemoIdp IZOHO.defaultZohoIdp
-  StackExchange -> DemoIdp IStackExchange.defaultStackExchangeIdp
+  StackExchange -> DemoIdp (IStackExchange.defaultStackExchangeIdp stackexchangeAppKey)
 
 findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
 findAuthorizationCodeSampleApp = \case
