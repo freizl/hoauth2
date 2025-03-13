@@ -54,7 +54,7 @@ createAuthorizationCodeApp ::
 createAuthorizationCodeApp idp idpName = do
   let newAppName = "sample-" <> toText idpName <> "-authorization-code-app"
   let sampleApp = findAuthorizationCodeSampleApp idpName
-  Env.OAuthAppSetting {..} <- Env.lookup newAppName
+  Env.OAuthApp {..} <- Env.lookupApp newAppName
   let newApp' =
         sampleApp
           { acClientId = clientId
@@ -82,7 +82,7 @@ createResourceOwnerPasswordApp i idpName = do
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
           }
-  Env.OAuthAppSetting {..} <- Env.lookup newAppName
+  Env.OAuthApp {..} <- Env.lookupApp newAppName
   newApp' <- case user of
     Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> toText idpName)
     Just userConfig ->
@@ -110,20 +110,22 @@ createClientCredentialsApp i idpName = do
         ClientCredentialsApplication
           { ccClientId = ""
           , ccClientSecret = ""
-          , ccTokenRequestAuthenticationMethod = ClientSecretPost
+          , ccTokenRequestAuthenticationMethod = ClientSecretBasic
           , ccName = ""
           , ccScope = Set.empty
           , ccTokenRequestExtraParams = Map.empty
           }
 
-  Env.OAuthAppSetting {..} <- Env.lookup newAppName
+  appSetting@Env.OAuthApp {..} <- Env.lookupApp newAppName
   newApp <- case idpName of
-    Auth0 ->
+    Auth0 -> do
+      auth0Domain <- Env.lookupAuth0Domain
+      let audience = "https://" <> auth0Domain <> "/api/v2/"
       pure
         defaultApp
-          { ccTokenRequestExtraParams = Map.fromList [("audience ", "https://hw101.us.auth0.com/api/v2/")]
+          { ccTokenRequestExtraParams = Map.fromList [("audience", audience)]
           }
-    -- Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
+    Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
     _ -> pure defaultApp
   let newApp' =
         newApp
@@ -144,12 +146,13 @@ createClientCredentialsApp i idpName = do
 -- But with Org AS, has to use jwt athentication method otherwise got error
 -- Client Credentials requests to the Org Authorization Server must use the private_key_jwt token_endpoint_auth_method
 --
--- FIXME: Get error from Okta about parsing assertion error
+-- FIXME: Get error from Okta "The parsing of the client_assertion failed."
+--
 createOktaClientCredentialsGrantAppJwt ::
   Idp i ->
-  Env.OAuthAppSetting ->
+  Env.OAuthApp ->
   ExceptT Text IO ClientCredentialsApplication
-createOktaClientCredentialsGrantAppJwt i Env.OAuthAppSetting {..} = do
+createOktaClientCredentialsGrantAppJwt i Env.OAuthApp {..} = do
   keyJsonStr <- liftIO $ BS.readFile ".okta-key.json"
   jwk <- except (first TL.pack $ Aeson.eitherDecodeStrict keyJsonStr)
   jwt <- ExceptT $ IOkta.mkOktaClientCredentialAppJwt jwk clientId i
@@ -159,7 +162,7 @@ createOktaClientCredentialsGrantAppJwt i Env.OAuthAppSetting {..} = do
       , ccClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
       , ccTokenRequestAuthenticationMethod = ClientAssertionJwt
       , ccName = ""
-      , ccScope = Set.empty
+      , ccScope = scopes
       , ccTokenRequestExtraParams = Map.empty
       }
 
@@ -186,7 +189,7 @@ createDeviceAuthApp i idpName = do
           , daAuthorizationRequestExtraParam = extraParams
           , daAuthorizationRequestAuthenticationMethod = authMethod
           }
-  Env.OAuthAppSetting {..} <- Env.lookup newAppName
+  Env.OAuthApp {..} <- Env.lookupApp newAppName
   let newApp' =
         newApp
           { daClientId = clientId
@@ -224,10 +227,6 @@ googleServiceAccountApp = do
       , application = IGoogle.sampleServiceAccountApp jwt
       }
 
-
-stackexchangeAppKey :: BS.ByteString
-stackexchangeAppKey = "rl_F6hh98fEyzUUtNjCKSCXZxMA7"
-
 findIdp ::
   TenantBasedIdps ->
   IdpName ->
@@ -246,7 +245,7 @@ findIdp (myAuth0Idp, myOktaIdp) = \case
   Slack -> DemoIdp ISlack.defaultSlackIdp
   Weibo -> DemoIdp IWeibo.defaultWeiboIdp
   ZOHO -> DemoIdp IZOHO.defaultZohoIdp
-  StackExchange -> DemoIdp (IStackExchange.defaultStackExchangeIdp stackexchangeAppKey)
+  StackExchange -> DemoIdp (IStackExchange.defaultStackExchangeIdp "xyz")
 
 findAuthorizationCodeSampleApp :: IdpName -> AuthorizationCodeApplication
 findAuthorizationCodeSampleApp = \case

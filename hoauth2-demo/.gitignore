@@ -15,10 +15,9 @@ cabal.project.local
 cabal.project.local~
 result
 report.html
+.hiedb
+refs.dot
 
 .env.json
-dev.org
-refs.dot
-.hiedb
 .google-sa.json
 .okta-key.json
