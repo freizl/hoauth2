@@ -22,7 +22,7 @@ sampleLinkedInAuthorizationCodeApp =
   AuthorizationCodeApplication
     { acClientId = ""
     , acClientSecret = ""
-    , acScope = Set.fromList ["r_liteprofile"]
+    , acScope = Set.fromList ["openid", "profile"]
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
@@ -41,15 +41,15 @@ fetchUserInfo = conduitUserInfoRequest
 defaultLinkedInIdp :: Idp LinkedIn
 defaultLinkedInIdp =
   Idp
-    { idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/me|]
+    { idpUserInfoEndpoint = [uri|https://api.linkedin.com/v2/userinfo|]
     , idpAuthorizeEndpoint = [uri|https://www.linkedin.com/oauth/v2/authorization|]
     , idpTokenEndpoint = [uri|https://www.linkedin.com/oauth/v2/accessToken|]
     , idpDeviceAuthorizationEndpoint = Nothing
     }
 
 data LinkedInUser = LinkedInUser
-  { localizedFirstName :: Text
-  , localizedLastName :: Text
+  { name :: Text
+  , email :: Text
   }
   deriving (Show, Generic, Eq)
 
