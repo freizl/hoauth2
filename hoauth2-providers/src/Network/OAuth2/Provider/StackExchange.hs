@@ -21,13 +21,10 @@ import Network.OAuth2.Provider
 import URI.ByteString (URI)
 import URI.ByteString.QQ (uri)
 
--- fix key from your application edit page
+-- Found the key from your application edit page
 -- https://stackapps.com/apps/oauth
-stackexchangeAppKey :: ByteString
-stackexchangeAppKey = ""
-
-userInfoEndpoint :: URI
-userInfoEndpoint =
+userInfoEndpoint :: ByteString -> URI
+userInfoEndpoint stackexchangeAppKey =
   appendQueryParams
     [ ("key", stackexchangeAppKey)
     , ("site", "stackoverflow")
@@ -55,14 +52,14 @@ fetchUserInfo ::
   ExceptT BSL.ByteString m b
 fetchUserInfo = conduitUserInfoRequestWithCustomMethod (authGetJSONWithAuthMethod AuthInRequestQuery)
 
-defaultStackExchangeIdp :: Idp StackExchange
-defaultStackExchangeIdp =
+defaultStackExchangeIdp :: ByteString -> Idp StackExchange
+defaultStackExchangeIdp stackexchangeAppKey =
   Idp
     { -- Only StackExchange has such specical app key which has to be append in userinfo uri.
       -- I feel it's not worth to invent a way to read from config
       -- file which would break the generic of Idp data type.
       -- Until discover a easier way, hard code for now.
-      idpUserInfoEndpoint = userInfoEndpoint
+      idpUserInfoEndpoint = userInfoEndpoint stackexchangeAppKey
     , idpAuthorizeEndpoint = [uri|https://stackexchange.com/oauth|]
     , idpTokenEndpoint = [uri|https://stackexchange.com/oauth/access_token|]
     , idpDeviceAuthorizationEndpoint = Nothing
