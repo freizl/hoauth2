@@ -74,6 +74,7 @@ executable hoauth2-demo
     , jose-jwt               >=0.10   && <0.11
     , mustache               >=2.2.3  && <2.5.0
     , parsec                 >=3.1.11 && <3.2.0
+    , pretty-simple          >=4.1    && <4.2
     , scotty                 >=0.10.0 && <0.13
     , text                   >=2.0    && <2.3
     , transformers           >=0.4    && <0.7

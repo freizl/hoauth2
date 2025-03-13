@@ -26,6 +26,7 @@ import Network.Wai qualified as WAI
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Static
 import Session
+import Text.Pretty.Simple
 import Types
 import URI.ByteString qualified as URI
 import User
@@ -51,12 +52,10 @@ app =
 waiApp :: IO WAI.Application
 waiApp = do
   re <- runExceptT $ do
-    -- FIXME: domain shall go to env.json file
-    myAuth0Idp <- Auth0.mkAuth0Idp "hw101.us.auth0.com"
-    myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com"
-    -- myOktaIdp <- Okta.mkOktaIdp "dev-494096.okta.com/oauth2/default"
+    oauthConfigs <- readEnvFile
+    myAuth0Idp <- Auth0.mkAuth0Idp (auth0Domain $ domains oauthConfigs)
+    myOktaIdp <- Okta.mkOktaIdp (oktaDomain $ domains oauthConfigs)
     let oidcIdps = (myAuth0Idp, myOktaIdp)
-    oauthAppSettings <- readEnvFile
     sessionStore <- liftIO (initUserStore allIdpNames)
     let findIdpByName = findIdp oidcIdps
     pure AppEnv {..}
@@ -121,7 +120,6 @@ ssoLoginH appEnv = do
       -- FIXME
       -- Assume it's Okta for now but shall parse iss and figure out the right IdP.
       -- let issUri = URI.parseURI URI.strictURIParserOptions (T.encodeUtf8 $ TL.toStrict iss)
-      --
       authRequestUri <- exceptToActionM (createAuthorizationUri appEnv Okta)
       let authRequestUriText = TL.fromStrict (uriToText authRequestUri)
       if iss `TL.isPrefixOf` authRequestUriText
@@ -187,8 +185,8 @@ refreshTokenH AppEnv {..} = do
     idpData <- lookupAppSessionData sessionStore idpName
     newToken <- doRefreshToken authCodeApp idpData
     liftIO $ do
-      putStrLn "=== refreshTokenH === got new token"
-      print newToken
+      putStrLn "[refreshTokenH] Get new token"
+      pPrint newToken
       upsertAppSessionData sessionStore idpName (idpData {oauth2Token = Just newToken})
   redirectToHomeM
 
@@ -200,11 +198,19 @@ testPasswordGrantTypeH AppEnv {..} = do
     (DemoIdp idp) <- pure (findIdpByName idpName)
     idpApp <- createResourceOwnerPasswordApp idp idpName
     mgr <- liftIO $ newManager tlsManagerSettings
-    token <- withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr NoNeedExchangeToken
+    token <-
+      withExceptT tokenRequestErrorErrorToText $
+        conduitTokenRequest
+          idpApp
+          mgr
+          NoNeedExchangeToken
+    liftIO $ do
+      putStrLn "[testPasswordGrantTypeH] Find token"
+      pPrint token
     user <- tryFetchUser idpName idpApp mgr token
     liftIO $ do
-      putStrLn "=== testPasswordGrantTypeH find token ==="
-      print user
+      putStrLn "[testPasswordGrantTypeH] Find token"
+      pPrint user
   redirectToHomeM
 
 testClientCredentialGrantTypeH ::
@@ -287,10 +293,9 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
   token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
   liftIO $ do
     putStrLn "[Authorization Code Flow] Found access token"
-    print token
+    pPrint token
   luser <- tryFetchUser idpName authCodeIdpApp mgr token
   liftIO $ do
-    print luser
     upsertAppSessionData
       sessionStore
       idpName
@@ -313,7 +318,7 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
         else withExceptT tokenRequestErrorErrorToText $ conduitTokenRequest idpApp mgr exchangeTokenText
 
 tokenRequestErrorErrorToText :: TokenResponseError -> Text
-tokenRequestErrorErrorToText e = TL.pack $ "conduitTokenRequest - cannot fetch access token. error detail: " ++ show e
+tokenRequestErrorErrorToText e = "conduitTokenRequest - cannot fetch access token. error detail: " <> pShowNoColor e
 
 tryFetchUser ::
   forall i a.
@@ -325,7 +330,7 @@ tryFetchUser ::
   ExceptT Text IO DemoLoginUser
 tryFetchUser idpName idpAppConfig mgr at = do
   let fetchMethod = findFetchUserInfoMethod idpName
-  user <- withExceptT bslToText $ do
+  user <- withExceptT pShowNoColor $ do
     fetchMethod idpAppConfig mgr (accessToken at)
   pure $ toLoginUser @i user
 
@@ -336,6 +341,6 @@ doRefreshToken ::
 doRefreshToken idpAppConfig (IdpAuthorizationCodeAppSessionData {..}) = do
   at <- maybe (throwE "no token response found for idp") pure oauth2Token
   rt <- maybe (throwE "no refresh token found for idp") pure (OAuth2.refreshToken at)
-  withExceptT (TL.pack . show) $ do
+  withExceptT pShowNoColor $ do
     mgr <- liftIO $ newManager tlsManagerSettings
     conduitRefreshTokenRequest idpAppConfig mgr rt

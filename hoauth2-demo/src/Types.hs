@@ -38,7 +38,7 @@ data DemoIdp
 type TenantBasedIdps = (Idp Auth0, Idp Okta)
 
 data AppEnv = AppEnv
-  { oauthAppSettings :: OAuthAppSettings
+  { oauthConfigs :: OAuthConfigs
   , oidcIdps :: TenantBasedIdps
   , findIdpByName :: IdpName -> DemoIdp
   , sessionStore :: AuthorizationGrantUserStore

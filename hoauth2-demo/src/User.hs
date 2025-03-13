@@ -95,7 +95,7 @@ instance HasDemoLoginUser LinkedIn where
   toLoginUser :: ILinkedIn.LinkedInUser -> DemoLoginUser
   toLoginUser ILinkedIn.LinkedInUser {..} =
     DemoLoginUser
-      { loginUserName = localizedFirstName <> " " <> localizedLastName
+      { loginUserName = name <> " " <> email
       }
 
 instance HasDemoLoginUser Twitter where
