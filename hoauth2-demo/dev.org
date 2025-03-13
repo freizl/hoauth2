@@ -1,0 +1,11 @@
+#+title: Dev Notes
+
+* Auth0 Resource Owner
+1. Create Native App
+   - Enable Password Grant in advance settings
+2. Settings -> API Authorization Settings -> Default Directory -> =Username-Password-Authentication=
+
+* Client Auth Method
+- LinkedIn, post body only
+- StackExchange, post body only
+- facebook, post body only
