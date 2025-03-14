@@ -187,7 +187,7 @@ refreshTokenH AppEnv {..} = do
     liftIO $ do
       putStrLn "[refreshTokenH] Get new token"
       pPrint newToken
-      upsertAppSessionData sessionStore idpName (idpData {oauth2Token = Just newToken})
+      upsertAppSessionData sessionStore idpName (idpData {tokenResponse = Just newToken})
   redirectToHomeM
 
 testPasswordGrantTypeH ::
@@ -299,13 +299,13 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
     upsertAppSessionData
       sessionStore
       idpName
-      (idpData {loginUser = Just luser, oauth2Token = Just token})
+      (idpData {loginUser = Just luser, tokenResponse = Just token})
   where
     tryFetchAccessToken ::
       IdpApplication i AuthorizationCodeApplication ->
       Manager ->
       ExchangeToken ->
-      ExceptT Text IO OAuth2Token
+      ExceptT Text IO TokenResponse
     tryFetchAccessToken idpApp mgr exchangeTokenText = do
       if isSupportPkce idpName
         then do
@@ -326,7 +326,7 @@ tryFetchUser ::
   IdpName ->
   IdpApplication i a ->
   Manager ->
-  OAuth2Token ->
+  TokenResponse ->
   ExceptT Text IO DemoLoginUser
 tryFetchUser idpName idpAppConfig mgr at = do
   let fetchMethod = findFetchUserInfoMethod idpName
@@ -337,9 +337,9 @@ tryFetchUser idpName idpAppConfig mgr at = do
 doRefreshToken ::
   IdpApplication i AuthorizationCodeApplication ->
   IdpAuthorizationCodeAppSessionData ->
-  ExceptT Text IO OAuth2Token
+  ExceptT Text IO TokenResponse
 doRefreshToken idpAppConfig (IdpAuthorizationCodeAppSessionData {..}) = do
-  at <- maybe (throwE "no token response found for idp") pure oauth2Token
+  at <- maybe (throwE "no token response found for idp") pure tokenResponse
   rt <- maybe (throwE "no refresh token found for idp") pure (OAuth2.refreshToken at)
   withExceptT pShowNoColor $ do
     mgr <- liftIO $ newManager tlsManagerSettings

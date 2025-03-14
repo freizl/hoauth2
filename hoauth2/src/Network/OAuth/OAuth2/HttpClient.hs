@@ -273,10 +273,11 @@ authPostBSWithAuthMethod authTypes manager token url body = do
 jsonBody :: PostBody -> Request -> Request
 jsonBody body req =
   req
-    { requestBody = RequestBodyLBS $ Aeson.encode $
-        Aeson.fromList $
-          fmap (\(a, b) -> (Aeson.fromText (T.decodeUtf8 a), T.decodeUtf8 b)) body
-
+    { requestBody =
+        RequestBodyLBS $
+          Aeson.encode $
+            Aeson.fromList $
+              fmap (\(a, b) -> (Aeson.fromText (T.decodeUtf8 a), T.decodeUtf8 b)) body
     , requestHeaders =
         (HT.hContentType, "application/json")
           : filter (\(x, _) -> x /= HT.hContentType) (requestHeaders req)

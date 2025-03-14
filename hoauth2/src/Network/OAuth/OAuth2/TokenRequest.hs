@@ -5,10 +5,14 @@ module Network.OAuth.OAuth2.TokenRequest where
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Data.Aeson
+import Data.Aeson qualified as Aeson
 import Data.Aeson.Key qualified as Key
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
+import Data.Binary (Binary (..))
+import Data.Binary.Instances.Aeson ()
 import Data.ByteString.Lazy.Char8 qualified as BSL
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Network.HTTP.Conduit
@@ -71,6 +75,78 @@ parseTokeResponseError string =
         (Just $ T.pack $ "Decode TokenResponseError failed: " <> err <> "\n Original Response:\n" <> show (T.decodeUtf8 $ BSL.toStrict response))
         Nothing
 
+-------------------------------------------------------------------------------
+
+-- * Tokens
+
+-------------------------------------------------------------------------------
+
+-- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
+data TokenResponse = TokenResponse
+  { accessToken :: AccessToken
+  , refreshToken :: Maybe RefreshToken
+  -- ^ Exists when @offline_access@ scope is in the Authorization Request and the provider supports Refresh Access Token.
+  , expiresIn :: Maybe Int
+  , tokenType :: Maybe Text
+  -- ^ See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
+  , idToken :: Maybe IdToken
+  -- ^ Exists when @openid@ scope is in the Authorization Request and the provider supports OpenID protocol.
+  , scope :: Maybe Text
+  , rawResponse :: Object
+  }
+  deriving (Eq)
+
+instance Show TokenResponse where
+  show TokenResponse {..} =
+    "TokenResponse {"
+      <> "access_token = ***"
+      <> ", id_token = "
+      <> showM idToken
+      <> ", refresh_token = "
+      <> showM refreshToken
+      <> ", expires_in = "
+      <> show expiresIn
+      <> ", token_type = "
+      <> show tokenType
+      <> ", scope = "
+      <> show scope
+      <> ", raw_response = ***"
+      <> "}"
+    where
+      showM (Just _) = "***"
+      showM Nothing = "Nothing"
+
+instance Binary TokenResponse where
+  put TokenResponse {..} = put rawResponse
+  get = do
+    rawt <- get
+    case fromJSON (Aeson.Object rawt) of
+      Success a -> pure a
+      Error err -> fail err
+
+-- | Parse JSON data into 'OAuth2Token'
+instance FromJSON TokenResponse where
+  parseJSON :: Value -> Parser TokenResponse
+  parseJSON = withObject "TokenResponse" $ \v ->
+    TokenResponse
+      <$> v .: "access_token"
+      <*> v .:? "refresh_token"
+      <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
+      <*> v .:? "token_type"
+      <*> v .:? "id_token"
+      <*> v .:? "scope"
+      <*> pure v
+    where
+      parseIntFlexible :: Value -> Parser Int
+      parseIntFlexible (String s) = pure . read $ unpack s
+      parseIntFlexible v = parseJSON v
+
+instance ToJSON TokenResponse where
+  toJSON :: TokenResponse -> Value
+  toJSON = toJSON . Object . rawResponse
+  toEncoding :: TokenResponse -> Encoding
+  toEncoding = toEncoding . Object . rawResponse
+
 --------------------------------------------------
 
 -- * URL
@@ -124,7 +200,7 @@ fetchAccessToken ::
   -- | OAuth2 Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
 fetchAccessToken2 ::
@@ -136,7 +212,7 @@ fetchAccessToken2 ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -150,7 +226,7 @@ fetchAccessTokenInternal ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
 {-# DEPRECATED fetchAccessTokenInternal "use 'fetchAccessTokenWithAuthMethod'" #-}
 
@@ -176,7 +252,7 @@ fetchAccessTokenWithAuthMethod ::
   -- | Authorization Code
   ExchangeToken ->
   -- | Access Token
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 fetchAccessTokenWithAuthMethod authMethod manager oa code = do
   let (uri, body) = accessTokenUrl oa code
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []
@@ -191,7 +267,7 @@ refreshAccessToken ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
 
 refreshAccessToken2 ::
@@ -202,7 +278,7 @@ refreshAccessToken2 ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
 {-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -215,7 +291,7 @@ refreshAccessTokenInternal ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
 {-# DEPRECATED refreshAccessTokenInternal "use 'refreshAccessTokenWithAuthMethod'" #-}
 
@@ -240,7 +316,7 @@ refreshAccessTokenWithAuthMethod ::
   OAuth2 ->
   -- | Refresh Token gained after authorization
   RefreshToken ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 refreshAccessTokenWithAuthMethod authMethod manager oa token = do
   let (uri, body) = refreshAccessTokenUrl oa token
   let extraBody = if authMethod == ClientSecretPost then clientSecretPost oa else []

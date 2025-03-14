@@ -18,7 +18,7 @@ import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
 import Network.OAuth.OAuth2 (
   ExchangeToken (ExchangeToken),
-  OAuth2Token (accessToken),
+  TokenResponse (accessToken),
   TokenResponseError,
  )
 import Network.OAuth2.Experiment
