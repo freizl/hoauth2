@@ -244,10 +244,10 @@ testDeviceCodeGrantTypeH AppEnv {..} = do
       TL.putStrLn $ TL.fromStrict $ uriToText (verificationUri deviceAuthResp)
     atoken <- withExceptT tokenRequestErrorErrorToText (pollDeviceTokenRequest deviceAuthApp mgr deviceAuthResp)
     liftIO $ do
-      putStrLn "=== testDeviceCodeGrantTypeH found token ==="
-      print atoken
+      putStrLn "[testDeviceCodeGrantTypeH] Found token"
+      pPrint atoken
     luser <- tryFetchUser idpName deviceAuthApp mgr atoken
-    liftIO $ print luser
+    liftIO $ pPrint luser
   redirectToHomeM
 
 -- Only testing google for now

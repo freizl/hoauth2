@@ -23,7 +23,8 @@ curl https://api.linear.app/graphql \
 #+RESULTS:
 {"data":{"viewer":{"id":"5860978b-2b66-41ad-81c9-01f7c1fb919d","name":"Hai W.","email":"freizl.em@gmail.com"}}}
 
-* TMP
-
-#+begin_src haskell
-#+end_src
+* Inbox
+** Surface up users
+- ~AuthorizationGrantUserStore (MVar (Map.Map IdpName IdpAuthorizationCodeAppSessionData)~
+- User AppName would be better since it's already unique.
+- Just need to figure out how to match differ UI section

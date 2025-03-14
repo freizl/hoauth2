@@ -33,7 +33,7 @@ data DeviceAuthorizationApplication = DeviceAuthorizationApplication
   -- ^ Additional parameters to the device authorization request.
   -- Most of identity providers follow the spec strictly but
   -- AzureAD requires "tenant" parameter.
-  , daAuthorizationRequestAuthenticationMethod :: Maybe ClientAuthenticationMethod
+  , daAuthorizationRequestAuthenticationMethod :: ClientAuthenticationMethod
   -- ^ The spec requires similar authentication method as /token request.
   -- Most of identity providers doesn't required it but some does like Okta.
   }
@@ -83,7 +83,7 @@ instance HasOAuth2Key DeviceAuthorizationApplication where
 
 instance HasTokenRequestClientAuthenticationMethod DeviceAuthorizationApplication where
   getClientAuthenticationMethod :: DeviceAuthorizationApplication -> ClientAuthenticationMethod
-  getClientAuthenticationMethod _ = ClientSecretBasic
+  getClientAuthenticationMethod = daAuthorizationRequestAuthenticationMethod
 
 instance HasDeviceAuthorizationRequest DeviceAuthorizationApplication where
   mkDeviceAuthorizationRequestParam :: DeviceAuthorizationApplication -> DeviceAuthorizationRequestParam
@@ -91,9 +91,9 @@ instance HasDeviceAuthorizationRequest DeviceAuthorizationApplication where
     DeviceAuthorizationRequestParam
       { arScope = daScope
       , arClientId =
-          if daAuthorizationRequestAuthenticationMethod == Just ClientSecretBasic
-            then Nothing
-            else Just daClientId
+          if daAuthorizationRequestAuthenticationMethod == ClientSecretPost
+            then Just daClientId
+            else Nothing
       , arExtraParams = daAuthorizationRequestExtraParam
       }
 
@@ -123,9 +123,9 @@ instance HasTokenRequest DeviceAuthorizationApplication where
       { trCode = deviceCode
       , trGrantType = GTDeviceCode
       , trClientId =
-          if daAuthorizationRequestAuthenticationMethod == Just ClientSecretBasic
-            then Nothing
-            else Just daClientId
+          if daAuthorizationRequestAuthenticationMethod == ClientSecretPost
+            then Just daClientId
+            else Nothing
       }
 
 instance ToQueryParam (TokenRequest DeviceAuthorizationApplication) where

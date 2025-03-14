@@ -175,8 +175,8 @@ createDeviceAuthApp ::
 createDeviceAuthApp i idpName = do
   let authMethod =
         if Okta == idpName
-          then Just ClientSecretBasic
-          else Nothing
+          then ClientSecretBasic
+          else ClientSecretPost
       extraParams =
         if AzureAD == idpName
           then Map.singleton "tenant" "/common"
