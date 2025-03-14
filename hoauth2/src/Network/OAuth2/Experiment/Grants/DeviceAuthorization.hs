@@ -43,7 +43,7 @@ pollDeviceTokenRequest ::
   IdpApplication i DeviceAuthorizationApplication ->
   Manager ->
   DeviceAuthorizationResponse ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 pollDeviceTokenRequest idpApp mgr deviceAuthResp = do
   pollDeviceTokenRequestInternal
     idpApp
@@ -58,7 +58,7 @@ pollDeviceTokenRequestInternal ::
   DeviceCode ->
   Int ->
   -- | Polling Interval
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 pollDeviceTokenRequestInternal idpApp mgr deviceCode intervalSeconds = do
   resp <- runExceptT (conduitTokenRequest idpApp mgr deviceCode)
   case resp of

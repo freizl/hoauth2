@@ -9,8 +9,8 @@ import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 (
   ClientAuthenticationMethod (..),
   OAuth2,
-  OAuth2Token,
   PostBody,
+  TokenResponse,
   uriToRequest,
  )
 import Network.OAuth.OAuth2.TokenRequest (
@@ -54,7 +54,7 @@ conduitTokenRequest ::
   IdpApplication i a ->
   Manager ->
   ExchangeTokenInfo a ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 conduitTokenRequest idpApp mgr exchangeToken = do
   conduitTokenRequestInternal idpApp mgr (exchangeToken, Nothing)
 
@@ -68,7 +68,7 @@ conduitPkceTokenRequest ::
   IdpApplication i a ->
   Manager ->
   (ExchangeTokenInfo a, CodeVerifier) ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 conduitPkceTokenRequest idpApp mgr (exchangeToken, codeVerifier) =
   conduitTokenRequestInternal idpApp mgr (exchangeToken, Just codeVerifier)
 
@@ -81,7 +81,7 @@ conduitTokenRequestInternal ::
   IdpApplication i a ->
   Manager ->
   (ExchangeTokenInfo a, Maybe CodeVerifier) ->
-  ExceptT TokenResponseError m OAuth2Token
+  ExceptT TokenResponseError m TokenResponse
 conduitTokenRequestInternal IdpApplication {..} mgr (exchangeToken, codeVerifier) =
   let req = mkTokenRequestParam application exchangeToken
       key = mkOAuth2Key application

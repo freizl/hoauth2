@@ -52,7 +52,7 @@ newtype AuthorizationGrantUserStore = AuthorizationGrantUserStore (MVar (Map.Map
 data IdpAuthorizationCodeAppSessionData = IdpAuthorizationCodeAppSessionData
   { idpName :: IdpName
   , loginUser :: Maybe DemoLoginUser
-  , oauth2Token :: Maybe OAuth2Token
+  , tokenResponse :: Maybe TokenResponse
   , authorizePkceCodeVerifier :: Maybe CodeVerifier
   , authorizeAbsUri :: TL.Text
   }
@@ -62,7 +62,7 @@ instance Default IdpAuthorizationCodeAppSessionData where
     IdpAuthorizationCodeAppSessionData
       { idpName = Okta
       , loginUser = Nothing
-      , oauth2Token = Nothing
+      , tokenResponse = Nothing
       , authorizePkceCodeVerifier = Nothing
       , authorizeAbsUri = ""
       }

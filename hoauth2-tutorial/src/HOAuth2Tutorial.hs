@@ -120,7 +120,7 @@ import Network.HTTP.Types (status302)
 import Network.OAuth.OAuth2 (
   ExchangeToken (ExchangeToken),
   OAuth2 (..),
-  OAuth2Token (accessToken),
+  TokenResponse (accessToken),
   TokenResponseError,
   appendQueryParams,
   authGetJSON,

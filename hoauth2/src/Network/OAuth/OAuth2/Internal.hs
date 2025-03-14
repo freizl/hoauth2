@@ -5,15 +5,12 @@ module Network.OAuth.OAuth2.Internal where
 import Control.Arrow (second)
 import Control.Monad.Catch
 import Data.Aeson
-import Data.Aeson qualified as Aeson
-import Data.Aeson.Types (Parser, explicitParseFieldMaybe)
-import Data.Binary (Binary (..))
 import Data.Binary.Instances.Aeson ()
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BS8
 import Data.Default
 import Data.Maybe
-import Data.Text (Text, unpack)
+import Data.Text (Text)
 import Data.Version (showVersion)
 import Lens.Micro
 import Lens.Micro.Extras
@@ -65,74 +62,6 @@ newtype IdToken = IdToken {idtoken :: Text} deriving (Eq, Show, FromJSON, ToJSON
 
 -- | Authorization Code
 newtype ExchangeToken = ExchangeToken {extoken :: Text} deriving (Show, FromJSON, ToJSON)
-
--- FIXME: rename to TokenResponse and move to that module
-
--- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.4
-data OAuth2Token = OAuth2Token
-  { accessToken :: AccessToken
-  , refreshToken :: Maybe RefreshToken
-  -- ^ Exists when @offline_access@ scope is in the Authorization Request and the provider supports Refresh Access Token.
-  , expiresIn :: Maybe Int
-  , tokenType :: Maybe Text
-  -- ^ See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
-  , idToken :: Maybe IdToken
-  -- ^ Exists when @openid@ scope is in the Authorization Request and the provider supports OpenID protocol.
-  , scope :: Maybe Text
-  , rawResponse :: Object
-  }
-  deriving (Eq)
-
-instance Show OAuth2Token where
-  show OAuth2Token {..} =
-    "OAuth2Token {"
-      <> "access_token = ***"
-      <> ", id_token = "
-      <> showM idToken
-      <> ", refresh_token = "
-      <> showM refreshToken
-      <> ", expires_in = "
-      <> show expiresIn
-      <> ", token_type = "
-      <> show tokenType
-      <> ", scope = "
-      <> show scope
-      <> ", raw_response = ***"
-      <> "}"
-    where
-      showM (Just _) = "***"
-      showM Nothing = "Nothing"
-
-instance Binary OAuth2Token where
-  put OAuth2Token {..} = put rawResponse
-  get = do
-    rawt <- get
-    case fromJSON (Aeson.Object rawt) of
-      Success a -> pure a
-      Error err -> fail err
-
--- | Parse JSON data into 'OAuth2Token'
-instance FromJSON OAuth2Token where
-  parseJSON :: Value -> Parser OAuth2Token
-  parseJSON = withObject "OAuth2Token" $ \v ->
-    OAuth2Token
-      <$> v .: "access_token"
-      <*> v .:? "refresh_token"
-      <*> explicitParseFieldMaybe parseIntFlexible v "expires_in"
-      <*> v .:? "token_type"
-      <*> v .:? "id_token"
-      <*> v .:? "scope"
-      <*> pure v
-    where
-      parseIntFlexible :: Value -> Parser Int
-      parseIntFlexible (String s) = pure . read $ unpack s
-      parseIntFlexible v = parseJSON v
-
-instance ToJSON OAuth2Token where
-  toJSON :: OAuth2Token -> Value
-  toJSON = toJSON . Object . rawResponse
-  toEncoding :: OAuth2Token -> Encoding
-  toEncoding = toEncoding . Object . rawResponse
 
 -------------------------------------------------------------------------------
 
