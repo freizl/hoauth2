@@ -25,6 +25,8 @@ data JwtBearerApplication = JwtBearerApplication
 --
 -- FIXME: The ideal solution shall be do not implement `HasOAuth2Key`
 -- but it will stop to re-use the method 'conduitTokenRequest' for JwtBearer flow.
+-- `HasTokenRequest` could implement another method `updateHeader :: a -> RequestHeader -> RequestHeader`
+-- default is `id`
 instance HasOAuth2Key JwtBearerApplication where
   mkOAuth2Key :: JwtBearerApplication -> OAuth2
   mkOAuth2Key _ = def
