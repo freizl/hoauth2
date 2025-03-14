@@ -51,7 +51,7 @@ conduitRefreshTokenRequest ::
   Manager ->
   OAuth2.RefreshToken ->
   ExceptT TokenResponseError m TokenResponse
-conduitRefreshTokenRequest IdpApplication {..} mgr rt =
-  let tokenReq = mkRefreshTokenRequestParam application rt
+conduitRefreshTokenRequest ia mgr rt =
+  let tokenReq = mkRefreshTokenRequestParam (application ia) rt
       body = unionMapsToQueryParams [toQueryParam tokenReq]
-   in doJSONPostRequest mgr (mkOAuth2Key application) (idpTokenEndpoint idp) body
+   in conduitTokenRequestInternal ia mgr body

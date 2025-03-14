@@ -6,7 +6,7 @@ module Network.OAuth.OAuth2.TokenResponseSpec where
 import Data.Aeson qualified as Aeson
 import Data.Binary qualified as Binary
 import Data.Maybe (fromJust)
-import Network.OAuth.OAuth2 (AccessToken (..), TokenResponse (..), RefreshToken (..))
+import Network.OAuth.OAuth2 (AccessToken (..), RefreshToken (..), TokenResponse (..))
 import Test.Hspec
 
 spec :: Spec

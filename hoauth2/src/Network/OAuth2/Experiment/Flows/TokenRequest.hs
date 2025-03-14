@@ -8,7 +8,6 @@ import Data.Aeson (FromJSON)
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2 (
   ClientAuthenticationMethod (..),
-  OAuth2,
   PostBody,
   TokenResponse,
   uriToRequest,
@@ -23,7 +22,6 @@ import Network.OAuth.OAuth2.TokenRequest (
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
-import URI.ByteString (URI)
 
 class HasTokenRequestClientAuthenticationMethod a where
   getClientAuthenticationMethod :: a -> ClientAuthenticationMethod
@@ -56,7 +54,12 @@ conduitTokenRequest ::
   ExchangeTokenInfo a ->
   ExceptT TokenResponseError m TokenResponse
 conduitTokenRequest idpApp mgr exchangeToken = do
-  conduitTokenRequestInternal idpApp mgr (exchangeToken, Nothing)
+  let req = mkTokenRequestParam (application idpApp) exchangeToken
+      body =
+        unionMapsToQueryParams
+          [ toQueryParam req
+          ]
+   in conduitTokenRequestInternal idpApp mgr body
 
 -------------------------------------------------------------------------------
 --                             PKCE Token Request                            --
@@ -70,59 +73,45 @@ conduitPkceTokenRequest ::
   (ExchangeTokenInfo a, CodeVerifier) ->
   ExceptT TokenResponseError m TokenResponse
 conduitPkceTokenRequest idpApp mgr (exchangeToken, codeVerifier) =
-  conduitTokenRequestInternal idpApp mgr (exchangeToken, Just codeVerifier)
+  let req = mkTokenRequestParam (application idpApp) exchangeToken
+      body =
+        unionMapsToQueryParams
+          [ toQueryParam req
+          , toQueryParam codeVerifier
+          ]
+   in conduitTokenRequestInternal idpApp mgr body
 
 -------------------------------------------------------------------------------
 --                              Internal helpers                             --
 -------------------------------------------------------------------------------
 
 conduitTokenRequestInternal ::
-  (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
+  ( MonadIO m
+  , HasOAuth2Key a
+  , HasTokenRequestClientAuthenticationMethod a
+  , FromJSON b
+  ) =>
   IdpApplication i a ->
-  Manager ->
-  (ExchangeTokenInfo a, Maybe CodeVerifier) ->
-  ExceptT TokenResponseError m TokenResponse
-conduitTokenRequestInternal IdpApplication {..} mgr (exchangeToken, codeVerifier) =
-  let req = mkTokenRequestParam application exchangeToken
-      key = mkOAuth2Key application
-      body =
-        unionMapsToQueryParams
-          [ toQueryParam req
-          , toQueryParam codeVerifier
-          ]
-   in doTokenRequestInternal
-        (getClientAuthenticationMethod application)
-        mgr
-        key
-        (idpTokenEndpoint idp)
-        body
-
-doTokenRequestInternal ::
-  (MonadIO m, FromJSON a) =>
-  ClientAuthenticationMethod ->
   -- | HTTP connection manager.
   Manager ->
-  -- | OAuth options
-  OAuth2 ->
-  -- | URL
-  URI ->
   -- | Request body.
   PostBody ->
   -- | Response as ByteString
-  ExceptT TokenResponseError m a
-doTokenRequestInternal clientAuthMethod manager oa url body = do
+  ExceptT TokenResponseError m b
+conduitTokenRequestInternal IdpApplication {..} manager body = do
+  let oa = mkOAuth2Key application
+      clientAuthMethod = getClientAuthenticationMethod application
+      url = idpTokenEndpoint idp
+      updateAuthHeader =
+        case clientAuthMethod of
+          ClientSecretBasic -> addBasicAuth oa
+          ClientSecretPost -> id
+          ClientAssertionJwt -> id
+      go = do
+        req <- uriToRequest url
+        let req' = (updateAuthHeader . addDefaultRequestHeaders) req
+        httpLbs (urlEncodedBody body req') manager
   resp <- ExceptT . liftIO $ fmap handleOAuth2TokenResponse go
   case parseResponseFlexible resp of
     Right obj -> return obj
     Left e -> throwE e
-  where
-    updateAuthHeader =
-      case clientAuthMethod of
-        ClientSecretBasic -> addBasicAuth oa
-        ClientSecretPost -> id
-        ClientAssertionJwt -> id
-
-    go = do
-      req <- uriToRequest url
-      let req' = (updateAuthHeader . addDefaultRequestHeaders) req
-      httpLbs (urlEncodedBody body req') manager

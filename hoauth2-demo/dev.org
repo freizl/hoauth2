@@ -28,3 +28,4 @@ curl https://api.linear.app/graphql \
 - ~AuthorizationGrantUserStore (MVar (Map.Map IdpName IdpAuthorizationCodeAppSessionData)~
 - User AppName would be better since it's already unique.
 - Just need to figure out how to match differ UI section
+** Refresh button shall only appear when there is refresh token
