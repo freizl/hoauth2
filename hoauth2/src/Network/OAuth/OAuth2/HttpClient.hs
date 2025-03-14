@@ -30,7 +30,6 @@ import Data.Aeson.Key qualified as Aeson
 import Data.Aeson.KeyMap qualified as Aeson
 import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy.Char8 qualified as BSL
-import Data.Maybe (fromJust, isJust)
 import Data.Text.Encoding qualified as T
 import Lens.Micro (over)
 import Network.HTTP.Client.Contrib (handleResponse)
@@ -319,12 +318,12 @@ authRequest req upReq manage = ExceptT $ do
 
 -- | Set several header values:
 --   + userAgennt    : "hoauth2"
---   + accept        : "application/json"
 --   + authorization : "Bearer xxxxx" if 'Network.OAuth.OAuth2.AccessToken' provided.
 updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
-  -- FIXME: use `applyBearerAuth`
-  let bearer = [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 (atoken (fromJust t))) | isJust t]
+  let bearer = case t of
+        Just (AccessToken at) -> [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 at)]
+        Nothing -> []
       headers = bearer ++ defaultRequestHeaders ++ requestHeaders req
    in req {requestHeaders = headers}
 
