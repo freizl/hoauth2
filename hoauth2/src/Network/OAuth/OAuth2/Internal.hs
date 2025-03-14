@@ -120,18 +120,17 @@ instance ToJSON OAuth2Token where
 
 -------------------------------------------------------------------------------
 
--- | https://www.rfc-editor.org/rfc/rfc6749#section-2.3
--- According to spec:
+-- | How would the Client (RP) authenticate itself?
 --
 -- The client MUST NOT use more than one authentication method in each request.
+-- Means use Authorization header or Post body.
 --
--- Which means use Authorization header or Post body.
+-- See more details
 --
--- However, I found I have to include authentication in the header all the time in real world.
+-- https://www.rfc-editor.org/rfc/rfc6749#section-2.3
+-- https://oauth.net/private-key-jwt/
+-- https://www.rfc-editor.org/rfc/rfc7523.html
 --
--- In other words, `ClientSecretBasic` is always assured. `ClientSecretPost` is optional.
---
--- Maybe consider an alternative implementation that boolean kind of data type is good enough.
 data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost

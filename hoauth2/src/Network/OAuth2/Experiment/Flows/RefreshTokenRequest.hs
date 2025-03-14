@@ -23,6 +23,8 @@ data RefreshTokenRequest = RefreshTokenRequest
   { rrRefreshToken :: OAuth2.RefreshToken
   , rrGrantType :: GrantTypeValue
   , rrScope :: Set Scope
+  , rrClientId :: Maybe ClientId
+  , rrClientSecret :: Maybe ClientSecret
   }
 
 instance ToQueryParam RefreshTokenRequest where
@@ -32,6 +34,8 @@ instance ToQueryParam RefreshTokenRequest where
       [ toQueryParam rrGrantType
       , toQueryParam rrScope
       , toQueryParam rrRefreshToken
+      , toQueryParam rrClientId
+      , toQueryParam rrClientSecret
       ]
 
 class (HasOAuth2Key a, HasTokenRequestClientAuthenticationMethod a) => HasRefreshTokenRequest a where

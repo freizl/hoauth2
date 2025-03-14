@@ -71,6 +71,8 @@ instance HasTokenRequest AuthorizationCodeApplication where
     { trCode :: ExchangeToken
     , trGrantType :: GrantTypeValue
     , trRedirectUri :: RedirectUri
+    , trClientId :: Maybe ClientId
+    , trClientSecret :: Maybe ClientSecret
     }
 
   mkTokenRequestParam :: AuthorizationCodeApplication -> ExchangeToken -> TokenRequest AuthorizationCodeApplication
@@ -79,6 +81,8 @@ instance HasTokenRequest AuthorizationCodeApplication where
       { trCode = authCode
       , trGrantType = GTAuthorizationCode
       , trRedirectUri = RedirectUri acRedirectUri
+      , trClientId = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
+      , trClientSecret = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
       }
 
 instance ToQueryParam (TokenRequest AuthorizationCodeApplication) where
@@ -88,6 +92,8 @@ instance ToQueryParam (TokenRequest AuthorizationCodeApplication) where
       [ toQueryParam trCode
       , toQueryParam trGrantType
       , toQueryParam trRedirectUri
+      , toQueryParam trClientId
+      , toQueryParam trClientSecret
       ]
 
 instance HasUserInfoRequest AuthorizationCodeApplication
@@ -99,4 +105,6 @@ instance HasRefreshTokenRequest AuthorizationCodeApplication where
       { rrScope = acScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
+      , rrClientId = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
+      , rrClientSecret = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
       }

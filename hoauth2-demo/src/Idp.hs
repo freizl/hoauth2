@@ -82,6 +82,7 @@ createResourceOwnerPasswordApp i idpName = do
           , ropUserName = ""
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
+          , ropTokenRequestAuthenticationMethod = ClientSecretBasic
           }
   Env.OAuthApp {..} <- Env.lookupApp newAppName
   newApp' <- case user of
