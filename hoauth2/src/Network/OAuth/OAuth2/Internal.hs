@@ -81,7 +81,27 @@ data OAuth2Token = OAuth2Token
   , scope :: Maybe Text
   , rawResponse :: Object
   }
-  deriving (Eq, Show)
+  deriving (Eq)
+
+instance Show OAuth2Token where
+  show OAuth2Token {..} =
+    "OAuth2Token {"
+      <> "access_token = ***"
+      <> ", id_token = "
+      <> showM idToken
+      <> ", refresh_token = "
+      <> showM refreshToken
+      <> ", expires_in = "
+      <> show expiresIn
+      <> ", token_type = "
+      <> show tokenType
+      <> ", scope = "
+      <> show scope
+      <> ", raw_response = ***"
+      <> "}"
+    where
+      showM (Just _) = "***"
+      showM Nothing = "Nothing"
 
 instance Binary OAuth2Token where
   put OAuth2Token {..} = put rawResponse
@@ -130,7 +150,6 @@ instance ToJSON OAuth2Token where
 -- https://www.rfc-editor.org/rfc/rfc6749#section-2.3
 -- https://oauth.net/private-key-jwt/
 -- https://www.rfc-editor.org/rfc/rfc7523.html
---
 data ClientAuthenticationMethod
   = ClientSecretBasic
   | ClientSecretPost
