@@ -41,7 +41,7 @@ sampleStackExchangeAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-stackexchange-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretPost
+    , acClientAuthenticationMethod = ClientSecretPost
     }
 
 fetchUserInfo ::

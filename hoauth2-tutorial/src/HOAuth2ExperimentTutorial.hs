@@ -163,7 +163,7 @@ authCodeApp =
     , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
     , acName = "sample-auth0-authorization-code-app"
     , acAuthorizeRequestExtraParams = Map.empty
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 auth0DemoApp :: IdpApplication "auth0" AuthorizationCodeApplication

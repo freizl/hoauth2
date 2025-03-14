@@ -27,7 +27,7 @@ sampleGithubAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-github-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 fetchUserInfo ::

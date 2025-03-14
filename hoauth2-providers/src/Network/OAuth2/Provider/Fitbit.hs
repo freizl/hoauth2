@@ -27,7 +27,7 @@ sampleFitbitAuthorizationCodeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-fitbit-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 fetchUserInfo ::

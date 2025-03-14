@@ -20,7 +20,7 @@ data ClientCredentialsApplication = ClientCredentialsApplication
   , ccName :: Text
   , ccScope :: Set Scope
   , ccTokenRequestExtraParams :: Map Text Text
-  , ccTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  , ccClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
 instance HasOAuth2Key ClientCredentialsApplication where
@@ -29,7 +29,7 @@ instance HasOAuth2Key ClientCredentialsApplication where
 
 instance HasTokenRequestClientAuthenticationMethod ClientCredentialsApplication where
   getClientAuthenticationMethod :: ClientCredentialsApplication -> ClientAuthenticationMethod
-  getClientAuthenticationMethod ClientCredentialsApplication {..} = ccTokenRequestAuthenticationMethod
+  getClientAuthenticationMethod ClientCredentialsApplication {..} = ccClientAuthenticationMethod
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
 instance HasTokenRequest ClientCredentialsApplication where
@@ -49,7 +49,7 @@ instance HasTokenRequest ClientCredentialsApplication where
       { trScope = ccScope
       , trGrantType = GTClientCredentials
       , trClientSecret = ccClientSecret
-      , trClientAuthenticationMethod = ccTokenRequestAuthenticationMethod
+      , trClientAuthenticationMethod = ccClientAuthenticationMethod
       , trExtraParams = ccTokenRequestExtraParams
       , trClientId = ccClientId
       }

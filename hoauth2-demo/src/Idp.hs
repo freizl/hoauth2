@@ -82,7 +82,7 @@ createResourceOwnerPasswordApp i idpName = do
           , ropUserName = ""
           , ropPassword = ""
           , ropTokenRequestExtraParams = Map.empty
-          , ropTokenRequestAuthenticationMethod = ClientSecretBasic
+          , ropClientAuthenticationMethod = ClientSecretBasic
           }
   Env.OAuthApp {..} <- Env.lookupApp newAppName
   newApp' <- case user of
@@ -112,7 +112,7 @@ createClientCredentialsApp i idpName = do
         ClientCredentialsApplication
           { ccClientId = ""
           , ccClientSecret = ""
-          , ccTokenRequestAuthenticationMethod = ClientSecretBasic
+          , ccClientAuthenticationMethod = ClientSecretBasic
           , ccName = ""
           , ccScope = Set.empty
           , ccTokenRequestExtraParams = Map.empty
@@ -162,7 +162,7 @@ createOktaClientCredentialsGrantAppJwt i Env.OAuthApp {..} = do
     ClientCredentialsApplication
       { ccClientId = clientId
       , ccClientSecret = ClientSecret (TL.decodeUtf8 $ bsFromStrict $ unJwt jwt)
-      , ccTokenRequestAuthenticationMethod = ClientAssertionJwt
+      , ccClientAuthenticationMethod = ClientAssertionJwt
       , ccName = ""
       , ccScope = scopes
       , ccTokenRequestExtraParams = Map.empty

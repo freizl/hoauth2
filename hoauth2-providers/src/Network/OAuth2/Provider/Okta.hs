@@ -40,7 +40,7 @@ sampleOktaAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-okta-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 fetchUserInfo ::

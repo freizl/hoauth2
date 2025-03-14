@@ -27,7 +27,7 @@ sampleDropBoxAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-dropbox-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 fetchUserInfo ::

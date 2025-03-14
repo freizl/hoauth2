@@ -27,7 +27,7 @@ sampleZohoAuthorizationCodeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost/oauth2/callback|]
     , acName = "sample-zoho-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 fetchUserInfo ::

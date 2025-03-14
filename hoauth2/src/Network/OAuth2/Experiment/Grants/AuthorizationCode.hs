@@ -28,7 +28,7 @@ data AuthorizationCodeApplication = AuthorizationCodeApplication
   , acRedirectUri :: URI
   , acAuthorizeState :: AuthorizeState
   , acAuthorizeRequestExtraParams :: Map Text Text
-  , acTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  , acClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
 instance HasOAuth2Key AuthorizationCodeApplication where
@@ -37,7 +37,7 @@ instance HasOAuth2Key AuthorizationCodeApplication where
 
 instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication where
   getClientAuthenticationMethod :: AuthorizationCodeApplication -> ClientAuthenticationMethod
-  getClientAuthenticationMethod AuthorizationCodeApplication {..} = acTokenRequestAuthenticationMethod
+  getClientAuthenticationMethod AuthorizationCodeApplication {..} = acClientAuthenticationMethod
 
 instance HasAuthorizeRequest AuthorizationCodeApplication where
   mkAuthorizationRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
@@ -81,8 +81,8 @@ instance HasTokenRequest AuthorizationCodeApplication where
       { trCode = authCode
       , trGrantType = GTAuthorizationCode
       , trRedirectUri = RedirectUri acRedirectUri
-      , trClientId = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
-      , trClientSecret = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
+      , trClientId = if acClientAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
+      , trClientSecret = if acClientAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
       }
 
 instance ToQueryParam (TokenRequest AuthorizationCodeApplication) where
@@ -105,6 +105,6 @@ instance HasRefreshTokenRequest AuthorizationCodeApplication where
       { rrScope = acScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
-      , rrClientId = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
-      , rrClientSecret = if acTokenRequestAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
+      , rrClientId = if acClientAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
+      , rrClientSecret = if acClientAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
       }

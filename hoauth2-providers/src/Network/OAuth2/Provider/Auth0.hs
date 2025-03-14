@@ -32,7 +32,7 @@ sampleAuth0AuthorizationCodeApp =
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-auth0-authorization-code-app"
     , acAuthorizeRequestExtraParams = Map.empty
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 fetchUserInfo ::

@@ -27,7 +27,7 @@ sampleLinkedInAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-linkedin-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretPost
+    , acClientAuthenticationMethod = ClientSecretPost
     }
 
 fetchUserInfo ::

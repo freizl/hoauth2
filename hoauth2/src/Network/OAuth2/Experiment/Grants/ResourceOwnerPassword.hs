@@ -24,7 +24,7 @@ data ResourceOwnerPasswordApplication = ResourceOwnerPasswordApplication
   , ropUserName :: Username
   , ropPassword :: Password
   , ropTokenRequestExtraParams :: Map Text Text
-  , ropTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  , ropClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
 instance HasOAuth2Key ResourceOwnerPasswordApplication where
@@ -33,7 +33,7 @@ instance HasOAuth2Key ResourceOwnerPasswordApplication where
 
 instance HasTokenRequestClientAuthenticationMethod ResourceOwnerPasswordApplication where
   getClientAuthenticationMethod :: ResourceOwnerPasswordApplication -> ClientAuthenticationMethod
-  getClientAuthenticationMethod = ropTokenRequestAuthenticationMethod
+  getClientAuthenticationMethod = ropClientAuthenticationMethod
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3.2
 instance HasTokenRequest ResourceOwnerPasswordApplication where
@@ -76,6 +76,6 @@ instance HasRefreshTokenRequest ResourceOwnerPasswordApplication where
       { rrScope = ropScope
       , rrGrantType = GTRefreshToken
       , rrRefreshToken = rt
-      , rrClientId = if ropTokenRequestAuthenticationMethod == ClientSecretPost then Just ropClientId else Nothing
-      , rrClientSecret = if ropTokenRequestAuthenticationMethod == ClientSecretPost then Just ropClientSecret else Nothing
+      , rrClientId = if ropClientAuthenticationMethod == ClientSecretPost then Just ropClientId else Nothing
+      , rrClientSecret = if ropClientAuthenticationMethod == ClientSecretPost then Just ropClientSecret else Nothing
       }

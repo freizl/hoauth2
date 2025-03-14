@@ -50,7 +50,7 @@ sampleGoogleAuthorizationCodeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
     , acAuthorizeRequestExtraParams = Map.empty
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     }
 
 -- * Service Account

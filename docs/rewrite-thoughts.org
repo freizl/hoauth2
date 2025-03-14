@@ -208,7 +208,7 @@ data instance IdpApplication 'AuthorizationCode i = AuthorizationCodeIdpApplicat
   , idpAppAuthorizeState :: AuthorizeState
   , idpAppAuthorizeRequestExtraParams :: Map Text Text
   -- ^ Though technically one key can have multiple value in query, but who actually does it?!
-  , idpAppTokenRequestAuthenticationMethod :: ClientAuthenticationMethod
+  , idpAppClientAuthenticationMethod :: ClientAuthenticationMethod
   , idp :: Idp i
   }
 

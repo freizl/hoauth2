@@ -50,7 +50,7 @@ mkTestAuth0App = do
           , acRedirectUri = [uri|http://localhost:9988/oauth2/callback|]
           , acName = "foo-auth0-app"
           , acAuthorizeRequestExtraParams = Map.empty
-          , acTokenRequestAuthenticationMethod = ClientSecretBasic
+          , acClientAuthenticationMethod = ClientSecretBasic
           }
   pure IdpApplication {..}
 
@@ -72,7 +72,7 @@ mkTestGoogleApp =
                 ]
           , acName = "foo-google-app"
           , acAuthorizeRequestExtraParams = Map.empty
-          , acTokenRequestAuthenticationMethod = ClientSecretBasic
+          , acClientAuthenticationMethod = ClientSecretBasic
           }
       idp = Google.defaultGoogleIdp
    in IdpApplication {..}

@@ -28,7 +28,7 @@ sampleSlackAuthorizationCodeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     , acName = "sample-slack-authorization-code-app"
     }
 

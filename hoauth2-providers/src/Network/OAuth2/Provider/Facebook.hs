@@ -27,7 +27,7 @@ sampleFacebookAuthorizationCodeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-facebook-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretPost
+    , acClientAuthenticationMethod = ClientSecretPost
     }
 
 fetchUserInfo ::

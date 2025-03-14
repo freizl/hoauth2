@@ -27,7 +27,7 @@ sampleTwitterAuthorizationCodeApp =
     , acAuthorizeState = "CHANGE_ME"
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-twitter-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretBasic
+    , acClientAuthenticationMethod = ClientSecretBasic
     , acAuthorizeRequestExtraParams = Map.empty
     }
 

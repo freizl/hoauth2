@@ -58,7 +58,7 @@
 --       acAuthorizeRequestExtraParams = Map.empty,
 --       acRedirectUri = [uri|http:\/\/localhost\/oauth2\/callback|],
 --       acName = "sample-google-authorization-code-app",
---       acTokenRequestAuthenticationMethod = ClientSecretBasic,
+--       acClientAuthenticationMethod = ClientSecretBasic,
 --     }
 --
 -- fooIdpApplication :: IdpApplication AuthorizationCodeApplication Google

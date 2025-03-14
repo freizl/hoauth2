@@ -28,7 +28,7 @@ sampleLinearAuthorizationCodeApp =
     , acAuthorizeRequestExtraParams = Map.empty
     , acRedirectUri = [uri|http://localhost|]
     , acName = "sample-linear-authorization-code-app"
-    , acTokenRequestAuthenticationMethod = ClientSecretPost
+    , acClientAuthenticationMethod = ClientSecretPost
     }
 
 fetchUserInfo ::
