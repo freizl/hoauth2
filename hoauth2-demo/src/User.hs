@@ -13,6 +13,7 @@ import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
 import Network.OAuth2.Provider.GitHub qualified as IGitHub
 import Network.OAuth2.Provider.Google qualified as IGoogle
+import Network.OAuth2.Provider.Linear qualified as ILinear
 import Network.OAuth2.Provider.LinkedIn qualified as ILinkedIn
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
@@ -89,6 +90,11 @@ instance HasDemoLoginUser GitHub where
   type IdpUser GitHub = IGitHub.GitHubUser
   toLoginUser :: IGitHub.GitHubUser -> DemoLoginUser
   toLoginUser guser = DemoLoginUser {loginUserName = IGitHub.name guser}
+
+instance HasDemoLoginUser Linear where
+  type IdpUser Linear = ILinear.LinearResponse ILinear.LinearUser
+  toLoginUser :: ILinear.LinearResponse ILinear.LinearUser -> DemoLoginUser
+  toLoginUser resp = DemoLoginUser {loginUserName = ILinear.name (ILinear.getUser resp)}
 
 instance HasDemoLoginUser LinkedIn where
   type IdpUser LinkedIn = ILinkedIn.LinkedInUser

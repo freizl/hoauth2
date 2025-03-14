@@ -31,6 +31,7 @@ import Network.OAuth2.Provider.Facebook qualified as IFacebook
 import Network.OAuth2.Provider.Fitbit qualified as IFitbit
 import Network.OAuth2.Provider.GitHub qualified as IGitHub
 import Network.OAuth2.Provider.Google qualified as IGoogle
+import Network.OAuth2.Provider.Linear qualified as ILinear
 import Network.OAuth2.Provider.LinkedIn qualified as ILinkedIn
 import Network.OAuth2.Provider.Okta qualified as IOkta
 import Network.OAuth2.Provider.Slack qualified as ISlack
@@ -240,6 +241,7 @@ findIdp (myAuth0Idp, myOktaIdp) = \case
   GitHub -> DemoIdp IGitHub.defaultGithubIdp
   DropBox -> DemoIdp IDropBox.defaultDropBoxIdp
   Google -> DemoIdp IGoogle.defaultGoogleIdp
+  Linear -> DemoIdp ILinear.defaultLinearIdp
   LinkedIn -> DemoIdp ILinkedIn.defaultLinkedInIdp
   Twitter -> DemoIdp ITwitter.defaultTwitterIdp
   Slack -> DemoIdp ISlack.defaultSlackIdp
@@ -257,6 +259,7 @@ findAuthorizationCodeSampleApp = \case
   GitHub -> IGitHub.sampleGithubAuthorizationCodeApp
   DropBox -> IDropBox.sampleDropBoxAuthorizationCodeApp
   Google -> IGoogle.sampleGoogleAuthorizationCodeApp
+  Linear -> ILinear.sampleLinearAuthorizationCodeApp
   LinkedIn -> ILinkedIn.sampleLinkedInAuthorizationCodeApp
   Twitter -> ITwitter.sampleTwitterAuthorizationCodeApp
   Slack -> ISlack.sampleSlackAuthorizationCodeApp
@@ -281,6 +284,7 @@ findFetchUserInfoMethod = \case
   GitHub -> IGitHub.fetchUserInfo
   DropBox -> IDropBox.fetchUserInfo
   Google -> IGoogle.fetchUserInfo
+  Linear -> ILinear.fetchUserInfo
   LinkedIn -> ILinkedIn.fetchUserInfo
   Twitter -> ITwitter.fetchUserInfo
   Slack -> ISlack.fetchUserInfo

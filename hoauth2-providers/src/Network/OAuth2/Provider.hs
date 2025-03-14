@@ -10,6 +10,7 @@ data IdpName
   | Fitbit
   | GitHub
   | Google
+  | Linear
   | LinkedIn
   | Okta
   | Slack
