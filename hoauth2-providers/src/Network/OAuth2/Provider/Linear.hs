@@ -31,7 +31,6 @@ sampleLinearAuthorizationCodeApp =
     , acTokenRequestAuthenticationMethod = ClientSecretPost
     }
 
--- FIXME: this does not work since authPostJSON use `form-urlencoded` instead of `application/json`
 fetchUserInfo ::
   (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
   IdpApplication i a ->

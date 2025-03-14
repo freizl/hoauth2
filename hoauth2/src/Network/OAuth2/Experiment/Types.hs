@@ -24,9 +24,6 @@ import URI.ByteString (URI, serializeURIRef')
 
 -------------------------------------------------------------------------------
 
--- TODO: Distinct type per endpoint
--- Because I made mistake at passing to Authorize and Token Request
-
 -- | @Idp i@ consists various endpoints endpoints.
 --
 -- The @i@ is actually phantom type for information only (Idp name) at this moment.

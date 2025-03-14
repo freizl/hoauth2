@@ -261,8 +261,6 @@ authPostBSWithAuthMethod authTypes manager token url body = do
   let appendToBody = AuthInRequestBody == authTypes
   let appendToHeader = AuthInRequestHeader == authTypes
   let reqBody = if appendToBody then body ++ accessTokenToParam token else body
-  -- TODO: urlEncodedBody send request as 'application/x-www-form-urlencoded'
-  -- seems shall go with application/json which is more common?
   let upBody = if null reqBody then id else jsonBody reqBody
   let upHeaders = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.POST
   let upReq = upHeaders . upBody
