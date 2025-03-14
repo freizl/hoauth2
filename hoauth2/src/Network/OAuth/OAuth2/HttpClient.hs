@@ -4,19 +4,12 @@ module Network.OAuth.OAuth2.HttpClient (
   -- * AUTH requests
   authGetJSON,
   authGetBS,
-  authGetBS2,
   authGetJSONWithAuthMethod,
-  authGetJSONInternal,
   authGetBSWithAuthMethod,
-  authGetBSInternal,
   authPostJSON,
   authPostBS,
-  authPostBS2,
-  authPostBS3,
   authPostJSONWithAuthMethod,
-  authPostJSONInternal,
   authPostBSWithAuthMethod,
-  authPostBSInternal,
 
   -- * Types
   APIAuthenticationMethod (..),
@@ -58,19 +51,6 @@ authGetJSON ::
   ExceptT BSL.ByteString m a
 authGetJSON = authGetJSONWithAuthMethod AuthInRequestHeader
 
--- | Deprecated. Use `authGetJSONWithAuthMethod` instead.
-authGetJSONInternal ::
-  (MonadIO m, FromJSON a) =>
-  APIAuthenticationMethod ->
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  -- | Response as JSON
-  ExceptT BSL.ByteString m a
-authGetJSONInternal = authGetJSONWithAuthMethod
-{-# DEPRECATED authGetJSONInternal "use authGetJSONWithAuthMethod" #-}
-
 -- | Conduct an authorized GET request and return response as JSON.
 --   Allow to specify how to append AccessToken.
 --
@@ -99,30 +79,6 @@ authGetBS ::
   -- | Response as ByteString
   ExceptT BSL.ByteString m BSL.ByteString
 authGetBS = authGetBSWithAuthMethod AuthInRequestHeader
-
--- | Same to 'authGetBS' but set access token to query parameter rather than header
-authGetBS2 ::
-  MonadIO m =>
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString m BSL.ByteString
-authGetBS2 = authGetBSWithAuthMethod AuthInRequestQuery
-{-# DEPRECATED authGetBS2 "use authGetBSWithAuthMethod" #-}
-
-authGetBSInternal ::
-  MonadIO m =>
-  APIAuthenticationMethod ->
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString m BSL.ByteString
-authGetBSInternal = authGetBSWithAuthMethod
-{-# DEPRECATED authGetBSInternal "use authGetBSWithAuthMethod" #-}
 
 -- | Conduct an authorized GET request and return response as ByteString.
 --   Allow to specify how to append AccessToken.
@@ -159,19 +115,6 @@ authPostJSON ::
   ExceptT BSL.ByteString m a
 authPostJSON = authPostJSONWithAuthMethod AuthInRequestHeader
 
-authPostJSONInternal ::
-  (MonadIO m, FromJSON a) =>
-  APIAuthenticationMethod ->
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  PostBody ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString m a
-authPostJSONInternal = authPostJSONWithAuthMethod
-{-# DEPRECATED authPostJSONInternal "use 'authPostJSONWithAuthMethod'" #-}
-
 -- | Conduct POST request and return response as JSON.
 --   Allow to specify how to append AccessToken.
 --
@@ -202,45 +145,6 @@ authPostBS ::
   -- | Response as ByteString
   ExceptT BSL.ByteString m BSL.ByteString
 authPostBS = authPostBSWithAuthMethod AuthInRequestHeader
-
--- | Conduct POST request with access token only in the request body but header.
-authPostBS2 ::
-  MonadIO m =>
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  PostBody ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString m BSL.ByteString
-authPostBS2 = authPostBSWithAuthMethod AuthInRequestBody
-{-# DEPRECATED authPostBS2 "use 'authPostBSWithAuthMethod'" #-}
-
--- | Conduct POST request with access token only in the header and not in body
-authPostBS3 ::
-  MonadIO m =>
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  PostBody ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString m BSL.ByteString
-authPostBS3 = authPostBSWithAuthMethod AuthInRequestHeader
-{-# DEPRECATED authPostBS3 "use 'authPostBSWithAuthMethod'" #-}
-
-authPostBSInternal ::
-  MonadIO m =>
-  APIAuthenticationMethod ->
-  -- | HTTP connection manager.
-  Manager ->
-  AccessToken ->
-  URI ->
-  PostBody ->
-  -- | Response as ByteString
-  ExceptT BSL.ByteString m BSL.ByteString
-authPostBSInternal = authPostBSWithAuthMethod
-{-# DEPRECATED authPostBSInternal "use 'authPostBSWithAuthMethod'" #-}
 
 -- | Conduct POST request and return response as ByteString.
 --   Allow to specify how to append AccessToken.
