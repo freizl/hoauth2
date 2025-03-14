@@ -24,7 +24,10 @@ module Network.OAuth.OAuth2.HttpClient (
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..), throwE)
-import Data.Aeson (FromJSON, eitherDecode)
+import Data.Aeson (FromJSON)
+import Data.Aeson qualified as Aeson
+import Data.Aeson.Key qualified as Aeson
+import Data.Aeson.KeyMap qualified as Aeson
 import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Maybe (fromJust, isJust)
@@ -84,7 +87,7 @@ authGetJSONWithAuthMethod ::
   ExceptT BSL.ByteString m a
 authGetJSONWithAuthMethod authTypes manager t uri = do
   resp <- authGetBSWithAuthMethod authTypes manager t uri
-  either (throwE . BSL.pack) return (eitherDecode resp)
+  either (throwE . BSL.pack) return (Aeson.eitherDecode resp)
 
 -- | Conduct an authorized GET request.
 --   Inject Access Token to Authorization Header.
@@ -186,7 +189,7 @@ authPostJSONWithAuthMethod ::
   ExceptT BSL.ByteString m a
 authPostJSONWithAuthMethod authTypes manager token url body = do
   resp <- authPostBSWithAuthMethod authTypes manager token url body
-  either (throwE . BSL.pack) return (eitherDecode resp)
+  either (throwE . BSL.pack) return (Aeson.eitherDecode resp)
 
 -- | Conduct POST request.
 --   Inject Access Token to http header (Authorization)
@@ -260,12 +263,24 @@ authPostBSWithAuthMethod authTypes manager token url body = do
   let reqBody = if appendToBody then body ++ accessTokenToParam token else body
   -- TODO: urlEncodedBody send request as 'application/x-www-form-urlencoded'
   -- seems shall go with application/json which is more common?
-  let upBody = if null reqBody then id else urlEncodedBody reqBody
+  let upBody = if null reqBody then id else jsonBody reqBody
   let upHeaders = updateRequestHeaders (if appendToHeader then Just token else Nothing) . setMethod HT.POST
   let upReq = upHeaders . upBody
 
   req <- liftIO $ uriToRequest url
   authRequest req upReq manager
+
+jsonBody :: PostBody -> Request -> Request
+jsonBody body req =
+  req
+    { requestBody = RequestBodyLBS $ Aeson.encode $
+        Aeson.fromList $
+          fmap (\(a, b) -> (Aeson.fromText (T.decodeUtf8 a), T.decodeUtf8 b)) body
+
+    , requestHeaders =
+        (HT.hContentType, "application/json")
+          : filter (\(x, _) -> x /= HT.hContentType) (requestHeaders req)
+    }
 
 --------------------------------------------------
 
