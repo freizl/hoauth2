@@ -292,7 +292,7 @@ fetchTokenAndUser AppEnv {..} idpData@(IdpAuthorizationCodeAppSessionData {..}) 
   mgr <- liftIO $ newManager tlsManagerSettings
   token <- tryFetchAccessToken authCodeIdpApp mgr exchangeToken
   liftIO $ do
-    putStrLn "[Authorization Code Flow] Found access token"
+    putStrLn $ "[Authorization Code Flow] Found access token for " <> show idpName
     pPrint token
   luser <- tryFetchUser idpName authCodeIdpApp mgr token
   liftIO $ do

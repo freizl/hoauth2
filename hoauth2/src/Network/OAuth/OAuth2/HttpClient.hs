@@ -309,6 +309,7 @@ authRequest req upReq manage = ExceptT $ do
 --   + authorization : "Bearer xxxxx" if 'Network.OAuth.OAuth2.AccessToken' provided.
 updateRequestHeaders :: Maybe AccessToken -> Request -> Request
 updateRequestHeaders t req =
+  -- FIXME: use `applyBearerAuth`
   let bearer = [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 (atoken (fromJust t))) | isJust t]
       headers = bearer ++ defaultRequestHeaders ++ requestHeaders req
    in req {requestHeaders = headers}

@@ -43,6 +43,7 @@ library
     Network.OAuth2.Provider.Fitbit
     Network.OAuth2.Provider.GitHub
     Network.OAuth2.Provider.Google
+    Network.OAuth2.Provider.Linear
     Network.OAuth2.Provider.LinkedIn
     Network.OAuth2.Provider.Okta
     Network.OAuth2.Provider.Slack

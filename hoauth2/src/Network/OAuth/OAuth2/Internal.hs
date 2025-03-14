@@ -160,6 +160,9 @@ appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
 appendQueryParams params =
   over (queryL . queryPairsL) (params ++)
 
+-- TODO: why we need this method instead of `parseRequest`
+-- https://hackage.haskell.org/package/http-client-0.7.18/docs/Network-HTTP-Client.html#v:parseRequest
+--
 uriToRequest :: MonadThrow m => URI -> m Request
 uriToRequest auri = do
   ssl <- case view (uriSchemeL . schemeBSL) auri of
