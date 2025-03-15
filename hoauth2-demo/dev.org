@@ -29,7 +29,14 @@ curl https://api.linear.app/graphql \
 - User AppName would be better since it's already unique.
 - Just need to figure out how to match differ UI section
 ** TODO Refresh button shall only appear when there is refresh token :demo_app:
-** TODO Add more fields for OpenIDConfiguration or find an existing impl?
+** TODO Add more fields for OpenIDConfiguration or find an existing impl? :oidc:
 ** TODO Rename ~HasTokenRequestClientAuthenticationMethod~
 - to ~HasClientAuthenticationMethod~
 ** TODO applyBearerAuth
+** TODO Use Log library in demo app :demo_app:
+** TODO Upgrade Scotty :demo_app:
+** TODO [#A] [Okta] Unable to parse Client credential token response error
+- https://github.com/freizl/hoauth2/issues/215
+** TODO [#A] JWT validator
+** TODO [#A] Changelog
+- Can copilot help?

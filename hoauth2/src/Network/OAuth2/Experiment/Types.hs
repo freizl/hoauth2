@@ -4,7 +4,6 @@
 
 module Network.OAuth2.Experiment.Types where
 
-import Data.Default (Default (def))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
@@ -111,15 +110,6 @@ newtype ClientId = ClientId {unClientId :: Text}
 -- | Can be either "Client Secret" or JWT base on client authentication method
 newtype ClientSecret = ClientSecret {unClientSecret :: Text}
   deriving (Eq, IsString)
-
--- | In order to reuse some methods from legacy "Network.OAuth.OAuth2".
--- Will be removed when Experiment module becomes default.
-toOAuth2Key :: ClientId -> ClientSecret -> OAuth2
-toOAuth2Key cid csecret =
-  def
-    { oauth2ClientId = TL.toStrict $ unClientId cid
-    , oauth2ClientSecret = TL.toStrict $ unClientSecret csecret
-    }
 
 newtype RedirectUri = RedirectUri {unRedirectUri :: URI}
   deriving (Eq)
