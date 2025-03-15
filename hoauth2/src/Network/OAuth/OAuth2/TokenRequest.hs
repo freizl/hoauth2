@@ -203,33 +203,6 @@ fetchAccessToken ::
   ExceptT TokenResponseError m TokenResponse
 fetchAccessToken = fetchAccessTokenWithAuthMethod ClientSecretBasic
 
-fetchAccessToken2 ::
-  MonadIO m =>
-  -- | HTTP connection manager
-  Manager ->
-  -- | OAuth Data
-  OAuth2 ->
-  -- | Authorization Code
-  ExchangeToken ->
-  -- | Access Token
-  ExceptT TokenResponseError m TokenResponse
-fetchAccessToken2 = fetchAccessTokenWithAuthMethod ClientSecretPost
-{-# DEPRECATED fetchAccessToken2 "use 'fetchAccessTokenWithAuthMethod'" #-}
-
-fetchAccessTokenInternal ::
-  MonadIO m =>
-  ClientAuthenticationMethod ->
-  -- | HTTP connection manager
-  Manager ->
-  -- | OAuth Data
-  OAuth2 ->
-  -- | Authorization Code
-  ExchangeToken ->
-  -- | Access Token
-  ExceptT TokenResponseError m TokenResponse
-fetchAccessTokenInternal = fetchAccessTokenWithAuthMethod
-{-# DEPRECATED fetchAccessTokenInternal "use 'fetchAccessTokenWithAuthMethod'" #-}
-
 -- | Exchange @code@ for an Access Token
 --
 -- OAuth2 spec allows credential (@client_id@, @client_secret@) to be sent
@@ -269,31 +242,6 @@ refreshAccessToken ::
   RefreshToken ->
   ExceptT TokenResponseError m TokenResponse
 refreshAccessToken = refreshAccessTokenWithAuthMethod ClientSecretBasic
-
-refreshAccessToken2 ::
-  MonadIO m =>
-  -- | HTTP connection manager.
-  Manager ->
-  -- | OAuth context
-  OAuth2 ->
-  -- | Refresh Token gained after authorization
-  RefreshToken ->
-  ExceptT TokenResponseError m TokenResponse
-refreshAccessToken2 = refreshAccessTokenWithAuthMethod ClientSecretPost
-{-# DEPRECATED refreshAccessToken2 "use 'refreshAccessTokenWithAuthMethod'" #-}
-
-refreshAccessTokenInternal ::
-  MonadIO m =>
-  ClientAuthenticationMethod ->
-  -- | HTTP connection manager.
-  Manager ->
-  -- | OAuth context
-  OAuth2 ->
-  -- | Refresh Token gained after authorization
-  RefreshToken ->
-  ExceptT TokenResponseError m TokenResponse
-refreshAccessTokenInternal = refreshAccessTokenWithAuthMethod
-{-# DEPRECATED refreshAccessTokenInternal "use 'refreshAccessTokenWithAuthMethod'" #-}
 
 -- | Fetch a new AccessToken using the Refresh Token.
 --
