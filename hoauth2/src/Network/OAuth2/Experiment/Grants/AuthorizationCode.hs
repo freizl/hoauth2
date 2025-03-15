@@ -7,7 +7,7 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken (..), OAuth2)
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), ExchangeToken (..))
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Flows.AuthorizationRequest
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
@@ -30,12 +30,6 @@ data AuthorizationCodeApplication = AuthorizationCodeApplication
   , acAuthorizeRequestExtraParams :: Map Text Text
   , acClientAuthenticationMethod :: ClientAuthenticationMethod
   }
-
--- instance HasSecret AuthorizationCodeApplication where
-
-instance HasOAuth2Key AuthorizationCodeApplication where
-  mkOAuth2Key :: AuthorizationCodeApplication -> OAuth2
-  mkOAuth2Key AuthorizationCodeApplication {..} = toOAuth2Key acClientId acClientSecret
 
 instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication where
   getClientAuthenticationMethod :: AuthorizationCodeApplication -> ClientAuthenticationMethod

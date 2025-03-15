@@ -31,12 +31,6 @@ data DeviceAuthorizationApplication = DeviceAuthorizationApplication
   -- Most of identity providers doesn't required it but some does like Okta.
   }
 
--- instance HasSecret DeviceAuthorizationApplication where
-
-instance HasOAuth2Key DeviceAuthorizationApplication where
-  mkOAuth2Key :: DeviceAuthorizationApplication -> OAuth2
-  mkOAuth2Key DeviceAuthorizationApplication {..} = toOAuth2Key daClientId daClientSecret
-
 instance HasTokenRequestClientAuthenticationMethod DeviceAuthorizationApplication where
   getClientAuthenticationMethod :: DeviceAuthorizationApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod = daAuthorizationRequestAuthenticationMethod

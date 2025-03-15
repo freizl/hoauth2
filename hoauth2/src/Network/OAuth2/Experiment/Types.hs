@@ -226,20 +226,3 @@ instance ToQueryParam OAuth2.RefreshToken where
 instance ToQueryParam ResponseType where
   toQueryParam :: ResponseType -> Map Text Text
   toQueryParam Code = Map.singleton "response_type" "code"
-
--------------------------------------------------------------------------------
---                                HasOAuth2Key                               --
---                                                                           --
--- Find a way to reuse some methods from old implementation                  --
--- Probably will be removed when Experiment module becomes default           --
--------------------------------------------------------------------------------
-
-class HasOAuth2Key a where
-  mkOAuth2Key :: a -> OAuth2
-
--------------------------------------------------------------------------------
---                                   Secret                                  --
--------------------------------------------------------------------------------
-
-class HasSecret a where
-  getSecret :: a -> (ClientId, ClientSecret)

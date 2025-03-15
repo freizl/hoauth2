@@ -341,6 +341,9 @@ doRefreshToken ::
 doRefreshToken idpAppConfig (IdpAuthorizationCodeAppSessionData {..}) = do
   at <- maybe (throwE "no token response found for idp") pure tokenResponse
   rt <- maybe (throwE "no refresh token found for idp") pure (OAuth2.refreshToken at)
-  withExceptT pShowNoColor $ do
+  newTokenResponse <- withExceptT pShowNoColor $ do
     mgr <- liftIO $ newManager tlsManagerSettings
     conduitRefreshTokenRequest idpAppConfig mgr rt
+  -- Issue a new refresh token is optional. Reuse the older if there is no new refresh token
+  let refreshToken = fromMaybe rt (OAuth2.refreshToken newTokenResponse)
+  pure newTokenResponse {OAuth2.refreshToken = Just refreshToken}

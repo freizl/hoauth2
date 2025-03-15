@@ -6,7 +6,7 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), OAuth2)
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Types
 import Network.OAuth2.Experiment.Utils
@@ -22,10 +22,6 @@ data ClientCredentialsApplication = ClientCredentialsApplication
   , ccTokenRequestExtraParams :: Map Text Text
   , ccClientAuthenticationMethod :: ClientAuthenticationMethod
   }
-
-instance HasOAuth2Key ClientCredentialsApplication where
-  mkOAuth2Key :: ClientCredentialsApplication -> OAuth2
-  mkOAuth2Key ClientCredentialsApplication {..} = toOAuth2Key ccClientId ccClientSecret
 
 instance HasTokenRequestClientAuthenticationMethod ClientCredentialsApplication where
   getClientAuthenticationMethod :: ClientCredentialsApplication -> ClientAuthenticationMethod

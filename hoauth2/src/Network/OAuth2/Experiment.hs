@@ -147,7 +147,6 @@ import Network.OAuth2.Experiment.Types (
   AuthorizeState (..),
   ClientId (..),
   ClientSecret (..),
-  HasOAuth2Key,
   Idp (..),
   IdpApplication (..),
   Password (..),

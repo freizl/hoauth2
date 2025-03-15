@@ -6,7 +6,7 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..), OAuth2 (..))
+import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
@@ -26,13 +26,6 @@ data ResourceOwnerPasswordApplication = ResourceOwnerPasswordApplication
   , ropTokenRequestExtraParams :: Map Text Text
   , ropClientAuthenticationMethod :: ClientAuthenticationMethod
   }
-
--- instance HasSecret ResourceOwnerPasswordApplication where
---   getSecret ResourceOwnerPasswordApplication {..} = (ropClientId, ropClientSecret)
-
-instance HasOAuth2Key ResourceOwnerPasswordApplication where
-  mkOAuth2Key :: ResourceOwnerPasswordApplication -> OAuth2
-  mkOAuth2Key ResourceOwnerPasswordApplication {..} = toOAuth2Key ropClientId ropClientSecret
 
 instance HasTokenRequestClientAuthenticationMethod ResourceOwnerPasswordApplication where
   getClientAuthenticationMethod :: ResourceOwnerPasswordApplication -> ClientAuthenticationMethod
