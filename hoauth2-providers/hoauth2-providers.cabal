@@ -1,18 +1,23 @@
-cabal-version: 2.4
-name:          hoauth2-providers
-version:       0.8.0
-synopsis:      OAuth2 Identity Providers
-description:   A few well known Identity Providers
-homepage:      https://github.com/freizl/hoauth2
-license:       MIT
-license-file:  LICENSE
-author:        Haisheng Wu
-maintainer:    Haisheng Wu <freizl@gmail.com>
-copyright:     Haisheng Wu
-category:      Network
-build-type:    Simple
-stability:     Beta
-tested-with:   GHC <=9.6.1
+cabal-version:      2.4
+name:               hoauth2-providers
+version:            0.8.0
+synopsis:           OAuth2 Identity Providers
+description:        A few well known Identity Providers
+homepage:           https://github.com/freizl/hoauth2
+license:            MIT
+license-file:       LICENSE
+author:             Haisheng Wu
+maintainer:         Haisheng Wu <freizl@gmail.com>
+copyright:          Haisheng Wu
+category:           Network
+build-type:         Simple
+stability:          Beta
+tested-with:
+  GHC ==8.10.7 || ==9.0.2 || ==9.2.7 || ==9.4.4 || ==9.6.1 || ==9.8.2
+
+extra-source-files:
+  CHANGELOG.md
+  README.md
 
 source-repository head
   type:     git
