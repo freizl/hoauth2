@@ -1,5 +1,4 @@
-#+title: Notes Tips
-
+#+title: Haskell Tips
 
 * Generalized Constraint
 

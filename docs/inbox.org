@@ -35,8 +35,8 @@ curl https://api.linear.app/graphql \
 ** TODO applyBearerAuth
 ** TODO Use Log library in demo app :demo_app:
 ** TODO Upgrade Scotty :demo_app:
+** TODO [#B] JWT validator
 ** TODO [#A] [Okta] Unable to parse Client credential token response error
 - https://github.com/freizl/hoauth2/issues/215
-** TODO [#A] JWT validator
 ** TODO [#A] Changelog
 - Can copilot help?
