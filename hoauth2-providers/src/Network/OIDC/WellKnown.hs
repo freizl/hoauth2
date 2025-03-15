@@ -19,7 +19,6 @@ import URI.ByteString
 import URI.ByteString.Aeson ()
 
 -- | Slim OpenID Configuration
--- TODO: could add more fields to be complete.
 --
 -- See spec <https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata>
 data OpenIDConfiguration = OpenIDConfiguration
