@@ -71,7 +71,6 @@ conduitDeviceAuthorizationRequest IdpApplication {..} mgr = do
     Nothing -> throwE "[conduiteDeviceAuthorizationRequest] Device Authorization Flow is not supported due to miss device_authorization_endpoint."
     Just deviceAuthEndpoint -> do
       let deviceAuthReq = mkDeviceAuthorizationRequestParam application
-          oauth2Key = mkOAuth2Key application
           body = unionMapsToQueryParams [toQueryParam deviceAuthReq]
       ExceptT . liftIO $ do
         req <- addDefaultRequestHeaders <$> uriToRequest deviceAuthEndpoint
@@ -79,7 +78,7 @@ conduitDeviceAuthorizationRequest IdpApplication {..} mgr = do
         -- Missing clientId implies ClientSecretBasic authentication method.
         -- See Grant/DeviceAuthorization.hs
         let req' = case darClientId deviceAuthReq of
-              Nothing -> addBasicAuth oauth2Key req
+              Nothing -> addClientAuthToHeader application req
               Just _ -> req
         resp <- httpLbs (urlEncodedBody body req') mgr
         pure $ first ("[conduiteDeviceAuthorizationRequest] " <>) $ handleResponseJSON resp
@@ -215,7 +214,6 @@ conduitUserInfoRequestWithCustomMethod fetchMethod IdpApplication {..} mgr at =
 
 conduitTokenRequestInternal ::
   ( MonadIO m
-  , HasOAuth2Key a
   , HasTokenRequestClientAuthenticationMethod a
   , FromJSON b
   ) =>
@@ -227,12 +225,11 @@ conduitTokenRequestInternal ::
   -- | Response as ByteString
   ExceptT TokenResponseError m b
 conduitTokenRequestInternal IdpApplication {..} manager body = do
-  let oa = mkOAuth2Key application
-      clientAuthMethod = getClientAuthenticationMethod application
+  let clientAuthMethod = getClientAuthenticationMethod application
       url = idpTokenEndpoint idp
       updateAuthHeader =
         case clientAuthMethod of
-          ClientSecretBasic -> addBasicAuth oa
+          ClientSecretBasic -> addClientAuthToHeader application
           ClientSecretPost -> id
           ClientAssertionJwt -> id
       go = do

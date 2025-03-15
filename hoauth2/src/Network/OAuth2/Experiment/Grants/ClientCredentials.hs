@@ -31,6 +31,8 @@ instance HasTokenRequestClientAuthenticationMethod ClientCredentialsApplication 
   getClientAuthenticationMethod :: ClientCredentialsApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod ClientCredentialsApplication {..} = ccClientAuthenticationMethod
 
+  addClientAuthToHeader ClientCredentialsApplication {..} = addSecretToHeader ccClientId ccClientSecret
+
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2
 instance HasTokenRequest ClientCredentialsApplication where
   type ExchangeTokenInfo ClientCredentialsApplication = NoNeedExchangeToken

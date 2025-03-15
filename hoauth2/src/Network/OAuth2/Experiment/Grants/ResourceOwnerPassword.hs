@@ -27,6 +27,9 @@ data ResourceOwnerPasswordApplication = ResourceOwnerPasswordApplication
   , ropClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
+-- instance HasSecret ResourceOwnerPasswordApplication where
+--   getSecret ResourceOwnerPasswordApplication {..} = (ropClientId, ropClientSecret)
+
 instance HasOAuth2Key ResourceOwnerPasswordApplication where
   mkOAuth2Key :: ResourceOwnerPasswordApplication -> OAuth2
   mkOAuth2Key ResourceOwnerPasswordApplication {..} = toOAuth2Key ropClientId ropClientSecret
@@ -34,6 +37,7 @@ instance HasOAuth2Key ResourceOwnerPasswordApplication where
 instance HasTokenRequestClientAuthenticationMethod ResourceOwnerPasswordApplication where
   getClientAuthenticationMethod :: ResourceOwnerPasswordApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod = ropClientAuthenticationMethod
+  addClientAuthToHeader ResourceOwnerPasswordApplication {..} = addSecretToHeader ropClientId ropClientSecret
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.3.2
 instance HasTokenRequest ResourceOwnerPasswordApplication where

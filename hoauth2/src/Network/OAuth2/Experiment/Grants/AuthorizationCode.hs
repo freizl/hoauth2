@@ -31,6 +31,8 @@ data AuthorizationCodeApplication = AuthorizationCodeApplication
   , acClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
+-- instance HasSecret AuthorizationCodeApplication where
+
 instance HasOAuth2Key AuthorizationCodeApplication where
   mkOAuth2Key :: AuthorizationCodeApplication -> OAuth2
   mkOAuth2Key AuthorizationCodeApplication {..} = toOAuth2Key acClientId acClientSecret
@@ -38,6 +40,7 @@ instance HasOAuth2Key AuthorizationCodeApplication where
 instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication where
   getClientAuthenticationMethod :: AuthorizationCodeApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod AuthorizationCodeApplication {..} = acClientAuthenticationMethod
+  addClientAuthToHeader AuthorizationCodeApplication {..} = addSecretToHeader acClientId acClientSecret
 
 mkAuthorizationRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
 mkAuthorizationRequestParam AuthorizationCodeApplication {..} =

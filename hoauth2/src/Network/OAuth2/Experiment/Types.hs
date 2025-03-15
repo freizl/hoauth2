@@ -236,3 +236,10 @@ instance ToQueryParam ResponseType where
 
 class HasOAuth2Key a where
   mkOAuth2Key :: a -> OAuth2
+
+-------------------------------------------------------------------------------
+--                                   Secret                                  --
+-------------------------------------------------------------------------------
+
+class HasSecret a where
+  getSecret :: a -> (ClientId, ClientSecret)

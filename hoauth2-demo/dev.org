@@ -30,3 +30,6 @@ curl https://api.linear.app/graphql \
 - Just need to figure out how to match differ UI section
 ** TODO Refresh button shall only appear when there is refresh token :demo_app:
 ** TODO Add more fields for OpenIDConfiguration or find an existing impl?
+** TODO Rename ~HasTokenRequestClientAuthenticationMethod~
+- to ~HasClientAuthenticationMethod~
+** TODO applyBearerAuth
