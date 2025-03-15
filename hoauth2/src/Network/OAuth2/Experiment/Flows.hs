@@ -59,9 +59,6 @@ mkPkceAuthorizeRequest IdpApplication {..} = do
 --                                Device Auth                                --
 -------------------------------------------------------------------------------
 
--- TODO: There is only (possibly always only) on instance of 'HasDeviceAuthorizationRequest'
--- Maybe consider to hard-code the data type instead of use type class.
-
 -- | Makes Device Authorization Request
 -- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
 conduitDeviceAuthorizationRequest ::

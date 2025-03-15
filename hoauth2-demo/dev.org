@@ -24,8 +24,9 @@ curl https://api.linear.app/graphql \
 {"data":{"viewer":{"id":"5860978b-2b66-41ad-81c9-01f7c1fb919d","name":"Hai W.","email":"freizl.em@gmail.com"}}}
 
 * Inbox
-** Surface up users
+** TODO Surface up users :demo_app:
 - ~AuthorizationGrantUserStore (MVar (Map.Map IdpName IdpAuthorizationCodeAppSessionData)~
 - User AppName would be better since it's already unique.
 - Just need to figure out how to match differ UI section
-** Refresh button shall only appear when there is refresh token
+** TODO Refresh button shall only appear when there is refresh token :demo_app:
+** TODO Add more fields for OpenIDConfiguration or find an existing impl?
