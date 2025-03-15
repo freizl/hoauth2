@@ -3,20 +3,12 @@
 module Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest where
 
 import Control.Applicative
-import Control.Monad.IO.Class (MonadIO (..))
-import Control.Monad.Trans.Except (ExceptT (..), throwE)
 import Data.Aeson.Types
-import Data.Bifunctor
-import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.HTTP.Client.Contrib
-import Network.HTTP.Conduit
-import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth2.Experiment.Types
-import Network.OAuth2.Experiment.Utils
 import URI.ByteString hiding (UserInfo)
 
 -------------------------------------------------------------------------------
@@ -52,49 +44,16 @@ instance FromJSON DeviceAuthorizationResponse where
     pure DeviceAuthorizationResponse {..}
 
 data DeviceAuthorizationRequestParam = DeviceAuthorizationRequestParam
-  { arScope :: Set Scope
-  , arClientId :: Maybe ClientId
-  , arExtraParams :: Map Text Text
+  { darScope :: Set Scope
+  , darClientId :: Maybe ClientId
+  , darExtraParams :: Map Text Text
   }
 
 instance ToQueryParam DeviceAuthorizationRequestParam where
   toQueryParam :: DeviceAuthorizationRequestParam -> Map Text Text
   toQueryParam DeviceAuthorizationRequestParam {..} =
     Map.unions
-      [ toQueryParam arScope
-      , toQueryParam arClientId
-      , arExtraParams
+      [ toQueryParam darScope
+      , toQueryParam darClientId
+      , darExtraParams
       ]
-
-class HasOAuth2Key a => HasDeviceAuthorizationRequest a where
-  -- | Create Device Authorization Request parameters
-  -- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
-  mkDeviceAuthorizationRequestParam :: a -> DeviceAuthorizationRequestParam
-
--- TODO: There is only (possibly always only) on instance of 'HasDeviceAuthorizationRequest'
--- Maybe consider to hard-code the data type instead of use type class.
-
--- | Makes Device Authorization Request
--- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
-conduitDeviceAuthorizationRequest ::
-  (MonadIO m, HasDeviceAuthorizationRequest a) =>
-  IdpApplication i a ->
-  Manager ->
-  ExceptT BSL.ByteString m DeviceAuthorizationResponse
-conduitDeviceAuthorizationRequest IdpApplication {..} mgr = do
-  case idpDeviceAuthorizationEndpoint idp of
-    Nothing -> throwE "[conduiteDeviceAuthorizationRequest] Device Authorization Flow is not supported due to miss device_authorization_endpoint."
-    Just deviceAuthEndpoint -> do
-      let deviceAuthReq = mkDeviceAuthorizationRequestParam application
-          oauth2Key = mkOAuth2Key application
-          body = unionMapsToQueryParams [toQueryParam deviceAuthReq]
-      ExceptT . liftIO $ do
-        req <- addDefaultRequestHeaders <$> uriToRequest deviceAuthEndpoint
-        -- Hacky:
-        -- Missing clientId implies ClientSecretBasic authentication method.
-        -- See Grant/DeviceAuthorization.hs
-        let req' = case arClientId deviceAuthReq of
-              Nothing -> addBasicAuth oauth2Key req
-              Just _ -> req
-        resp <- httpLbs (urlEncodedBody body req') mgr
-        pure $ first ("[conduiteDeviceAuthorizationRequest] " <>) $ handleResponseJSON resp

@@ -91,19 +91,27 @@ module Network.OAuth2.Experiment (
   module Network.OAuth2.Experiment.Grants,
 
   -- * Authorization Code
-  module Network.OAuth2.Experiment.Flows.AuthorizationRequest,
+  mkAuthorizationRequest,
+  mkPkceAuthorizeRequest,
 
   -- * Device Authorization
   module Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest,
+  conduitDeviceAuthorizationRequest,
+  pollDeviceTokenRequest,
 
   -- * Token Request
   module Network.OAuth2.Experiment.Flows.TokenRequest,
+  conduitPkceTokenRequest,
+  conduitTokenRequest,
 
   -- * Refresh Token Request
   module Network.OAuth2.Experiment.Flows.RefreshTokenRequest,
+  conduitRefreshTokenRequest,
 
   -- * UserInfo Request
   module Network.OAuth2.Experiment.Flows.UserInfoRequest,
+  conduitUserInfoRequest,
+  conduitUserInfoRequestWithCustomMethod,
 
   -- * Types
   module Network.OAuth2.Experiment.Types,
@@ -115,32 +123,21 @@ module Network.OAuth2.Experiment (
 ) where
 
 import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
-import Network.OAuth2.Experiment.Flows.AuthorizationRequest (
-  HasAuthorizeRequest,
-  mkAuthorizationRequest,
-  mkPkceAuthorizeRequest,
- )
+import Network.OAuth2.Experiment.Flows
 import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest (
   DeviceAuthorizationResponse (..),
-  HasDeviceAuthorizationRequest,
-  conduitDeviceAuthorizationRequest,
  )
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest (
   HasRefreshTokenRequest,
-  conduitRefreshTokenRequest,
  )
 import Network.OAuth2.Experiment.Flows.TokenRequest (
   ExchangeTokenInfo,
   HasTokenRequest,
   NoNeedExchangeToken (..),
   TokenRequest,
-  conduitPkceTokenRequest,
-  conduitTokenRequest,
  )
 import Network.OAuth2.Experiment.Flows.UserInfoRequest (
   HasUserInfoRequest,
-  conduitUserInfoRequest,
-  conduitUserInfoRequestWithCustomMethod,
  )
 import Network.OAuth2.Experiment.Grants
 import Network.OAuth2.Experiment.Pkce (

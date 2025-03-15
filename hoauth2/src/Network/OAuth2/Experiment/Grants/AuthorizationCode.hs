@@ -39,30 +39,28 @@ instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication 
   getClientAuthenticationMethod :: AuthorizationCodeApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod AuthorizationCodeApplication {..} = acClientAuthenticationMethod
 
-instance HasAuthorizeRequest AuthorizationCodeApplication where
-  mkAuthorizationRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
-  mkAuthorizationRequestParam AuthorizationCodeApplication {..} =
-    AuthorizationRequestParam
-      { arScope = acScope
-      , arState = acAuthorizeState
-      , arClientId = acClientId
-      , arRedirectUri = Just (RedirectUri acRedirectUri)
-      , arResponseType = Code
-      , arExtraParams = acAuthorizeRequestExtraParams
-      }
+mkAuthorizationRequestParam :: AuthorizationCodeApplication -> AuthorizationRequestParam
+mkAuthorizationRequestParam AuthorizationCodeApplication {..} =
+  AuthorizationRequestParam
+    { arScope = acScope
+    , arState = acAuthorizeState
+    , arClientId = acClientId
+    , arRedirectUri = Just (RedirectUri acRedirectUri)
+    , arResponseType = Code
+    , arExtraParams = acAuthorizeRequestExtraParams
+    }
 
-instance HasPkceAuthorizeRequest AuthorizationCodeApplication where
-  mkPkceAuthorizeRequestParam :: MonadIO m => AuthorizationCodeApplication -> m (AuthorizationRequestParam, CodeVerifier)
-  mkPkceAuthorizeRequestParam app = do
-    PkceRequestParam {..} <- mkPkceParam
-    let authReqParam = mkAuthorizationRequestParam app
-        combinatedExtraParams =
-          Map.unions
-            [ arExtraParams authReqParam
-            , toQueryParam codeChallenge
-            , toQueryParam codeChallengeMethod
-            ]
-    pure (authReqParam {arExtraParams = combinatedExtraParams}, codeVerifier)
+mkPkceAuthorizeRequestParam :: MonadIO m => AuthorizationCodeApplication -> m (AuthorizationRequestParam, CodeVerifier)
+mkPkceAuthorizeRequestParam app = do
+  PkceRequestParam {..} <- mkPkceParam
+  let authReqParam = mkAuthorizationRequestParam app
+      combinatedExtraParams =
+        Map.unions
+          [ arExtraParams authReqParam
+          , toQueryParam codeChallenge
+          , toQueryParam codeChallengeMethod
+          ]
+  pure (authReqParam {arExtraParams = combinatedExtraParams}, codeVerifier)
 
 -- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
 instance HasTokenRequest AuthorizationCodeApplication where

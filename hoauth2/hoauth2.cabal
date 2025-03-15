@@ -40,6 +40,7 @@ library
     Network.OAuth.OAuth2.HttpClient
     Network.OAuth.OAuth2.TokenRequest
     Network.OAuth2.Experiment
+    Network.OAuth2.Experiment.Flows
     Network.OAuth2.Experiment.Flows.AuthorizationRequest
     Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest
     Network.OAuth2.Experiment.Flows.RefreshTokenRequest
