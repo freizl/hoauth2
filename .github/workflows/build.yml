@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         ghc: ["9.8", "9.6", "9.4", "9.2"]
-        cabal: ["3.8"]
+        cabal: ["3.10"]
     name: Build hoauth2 on GHC ${{ matrix.ghc }}
 
     steps:
