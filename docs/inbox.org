@@ -38,5 +38,9 @@ curl https://api.linear.app/graphql \
 ** TODO [#B] JWT validator
 ** TODO [#A] [Okta] Unable to parse Client credential token response error
 - https://github.com/freizl/hoauth2/issues/215
-** TODO [#A] Changelog
+** DONE [#A] Changelog
+CLOSED: [2025-03-15 Sat 00:00]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-03-15 Sat 00:00]
+:END:
 - Can copilot help?
