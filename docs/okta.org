@@ -1,9 +1,44 @@
 #+title: Okta
 
-
 * Client Credential flow
 
-|               | Org AS | Custom AS |
-|---------------+--------+-----------|
-| Client Secret | 𐄂      | ✔        |
-| JWT assertion | ✔     | ✔        |
+|                 | Org AS          | Custom AS         |
+|-----------------+-----------------+-------------------|
+| Client Secret   | 𐄂               | ✔ (custom scope) |
+| Private Key JWT | ✔ (Okta Scope) | ✔                |
+
+** Test
+
+According to the spec, token response shall return =error= code when failure (even when invalid client).
+Looks like we did differently between invalid client and other errors
+
+
+#+begin_src sh :results raw :wrap src json
+curl -X POST \
+  https://dev-9600128.okta.com/oauth2/default/v1/token \
+  --header 'accept: application/json' \
+  --header 'cache-control: no-cache' \
+  --header 'content-type: application/x-www-form-urlencoded' \
+  -u "oanv:YZbFyxO" \
+  --data 'grant_type=client_credentials&scope=foo' \
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+{
+  "errorCode": "invalid_client",
+  "errorSummary": "Invalid value for 'client_id' parameter.",
+  "errorLink": "invalid_client",
+  "errorId": "oaeDzZErMGaSZy_TSRTVKWTlQ",
+  "errorCauses": []
+}
+#+end_src
+
+#+name: Error when invalid scope
+
+#+begin_src json
+{
+  "error": "invalid_scope",
+  "error_description": "One or more scopes are not configured for the authorization server resource."
+}
+#+end_src

@@ -40,7 +40,7 @@ import Network.OAuth2.Provider.Twitter qualified as ITwitter
 import Network.OAuth2.Provider.Weibo qualified as IWeibo
 import Network.OAuth2.Provider.ZOHO qualified as IZOHO
 import Types
-import URI.ByteString (URI)
+import URI.ByteString (URI, URIRef (uriPath))
 import URI.ByteString.QQ (uri)
 import User
 import Prelude hiding (id)
@@ -127,7 +127,11 @@ createClientCredentialsApp i idpName = do
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience", audience)]
           }
-    Okta -> createOktaClientCredentialsGrantAppJwt i appSetting
+    Okta -> do
+      -- ORG AS only support private key jwt
+      if uriPath (idpTokenEndpoint i) == "/oauth2/v1/token"
+        then createOktaClientCredentialsGrantAppJwt i appSetting
+        else pure defaultApp
     _ -> pure defaultApp
   let newApp' =
         newApp
