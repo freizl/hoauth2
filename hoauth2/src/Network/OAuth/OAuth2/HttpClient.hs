@@ -25,6 +25,7 @@ import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Text.Encoding qualified as T
 import Lens.Micro (over)
+import Network.HTTP.Client.Conduit (applyBearerAuth)
 import Network.HTTP.Client.Contrib (handleResponse)
 import Network.HTTP.Conduit
 import Network.HTTP.Types qualified as HT
@@ -220,16 +221,10 @@ authRequest req upReq manage = ExceptT $ do
   resp <- httpLbs (upReq req) manage
   pure (handleResponse resp)
 
--- | Set several header values:
---   + userAgennt    : "hoauth2"
---   + authorization : "Bearer xxxxx" if 'Network.OAuth.OAuth2.AccessToken' provided.
 updateRequestHeaders :: Maybe AccessToken -> Request -> Request
-updateRequestHeaders t req =
-  let bearer = case t of
-        Just (AccessToken at) -> [(HT.hAuthorization, "Bearer " `BS.append` T.encodeUtf8 at)]
-        Nothing -> []
-      headers = bearer ++ defaultRequestHeaders ++ requestHeaders req
-   in req {requestHeaders = headers}
+updateRequestHeaders mt =
+  maybe id (applyBearerAuth . T.encodeUtf8 . atoken) mt
+    . addDefaultRequestHeaders
 
 -- | Set the HTTP method to use.
 setMethod :: HT.StdMethod -> Request -> Request

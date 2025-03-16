@@ -7,10 +7,11 @@ import Control.Monad.Catch
 import Data.Aeson
 import Data.Binary.Instances.Aeson ()
 import Data.ByteString qualified as BS
-import Data.ByteString.Char8 qualified as BS8
 import Data.Default
 import Data.Maybe
 import Data.Text (Text)
+import Data.Text qualified as T
+import Data.Text.Encoding qualified as T
 import Data.Version (showVersion)
 import Lens.Micro
 import Lens.Micro.Extras
@@ -99,9 +100,17 @@ type QueryParams = [(BS.ByteString, BS.ByteString)]
 
 defaultRequestHeaders :: [(HT.HeaderName, BS.ByteString)]
 defaultRequestHeaders =
-  [ (HT.hUserAgent, "hoauth2-" <> BS8.pack (showVersion version))
+  [ (HT.hUserAgent, "hoauth2-" <> (T.encodeUtf8 . T.pack $ showVersion version))
   , (HT.hAccept, "application/json")
   ]
+
+-- | Set several header values:
+--   + userAgennt    : "hoauth2"
+--   + accept        : "application/json"
+addDefaultRequestHeaders :: Request -> Request
+addDefaultRequestHeaders req =
+  let headers = defaultRequestHeaders ++ requestHeaders req
+   in req {requestHeaders = headers}
 
 appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
 appendQueryParams params =
@@ -109,7 +118,7 @@ appendQueryParams params =
 
 -- TODO: why we need this method instead of `parseRequest`
 -- https://hackage.haskell.org/package/http-client-0.7.18/docs/Network-HTTP-Client.html#v:parseRequest
---
+-- or requestFromURI
 uriToRequest :: MonadThrow m => URI -> m Request
 uriToRequest auri = do
   ssl <- case view (uriSchemeL . schemeBSL) auri of
@@ -131,6 +140,7 @@ uriToRequest auri = do
       req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) auri req2
   return req3
 
+-- https://hackage.haskell.org/package/http-client-0.7.18/docs/Network-HTTP-Client.html#v:getUri
 requestToUri :: Request -> URI
 requestToUri req =
   URI

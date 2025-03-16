@@ -354,14 +354,6 @@ addBasicAuth oa =
     (T.encodeUtf8 $ oauth2ClientId oa)
     (T.encodeUtf8 $ oauth2ClientSecret oa)
 
--- | Set several header values:
---   + userAgennt    : "hoauth2"
---   + accept        : "application/json"
-addDefaultRequestHeaders :: Request -> Request
-addDefaultRequestHeaders req =
-  let headers = defaultRequestHeaders ++ requestHeaders req
-   in req {requestHeaders = headers}
-
 -- | Add Credential (client_id, client_secret) to the request post body.
 clientSecretPost :: OAuth2 -> PostBody
 clientSecretPost oa =
