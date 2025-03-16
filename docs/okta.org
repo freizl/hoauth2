@@ -1,0 +1,9 @@
+#+title: Okta
+
+
+* Client Credential flow
+
+|               | Org AS | Custom AS |
+|---------------+--------+-----------|
+| Client Secret | 𐄂      | ✔        |
+| JWT assertion | ✔     | ✔        |

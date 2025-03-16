@@ -1,0 +1,7 @@
+#+title: Auth0
+
+* Auth0 Resource Owner Config
+1. Create Native App
+   - Enable Password Grant in advance settings
+2. Settings -> API Authorization Settings -> Default Directory -> =Username-Password-Authentication=
+

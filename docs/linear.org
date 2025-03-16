@@ -1,0 +1,15 @@
+#+title: Linear
+
+* User API
+
+#+begin_src sh :results raw
+curl https://api.linear.app/graphql \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H 'Authorization: Bearer lin_oauth' \
+  --data '{ "query": "{ viewer { id name email } }" }' \
+#+end_src
+
+#+RESULTS:
+{"data":{"viewer":{"id":"5860978b-2b66-41ad-81c9-01f7c1fb919d","name":"Hai W.","email":"freizl.em@gmail.com"}}}
+
