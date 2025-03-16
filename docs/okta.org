@@ -13,7 +13,7 @@ According to the spec, token response shall return =error= code when failure (ev
 Looks like we did differently between invalid client and other errors
 
 
-#+begin_src sh :results raw :wrap src json
+#+begin_src sh :results raw :wrap src json :exports both
 curl -X POST \
   https://dev-9600128.okta.com/oauth2/default/v1/token \
   --header 'accept: application/json' \
@@ -34,11 +34,10 @@ curl -X POST \
 }
 #+end_src
 
-#+name: Error when invalid scope
-
-#+begin_src json
-{
-  "error": "invalid_scope",
-  "error_description": "One or more scopes are not configured for the authorization server resource."
-}
+- Error when invalid scope
+  #+begin_src json
+  {
+    "error": "invalid_scope",
+    "error_description": "One or more scopes are not configured for the authorization server resource."
+  }
 #+end_src
