@@ -1,5 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 
+-- | Module implementing various OAuth2 flow types and their request/response handling.
+-- Provides support for:
+-- 
+--   * Authorization Code Grant
+--   * Device Authorization Grant
+--   * PKCE Extension
+--   * Token Refresh
+--   * User Info Endpoints
 module Network.OAuth2.Experiment.Flows where
 
 import Control.Concurrent
@@ -29,8 +37,15 @@ import URI.ByteString hiding (UserInfo)
 --                           Authorization Requests                          --
 -------------------------------------------------------------------------------
 
--- | Constructs Authorization Code request URI
--- https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+-- | Constructs an Authorization Code request URI according to
+-- <https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1 RFC 6749 Section 4.1.1>.
+-- 
+-- The generated URI includes:
+--   * client_id
+--   * response_type (always "code")
+--   * redirect_uri
+--   * state (if provided)
+--   * scope (if provided)
 mkAuthorizationRequest :: IdpApplication i AuthorizationCodeApplication -> URI
 mkAuthorizationRequest idpApp =
   let req = mkAuthorizationRequestParam (application idpApp)
@@ -41,8 +56,11 @@ mkAuthorizationRequest idpApp =
    in appendQueryParams allParams $
         idpAuthorizeEndpoint (idp idpApp)
 
--- | Constructs Authorization Code (PKCE) request URI and the Code Verifier.
--- https://datatracker.ietf.org/doc/html/rfc7636
+-- | Constructs an Authorization Code request URI with PKCE support according to
+-- <https://datatracker.ietf.org/doc/html/rfc7636 RFC 7636>.
+-- 
+-- Returns both the authorization URI and the generated code verifier.
+-- The code verifier must be stored securely for later use in the token request.
 mkPkceAuthorizeRequest ::
   MonadIO m =>
   IdpApplication i AuthorizationCodeApplication ->
@@ -59,8 +77,11 @@ mkPkceAuthorizeRequest IdpApplication {..} = do
 --                                Device Auth                                --
 -------------------------------------------------------------------------------
 
--- | Makes Device Authorization Request
--- https://www.rfc-editor.org/rfc/rfc8628#section-3.1
+-- | Makes a Device Authorization Request according to
+-- <https://www.rfc-editor.org/rfc/rfc8628#section-3.1 RFC 8628 Section 3.1>.
+-- 
+-- Returns device and user codes for the authorization process.
+-- Throws an error if the IdP doesn't support device authorization.
 conduitDeviceAuthorizationRequest ::
   MonadIO m =>
   IdpApplication i DeviceAuthorizationApplication ->
@@ -68,21 +89,25 @@ conduitDeviceAuthorizationRequest ::
   ExceptT BSL.ByteString m DeviceAuthorizationResponse
 conduitDeviceAuthorizationRequest IdpApplication {..} mgr = do
   case idpDeviceAuthorizationEndpoint idp of
-    Nothing -> throwE "[conduiteDeviceAuthorizationRequest] Device Authorization Flow is not supported due to miss device_authorization_endpoint."
+    Nothing -> throwE "[conduitDeviceAuthorizationRequest] Device Authorization Flow is not supported: missing device_authorization_endpoint."
     Just deviceAuthEndpoint -> do
       let deviceAuthReq = mkDeviceAuthorizationRequestParam application
           body = unionMapsToQueryParams [toQueryParam deviceAuthReq]
       ExceptT . liftIO $ do
         req <- addDefaultRequestHeaders <$> uriToRequest deviceAuthEndpoint
-        -- Hacky:
-        -- Missing clientId implies ClientSecretBasic authentication method.
-        -- See Grant/DeviceAuthorization.hs
+        -- Note: Missing clientId indicates ClientSecretBasic authentication method
+        -- should be used. See Network.OAuth2.Experiment.Grants.DeviceAuthorization
         let req' = case darClientId deviceAuthReq of
               Nothing -> addClientAuthToHeader application req
               Just _ -> req
         resp <- httpLbs (urlEncodedBody body req') mgr
-        pure $ first ("[conduiteDeviceAuthorizationRequest] " <>) $ handleResponseJSON resp
+        pure $ first ("[conduitDeviceAuthorizationRequest] " <>) $ handleResponseJSON resp
 
+-- | Polls for a token using the device authorization flow.
+-- 
+-- This implements the polling mechanism described in 
+-- <https://www.rfc-editor.org/rfc/rfc8628#section-3.5 RFC 8628 Section 3.5>.
+-- Handles automatic retries and interval adjustments based on IdP responses.
 pollDeviceTokenRequest ::
   MonadIO m =>
   IdpApplication i DeviceAuthorizationApplication ->
@@ -126,7 +151,11 @@ pollDeviceTokenRequestInternal idpApp mgr deviceCode intervalSeconds = do
 --                               Token Request                               --
 -------------------------------------------------------------------------------
 
--- | https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
+-- | Sends a token request according to
+-- <https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3 RFC 6749 Section 4.1.3>.
+-- 
+-- This is used for exchanging authorization codes, device codes, or other
+-- grant types for access tokens.
 conduitTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
   IdpApplication i a ->
@@ -145,7 +174,10 @@ conduitTokenRequest idpApp mgr exchangeToken = do
 --                             PKCE Token Request                            --
 -------------------------------------------------------------------------------
 
--- | https://datatracker.ietf.org/doc/html/rfc7636#section-4.5
+-- | Sends a token request with PKCE parameters according to
+-- <https://datatracker.ietf.org/doc/html/rfc7636#section-4.5 RFC 7636 Section 4.5>.
+-- 
+-- Takes the code verifier generated during authorization request.
 conduitPkceTokenRequest ::
   (HasTokenRequest a, ToQueryParam (TokenRequest a), MonadIO m) =>
   IdpApplication i a ->
@@ -162,11 +194,13 @@ conduitPkceTokenRequest idpApp mgr (exchangeToken, codeVerifier) =
    in conduitTokenRequestInternal idpApp mgr body
 
 -------------------------------------------------------------------------------
---                               Refresh Toekn                               --
+--                              Refresh Token                               --
 -------------------------------------------------------------------------------
 
--- | Make Refresh Token Request
--- https://www.rfc-editor.org/rfc/rfc6749#section-6
+-- | Makes a Refresh Token Request according to
+-- <https://www.rfc-editor.org/rfc/rfc6749#section-6 RFC 6749 Section 6>.
+-- 
+-- Used to obtain a new access token using a refresh token.
 conduitRefreshTokenRequest ::
   (MonadIO m, HasRefreshTokenRequest a) =>
   IdpApplication i a ->
@@ -179,10 +213,13 @@ conduitRefreshTokenRequest ia mgr rt =
    in conduitTokenRequestInternal ia mgr body
 
 -------------------------------------------------------------------------------
---                                 User Infor                                --
+--                               User Info                                  --
 -------------------------------------------------------------------------------
 
--- | Standard approach of fetching /userinfo
+-- | Makes a standard request to the userinfo endpoint using GET method.
+-- 
+-- This is commonly used with OpenID Connect providers to fetch
+-- user profile information using an access token.
 conduitUserInfoRequest ::
   (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
   IdpApplication i a ->
@@ -191,9 +228,10 @@ conduitUserInfoRequest ::
   ExceptT BSL.ByteString m b
 conduitUserInfoRequest = conduitUserInfoRequestWithCustomMethod authGetJSON
 
--- | Usually 'conduitUserInfoRequest' is good enough.
--- But some IdP has different approach to fetch user information rather than GET.
--- This method gives the flexiblity.
+-- | Makes a request to the userinfo endpoint using a custom HTTP method.
+-- 
+-- Some IdPs may require different HTTP methods or custom headers
+-- for fetching user information. This function provides that flexibility.
 conduitUserInfoRequestWithCustomMethod ::
   (MonadIO m, HasUserInfoRequest a, FromJSON b) =>
   ( Manager ->
@@ -212,6 +250,11 @@ conduitUserInfoRequestWithCustomMethod fetchMethod IdpApplication {..} mgr at =
 --                              Internal helpers                             --
 -------------------------------------------------------------------------------
 
+-- | Internal helper function for making token requests with appropriate
+-- client authentication method.
+--
+-- The function handles different client authentication methods and
+-- processes the HTTP response according to OAuth2 specifications.
 conduitTokenRequestInternal ::
   ( MonadIO m
   , HasTokenRequestClientAuthenticationMethod a
