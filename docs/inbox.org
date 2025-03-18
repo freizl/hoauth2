@@ -6,7 +6,11 @@
  Just need to figure out how to match differ UI section
 * TODO Refresh button shall only appear when there is refresh token :demo_app:
 * TODO Add more fields for OpenIDConfiguration or find an existing impl? :oidc:
-* TODO [#A] Rename ~HasTokenRequestClientAuthenticationMethod~ :refactor:
+* DONE [#A] Rename ~HasTokenRequestClientAuthenticationMethod~ :refactor:
+CLOSED: [2025-03-17 Mon 20:24]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-03-17 Mon 20:24]
+:END:
  to ~HasClientAuthenticationMethod~
 * DONE [#A] applyBearerAuth :refactor:
 CLOSED: [2025-03-17 Mon 20:21]
