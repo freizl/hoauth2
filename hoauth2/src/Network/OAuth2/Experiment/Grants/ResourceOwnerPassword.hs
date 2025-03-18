@@ -27,7 +27,7 @@ data ResourceOwnerPasswordApplication = ResourceOwnerPasswordApplication
   , ropClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
-instance HasTokenRequestClientAuthenticationMethod ResourceOwnerPasswordApplication where
+instance HasClientAuthenticationMethod ResourceOwnerPasswordApplication where
   getClientAuthenticationMethod :: ResourceOwnerPasswordApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod = ropClientAuthenticationMethod
   addClientAuthToHeader ResourceOwnerPasswordApplication {..} = addSecretToHeader ropClientId ropClientSecret

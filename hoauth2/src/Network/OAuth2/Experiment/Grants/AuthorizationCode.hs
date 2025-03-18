@@ -31,7 +31,7 @@ data AuthorizationCodeApplication = AuthorizationCodeApplication
   , acClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
-instance HasTokenRequestClientAuthenticationMethod AuthorizationCodeApplication where
+instance HasClientAuthenticationMethod AuthorizationCodeApplication where
   getClientAuthenticationMethod :: AuthorizationCodeApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod AuthorizationCodeApplication {..} = acClientAuthenticationMethod
   addClientAuthToHeader AuthorizationCodeApplication {..} = addSecretToHeader acClientId acClientSecret

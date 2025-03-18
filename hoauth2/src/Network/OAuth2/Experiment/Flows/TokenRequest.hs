@@ -19,7 +19,7 @@ addSecretToHeader cid csecret =
     (T.encodeUtf8 $ TL.toStrict $ unClientId cid)
     (T.encodeUtf8 $ TL.toStrict $ unClientSecret csecret)
 
-class HasTokenRequestClientAuthenticationMethod a where
+class HasClientAuthenticationMethod a where
   getClientAuthenticationMethod :: a -> ClientAuthenticationMethod
   addClientAuthToHeader :: a -> Request -> Request
   addClientAuthToHeader _ = id
@@ -28,7 +28,7 @@ class HasTokenRequestClientAuthenticationMethod a where
 -- ResourceOwnerPassword and Client Credentials make token request directly.
 data NoNeedExchangeToken = NoNeedExchangeToken
 
-class HasTokenRequestClientAuthenticationMethod a => HasTokenRequest a where
+class HasClientAuthenticationMethod a => HasTokenRequest a where
   -- Each GrantTypeFlow has slightly different request parameter to /token endpoint.
   data TokenRequest a
   type ExchangeTokenInfo a

@@ -31,7 +31,7 @@ data DeviceAuthorizationApplication = DeviceAuthorizationApplication
   -- Most of identity providers doesn't required it but some does like Okta.
   }
 
-instance HasTokenRequestClientAuthenticationMethod DeviceAuthorizationApplication where
+instance HasClientAuthenticationMethod DeviceAuthorizationApplication where
   getClientAuthenticationMethod :: DeviceAuthorizationApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod = daAuthorizationRequestAuthenticationMethod
   addClientAuthToHeader DeviceAuthorizationApplication {..} = addSecretToHeader daClientId daClientSecret

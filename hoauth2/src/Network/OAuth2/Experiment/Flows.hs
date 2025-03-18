@@ -246,7 +246,7 @@ conduitUserInfoRequestWithCustomMethod fetchMethod IdpApplication {..} mgr at =
 
 conduitTokenRequestInternal ::
   ( MonadIO m
-  , HasTokenRequestClientAuthenticationMethod a
+  , HasClientAuthenticationMethod a
   , FromJSON b
   ) =>
   IdpApplication i a ->

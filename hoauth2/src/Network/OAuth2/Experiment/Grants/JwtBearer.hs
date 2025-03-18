@@ -20,7 +20,7 @@ data JwtBearerApplication = JwtBearerApplication
   , jbJwtAssertion :: BS.ByteString
   }
 
-instance HasTokenRequestClientAuthenticationMethod JwtBearerApplication where
+instance HasClientAuthenticationMethod JwtBearerApplication where
   getClientAuthenticationMethod :: JwtBearerApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod _ = ClientAssertionJwt
 

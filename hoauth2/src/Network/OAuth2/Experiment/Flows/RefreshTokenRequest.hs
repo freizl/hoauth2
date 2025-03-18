@@ -33,7 +33,7 @@ instance ToQueryParam RefreshTokenRequest where
       , toQueryParam rrClientSecret
       ]
 
-class HasTokenRequestClientAuthenticationMethod a => HasRefreshTokenRequest a where
+class HasClientAuthenticationMethod a => HasRefreshTokenRequest a where
   -- | Make Refresh Token Request parameters
   -- | https://www.rfc-editor.org/rfc/rfc6749#section-6
   mkRefreshTokenRequestParam :: a -> OAuth2.RefreshToken -> RefreshTokenRequest

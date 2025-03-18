@@ -23,7 +23,7 @@ data ClientCredentialsApplication = ClientCredentialsApplication
   , ccClientAuthenticationMethod :: ClientAuthenticationMethod
   }
 
-instance HasTokenRequestClientAuthenticationMethod ClientCredentialsApplication where
+instance HasClientAuthenticationMethod ClientCredentialsApplication where
   getClientAuthenticationMethod :: ClientCredentialsApplication -> ClientAuthenticationMethod
   getClientAuthenticationMethod ClientCredentialsApplication {..} = ccClientAuthenticationMethod
 
