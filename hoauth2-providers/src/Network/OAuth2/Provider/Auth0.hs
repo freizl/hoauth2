@@ -20,7 +20,7 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
-import URI.ByteString.QQ
+import Network.URI.Static(uri)
 
 sampleAuth0AuthorizationCodeApp :: AuthorizationCodeApplication
 sampleAuth0AuthorizationCodeApp =

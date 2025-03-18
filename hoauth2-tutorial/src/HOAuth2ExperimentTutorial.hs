@@ -134,7 +134,7 @@ import Network.OAuth.OAuth2 (
   TokenResponseError,
  )
 import Network.OAuth2.Experiment
-import URI.ByteString.QQ (uri)
+import Network.URI.Static (uri)
 import Web.Scotty (ActionM, scotty)
 import Web.Scotty qualified as Scotty
 

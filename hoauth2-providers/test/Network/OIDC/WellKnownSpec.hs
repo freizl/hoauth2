@@ -5,7 +5,7 @@ module Network.OIDC.WellKnownSpec where
 import Data.Aeson qualified as Aeson
 import Network.OIDC.WellKnown (OpenIDConfiguration (..))
 import Test.Hspec
-import URI.ByteString.QQ
+import Network.URI.Static(uri)
 
 spec :: Spec
 spec = do

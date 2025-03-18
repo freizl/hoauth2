@@ -32,7 +32,7 @@ import OpenSSL.PEM (
   readPrivateKey,
  )
 import OpenSSL.RSA
-import URI.ByteString.QQ
+import Network.URI.Static(uri)
 
 {-
 To test at google playground, set redirect uri to "https://developers.google.com/oauthplayground"

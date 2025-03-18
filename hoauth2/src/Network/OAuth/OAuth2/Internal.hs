@@ -22,6 +22,7 @@ import Paths_hoauth2 (version)
 import URI.ByteString
 import URI.ByteString.Aeson ()
 import URI.ByteString.QQ
+import Network.URI.Lens (uriQueryLens)
 
 -------------------------------------------------------------------------------
 
@@ -112,7 +113,7 @@ addDefaultRequestHeaders req =
   let headers = defaultRequestHeaders ++ requestHeaders req
    in req {requestHeaders = headers}
 
-appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
+appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URI -> URI
 appendQueryParams params =
   over (queryL . queryPairsL) (params ++)
 

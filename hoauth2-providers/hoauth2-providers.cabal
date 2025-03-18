@@ -73,6 +73,7 @@ library
     , text                  >=2.0  && <2.3
     , time                  >=1.12 && <1.13
     , transformers          >=0.4  && <0.7
+    , network-uri     ^>= 2.6.4
     , uri-bytestring        >=0.3  && <0.5
     , uri-bytestring-aeson  ^>=0.1
 

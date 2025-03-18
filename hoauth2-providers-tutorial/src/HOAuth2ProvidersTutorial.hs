@@ -27,7 +27,7 @@ import Network.OAuth2.Provider.Auth0 (Auth0User (..), mkAuth0Idp)
 import Network.OAuth2.Provider.Auth0 qualified as Auth0
 import Network.OAuth2.Provider.Google (GoogleUser (..))
 import Network.OAuth2.Provider.Google qualified as Google
-import URI.ByteString.QQ (uri)
+import Network.URI (uri)
 import Web.Scotty (ActionM, scotty)
 import Web.Scotty qualified as Scotty
 import Prelude hiding (id)

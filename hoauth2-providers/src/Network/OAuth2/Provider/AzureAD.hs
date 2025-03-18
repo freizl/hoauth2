@@ -16,7 +16,7 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
-import URI.ByteString.QQ
+import Network.URI.Static(uri)
 
 -- Create app at https://go.microsoft.com/fwlink/?linkid=2083908
 --

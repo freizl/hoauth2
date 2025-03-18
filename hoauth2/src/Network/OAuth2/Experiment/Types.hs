@@ -15,8 +15,8 @@ import Network.OAuth.OAuth2 hiding (RefreshToken)
 import Network.OAuth.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Utils
-import URI.ByteString (URI, serializeURIRef')
-
+-- import URI.ByteString (URI, serializeURIRef')
+import Network.URI
 -------------------------------------------------------------------------------
 
 -- * Idp App
@@ -181,7 +181,7 @@ instance ToQueryParam AuthorizeState where
   toQueryParam (AuthorizeState x) = Map.singleton "state" x
 
 instance ToQueryParam RedirectUri where
-  toQueryParam (RedirectUri uri) = Map.singleton "redirect_uri" (bs8ToLazyText $ serializeURIRef' uri)
+  toQueryParam (RedirectUri uri) = Map.singleton "redirect_uri" (bs8ToLazyText $ "FIXME") -- serializeURIRef' uri)
 
 instance ToQueryParam (Set Scope) where
   toQueryParam :: Set Scope -> Map Text Text

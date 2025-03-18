@@ -31,7 +31,7 @@
 -- @
 --
 -- import Network.OAuth2.Experiment
--- import URI.ByteString.QQ
+-- import Network.URI.Static(uri)
 --
 -- data Google = Google deriving (Eq, Show)
 --

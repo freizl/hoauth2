@@ -19,7 +19,7 @@ import Network.OAuth.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import URI.ByteString (URI)
-import URI.ByteString.QQ (uri)
+import Network.URI.Static(uri)
 
 -- Found the key from your application edit page
 -- https://stackapps.com/apps/oauth

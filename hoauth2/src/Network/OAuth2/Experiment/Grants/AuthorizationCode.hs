@@ -15,7 +15,8 @@ import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Types
-import URI.ByteString hiding (UserInfo)
+-- import URI.ByteString hiding (UserInfo)
+import Network.URI
 
 -- | An Application that supports "Authorization code" flow
 --
