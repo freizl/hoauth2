@@ -126,24 +126,29 @@ createClientCredentialsApp i idpName = do
       pure
         defaultApp
           { ccTokenRequestExtraParams = Map.fromList [("audience", audience)]
-          }
-    Okta -> do
-      -- ORG AS only support private key jwt
-      if uriPath (idpTokenEndpoint i) == "/oauth2/v1/token"
-        then createOktaClientCredentialsGrantAppJwt i appSetting
-        else pure defaultApp
-    _ -> pure defaultApp
-  let newApp' =
-        newApp
-          { ccClientId = clientId
+          , ccClientId = clientId
           , ccClientSecret = clientSecret
           , ccScope = scopes
           , ccName = newAppName
           }
+    Okta -> do
+      -- ORG AS only support private key jwt
+      -- Custom AS support both. In this demo app, just default to client secret
+      if uriPath (idpTokenEndpoint i) == "/oauth2/v1/token"
+        then createOktaClientCredentialsGrantAppJwt i appSetting
+        else
+          pure
+            defaultApp
+              { ccClientId = clientId
+              , ccClientSecret = clientSecret
+              , ccScope = scopes
+              , ccName = newAppName
+              }
+    _ -> pure defaultApp
   pure $
     IdpApplication
       { idp = i
-      , application = newApp'
+      , application = newApp
       }
 
 -- Base on the document, it works well with both custom Athourization Server and Org As.
