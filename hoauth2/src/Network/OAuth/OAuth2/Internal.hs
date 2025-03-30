@@ -2,21 +2,18 @@
 
 module Network.OAuth.OAuth2.Internal where
 
-import Control.Arrow (second)
 import Control.Monad.Catch
 import Data.Aeson
 import Data.Binary.Instances.Aeson ()
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BS8
 import Data.Default
-import Data.Maybe
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Data.Version (showVersion)
-import Lens.Micro
-import Lens.Micro.Extras
+import Lens.Micro (over)
 import Network.HTTP.Conduit as C
-import Network.HTTP.Types qualified as H
 import Network.HTTP.Types qualified as HT
 import Paths_hoauth2 (version)
 import URI.ByteString
@@ -113,52 +110,7 @@ addDefaultRequestHeaders req =
    in req {requestHeaders = headers}
 
 appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
-appendQueryParams params =
-  over (queryL . queryPairsL) (params ++)
+appendQueryParams = over (queryL . queryPairsL) (params ++)
 
--- TODO: why we need this method instead of `parseRequest`
--- https://hackage.haskell.org/package/http-client-0.7.18/docs/Network-HTTP-Client.html#v:parseRequest
--- or requestFromURI
 uriToRequest :: MonadThrow m => URI -> m Request
-uriToRequest auri = do
-  ssl <- case view (uriSchemeL . schemeBSL) auri of
-    "http" -> return False
-    "https" -> return True
-    s -> throwM $ InvalidUrlException (show auri) ("Invalid scheme: " ++ show s)
-  let query = fmap (second Just) (view (queryL . queryPairsL) auri)
-      hostL = authorityL . _Just . authorityHostL . hostBSL
-      portL = authorityL . _Just . authorityPortL . _Just . portNumberL
-      defaultPort = (if ssl then 443 else 80) :: Int
-
-      req =
-        setQueryString query $
-          defaultRequest
-            { secure = ssl
-            , path = view pathL auri
-            }
-      req2 = (over hostLens . maybe id const . preview hostL) auri req
-      req3 = (over portLens . (const . fromMaybe defaultPort) . preview portL) auri req2
-  return req3
-
--- https://hackage.haskell.org/package/http-client-0.7.18/docs/Network-HTTP-Client.html#v:getUri
-requestToUri :: Request -> URI
-requestToUri req =
-  URI
-    ( Scheme
-        ( if secure req
-            then "https"
-            else "http"
-        )
-    )
-    (Just (Authority Nothing (Host $ host req) (Just $ Port $ port req)))
-    (path req)
-    (Query $ H.parseSimpleQuery $ queryString req)
-    Nothing
-
-hostLens :: Lens' Request BS.ByteString
-hostLens f req = f (C.host req) <&> \h' -> req {C.host = h'}
-{-# INLINE hostLens #-}
-
-portLens :: Lens' Request Int
-portLens f req = f (C.port req) <&> \p' -> req {C.port = p'}
-{-# INLINE portLens #-}
+uriToRequest = parseRequest . BS8.unpack . serializeURIRef'
