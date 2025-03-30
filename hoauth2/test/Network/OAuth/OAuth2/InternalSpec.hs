@@ -3,7 +3,6 @@
 module Network.OAuth.OAuth2.InternalSpec where
 
 import Control.Monad.IO.Class (MonadIO (..))
-import Data.Aeson qualified as Aeson
 import Network.HTTP.Conduit
 import Network.OAuth.OAuth2
 import Test.Hspec
@@ -12,13 +11,13 @@ import URI.ByteString.QQ
 spec :: Spec
 spec = do
   describe "uriToRequest" $ do
-    it "parse http://localhost:3001/abc/foo?scope=openid&prompt=consent" $ do
-      req <- liftIO $ uriToRequest [uri|http://localhost:3001/abc/foo?scope=openid&prompt=consent|]
+    it "parse http://localhost:3001/abc/foo?scope=openid&redirect_uri=http://localhost:3001/callback" $ do
+      req <- liftIO $ uriToRequest [uri|http://localhost:3001/abc/foo?scope=openid&&redirect_uri=http://localhost:3001/callback|]
       secure req `shouldBe` False
       path req `shouldBe` "/abc/foo"
       port req `shouldBe` 3001
       host req `shouldBe` "localhost"
-      queryString req `shouldBe` "?scope=openid&prompt=consent"
+      queryString req `shouldBe` "?scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fcallback"
     it "parse http://localhost:3001/abc/foo" $ do
       req <- liftIO $ uriToRequest [uri|http://localhost:3001/abc/foo|]
       secure req `shouldBe` False
