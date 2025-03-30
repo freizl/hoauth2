@@ -1,9 +1,9 @@
 #+title: Inbox
 
 * TODO Surface up users :demo_app:
- ~AuthorizationGrantUserStore (MVar (Map.Map IdpName IdpAuthorizationCodeAppSessionData)~
- User AppName would be better since it's already unique.
- Just need to figure out how to match differ UI section
+ - ~AuthorizationGrantUserStore (MVar (Map.Map IdpName IdpAuthorizationCodeAppSessionData)~
+ - User AppName would be better since it's already unique.
+ - Just need to figure out how to match differ UI section
 * TODO Refresh button shall only appear when there is refresh token :demo_app:
 * TODO Add more fields for OpenIDConfiguration or find an existing impl? :oidc:
 * DONE [#A] Rename ~HasTokenRequestClientAuthenticationMethod~ :refactor:
@@ -20,6 +20,7 @@ CLOSED: [2025-03-17 Mon 20:21]
 - 9821fb9f2fc290c490d0bec61832a68d3477dd76
 * TODO Use Log library in demo app :demo_app:
 * TODO Upgrade Scotty :demo_app:
+- hence the way handle errors
 * DONE [#A] [Okta] Unable to parse Client credential token response error :bug:
 CLOSED: [2025-03-17 Mon 13:02]
 :LOGBOOK:
@@ -34,9 +35,9 @@ LOSED: [2025-03-15 Sat 00:00]
 LOGBOOK:
  State "DONE"       from "TODO"       [2025-03-15 Sat 00:00]
 END:
- Can copilot help?
+- Can copilot help? yes!
 
-* TODO [#A] Switch to Network.URI
+* TODO [#A] Switch to Network.URI :hoauth2:
 - network-uri-2.6.4.2
 - it has ~uri~ QQ as well
 - compatible with http conduit
