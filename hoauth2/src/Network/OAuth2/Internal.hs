@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Network.OAuth.OAuth2.Internal where
+module Network.OAuth2.Internal where
 
 import Control.Monad.Catch
 import Data.Aeson

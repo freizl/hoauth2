@@ -16,8 +16,8 @@ import Env
 import Idp
 import Network.HTTP.Conduit
 import Network.HTTP.Types
-import Network.OAuth.OAuth2
-import Network.OAuth.OAuth2 qualified as OAuth2
+import Network.OAuth2
+import Network.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OAuth2.Provider.Auth0 qualified as Auth0

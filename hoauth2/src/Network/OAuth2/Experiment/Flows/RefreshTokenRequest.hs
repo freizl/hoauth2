@@ -6,7 +6,7 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 qualified as OAuth2
+import Network.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Types
 

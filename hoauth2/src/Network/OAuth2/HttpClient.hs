@@ -1,6 +1,6 @@
 -- | Bindings for The OAuth 2.0 Authorization Framework: Bearer Token Usage
 -- RFC6750 <https://www.rfc-editor.org/rfc/rfc6750>
-module Network.OAuth.OAuth2.HttpClient (
+module Network.OAuth2.HttpClient (
   -- * AUTH requests
   authGetJSON,
   authGetBS,
@@ -29,7 +29,7 @@ import Network.HTTP.Client.Conduit (applyBearerAuth)
 import Network.HTTP.Client.Contrib (handleResponse)
 import Network.HTTP.Conduit
 import Network.HTTP.Types qualified as HT
-import Network.OAuth.OAuth2.Internal
+import Network.OAuth2.Internal
 import URI.ByteString (URI, URIRef, queryL, queryPairsL)
 
 --------------------------------------------------

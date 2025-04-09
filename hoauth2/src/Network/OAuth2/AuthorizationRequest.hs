@@ -1,6 +1,6 @@
 -- | Bindings Authorization part of The OAuth 2.0 Authorization Framework
 -- RFC6749 <https://www.rfc-editor.org/rfc/rfc6749>
-module Network.OAuth.OAuth2.AuthorizationRequest where
+module Network.OAuth2.AuthorizationRequest where
 
 import Data.Aeson
 import Data.Function (on)
@@ -8,7 +8,7 @@ import Data.List qualified as List
 import Data.Text (Text)
 import Data.Text.Encoding qualified as T
 import Lens.Micro (over)
-import Network.OAuth.OAuth2.Internal
+import Network.OAuth2.Internal
 import URI.ByteString
 import Prelude hiding (error)
 

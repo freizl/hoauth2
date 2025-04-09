@@ -21,7 +21,7 @@ import Data.Text.Lazy.Encoding qualified as TL
 import Env qualified
 import Jose.Jwt
 import Network.HTTP.Conduit
-import Network.OAuth.OAuth2
+import Network.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OAuth2.Provider.Auth0 qualified as IAuth0

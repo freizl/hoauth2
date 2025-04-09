@@ -20,8 +20,8 @@ import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Network.HTTP.Client.Contrib
 import Network.HTTP.Conduit
-import Network.OAuth.OAuth2
-import Network.OAuth.OAuth2 qualified as OAuth2
+import Network.OAuth2
+import Network.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest
 import Network.OAuth2.Experiment.Flows.RefreshTokenRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest

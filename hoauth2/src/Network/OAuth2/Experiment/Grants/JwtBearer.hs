@@ -6,7 +6,7 @@ import Data.ByteString qualified as BS
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
+import Network.OAuth2 (ClientAuthenticationMethod (..))
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Types

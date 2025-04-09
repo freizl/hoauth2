@@ -7,7 +7,7 @@ import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Set (Set)
 import Data.Text.Lazy (Text)
-import Network.OAuth.OAuth2
+import Network.OAuth2
 import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest
 import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest

@@ -14,7 +14,7 @@ import Data.Maybe
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Env
-import Network.OAuth.OAuth2
+import Network.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Text.Mustache ((~>))

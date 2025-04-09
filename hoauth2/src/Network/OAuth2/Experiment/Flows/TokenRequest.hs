@@ -5,7 +5,7 @@ module Network.OAuth2.Experiment.Flows.TokenRequest where
 import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit
-import Network.OAuth.OAuth2 (
+import Network.OAuth2 (
   ClientAuthenticationMethod (..),
  )
 import Network.OAuth2.Experiment.Types (

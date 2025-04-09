@@ -1,6 +1,6 @@
 -- | Bindings Access Token and Refresh Token part of The OAuth 2.0 Authorization Framework
 -- RFC6749 <https://www.rfc-editor.org/rfc/rfc6749>
-module Network.OAuth.OAuth2.TokenRequest where
+module Network.OAuth2.TokenRequest where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Trans.Except (ExceptT (..), throwE)
@@ -18,7 +18,7 @@ import Data.Text.Encoding qualified as T
 import Network.HTTP.Conduit
 import Network.HTTP.Types qualified as HT
 import Network.HTTP.Types.URI (parseQuery)
-import Network.OAuth.OAuth2.Internal
+import Network.OAuth2.Internal
 import URI.ByteString
 import Prelude hiding (error)
 
@@ -316,7 +316,7 @@ doSimplePostRequest manager oa url body =
       let req' = (addBasicAuth oa . addDefaultRequestHeaders) req
       httpLbs (urlEncodedBody body req') manager
 
--- | Gets response body from a @Response@ if 200 otherwise assume 'Network.OAuth.OAuth2.TokenRequest.TokenResponseError'
+-- | Gets response body from a @Response@ if 200 otherwise assume 'Network.OAuth2.TokenRequest.TokenResponseError'
 handleOAuth2TokenResponse :: Response BSL.ByteString -> Either TokenResponseError BSL.ByteString
 handleOAuth2TokenResponse rsp =
   if HT.statusIsSuccessful (responseStatus rsp)

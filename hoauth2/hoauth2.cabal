@@ -33,16 +33,16 @@ library
   autogen-modules:    Paths_hoauth2
   other-modules:
     Network.HTTP.Client.Contrib
-    Network.OAuth.OAuth2.Internal
+    Network.OAuth2.Internal
     Network.OAuth2.Experiment.Grants
     Network.OAuth2.Experiment.Utils
     Paths_hoauth2
 
   exposed-modules:
-    Network.OAuth.OAuth2
-    Network.OAuth.OAuth2.AuthorizationRequest
-    Network.OAuth.OAuth2.HttpClient
-    Network.OAuth.OAuth2.TokenRequest
+    Network.OAuth2
+    Network.OAuth2.AuthorizationRequest
+    Network.OAuth2.HttpClient
+    Network.OAuth2.TokenRequest
     Network.OAuth2.Experiment
     Network.OAuth2.Experiment.Flows
     Network.OAuth2.Experiment.Flows.AuthorizationRequest
@@ -107,9 +107,9 @@ test-suite hoauth-tests
     , http-conduit          >=2.1    && <2.4
 
   other-modules:
-    Network.OAuth.OAuth2.InternalSpec
-    Network.OAuth.OAuth2.TokenRequestSpec
-    Network.OAuth.OAuth2.TokenResponseSpec
+    Network.OAuth2.InternalSpec
+    Network.OAuth2.TokenRequestSpec
+    Network.OAuth2.TokenResponseSpec
 
   default-language:   Haskell2010
   default-extensions:

@@ -11,8 +11,8 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
-import Network.OAuth.OAuth2 hiding (RefreshToken)
-import Network.OAuth.OAuth2 qualified as OAuth2
+import Network.OAuth2 hiding (RefreshToken)
+import Network.OAuth2 qualified as OAuth2
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Utils
 import URI.ByteString (URI, serializeURIRef')

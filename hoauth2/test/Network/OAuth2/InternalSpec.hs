@@ -1,10 +1,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Network.OAuth.OAuth2.InternalSpec where
+module Network.OAuth2.InternalSpec where
 
 import Control.Monad.IO.Class (MonadIO (..))
 import Network.HTTP.Conduit
-import Network.OAuth.OAuth2
+import Network.OAuth2
 import Test.Hspec
 import URI.ByteString.QQ
 

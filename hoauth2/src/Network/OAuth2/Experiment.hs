@@ -116,13 +116,13 @@ module Network.OAuth2.Experiment (
   -- * Types
   module Network.OAuth2.Experiment.Types,
   module Network.OAuth2.Experiment.Pkce,
-  module Network.OAuth.OAuth2,
+  module Network.OAuth2,
 
   -- * Utils
   module Network.OAuth2.Experiment.Utils,
 ) where
 
-import Network.OAuth.OAuth2 (ClientAuthenticationMethod (..))
+import Network.OAuth2 (ClientAuthenticationMethod (..))
 import Network.OAuth2.Experiment.Flows
 import Network.OAuth2.Experiment.Flows.DeviceAuthorizationRequest (
   DeviceAuthorizationResponse (..),

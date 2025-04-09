@@ -16,7 +16,7 @@ import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
-import Network.OAuth.OAuth2 (
+import Network.OAuth2 (
   ExchangeToken (ExchangeToken),
   TokenResponse (accessToken),
   TokenResponseError,

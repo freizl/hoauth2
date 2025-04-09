@@ -23,7 +23,7 @@ import Jose.Jwa
 import Jose.Jws
 import Jose.Jwt
 import Network.HTTP.Conduit (Manager)
-import Network.OAuth.OAuth2
+import Network.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import OpenSSL.EVP.PKey (toKeyPair)

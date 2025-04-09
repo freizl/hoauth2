@@ -128,7 +128,7 @@ import Data.Text.Lazy qualified as TL
 import GHC.Generics (Generic)
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
 import Network.HTTP.Types (status302)
-import Network.OAuth.OAuth2 (
+import Network.OAuth2 (
   ExchangeToken (ExchangeToken),
   TokenResponse (accessToken),
   TokenResponseError,

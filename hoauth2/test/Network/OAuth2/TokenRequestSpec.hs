@@ -1,9 +1,9 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Network.OAuth.OAuth2.TokenRequestSpec where
+module Network.OAuth2.TokenRequestSpec where
 
 import Data.Aeson qualified as Aeson
-import Network.OAuth.OAuth2.TokenRequest
+import Network.OAuth2.TokenRequest
 import Test.Hspec
 import URI.ByteString.QQ
 import Prelude hiding (error)

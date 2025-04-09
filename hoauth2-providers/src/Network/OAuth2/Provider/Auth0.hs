@@ -16,7 +16,7 @@ import Data.Set qualified as Set
 import Data.Text.Lazy (Text)
 import GHC.Generics
 import Network.HTTP.Conduit
-import Network.OAuth.OAuth2
+import Network.OAuth2
 import Network.OAuth2.Experiment
 import Network.OAuth2.Provider
 import Network.OIDC.WellKnown
