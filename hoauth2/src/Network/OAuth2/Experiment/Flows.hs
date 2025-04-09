@@ -92,11 +92,10 @@ conduitDeviceAuthorizationRequest IdpApplication {..} mgr = do
           body = unionMapsToQueryParams [toQueryParam deviceAuthReq]
       ExceptT . liftIO $ do
         req <- addDefaultRequestHeaders <$> uriToRequest deviceAuthEndpoint
-        -- Note: Missing clientId indicates ClientSecretBasic authentication method
-        -- should be used. See Network.OAuth2.Experiment.Grants.DeviceAuthorization
-        let req' = case darClientId deviceAuthReq of
-              Nothing -> addClientAuthToHeader application req
-              Just _ -> req
+        let req' =
+              if daAuthorizationRequestAuthenticationMethod application == ClientSecretBasic
+                then addSecretToHeader (daClientId application) (daClientSecret application) req
+                else req
         resp <- httpLbs (urlEncodedBody body req') mgr
         pure $ first ("[conduitDeviceAuthorizationRequest] " <>) $ handleResponseJSON resp
 
