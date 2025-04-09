@@ -15,6 +15,7 @@ import Network.OAuth2.Experiment.Flows.TokenRequest
 import Network.OAuth2.Experiment.Flows.UserInfoRequest
 import Network.OAuth2.Experiment.Pkce
 import Network.OAuth2.Experiment.Types
+import Network.OAuth2.Experiment.Utils
 import URI.ByteString hiding (UserInfo)
 
 -- | An Application that supports "Authorization code" flow
@@ -66,8 +67,9 @@ instance HasTokenRequest AuthorizationCodeApplication where
     { trCode :: ExchangeToken
     , trGrantType :: GrantTypeValue
     , trRedirectUri :: RedirectUri
-    , trClientId :: Maybe ClientId
-    , trClientSecret :: Maybe ClientSecret
+    , trClientId :: ClientId
+    , trClientSecret :: ClientSecret
+    , trClientAuthenticationMethod :: ClientAuthenticationMethod
     }
 
   mkTokenRequestParam :: AuthorizationCodeApplication -> ExchangeToken -> TokenRequest AuthorizationCodeApplication
@@ -76,20 +78,30 @@ instance HasTokenRequest AuthorizationCodeApplication where
       { trCode = authCode
       , trGrantType = GTAuthorizationCode
       , trRedirectUri = RedirectUri acRedirectUri
-      , trClientId = if acClientAuthenticationMethod == ClientSecretPost then Just acClientId else Nothing
-      , trClientSecret = if acClientAuthenticationMethod == ClientSecretPost then Just acClientSecret else Nothing
+      , trClientId = acClientId
+      , trClientSecret = acClientSecret
+      , trClientAuthenticationMethod = acClientAuthenticationMethod
       }
 
 instance ToQueryParam (TokenRequest AuthorizationCodeApplication) where
   toQueryParam :: TokenRequest AuthorizationCodeApplication -> Map Text Text
   toQueryParam AuthorizationCodeTokenRequest {..} =
-    Map.unions
-      [ toQueryParam trCode
-      , toQueryParam trGrantType
-      , toQueryParam trRedirectUri
-      , toQueryParam trClientId
-      , toQueryParam trClientSecret
-      ]
+    let extraBodyBasedOnClientAuthMethod =
+          case trClientAuthenticationMethod of
+            ClientAssertionJwt ->
+              [ Map.fromList
+                  [ ("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+                  , ("client_assertion", bs8ToLazyText $ tlToBS $ unClientSecret trClientSecret)
+                  ]
+              ]
+            ClientSecretPost -> [toQueryParam trClientId, toQueryParam trClientSecret]
+            ClientSecretBasic -> []
+     in Map.unions $
+          [ toQueryParam trCode
+          , toQueryParam trGrantType
+          , toQueryParam trRedirectUri
+          ]
+            ++ extraBodyBasedOnClientAuthMethod
 
 instance HasUserInfoRequest AuthorizationCodeApplication
 
