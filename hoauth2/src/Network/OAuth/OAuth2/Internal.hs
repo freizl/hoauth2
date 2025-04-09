@@ -110,7 +110,7 @@ addDefaultRequestHeaders req =
    in req {requestHeaders = headers}
 
 appendQueryParams :: [(BS.ByteString, BS.ByteString)] -> URIRef a -> URIRef a
-appendQueryParams params = over (queryL . queryPairsL) (params ++)
+appendQueryParams = over (queryL . queryPairsL) (params ++)
 
 uriToRequest :: MonadThrow m => URI -> m Request
 uriToRequest = parseRequest . BS8.unpack . serializeURIRef'
