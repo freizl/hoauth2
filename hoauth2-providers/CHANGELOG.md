@@ -1,5 +1,13 @@
 # hoauth2-provider Changelog
 
+## 0.9.0 (2025-10-05)
+
+- Add Linear provider
+- Fix `OktaUser` default values; parameterize StackExchange key
+- Update Facebook and LinkedIn configurations
+- Allow `uri-bytestring`-0.4 and `microlens`-0.5
+- Internal refactors and cleanups
+
 ## 0.8.0 (2024-11-19)
 
 * Updated crypton dependency to version 1.0
