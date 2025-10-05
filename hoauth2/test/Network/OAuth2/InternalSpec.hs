@@ -49,8 +49,7 @@ spec = do
     it "parse URL with special characters in path" $ do
       req <- liftIO $ uriToRequest [uri|https://api.example.com/oauth2/user+info/profile%20data|]
       secure req `shouldBe` True
-      -- https://github.com/Soostone/uri-bytestring/issues/55, encode + to space
-      path req `shouldBe` "/oauth2/user%20info/profile%20data"
+      path req `shouldBe` "/oauth2/user+info/profile%20data"
       port req `shouldBe` 443
       host req `shouldBe` "api.example.com"
       queryString req `shouldBe` ""
