@@ -112,7 +112,7 @@ instance HasDemoLoginUser Twitter where
 instance HasDemoLoginUser Okta where
   type IdpUser Okta = IOkta.OktaUser
   toLoginUser :: IOkta.OktaUser -> DemoLoginUser
-  toLoginUser ouser = DemoLoginUser {loginUserName = IOkta.name ouser}
+  toLoginUser ouser = DemoLoginUser {loginUserName = IOkta.email ouser <> " " <> IOkta.preferredUsername ouser}
 
 instance HasDemoLoginUser Slack where
   type IdpUser Slack = ISlack.SlackUser

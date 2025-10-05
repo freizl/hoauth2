@@ -89,8 +89,12 @@ mkOktaClientCredentialAppJwt jwk cid idp = do
     tToSeconds = formatTime defaultTimeLocale "%s"
 
 data OktaUser = OktaUser
-  { name :: Text
+  { sub :: Text
+  , email :: Text
   , preferredUsername :: Text
+  , givenName :: Text
+  , familyName :: Text
+  , emailVerified :: Bool
   }
   deriving (Show, Generic)
 
