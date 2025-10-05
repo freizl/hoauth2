@@ -85,7 +85,7 @@ library
     , microlens             >=0.4 && <0.6
     , text                  >=2.0    && <2.3
     , transformers          >=0.4    && <0.7
-    , uri-bytestring        >=0.3    && <0.5
+    , uri-bytestring        >=0.4    && <0.5
     , uri-bytestring-aeson  ^>=0.1
 
   ghc-options:
@@ -103,7 +103,7 @@ test-suite hoauth-tests
     , binary          >=0.8  && <0.11
     , hoauth2
     , hspec           >=2    && <3
-    , uri-bytestring  >=0.3  && <0.5
+    , uri-bytestring  >=0.4  && <0.5
     , http-conduit          >=2.1    && <2.4
 
   other-modules:
