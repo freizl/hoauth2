@@ -1,5 +1,38 @@
 # hoauth2 Changelog
 
+## 2.15.0 (2025-10-05)
+- Breaking changes
+  - Type and class renames
+    - `OAuth2Token` renamed to `TokenResponse`.
+    - `TokenRequestAuthenicationMethod` renamed to `ClientAuthenticationMethod`.
+    - `HasTokenRequestClientAuthenticationMethod` renamed to `HasClientAuthenticationMethod`.
+    - Removed several `Has*` type classes (e.g., `HasOAuth2Key`, `HasOAuthKey` from `HasTokenRequest`).
+  - Removed deprecated API in `Network.OAuth2.HttpClient`
+    - Deprecated functions have been removed. Use `authGetJSON`/`authGetBS`/`authPostJSON`/`authPostBS` and the `WithAuthMethod` variants with `APIAuthenticationMethod`.
+  - Request body encoding behavior
+    - `authPostJSON` now sends JSON with `Content-Type: application/json`. If an endpoint requires form-encoded data, use `authPostBS` or construct a custom request body.
+  - Import/module path cleanup
+    - Consumers should import `Network.OAuth2` (not `Network.OAuth.OAuth2`).
+- Behavioral changes and bug fixes
+  - Client authentication handling
+    - Append `client_id` and `client_secret` for `ClientSecretPost` in client credentials flow.
+    - Refresh token flow honors the configured client authentication method.
+    - Authorization Code flow supports client authentication methods.
+  - Device Authorization flow
+    - Updated handling of device authorization requests and polling behavior.
+- Refactors and internal cleanup
+  - Refactored header handling, simplified URI-to-Request conversion, removed deprecated or unused internals, and general cleanups.
+- Dependency changes
+  - Allow `microlens` 0.5 (`microlens` >= 0.4 && < 0.6).
+  - Raise lower bound to `uri-bytestring` >= 0.4 (< 0.5).
+
+## 2.14.3 (2025-03-14)
+
+- Fixes and improvements:
+  - Append client_id and client_secret for ClientSecretPost in client credentials flow
+  - Add raw response to token response and derive Show instances
+  - Skip empty scope; assorted refactors and cleanups
+
 ## 2.14.2 (2025-01-30)
 
 * Updated uri-bytestring to version 0.4
