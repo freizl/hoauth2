@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
--- | [AzureAD oauth2 flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
+-- | [AzureAD OAuth2 flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
 module Network.OAuth2.Provider.AzureAD where
 
 import Control.Monad.IO.Class (MonadIO (..))
@@ -20,7 +20,7 @@ import URI.ByteString.QQ
 
 -- Create app at https://go.microsoft.com/fwlink/?linkid=2083908
 --
--- also be aware to find the right client id.
+-- Also be sure to find the right client ID.
 -- see https://stackoverflow.com/a/70670961
 sampleAzureADAuthorizationCodeApp :: AuthorizationCodeApplication
 sampleAzureADAuthorizationCodeApp =
@@ -44,7 +44,7 @@ fetchUserInfo ::
 fetchUserInfo = conduitUserInfoRequest
 
 -- | https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
--- It's supporse to resue 'mkAzureIdp'
+-- It's supposed to reuse 'mkAzureIdp'
 --
 -- @
 -- mkAzureIdp "common"

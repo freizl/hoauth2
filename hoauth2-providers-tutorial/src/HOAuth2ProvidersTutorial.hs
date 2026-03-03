@@ -77,7 +77,7 @@ mkTestGoogleApp =
       idp = Google.defaultGoogleIdp
    in IdpApplication {..}
 
--- | You'll need to find out an better way to create @state@
+-- | You'll need to find a better way to create @state@
 -- which is recommended in <https://www.rfc-editor.org/rfc/rfc6749#section-10.12>
 randomStateValue :: TL.Text
 randomStateValue = "random-state-to-prevent-csrf"
@@ -176,7 +176,7 @@ callbackH auth0App googleApp refUser = do
     user <- case idpName of
       "google" -> handleGoogleCallback googleApp code
       "auth0" -> handleAuth0Callback auth0App code
-      _ -> throwE $ "unable to find idp app of: " <> idpName
+      _ -> throwE $ "Unable to find IdP app for: " <> idpName
 
     liftIO $ writeIORef refUser (Just user)
 
@@ -219,7 +219,7 @@ paramValue ::
   Either TL.Text TL.Text
 paramValue key params =
   case val of
-    [] -> Left ("No value found for param: " <> key)
+    [] -> Left ("No value found for parameter: " <> key)
     (x : _) -> Right x
   where
     val = snd <$> filter (hasParam key) params
@@ -233,4 +233,4 @@ excepttToActionM e = do
   either Scotty.raise pure result
 
 oauth2ErrorToText :: TokenResponseError -> TL.Text
-oauth2ErrorToText e = TL.pack $ "Unable fetch access token. error detail: " ++ show e
+oauth2ErrorToText e = TL.pack $ "Unable to fetch access token. Error detail: " ++ show e

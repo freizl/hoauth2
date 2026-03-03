@@ -88,7 +88,7 @@ data TokenResponse = TokenResponse
   -- ^ Exists when @offline_access@ scope is in the Authorization Request and the provider supports Refresh Access Token.
   , expiresIn :: Maybe Int
   , tokenType :: Maybe Text
-  -- ^ See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required per spec. But OAuth2 provider implementation are vary. Maybe will remove 'Maybe' in future release.
+  -- ^ See https://www.rfc-editor.org/rfc/rfc6749#section-5.1. It's required by spec, but OAuth2 provider implementations vary. We may remove 'Maybe' in a future release.
   , idToken :: Maybe IdToken
   -- ^ Exists when @openid@ scope is in the Authorization Request and the provider supports OpenID protocol.
   , scope :: Maybe Text

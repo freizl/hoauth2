@@ -20,11 +20,11 @@ import Prelude hiding (error)
 
 -- | Authorization Code Grant Error Responses https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 --
--- I found hard time to figure a way to test the authorization error flow
--- When anything wrong in @/authorize@ request, it will stuck at the Provider page
+-- I found it hard to figure out a way to test the authorization error flow.
+-- When anything goes wrong in an @/authorize@ request, it gets stuck at the provider page,
 -- hence no way for this library to parse error response.
 -- In other words, @/authorize@ ends up with 4xx or 5xx.
--- Revisit this whenever find a case OAuth2 provider redirects back to Relying party with errors.
+-- Revisit this whenever you find a case where an OAuth2 provider redirects back to the relying party with errors.
 data AuthorizationResponseError = AuthorizationResponseError
   { authorizationResponseError :: AuthorizationResponseErrorCode
   , authorizationResponseErrorDescription :: Maybe Text

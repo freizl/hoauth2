@@ -1,32 +1,32 @@
 -- | This module contains a new way of doing OAuth2 authorization and authentication
--- in order to obtain Access Token and maybe Refresh Token base on rfc6749.
+-- in order to obtain an access token and maybe a refresh token based on RFC 6749.
 --
--- This module will become default in future release.
+-- This module will become the default in a future release.
 --
--- The key concept/change is to introduce the Grant flow, which determines the entire work flow per spec.
--- Each work flow will have slight different request parameters, which often time you'll see
--- different configuration when creating OAuth2 application in the IdP developer application page.
+-- The key concept is introducing grant flows, which determine the entire workflow per the spec.
+-- Each workflow has slightly different request parameters, which is why you'll often see
+-- different configuration options when creating an OAuth2 application in an IdP developer console.
 --
--- Here are supported flows
+-- Here are the supported flows:
 --
--- 1. Authorization Code. This flow requires authorize call to obtain an authorize code,
+-- 1. Authorization Code. This flow requires an authorize call to obtain an authorization code,
 -- then exchange the code for tokens.
 --
--- 2. Resource Owner Password. This flow only requires to hit token endpoint with, of course,
+-- 2. Resource Owner Password. This flow only requires hitting the token endpoint with, of course,
 -- username and password, to obtain tokens.
 --
--- 3. Client Credentials. This flow also only requires to hit token endpoint but with different parameters.
--- Client credentials flow does not involve an end user hence you won't be able to hit userinfo endpoint
--- with access token obtained.
+-- 3. Client Credentials. This flow also only requires hitting the token endpoint, but with different parameters.
+-- The client credentials flow does not involve an end user, so you won't be able to hit the userinfo endpoint
+-- with the access token you obtain.
 --
--- 5. PKCE (rfc7636). This is enhancement on top of authorization code flow.
+-- 5. PKCE (RFC 7636). This is an enhancement on top of the authorization code flow.
 --
--- Implicit flow is not supported because it is more for SPA (single page app)
--- given it is deprecated by Authorization Code flow with PKCE.
+-- The implicit flow is not supported because it is primarily for SPAs (single-page apps),
+-- and it has been deprecated in favor of the authorization code flow with PKCE.
 --
--- Here is quick sample for how to use vocabularies from this new module.
+-- Here is a quick sample showing how to use the vocabulary from this module.
 --
--- Firstly, initialize your IdP (use google as example) and the application.
+-- First, initialize your IdP (using Google as an example) and the application.
 --
 -- @
 --
@@ -65,27 +65,27 @@
 -- fooIdpApplication = IdpApplication fooApp googleIdp
 -- @
 --
--- Secondly, construct the authorize URL.
+-- Second, construct the authorize URL.
 --
 -- @
 -- authorizeUrl = mkAuthorizationRequest fooIdpApplication
 -- @
 --
--- Thirdly, after a successful redirect with authorize code,
--- you could exchange for access token
+-- Third, after a successful redirect with an authorization code,
+-- you can exchange it for an access token.
 --
 -- @
 -- mgr <- liftIO $ newManager tlsManagerSettings
 -- tokenResp <- conduitTokenRequest fooIdpApplication mgr authorizeCode
 -- @
 --
--- If you'd like to fetch user info, uses this method
+-- If you'd like to fetch user info, use this method:
 --
 -- @
 -- conduitUserInfoRequest fooIdpApplication mgr (accessToken tokenResp)
 -- @
 --
--- You could also find example from @hoauth2-providers-tutorials@ module.
+-- You can also find an example in the @hoauth2-providers-tutorial@ module.
 module Network.OAuth2.Experiment (
   -- * Application per Grant type
   module Network.OAuth2.Experiment.Grants,

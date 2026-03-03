@@ -75,6 +75,6 @@ lookupAppSessionData (AuthorizationGrantUserStore store) idpName = do
         mm
   except $
     maybe
-      (Left $ "[lookupAppSessionData] unable to find cache data for idp " <> toText idpName)
+      (Left $ "[lookupAppSessionData] Unable to find cache data for IdP " <> toText idpName)
       Right
       (Map.lookup idpName m1)
