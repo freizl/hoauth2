@@ -124,7 +124,7 @@ instance Binary TokenResponse where
       Success a -> pure a
       Error err -> fail err
 
--- | Parse JSON data into 'OAuth2Token'
+-- | Parse JSON data into 'TokenResponse'
 instance FromJSON TokenResponse where
   parseJSON :: Value -> Parser TokenResponse
   parseJSON = withObject "TokenResponse" $ \v ->
