@@ -3,14 +3,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 
--- | If you're hurry, go check source code directly.
+-- | If you're in a hurry, go check source code directly.
 --
 -- = Configure your OAuth2 provider
 --
 -- Pick which OAuth2 provider you'd to use, e.g. Google, Github, Auth0 etc.
--- Pretty much all standard OAuth2 provider has developer portal to guide developer to use oauth2 flow.
--- So read it through if you're unfamiliar OAuth2 before.
--- Often time, those documents will guide you how to create an Application which has credentials
+-- Pretty much all standard OAuth2 providers have a developer portal to guide developers in how to use oauth2 flow.
+-- So read it through if you have not used OAuth2 before.
+-- Often times, those documents will guide you through how to create an Application which has credentials
 -- (e.g. @client_id@ and @client_secret@ for a web application), which will be used to authenticate your
 -- service (replying party) with server.
 --
@@ -30,10 +30,10 @@
 -- To generate an authorization URL, call method `authorizationUrl`, then call `appendQueryParams` to
 -- append additional query parameters, e.g. @state@, @scope@ etc.
 --
--- That method will also automatically append following query parameter to the authorization url.
+-- That method will also automatically append the following query parameter to the authorization url.
 --
 -- @
--- client_id = 'xxx'        -- client id of your Application credential you got previously
+-- client_id = 'xxx'        -- client id of your Application credentials you got previously
 -- response_type = 'code'   -- must be for authorization request
 -- redirect_uri = 'xxx'     -- where does the server (provider) send back the authorization code.
 -- @
@@ -50,7 +50,7 @@
 --
 -- Now you need to have your user to navigate to that URL to kick off OAuth flow.
 --
--- There are different ways to redirect user to the authorization URL.
+-- There are different ways to redirect users to the authorization URL.
 --
 -- e.g.
 --
@@ -65,9 +65,9 @@
 --
 -- = Obtain Access Token
 --
--- When user navigates to 'authorizeUrl', user will be prompt for login against the OAuth provider.
+-- When a user navigates to 'authorizeUrl', the user will be prompted to login against the OAuth provider.
 --
--- After an successful login there, user will be redirect back to your Application's @redirect_uri@
+-- After a successful login there, the user will be redirected back to your Application's @redirect_uri@
 -- with @code@ in the query parameter.
 --
 -- With this @code@, we could exchange for an Access Token.
@@ -83,8 +83,8 @@
 -- However Scotty, which is web framework I used to build this tutorial,
 -- requires error as Text hence the transform with 'oauth2ErrorToText'
 --
--- Once we got the 'OAuth2Token' (which actually deserves an better name like @TokenResponse@),
--- we could get the actual 'accessToken' of out it, use which to make API requests to resource server (often time same as the authorization server)
+-- Once we get the 'OAuth2Token' (which actually deserves a better name like @TokenResponse@),
+-- we could get the actual 'accessToken' out of it, which could be used to make API requests to the resource server (often times the same as the authorization server)
 --
 -- "Network.OAuth.OAuth2.HttpClient" provides a few handy method to send such API request.
 -- For instance,
@@ -94,14 +94,14 @@
 -- authPostJSON  -- Similar but does POST request
 -- @
 --
--- In this tutorial, it makes request to 'auth0UserInfoUri' to fetch Auth0 user information
--- so application knows who did the authorize.
+-- In this tutorial, it makes a request to 'auth0UserInfoUri' to fetch Auth0 user information
+-- so the application knows who did the authorization.
 --
 -- = The end
 --
--- That's it! Congratulations make thus far!
+-- That's it! Congratulations for making it this far!
 --
--- If you're interested more of OAuth2, keep reading on <https://www.oauth.com/>,
+-- If you're interested in more of OAuth2, keep reading on <https://www.oauth.com/>,
 -- which provides a nice guide regarding what is OAuth2 and various use cases.
 module Main where
 
