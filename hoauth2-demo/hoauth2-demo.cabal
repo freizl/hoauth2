@@ -3,7 +3,7 @@ name:               hoauth2-demo
 version:            1.12.1
 synopsis:           hoauth2 demo application
 description:
-  Demo application to test oauth2 flow with many providers using hoauth2
+  Demo application for testing OAuth2 flows with many providers using hoauth2
 
 homepage:           https://github.com/freizl/hoauth2
 license:            MIT

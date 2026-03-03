@@ -5,7 +5,7 @@ name:               hoauth2
 version:            2.15.0
 synopsis:           Haskell OAuth2 authentication client
 description:
-  This is Haskell binding of OAuth2 Authorization framework and Bearer Token Usage framework.
+  This package provides Haskell bindings for the OAuth2 Authorization Framework and Bearer Token Usage.
 
 homepage:           https://github.com/freizl/hoauth2
 license:            MIT

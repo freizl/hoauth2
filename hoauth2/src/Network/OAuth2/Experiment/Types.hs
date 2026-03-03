@@ -107,7 +107,7 @@ data ResponseType = Code
 newtype ClientId = ClientId {unClientId :: Text}
   deriving (Show, Eq, IsString)
 
--- | Can be either "Client Secret" or JWT base on client authentication method
+-- | Can be either "Client Secret" or JWT based on the client authentication method
 newtype ClientSecret = ClientSecret {unClientSecret :: Text}
   deriving (Eq, IsString)
 

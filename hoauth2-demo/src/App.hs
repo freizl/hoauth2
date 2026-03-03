@@ -60,7 +60,7 @@ waiApp = do
     let findIdpByName = findIdp oidcIdps
     pure AppEnv {..}
   case re of
-    Left e -> Prelude.error $ TL.unpack $ "unable to init demo server: \n" <> e
+    Left e -> Prelude.error $ TL.unpack $ "Unable to initialize demo server:\n" <> e
     Right r -> initApp r
 
 initApp ::

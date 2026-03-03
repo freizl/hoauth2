@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
--- | [Github build oauth applications guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
+-- | [GitHub OAuth applications guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
 module Network.OAuth2.Provider.GitHub where
 
 import Control.Monad.IO.Class (MonadIO (..))

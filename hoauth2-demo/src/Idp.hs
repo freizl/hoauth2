@@ -86,7 +86,7 @@ createResourceOwnerPasswordApp i idpName = do
           }
   Env.OAuthApp {..} <- Env.lookupApp newAppName
   newApp' <- case user of
-    Nothing -> throwE ("[createResourceOwnerPasswordApp] unable to load user config for " <> toText idpName)
+    Nothing -> throwE ("[createResourceOwnerPasswordApp] Unable to load user config for " <> toText idpName)
     Just userConfig ->
       pure
         defaultApp

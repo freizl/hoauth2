@@ -4,16 +4,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 
--- | If you're hurry, go check source code directly.
+-- | If you're in a hurry, check the source code directly.
 --
 -- = Configure your Identity Provider and Application
 --
--- Pick which OAuth2 provider you'd to use, e.g. Google, Github, Auth0 etc.
--- Pretty much all standard OAuth2 provider has developer portal to guide developer to use oauth2 flow.
--- So read it through if you're unfamiliar OAuth2 before.
--- Often time, those documents will guide you how to create an Application which has credentials
+-- Pick which OAuth2 provider you'd like to use, e.g. Google, GitHub, Auth0 etc.
+-- Pretty much all standard OAuth2 providers have developer portals to guide developers on using the OAuth2 flow.
+-- Read them through if you have not used OAuth2 before.
+-- Often, those documents will guide you through how to create an Application that has credentials
 -- (e.g. @client_id@ and @client_secret@ for a web application), which will be used to authenticate your
--- service (replying party) with server.
+-- service (relying party) with the server.
 --
 -- For some OIDC providers, you may even be able to find out those URLs from a well-known endpoint.
 --
@@ -21,7 +21,7 @@
 -- https:\/\/BASE_DOMAIN\/.well-known\/openid-configuration
 -- @
 --
--- In this tutorial, I choose Auth0. This is the API Docs <https://auth0.com/docs/api>.
+-- In this tutorial, I use Auth0. Here are the API docs: <https://auth0.com/docs/api>.
 --
 -- Define a @Idp@ and an Application
 --
@@ -39,10 +39,10 @@
 --
 -- To generate an authorization URL, call method `mkAuthorizationRequest`.
 --
--- That method will also automatically append following query parameter to the authorization url.
+-- That method will also automatically append the following query parameters to the authorization URL.
 --
 -- @
--- client_id = 'xxx'        -- client id of your Application credential you got previously
+-- client_id = 'xxx'        -- client id from your application credentials you got previously
 -- response_type = 'code'   -- must be for authorization request
 -- redirect_uri = 'xxx'     -- where does the server (provider) send back the authorization code.
 -- @
@@ -57,9 +57,9 @@
 --
 -- = Redirect user to the Authorization URL
 --
--- Now you need to have your user to navigate to that URL to kick off OAuth flow.
+-- Now you need to have your user navigate to that URL to kick off the OAuth flow.
 --
--- There are different ways to redirect user to this authorization URL.
+-- There are different ways to redirect users to this authorization URL.
 --
 -- e.g.
 --
@@ -76,28 +76,28 @@
 --
 -- = Obtain Access Token
 --
--- When user navigates to authorization URL, user will be prompt for login against the OAuth provider.
+-- When a user navigates to the authorization URL, the user will be prompted to log in with the OAuth provider.
 --
--- After an successful login there, user will be redirect back to your Application's @redirect_uri@
+-- After a successful login there, the user will be redirected back to your application's @redirect_uri@
 -- with @code@ in the query parameter.
 --
 -- With this @code@, we could exchange for an Access Token.
 --
--- Also you'd better to validate the @state@ is exactly what you pass in the authorization URL.
--- OAuth2 provider expects to send the exact @state@ back in the redirect request.
+-- Also, you should validate that @state@ is exactly what you pass in the authorization URL.
+-- The OAuth2 provider is expected to send the exact @state@ back in the redirect request.
 --
 -- To obtain an Access Token, you could call `conduitTokenRequest`,
--- which essentially takes the authorization @code@, make request to OAuth2 provider's @/token@ endpoint
+-- which essentially takes the authorization @code@ and makes a request to the OAuth2 provider's @/token@ endpoint
 -- to get an Access Token.
 --
--- `conduitTokenRequest` returns @ExceptT (OAuth2Error Errors) m OAuth2Token@
--- However Scotty, which is web framework I used to build this tutorial,
--- requires error as Text hence it is transformed with @oauth2ErrorToText@
+-- `conduitTokenRequest` returns @ExceptT TokenResponseError m TokenResponse@
+-- However, Scotty, which is the web framework used in this tutorial,
+-- requires errors as Text, so they are transformed with @oauth2ErrorToText@
 --
--- Once we got the `OAuth2Token` (which actually deserves an better name like @TokenResponse@),
--- we could get the actual `accessToken` of out it, use which to make API requests to resource server (often time same as the authorization server)
+-- Once we get the `TokenResponse`,
+-- we can get the actual `accessToken` out of it and use it to make API requests to the resource server (often the same as the authorization server)
 --
--- "Network.OAuth.OAuth2.HttpClient" provides a few handy method to send such API request.
+-- "Network.OAuth2.HttpClient" provides a few handy methods to send such API requests.
 -- For instance,
 --
 -- @
@@ -105,14 +105,14 @@
 -- authPostJSON  -- Similar but does POST request
 -- @
 --
--- In this tutorial, it makes request to @/userinfo@ endpoint to fetch Auth0 user information
--- so application knows who did the authorize.
+-- In this tutorial, it makes a request to the @/userinfo@ endpoint to fetch Auth0 user information
+-- so the application knows who authorized.
 --
 -- = The end
 --
--- That's it! Congratulations make thus far!
+-- That's it! Congratulations for making it this far!
 --
--- If you're interested more of OAuth2, keep reading on <https://www.oauth.com/>,
+-- If you're interested in learning more about OAuth2, keep reading at <https://www.oauth.com/>,
 -- which provides a nice guide regarding what is OAuth2 and various use cases.
 module Main where
 
@@ -169,7 +169,7 @@ authCodeApp =
 auth0DemoApp :: IdpApplication "auth0" AuthorizationCodeApplication
 auth0DemoApp = IdpApplication {idp = auth0, application = authCodeApp}
 
--- | You'll need to find out an better way to create @state@
+-- | You'll need to find a better way to create @state@
 -- which is recommended in <https://www.rfc-editor.org/rfc/rfc6749#section-10.12>
 randomStateValue :: AuthorizeState
 randomStateValue = "random-state-to-prevent-csrf"
@@ -283,7 +283,7 @@ paramValue ::
   Either TL.Text TL.Text
 paramValue key params =
   case val of
-    [] -> Left ("No value found for param: " <> key)
+    [] -> Left ("No value found for parameter: " <> key)
     (x : _) -> Right x
   where
     val = snd <$> filter (hasParam key) params
@@ -297,4 +297,4 @@ excepttToActionM e = do
   either Scotty.raise pure result
 
 oauth2ErrorToText :: TokenResponseError -> TL.Text
-oauth2ErrorToText e = TL.pack $ "Unable fetch access token. error detail: " ++ show e
+oauth2ErrorToText e = TL.pack $ "Unable to fetch access token. Error detail: " ++ show e

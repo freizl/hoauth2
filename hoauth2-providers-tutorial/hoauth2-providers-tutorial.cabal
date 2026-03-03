@@ -1,9 +1,9 @@
 cabal-version: 2.4
 name:          hoauth2-providers-tutorial
 version:       0.9.0
-synopsis:      tutorial for hoauth2-providers module
+synopsis:      Tutorial for the hoauth2-providers module
 description:
-  A tutorial that demostrates how to use hoauth2-providers package
+  A tutorial that demonstrates how to use the hoauth2-providers package
   for OAuth2 Authorization Code flow.
 
 license:       MIT
