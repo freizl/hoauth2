@@ -19,7 +19,7 @@
 -- The client credentials flow does not involve an end user, so you won't be able to hit the userinfo endpoint
 -- with the access token you obtain.
 --
--- 5. PKCE (RFC 7636). This is an enhancement on top of the authorization code flow.
+-- 4. PKCE (RFC 7636). This is an enhancement on top of the authorization code flow.
 --
 -- The implicit flow is not supported because it is primarily for SPAs (single-page apps),
 -- and it has been deprecated in favor of the authorization code flow with PKCE.

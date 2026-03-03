@@ -90,11 +90,11 @@
 -- which essentially takes the authorization @code@ and makes a request to the OAuth2 provider's @/token@ endpoint
 -- to get an Access Token.
 --
--- `conduitTokenRequest` returns @ExceptT (OAuth2Error Errors) m OAuth2Token@
+-- `conduitTokenRequest` returns @ExceptT (OAuth2Error Errors) m TokenResponse@
 -- However, Scotty, which is the web framework used in this tutorial,
 -- requires errors as Text, so they are transformed with @oauth2ErrorToText@
 --
--- Once we get the `OAuth2Token` (which actually deserves a better name like @TokenResponse@),
+-- Once we get the `TokenResponse`,
 -- we can get the actual `accessToken` out of it and use it to make API requests to the resource server (often the same as the authorization server)
 --
 -- "Network.OAuth.OAuth2.HttpClient" provides a few handy methods to send such API requests.
