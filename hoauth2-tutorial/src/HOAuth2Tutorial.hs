@@ -7,7 +7,7 @@
 --
 -- = Configure your OAuth2 provider
 --
--- Pick which OAuth2 provider you'd to use, e.g. Google, Github, Auth0 etc.
+-- Pick which OAuth2 provider you'd like to use, e.g. Google, Github, Auth0 etc.
 -- Pretty much all standard OAuth2 providers have a developer portal to guide developers in how to use oauth2 flow.
 -- So read it through if you have not used OAuth2 before.
 -- Often times, those documents will guide you through how to create an Application which has credentials
@@ -30,7 +30,7 @@
 -- To generate an authorization URL, call method `authorizationUrl`, then call `appendQueryParams` to
 -- append additional query parameters, e.g. @state@, @scope@ etc.
 --
--- That method will also automatically append the following query parameter to the authorization url.
+-- That method will also automatically append the following query parameters to the authorization url.
 --
 -- @
 -- client_id = 'xxx'        -- client id of your Application credentials you got previously
@@ -48,7 +48,7 @@
 --
 -- = Redirect user to the Authorization URL
 --
--- Now you need to have your user to navigate to that URL to kick off OAuth flow.
+-- Now you need to have your user navigate to that URL to kick off OAuth flow.
 --
 -- There are different ways to redirect users to the authorization URL.
 --
@@ -65,18 +65,18 @@
 --
 -- = Obtain Access Token
 --
--- When a user navigates to 'authorizeUrl', the user will be prompted to login against the OAuth provider.
+-- When a user navigates to 'authorizeUrl', the user will be prompted to log in against the OAuth provider.
 --
 -- After a successful login there, the user will be redirected back to your Application's @redirect_uri@
 -- with @code@ in the query parameter.
 --
 -- With this @code@, we could exchange for an Access Token.
 --
--- Also you'd better to validate the @state@ is exactly what you pass in the 'authorizeUrl'.
+-- Also, you should validate the @state@ is exactly what you pass in the 'authorizeUrl'.
 -- OAuth2 provider expects to send the exact @state@ back in the redirect request.
 --
 -- To obtain an Access Token, you could call 'fetchAccessToken',
--- which essentially takes the authorization @code@, make request to OAuth2 provider's @/token@ endpoint
+-- which essentially takes the authorization @code@ and makes a request to OAuth2 provider's @/token@ endpoint
 -- to get an Access Token, plus some other information (see details at 'OAuth2Token').
 --
 -- 'fetchAccessToken' returns @ExceptT (OAuth2Error Errors) m OAuth2Token@
@@ -86,7 +86,7 @@
 -- Once we get the 'OAuth2Token' (which actually deserves a better name like @TokenResponse@),
 -- we could get the actual 'accessToken' out of it, which could be used to make API requests to the resource server (often times the same as the authorization server)
 --
--- "Network.OAuth.OAuth2.HttpClient" provides a few handy method to send such API request.
+-- "Network.OAuth.OAuth2.HttpClient" provides a few handy methods to send such API requests.
 -- For instance,
 --
 -- @
