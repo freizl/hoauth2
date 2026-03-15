@@ -1,0 +1,13 @@
+-- Adjust dependency constraints as necessary
+
+name: hoauth2-providers-tutorial
+version: 0.1.0.0
+
+-- Dependencies
+build-depends: base >=4.7 && <5,
+               other-dependency >=1.5 && <2.0 
+
+-- Additional configurations
+other-settings: ...
+
+-- More sections as needed...
