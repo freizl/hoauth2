@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type:     git
-  location: git://github.com/freizl/hoauth2.git
+  location: https://github.com/freizl/hoauth2.git
 
 library
   hs-source-dirs:     src

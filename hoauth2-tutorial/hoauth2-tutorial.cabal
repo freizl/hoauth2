@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name:          hoauth2-tutorial
-version:       0.9.0
+version:       0.9.1
 synopsis:      Tutorial for using hoauth2
 description:
   Tutorial demonstrating how to use hoauth2 to implement an OAuth2 flow in a web application.
@@ -18,7 +18,7 @@ tested-with:   GHC <=9.6.1
 
 source-repository head
   type:     git
-  location: git://github.com/freizl/hoauth2.git
+  location: https://github.com/freizl/hoauth2.git
 
 common common
   hs-source-dirs:   src

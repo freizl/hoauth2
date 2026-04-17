@@ -1,8 +1,10 @@
 # hoauth2-provider Changelog
 
-## 0.9.1 (2026-03-15)
+## 0.9.1 (2026-04-17)
 
+- Relax the `containers` upper bound to `< 0.9` so `containers-0.8` is supported.
 - Relax `crypton` upper bound to support `crypton-1.1.x`.
+- No API changes.
 
 ## 0.9.0 (2025-10-05)
 

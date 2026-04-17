@@ -1,7 +1,10 @@
 # hoauth2 Changelog
 
-## 2.15.1 (2026-03-15)
-- Relax `crypton` upper bound to support `crypton-1.1.x` for Stackage/Hackage builds.
+## 2.15.1 (2026-04-17)
+
+- Dependency changes
+  - Relax the `containers` upper bound to `< 0.9` so `containers-0.8` is supported.
+  - Relax `crypton` upper bound to support `crypton-1.1.x` for Stackage/Hackage builds.
 
 ## 2.15.0 (2025-10-05)
 - Breaking changes
