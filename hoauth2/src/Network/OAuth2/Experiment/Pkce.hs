@@ -66,8 +66,7 @@ getBytesInternal ba
 
 hashSHA256 :: BS.ByteString -> BS.ByteString
 hashSHA256 bs =
-  case H.hash bs of
-    H.Digest digest -> ByteArray.convert digest
+  ByteArray.convert (H.hash bs :: H.Digest H.SHA256)
 
 isUnreversed :: Word8 -> Bool
 isUnreversed w = w `BS.elem` unreverseBS
