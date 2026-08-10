@@ -81,7 +81,7 @@ library
     , exceptions            >=0.8.3  && <0.11
     , http-conduit          >=2.1    && <2.4
     , http-types            >=0.11   && <0.13
-    , ram
+    , ram                   >=0.22   && <0.23
     , microlens             >=0.4 && <0.6
     , text                  >=2.0    && <2.3
     , transformers          >=0.4    && <0.7
