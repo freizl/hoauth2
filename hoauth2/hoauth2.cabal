@@ -2,7 +2,7 @@ cabal-version:      2.4
 name:               hoauth2
 
 -- http://wiki.haskell.org/Package_versioning_policy
-version:            2.15.0
+version:            2.15.1
 synopsis:           Haskell OAuth2 authentication client
 description:
   This package provides Haskell bindings for the OAuth2 Authorization Framework and Bearer Token Usage.
@@ -76,12 +76,12 @@ library
     , binary-instances      >=1.0    && <1.1
     , bytestring            >=0.9    && <0.13
     , containers            >=0.6    && <0.9
-    , crypton               >=0.32   && <1.1
+    , crypton               >=0.32   && <1.2
     , data-default          ^>=0.8
     , exceptions            >=0.8.3  && <0.11
     , http-conduit          >=2.1    && <2.4
     , http-types            >=0.11   && <0.13
-    , memory                ^>=0.18
+    , ram
     , microlens             >=0.4 && <0.6
     , text                  >=2.0    && <2.3
     , transformers          >=0.4    && <0.7

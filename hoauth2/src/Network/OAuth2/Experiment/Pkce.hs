@@ -43,7 +43,7 @@ mkPkceParam = do
       }
 
 encodeCodeVerifier :: BS.ByteString -> Text
-encodeCodeVerifier = B64.extractBase64 . B64.encodeBase64Unpadded . BS.pack . ByteArray.unpack . hashSHA256
+encodeCodeVerifier = B64.extractBase64 . B64.encodeBase64Unpadded . hashSHA256
 
 genCodeVerifier :: MonadIO m => m BS.ByteString
 genCodeVerifier = liftIO $ getBytesInternal BS.empty
@@ -64,8 +64,9 @@ getBytesInternal ba
       let bsUnreserved = ba `BS.append` BS.filter isUnreversed bs
       getBytesInternal bsUnreserved
 
-hashSHA256 :: BS.ByteString -> H.Digest H.SHA256
-hashSHA256 = H.hash
+hashSHA256 :: BS.ByteString -> BS.ByteString
+hashSHA256 bs =
+  ByteArray.convert (H.hash bs :: H.Digest H.SHA256)
 
 isUnreversed :: Word8 -> Bool
 isUnreversed w = w `BS.elem` unreverseBS

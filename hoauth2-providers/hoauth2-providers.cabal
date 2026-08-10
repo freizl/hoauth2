@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               hoauth2-providers
-version:            0.9.0
+version:            0.9.1
 synopsis:           OAuth2 identity providers
 description:        A collection of well-known OAuth2 identity providers
 homepage:           https://github.com/freizl/hoauth2
@@ -63,12 +63,12 @@ library
     , base                  >=4.11 && <5
     , bytestring            >=0.9  && <0.13
     , containers            >=0.6  && <0.9
-    , crypton               >=0.32 && <1.1
+    , crypton               >=0.32 && <1.2
     , hoauth2               >=2.9  && <2.16
     , HsOpenSSL             >=0.11 && <0.12
     , http-conduit          >=2.1  && <2.4
     , http-types            >=0.11 && <0.13
-    , jose-jwt              >=0.10 && <0.11
+    , jose-jwt              >=0.10 && <0.12
     , mtl                   >=2.0  && <2.4
     , text                  >=2.0  && <2.3
     , time                  >=1.12 && <1.13

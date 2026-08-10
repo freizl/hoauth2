@@ -1,5 +1,9 @@
 # hoauth2-provider Changelog
 
+## 0.9.1 (2026-03-15)
+
+- Relax `crypton` upper bound to support `crypton-1.1.x`.
+
 ## 0.9.0 (2025-10-05)
 
 - Add Linear provider

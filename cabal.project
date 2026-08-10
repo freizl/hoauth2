@@ -1,5 +1,5 @@
 packages: */*.cabal
-index-state: 2025-10-04T19:51:13Z
+index-state: 2026-03-16T01:35:53Z
 
 -- TODO: Doesn't seem to work unless added to ~/.cabal/config
 extra-include-dirs: /opt/homebrew/opt/openssl@3/include
@@ -17,3 +17,9 @@ extra-lib-dirs: /opt/homebrew/opt/openssl@3/lib
 --   type: git
 --   location: https://github.com/MichelBoucey/google-oauth2-jwt
 --   tag: 823449f74e4d6ec9264d3db9b247bf68edd90062
+
+-- `crypton-1.1.x` support depends on an unreleased jose-jwt fix.
+source-repository-package
+  type: git
+  location: https://github.com/tekul/jose-jwt.git
+  tag: f93bd9436d798eb81618fa0f699f677194efcf8c
