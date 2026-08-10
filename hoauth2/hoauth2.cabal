@@ -33,16 +33,14 @@ library
   autogen-modules:    Paths_hoauth2
   other-modules:
     Network.HTTP.Client.Contrib
-    Network.OAuth2.Internal
     Network.OAuth2.Experiment.Grants
     Network.OAuth2.Experiment.Utils
+    Network.OAuth2.Internal
     Paths_hoauth2
 
   exposed-modules:
     Network.OAuth2
     Network.OAuth2.AuthorizationRequest
-    Network.OAuth2.HttpClient
-    Network.OAuth2.TokenRequest
     Network.OAuth2.Experiment
     Network.OAuth2.Experiment.Flows
     Network.OAuth2.Experiment.Flows.AuthorizationRequest
@@ -57,6 +55,8 @@ library
     Network.OAuth2.Experiment.Grants.ResourceOwnerPassword
     Network.OAuth2.Experiment.Pkce
     Network.OAuth2.Experiment.Types
+    Network.OAuth2.HttpClient
+    Network.OAuth2.TokenRequest
 
   default-extensions:
     DeriveGeneric
@@ -69,23 +69,23 @@ library
     TypeFamilies
 
   build-depends:
-    , aeson                 >=2.0    && <2.3
-    , base                  >=4.11   && <5
-    , base64                >=1.0    && <1.1
-    , binary                >=0.8    && <0.11
-    , binary-instances      >=1.0    && <1.1
-    , bytestring            >=0.9    && <0.13
-    , containers            >=0.6    && <0.9
-    , crypton               >=0.32   && <1.2
+    , aeson                 >=2.0   && <2.3
+    , base                  >=4.11  && <5
+    , base64                >=1.0   && <1.1
+    , binary                >=0.8   && <0.11
+    , binary-instances      >=1.0   && <1.1
+    , bytestring            >=0.9   && <0.13
+    , containers            >=0.6   && <0.9
+    , crypton               >=0.32  && <1.2
     , data-default          ^>=0.8
-    , exceptions            >=0.8.3  && <0.11
-    , http-conduit          >=2.1    && <2.4
-    , http-types            >=0.11   && <0.13
-    , ram                   >=0.22   && <0.23
-    , microlens             >=0.4 && <0.6
-    , text                  >=2.0    && <2.3
-    , transformers          >=0.4    && <0.7
-    , uri-bytestring        >=0.4    && <0.5
+    , exceptions            >=0.8.3 && <0.11
+    , http-conduit          >=2.1   && <2.4
+    , http-types            >=0.11  && <0.13
+    , microlens             >=0.4   && <0.6
+    , ram                   >=0.22  && <0.23
+    , text                  >=2.0   && <2.3
+    , transformers          >=0.4   && <0.7
+    , uri-bytestring        >=0.4   && <0.5
     , uri-bytestring-aeson  ^>=0.1
 
   ghc-options:
@@ -103,8 +103,8 @@ test-suite hoauth-tests
     , binary          >=0.8  && <0.11
     , hoauth2
     , hspec           >=2    && <3
+    , http-conduit    >=2.1  && <2.4
     , uri-bytestring  >=0.4  && <0.5
-    , http-conduit          >=2.1    && <2.4
 
   other-modules:
     Network.OAuth2.InternalSpec
