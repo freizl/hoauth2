@@ -13,7 +13,7 @@ category:           Network
 build-type:         Simple
 stability:          Beta
 tested-with:
-  GHC ==8.10.7 || ==9.0.2 || ==9.2.7 || ==9.4.4 || ==9.6.1 || ==9.8.2
+  GHC ==9.6.1 || ==9.8.2
 
 extra-source-files:
   CHANGELOG.md
@@ -81,8 +81,6 @@ library
     -Wwarn -Wwarnings-deprecations
 
   -- -Wno-missing-signatures
-  if impl(ghc <9.4)
-    ghc-options: -Wno-unticked-promoted-constructors
 
 test-suite hoauth-providers-tests
   type:               exitcode-stdio-1.0

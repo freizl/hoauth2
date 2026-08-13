@@ -11,7 +11,7 @@ license-file:  LICENSE
 author:        Haisheng Wu (M)
 maintainer:    freizl@gmail.com
 category:      Network
-tested-with:   GHC <=9.6.1
+tested-with:   GHC ==9.6.1 || ==9.8.2
 
 library
   exposed-modules:  HOAuth2ProvidersTutorial
@@ -33,9 +33,6 @@ library
   ghc-options:
     -Wall -Wtabs -Wno-unused-do-bind -Wunused-packages -Wpartial-fields
     -Wwarnings-deprecations
-
-  if impl(ghc <9.4)
-    ghc-options: -Wno-unticked-promoted-constructors
 
 executable hoauth2-providers-tutorial
   main-is:          Main.hs
